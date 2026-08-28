@@ -42,23 +42,27 @@ Everything else happens on the device: parsing, seat normalisation, scoring, fil
 ranking, and caching.
 
 Fan out width comes from issuing several proxy requests concurrently rather than from
-concurrency inside one. Chunk size is bounded by the platform's per invocation subrequest
-cap, which is the binding constraint on the free tier. Storage and cache operations also
-count against that cap, which is a further reason the proxy performs none.
-
-Each invocation streams newline delimited JSON back as results arrive, so a chunk yields
-its first result without waiting for its last. Server sent events was rejected: its
-browser primitive cannot set the custom request headers these calls require, and its
-reconnection and resume semantics are worthless for a short lived search that is cheaper
-to re run than to resume.
+concurrency inside one. One proxy request carries one upstream request: batching several
+into a single invocation was considered and rejected, because the per invocation
+subrequest cap that would motivate it does not bind when each invocation makes one
+request, and the resulting invocation volume sits far inside the free tier. Batching would
+have required a streaming response protocol, chunk arithmetic and response demultiplexing
+to buy headroom that is not needed.
 
 Any code that fans out consumes each response body as its headers arrive. Collecting
-response objects and reading their bodies afterwards holds connections open and can
-stall, which is a documented failure mode on this platform.
+response objects and reading their bodies afterwards holds connections open and can stall,
+which is a documented failure mode on this platform.
 
 The upstream session belongs to the client. It performs the session bootstrap once
 through the proxy, stores the resulting cookies on device, and sends them with subsequent
-requests. The proxy forwards `Set-Cookie` back untouched.
+requests.
+
+On the web this cannot use the cookie headers themselves. The Fetch specification makes
+`Set-Cookie` a forbidden response header name that is filtered out of any response exposed
+to page scripts, and `Cookie` cannot be set by script. The session therefore travels in
+custom headers, and the proxy translates to and from the real headers on the upstream
+side. A native runtime has no such restriction, which is one more reason this detail
+belongs in an adapter rather than in the core.
 
 ## Consequences
 
