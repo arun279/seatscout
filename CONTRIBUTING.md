@@ -842,10 +842,10 @@ back as something other than what was written reads as absent for the same reaso
 
 `packages/core/src/domain/seat-profile.ts` scores a Seat Group against a Seat Profile. It
 answers with one number, the Group's centroid in normalised position, and the named reasons
-the interface shows instead of the number. It reads a Seat's `x`, `width`, `depth` and
-`lateral` and nothing else, so a Seat Group carries the positions the normalised Auditorium
-gave it rather than being rejoined to the room by identifier. That is what `seatGroupsIn`
-being generic over the Seat it is handed is for.
+the interface shows instead of the number. It reads a Seat's normalised position and nothing
+else, so a Seat Group has to carry the positions the normalised Auditorium gave it rather
+than be rejoined to the room by identifier. That is what `seatGroupsIn` being generic over
+the Seat it is handed is for.
 
 **The off-axis term is an angle, not a distance.** It is how many seat widths off centre the
 Group sits, divided by how far it sits from the screen. The same sideways offset therefore
@@ -893,10 +893,9 @@ cannot support. A result is tied when it is within half a row and one seat of th
 which is the finest an Auditorium subdivides; that predicate is contract rather than
 rendering, because the list draws its rule where the tie ends.
 
-**The score is a pure function of the Seat Group and the Seat Profile.** The two means it
-takes, over the room's Seat widths and over the Group's own positions, are summed in a
-canonical order, so an Auditorium delivered in a different order scores identically rather
-than within a rounding error. The row a Group sits in is counted rather than divided out of
+**The score is a pure function of the Seat Group and the Seat Profile.** The centroid it
+takes over the Group's own positions is summed in a canonical order, so an Auditorium
+delivered in a different order scores identically rather than within a rounding error. The row a Group sits in is counted rather than divided out of
 its depth, so a Group of three in the eighth row of eleven is in row 8 and not in row
 7.999999999999998.
 

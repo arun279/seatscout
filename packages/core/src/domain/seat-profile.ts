@@ -1,4 +1,4 @@
-import type { NormalisedPosition, Placement } from "./auditorium.js";
+import type { NormalisedPosition } from "./auditorium.js";
 import type { SeatGroup } from "./seat-group.js";
 
 export interface SeatProfile {
@@ -42,8 +42,6 @@ export const REFERENCE: SeatProfile = {
   frontBand: 6.97,
 };
 
-type Positioned = Placement & NormalisedPosition;
-
 const mean = (values: readonly number[]) =>
   values
     .toSorted((lower, higher) => lower - higher)
@@ -54,43 +52,40 @@ const centroidOf = (
 ): NormalisedPosition => ({
   depth: mean(seats.map((seat) => seat.depth)),
   lateral: mean(seats.map((seat) => seat.lateral)),
+  seatsOffCentre: mean(seats.map((seat) => seat.seatsOffCentre)),
 });
 
 export const scoringIn = (
-  auditorium: readonly Positioned[],
+  auditorium: readonly NormalisedPosition[],
   profile: SeatProfile,
-): ((group: SeatGroup<Positioned>) => Scored) => {
-  const centres = auditorium.map((seat) => seat.x + seat.width / 2);
-  const halfSpanInSeats =
-    (Math.max(...centres) - Math.min(...centres)) /
-    2 /
-    mean(auditorium.map((seat) => seat.width));
+): ((group: SeatGroup<NormalisedPosition>) => Scored) => {
+  const offsets = auditorium.map((seat) => seat.seatsOffCentre);
+  const halfSpanInSeats = (Math.max(...offsets) - Math.min(...offsets)) / 2;
   const depths = [...new Set(auditorium.map((seat) => seat.depth))];
   const rowCount = depths.length;
   const backRow = Math.max(...depths);
   const targetOffCentre = profile.targetLateral * halfSpanInSeats;
 
-  const againstWall = (seat: Positioned) =>
+  const againstWall = (seat: NormalisedPosition) =>
     seat.depth === backRow ||
-    (seat.lateral !== 0 &&
+    (seat.seatsOffCentre !== 0 &&
       !auditorium.some(
         (other) =>
           other.depth === seat.depth &&
-          Math.sign(other.lateral) === Math.sign(seat.lateral) &&
-          Math.abs(other.lateral) > Math.abs(seat.lateral),
+          Math.sign(other.seatsOffCentre) === Math.sign(seat.seatsOffCentre) &&
+          Math.abs(other.seatsOffCentre) > Math.abs(seat.seatsOffCentre),
       ));
 
   return (group) => {
     const position = centroidOf(group.seats);
     const rowsBack = Math.round(position.depth * (rowCount - 1));
     const fromScreen = profile.screenGap + rowsBack * profile.rowPitch;
-    const offCentre = position.lateral * halfSpanInSeats;
-    const offTarget = Math.abs(offCentre - targetOffCentre);
+    const offTarget = Math.abs(position.seatsOffCentre - targetOffCentre);
     const offDepth = Math.abs(position.depth - profile.targetDepth);
     const reasons: RankReasons = {
       rowFromFront: rowsBack + 1,
       rowCount,
-      seatsOffCentre: offCentre,
+      seatsOffCentre: position.seatsOffCentre,
       inFrontBand: fromScreen < profile.frontBand,
       againstWall: group.seats.some(againstWall),
       tiedAtRoomResolution: offDepth * (rowCount - 1) <= 0.5 && offTarget <= 1,

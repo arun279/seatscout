@@ -145,13 +145,13 @@ const rowsIn = (auditorium: Auditorium) =>
 
 const sidesOf = (row: Auditorium) =>
   [
-    row.filter((seat) => seat.lateral > 0),
-    row.filter((seat) => seat.lateral < 0),
+    row.filter((seat) => seat.seatsOffCentre > 0),
+    row.filter((seat) => seat.seatsOffCentre < 0),
   ].filter((side) => side.length > 0);
 
 const farEdgeOf = (side: Auditorium) => {
-  const edge = Math.max(...side.map((seat) => Math.abs(seat.lateral)));
-  return side.filter((seat) => Math.abs(seat.lateral) === edge);
+  const edge = Math.max(...side.map((seat) => Math.abs(seat.seatsOffCentre)));
+  return side.filter((seat) => Math.abs(seat.seatsOffCentre) === edge);
 };
 
 const outwardRuns = (ranked: readonly Ranked[]) =>
@@ -159,11 +159,15 @@ const outwardRuns = (ranked: readonly Ranked[]) =>
     const row = ranked.filter((one) => one.seat.depth === depth);
     return [
       row
-        .filter((one) => one.seat.lateral >= 0)
-        .toSorted((left, right) => left.seat.lateral - right.seat.lateral),
+        .filter((one) => one.seat.seatsOffCentre >= 0)
+        .toSorted(
+          (left, right) => left.seat.seatsOffCentre - right.seat.seatsOffCentre,
+        ),
       row
-        .filter((one) => one.seat.lateral <= 0)
-        .toSorted((left, right) => right.seat.lateral - left.seat.lateral),
+        .filter((one) => one.seat.seatsOffCentre <= 0)
+        .toSorted(
+          (left, right) => right.seat.seatsOffCentre - left.seat.seatsOffCentre,
+        ),
     ];
   });
 
@@ -172,11 +176,11 @@ const judged = (auditorium: Auditorium, profile: SeatProfile) => {
   const top = bestOf(ranked);
   return {
     onTheCentreline:
-      Math.abs(top.seat.lateral) ===
+      Math.abs(top.seat.seatsOffCentre) ===
       Math.min(
         ...ranked
           .filter((one) => one.seat.depth === top.seat.depth)
-          .map((one) => Math.abs(one.seat.lateral)),
+          .map((one) => Math.abs(one.seat.seatsOffCentre)),
       ),
     withinOneRowOfTarget:
       Math.abs(
@@ -210,7 +214,7 @@ const benchmarkAuditoriums = (): readonly Auditorium[] =>
     .map((capture) => auditoriumOf(capture.body));
 
 const rightReachOf = (row: Auditorium) =>
-  Math.max(...row.map((seat) => seat.lateral));
+  Math.max(...row.map((seat) => seat.seatsOffCentre));
 
 const equalOffsetPenalty = (
   auditorium: Auditorium,
@@ -221,7 +225,8 @@ const equalOffsetPenalty = (
   const score = scoringIn(auditorium, profile);
   const [seat] = row;
   if (seat === undefined) throw new Error("an Auditorium row with no Seat");
-  const at = (lateral: number) => score(alone({ ...seat, lateral }));
+  const at = (seatsOffCentre: number) =>
+    score(alone({ ...seat, seatsOffCentre }));
   const centre = at(0);
   const outward = at(offset);
   expect(outward.reasons.againstWall).toBe(centre.reasons.againstWall);
@@ -543,27 +548,6 @@ describe("the Seat Profile score", () => {
     expect(position.lateral).toBeCloseTo(-1 / 7, 15);
   });
 
-  it("counts the seat widths a Seat sits off centre between Seat centres, not between left edges", () => {
-    const room = normalised([
-      seatAt("narrow", 0, 0, 10),
-      seatAt("wide", 20, 0, 30),
-      seatAt("behind", 10, 50, 20),
-    ]);
-    const score = scoringIn(room, REFERENCE);
-
-    expect(
-      room.map((seat) => ({
-        id: seat.id,
-        lateral: seat.lateral,
-        seatsOffCentre: score(alone(seat)).reasons.seatsOffCentre,
-      })),
-    ).toEqual([
-      { id: "narrow", lateral: -1, seatsOffCentre: -0.75 },
-      { id: "wide", lateral: 1, seatsOffCentre: 0.75 },
-      { id: "behind", lateral: 0, seatsOffCentre: 0 },
-    ]);
-  });
-
   it("targets two thirds back on the centreline until the Profile says otherwise", () => {
     const room = evenRoom(7, 9);
     const bestUnder = (profile: Partial<SeatProfile>) =>
@@ -587,6 +571,27 @@ describe("the Seat Profile score", () => {
       atTheFrontRow: "1.4",
       atTheFrontRowWithNoBand: "0.4",
       offToTheLeft: "4.0",
+    });
+  });
+
+  it("puts the target lateral on the room's own half span, counted in seat widths", () => {
+    const room = normalised([
+      seatAt("wide", 0, 0, 100),
+      seatAt("near", 200, 0, 10),
+      seatAt("mid", 240, 0, 10),
+      seatAt("far", 300, 0, 10),
+    ]);
+    const bestUnder = (targetLateral: number) =>
+      topSeatIn(room, { ...REFERENCE, targetLateral }).seat.id;
+
+    expect({
+      onTheCentreline: bestUnder(0),
+      halfWayOut: bestUnder(0.5),
+      atTheEdge: bestUnder(1),
+    }).toEqual({
+      onTheCentreline: "wide",
+      halfWayOut: "near",
+      atTheEdge: "mid",
     });
   });
 });
@@ -686,9 +691,7 @@ describe("the Seat Profile score over generated Auditoriums", () => {
 
             expect(reasons.rowFromFront).toBe(index + 1);
             expect(reasons.rowCount).toBe(rows.length);
-            expect(Math.sign(reasons.seatsOffCentre)).toBe(
-              Math.sign(seat.lateral),
-            );
+            expect(reasons.seatsOffCentre).toBe(seat.seatsOffCentre);
           }
       }),
       { numRuns: 300 },
@@ -709,7 +712,9 @@ describe("the Seat Profile score over generated Auditoriums", () => {
 
         for (const row of rows.slice(-1)) expect(walled(row)).toEqual(row);
         for (const row of rows.slice(0, -1)) {
-          expect(walled(row.filter((seat) => seat.lateral === 0))).toEqual([]);
+          expect(
+            walled(row.filter((seat) => seat.seatsOffCentre === 0)),
+          ).toEqual([]);
           for (const side of sidesOf(row))
             expect(walled(side)).toEqual(farEdgeOf(side));
         }
