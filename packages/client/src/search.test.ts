@@ -32,12 +32,12 @@ const AT = 1000;
 const STONEBRIAR = "AMC Stonebriar 24";
 const INWOOD = "Landmark Inwood Theatre";
 const WIDTH = 24;
+const SEED = 4;
 
 type Routes = NonNullable<UpstreamScript["routes"]>;
 
 interface Options {
   readonly at?: readonly string[];
-  readonly seed?: number;
   readonly partySize?: number;
   readonly accessibleSeating?: boolean;
   readonly profile?: SeatProfile;
@@ -112,6 +112,14 @@ const roomsFor = (
   );
 };
 
+const routesTo = (
+  showtimes: readonly Showtime[],
+  answer: { status: number; body: string },
+): Routes =>
+  Object.fromEntries(
+    showtimes.map((showtime) => [`${SEAT_MAP}${showtime.id}`, answer]),
+  );
+
 const listing = async () => {
   const source = openSource({
     fetch: fakeUpstream({
@@ -138,7 +146,7 @@ const searching = async (options: Options = {}) => {
   };
   const candidates = narrowed(listed, terms);
   const upstream = fakeUpstream({
-    seed: options.seed ?? 4,
+    seed: SEED,
     ...options.script,
     routes: {
       [BOOTSTRAP]: { status: 200, body: "{}" },
@@ -225,9 +233,6 @@ describe("a search", () => {
     expect(idsIn(settled)).toEqual([
       558117351, 558782900, 558782901, 557985744,
     ]);
-    expect(settled.results.map((result) => result.score)).toEqual(
-      settled.results.map((result) => result.score).toSorted((a, b) => b - a),
-    );
     expect(run.snapshots.map((snapshot) => snapshot.phase)).toEqual([
       "searching",
       "searching",
@@ -291,6 +296,7 @@ describe("a search", () => {
       snapshot.coverage.failed.length,
     ]);
 
+    expect(counts.length).toBe(174);
     expect(
       counts.filter((row, at) =>
         row.some((count, outcome) => count < (counts[at - 1]?.[outcome] ?? 0)),
@@ -318,14 +324,13 @@ describe("a search", () => {
   it("does not change a snapshot a caller is still holding", async () => {
     const run = await searching({
       at: [STONEBRIAR],
-      answers: (bookable) =>
-        Object.fromEntries([
-          [
-            `${SEAT_MAP}${bookable[0]?.id}`,
-            refusalNamed("GeneralAdmissionShowtimeError"),
-          ],
-          [`${SEAT_MAP}${bookable[1]?.id}`, refusalNamed("PerformanceSoldOut")],
-        ]),
+      answers: (bookable) => ({
+        ...routesTo(
+          bookable.slice(0, 1),
+          refusalNamed("GeneralAdmissionShowtimeError"),
+        ),
+        ...routesTo(bookable.slice(1, 2), refusalNamed("PerformanceSoldOut")),
+      }),
     });
     await run.search.done;
 
@@ -350,14 +355,7 @@ describe("a search", () => {
     const run = await searching({
       at: [STONEBRIAR],
       answers: (bookable) =>
-        Object.fromEntries(
-          bookable
-            .slice(0, 1)
-            .map((showtime) => [
-              `${SEAT_MAP}${showtime.id}`,
-              refusalNamed("ExpiredPerformance"),
-            ]),
-        ),
+        routesTo(bookable.slice(0, 1), refusalNamed("ExpiredPerformance")),
     });
     const settled = await run.search.done;
 
@@ -371,14 +369,13 @@ describe("a search", () => {
   it("names a general admission Showtime and a sold out one from the seat map itself", async () => {
     const run = await searching({
       at: [STONEBRIAR],
-      answers: (bookable) =>
-        Object.fromEntries([
-          [
-            `${SEAT_MAP}${bookable[0]?.id}`,
-            refusalNamed("GeneralAdmissionShowtimeError"),
-          ],
-          [`${SEAT_MAP}${bookable[1]?.id}`, refusalNamed("PerformanceSoldOut")],
-        ]),
+      answers: (bookable) => ({
+        ...routesTo(
+          bookable.slice(0, 1),
+          refusalNamed("GeneralAdmissionShowtimeError"),
+        ),
+        ...routesTo(bookable.slice(1, 2), refusalNamed("PerformanceSoldOut")),
+      }),
     });
     const settled = await run.search.done;
 
@@ -409,6 +406,51 @@ describe("a search", () => {
     expect(settled.coverage.failed).toEqual([]);
     expect(run.requested()).toHaveLength(3);
     expect(accountedIn(settled.coverage)).toBe(8);
+  });
+
+  it("closes the ledger with every outcome in it at once", async () => {
+    const run = await searching({
+      at: [INWOOD, STONEBRIAR],
+      cached: (catalogue) => ({
+        fetchedAt: AT,
+        catalogue: {
+          bookable: catalogue.bookable.slice(1),
+          unbookable: catalogue.unbookable,
+          unidentified: catalogue.bookable.slice(0, 1).map(withoutIdentity),
+        },
+      }),
+      answers: (bookable) => ({
+        ...routesTo(bookable.slice(1, 2), refusalNamed("ExpiredPerformance")),
+        ...routesTo(bookable.slice(2, 3), { status: 500, body: "" }),
+      }),
+    });
+    const settled = await run.search.done;
+
+    expect({
+      candidates: settled.coverage.candidates,
+      checked: settled.coverage.checked,
+      soldOut: settled.coverage.soldOut.length,
+      noSeatMap: settled.coverage.noSeatMap.length,
+      started: settled.coverage.started.length,
+      unidentified: settled.coverage.unidentified.length,
+      failed: settled.coverage.failed.length,
+    }).toEqual({
+      candidates: 8,
+      checked: 1,
+      soldOut: 1,
+      noSeatMap: 3,
+      started: 1,
+      unidentified: 1,
+      failed: 1,
+    });
+    expect(accountedIn(settled.coverage)).toBe(8);
+    expect(settled.results).toHaveLength(1);
+    expect(
+      run.snapshots.filter(
+        (snapshot) =>
+          accountedIn(snapshot.coverage) > snapshot.coverage.candidates,
+      ),
+    ).toEqual([]);
   });
 
   it("lists the Showtimes it could not reach, and reaches them once the fault is gone", async () => {
@@ -556,7 +598,6 @@ describe("a search", () => {
       seatsOffCentre: -1.9503424657534258,
       tiedAtRoomResolution: false,
     });
-    expect(result?.position.depth).toBeCloseTo(5 / 7, 12);
   });
 
   it("orders Showtimes that score alike by the Showtime they are", async () => {

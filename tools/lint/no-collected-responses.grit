@@ -1,23 +1,44 @@
 language js
 
+pattern transport_call() {
+  or {
+    `fetch($...)`,
+    `$_.fetch($...)`,
+    `fetch`,
+    `$_.fetch`
+  }
+}
+
+pattern reader() {
+  or {
+    `text`,
+    `json`,
+    `arrayBuffer`,
+    `blob`,
+    `bytes`,
+    `formData`
+  }
+}
+
+pattern reads_its_own_argument() {
+  or {
+    `($response) => $rest`,
+    `async ($response) => $rest`
+  } where {
+    $rest <: contains `$response.$reader($...)` where { $reader <: reader() }
+  }
+}
+
 or {
   `$_.map($callback)`,
   `$_.flatMap($callback)`
 } where {
   or {
     and {
-      $callback <: contains or {
-        `fetch($...)`,
-        `$_.fetch($...)`,
-        `fetch`,
-        `$_.fetch`
-      },
-      ! $callback <: contains `await $_`
+      $callback <: contains transport_call(),
+      ! $callback <: contains `$_.$reader($...)` where { $reader <: reader() }
     },
-    $callback <: or {
-      `($response) => $response.text()`,
-      `($response) => $response.json()`
-    }
+    $callback <: reads_its_own_argument()
   },
   register_diagnostic(span=$callback, message="Read each response body where its response arrives. Collecting responses across a fan-out and reading their bodies afterwards holds every connection open and can stall. CONTRIBUTING.md says what to write instead.")
 }

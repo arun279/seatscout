@@ -18,9 +18,10 @@ declare module "vitest" {
 const SEAT_MAP = "/napi/seatMap/";
 const CONCURRENCY = 24;
 const MAPS_MEASURED = 48;
+const BOOTSTRAP_MS = 209;
+const LISTING_MS = 375;
 const AT_TWENTY_FOUR_MS = 670;
 const AT_TWELVE_MS = 960;
-const RECORDED_SEARCH_MS = 1300;
 const READING_LIMIT_MS = 120_000;
 
 const reaching = (
@@ -109,12 +110,10 @@ describe("a full search against the live Source", () => {
       (raw * AT_TWELVE_MS) / AT_TWENTY_FOUR_MS,
     );
 
-    console.log(
-      `${settled.coverage.candidates} candidates and ${maps.length} seat maps: ${raw} ms read raw, ${fanOut} ms fanned out against ${Math.round(allowed)} ms allowed, ${whole} ms end to end against the ${RECORDED_SEARCH_MS} ms recorded`,
-    );
     expect(settled.phase).toBe("settled");
     expect(settled.results.length).toBeGreaterThan(0);
     expect(maps.length).toBeGreaterThan(0);
     expect(fanOut).toBeLessThan(allowed);
+    expect(whole).toBeLessThan(BOOTSTRAP_MS + LISTING_MS + allowed);
   });
 });

@@ -11,7 +11,7 @@ const arrivalOrder = async (fetch: Fetch, paths: readonly string[]) => {
 
   await Promise.all(
     paths.map(async (path) => {
-      await fetch(path);
+      await (await fetch(path)).text();
       arrived.push(path);
     }),
   );
@@ -19,7 +19,13 @@ const arrivalOrder = async (fetch: Fetch, paths: readonly string[]) => {
 };
 
 const statusesOf = (fetch: Fetch, paths: readonly string[]) =>
-  Promise.all(paths.map(async (path) => (await fetch(path)).status));
+  Promise.all(
+    paths.map(async (path) => {
+      const response = await fetch(path);
+      await response.text();
+      return response.status;
+    }),
+  );
 
 const tally = (statuses: readonly number[]) => {
   const counts: Record<number, number> = {};

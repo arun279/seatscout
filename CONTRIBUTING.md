@@ -221,7 +221,9 @@ portable.
 
 A Biome override on `packages/**` then covers what the compiler cannot see.
 `noRestrictedImports` rejects React, React Native, Expo, Node and Cloudflare, and a second
-override adds sibling workspace packages for `packages/core`, which reaches none.
+override restates that same list and adds sibling workspace packages for `packages/core`,
+which reaches none. It restates rather than extends because Biome replaces a rule's options
+rather than merging them, so a pattern added to one list has to be added to the other.
 `noRestrictedGlobals` rejects the host globals by name, which matters because a single
 `/// <reference lib="dom" />` re-declares the whole DOM to the compiler and the type error
 disappears.
@@ -922,8 +924,10 @@ form, at 0.
 `packages/client/src/search.ts` is the mechanism the rest of the workspace exists for, and
 the only place that composes all of it. `openSearch` takes the dependencies the catalogue
 phase takes and answers with a function from a Query to a `Search`: `snapshot()`,
-`subscribe()`, a terminal `done` that never rejects, and `abort()`. A Search is hot, so the
-listing read starts when it is made rather than when something is awaited.
+`subscribe()`, a terminal `done`, and `abort()`. A Search is hot, so the listing read
+starts when it is made rather than when something is awaited. `done` settles with the
+terminal snapshot for every answer a port can give; it is not wrapped in a catch, so a port
+that breaks its own contract and rejects surfaces rather than being swallowed.
 
 A Query is the catalogue terms plus the party size, whether accessible seating was asked
 for, and a Seat Profile that defaults to Reference. The catalogue terms resolve from the
@@ -948,44 +952,69 @@ the tie broken by whichever answered first. Within one Auditorium the same rule 
 the Seat Groups: the room's best, and among equals the one nearest the front and the left,
 which is the order `seatGroupsIn` already yields.
 
-**A Showtime contributes one result: the best Seat Group in the room (D36).** A Showtime
-whose room cannot seat the party is still checked and still counted; it simply has nothing
-to offer.
+**A Showtime contributes one result: the best Seat Group in the room.** Adjacent Groups in
+one room differ by one seat and by less than the model can resolve, so a flat list of all of
+them would be a list of duplicates; the alternatives live on the seat map. A Showtime whose
+room cannot seat the party is still checked and still counted; it simply has nothing to
+offer.
+
+The room's best is taken by sorting and reading the head rather than by a maximum with a
+comparison, which looks like the long way round and is not. No captured Auditorium holds two
+Seat Groups that score alike, so a `>` there would be a branch the mutation gate cannot
+judge; a comparator has no such branch, and `toSorted` is stable, so the two pick the same
+Group.
 
 **A result carries no ticketing URL.** `SeatGroupResult.showtime` is a view of `Showtime`
 without `ticketing`, built field by field rather than spread, so the URL is absent at
 runtime and not merely erased from the type. Only re-verification yields one
-([ADR 4](docs/adr/0004-booking-ends-at-a-deep-link.md)). Coverage entries are the other
-way round and do carry it, because the remedy for a Showtime nobody can check is the
-operator's own page.
+([ADR 4](docs/adr/0004-booking-ends-at-a-deep-link.md)). The named Showtime outcomes on
+Coverage are the other way round and do carry it, because the remedy for a Showtime nobody
+can check is the operator's own page. What a result carries beside its Seat Group is the
+moment the Auditorium was read and how many attempts it took, which is what a card counts an
+age up from; the Source and the upstream status the Availability judgement came from stay on
+each Seat, where the judgement was made.
 
 **A result says what the filters removed.** Availability and Designation are predicates
 applied before ranking rather than terms in the score, so a result states how many of the
 Auditorium's Seats each of them held back: the unavailable ones, and then the accessible
-ones among what is left, which makes the two counts and the ranked Seats a partition of the
-room. A Query that asks for accessible seating removes none on that ground and says so with
+ones among what is left. The two counts are disjoint in that order, so no Seat is counted
+twice. A Query that asks for accessible seating removes none on that ground and says so with
 a zero.
 
 **Coverage has six outcomes and its ledger closes in every snapshot.** Checked, sold out,
 no seat map, already started, never identified and could not be reached; not reached yet is
 the remainder rather than a field, so the six and the remainder add to `candidates` in every
-snapshot and not only in the last. Three of them are populated by the listing before a
-request is spent, and the fan-out adds to the same three from what a seat map refusal says.
-An expired screening is `started` and never `failed`, because a cached listing routinely
-offers screenings that have begun and a retry cannot help one; `failed` stays the only
-retryable set.
+snapshot and not only in the last. Four of them are populated by the listing before a
+request is spent; the fan-out adds to three of those four from what a seat map refusal says,
+and to `failed`. An expired screening is `started` and never `failed`, because a cached
+listing routinely offers screenings that have begun and a retry cannot help one; `failed`
+stays the only retryable set, and it carries identities rather than Showtimes because a
+retry is the one remedy that has to name what it retries.
+
+A Showtime the listing could not identify is the one candidate no request can be spent on,
+so its shortfall stands for the life of the cache entry: only a fresh listing can restore an
+identity, and the cache is what a search reads. That is why it is never offered a retry, and
+why no result is ever built for it, which in turn means re-verification is never asked about
+one. Its remedy is the operator's own page, through the ticketing URL its Coverage entry
+still carries, and that is a hand-off the verification path is not asked to keep.
 
 A listing that cannot be read is not a search with no candidates. It settles in a phase of
 its own, `unreachable`, because a screen that says "nothing matched" when nothing was
 looked at is the silent partial result Coverage exists to prevent.
 
 **The fan-out is 24 workers over one queue.** Twenty four is the measured optimum rather
-than a number chosen here: 48 seat maps complete in 0.67 s at that width against 10.30 s at
-6, which makes fan-out width the dominant performance lever in the system. Workers pull from
-one shared iterator, so nothing is indexed and no worker holds a slice. `abort()` empties
-the queue rather than cancelling what is already in flight: no further request is issued, an
-answer that arrives after it is discarded rather than recorded, and `done` settles with the
-snapshot as it stood.
+than a number chosen here; the figures are in the table below. Workers pull from one shared
+iterator, so nothing is indexed and no worker holds a slice. `abort()` abandons the queue
+rather than cancelling what is already in flight: each worker stops at its next turn round
+the loop, no further request is issued, an answer that arrives after it is discarded rather
+than recorded, and `done` settles with the snapshot as it stood. An unbounded fan-out would
+issue every request in one turn and leave `abort()` nothing to stop.
+
+Every answer publishes, which re-sorts the results and copies the Coverage lists, so a
+search of *n* candidates does *n* sorts and *n* copies. That is deliberate and it is what
+progressive delivery costs: at the few hundred candidates a Query has, the work is trivial
+and the allocation is short-lived. Coalescing the notifications is a rendering decision and
+belongs where the rendering is.
 
 ### Reading a response body
 
@@ -1003,23 +1032,53 @@ const bodies = await Promise.all(paths.map(async (path) => (await fetch(path)).t
 ```
 
 `tools/lint/no-collected-responses.grit` is a Biome plugin that refuses the first form, in
-both halves: a `map` callback that calls the transport and awaits nothing is collecting
-responses, and a `map` callback that reads a body off its own parameter is reading them
-afterwards. It runs in `pnpm lint`, so it gates a pull request and the pre-commit hook
-alike. Biome's own rules were looked at first and none of them expresses this; a plugin is
-Biome's supported way to add one.
+both halves. A `map` callback that calls the transport and reads no body off anything is
+collecting responses, whatever it awaits. A `map` callback that reads a body off **its own
+argument** is reading them afterwards, whatever the body reader is called. Both halves count
+`text`, `json`, `arrayBuffer`, `blob`, `bytes` and `formData`, and the second half keys on
+the argument, so a callback that obtains its own response and then reads it is the right
+form rather than a violation. It runs in `pnpm lint`, so it gates a pull request and the
+pre-commit hook alike.
+
+Biome's own rules were looked at first and none of them expresses this. `noAwaitInLoops` is
+the nearest, and it is the wrong one twice over: it catches the serialised form rather than
+the two-phase one, and it would fire on the retry loop and on the store contract, which are
+sequential on purpose. A plugin is Biome's supported way to add a rule, so that is what this
+is. It was watched failing on both halves of three spellings of the wrong form planted in
+the adapter, and watched passing on two spellings of the right form, before it was trusted.
 
 ### The live timing
 
+This is the latency recorded against the live Source on 2026-08-23, before any of this code
+existed. Every figure the live timing test uses comes from it and none is invented here.
+
+| step | time |
+|---|---|
+| Session bootstrap | 209 ms |
+| Every bookable Showtime for one Movie, one date, 31 Theaters | 375 ms |
+| 48 seat maps at concurrency 24 | 0.67 s |
+| the same 48 at concurrency 12 | 0.96 s |
+| the same 48 at concurrency 6 | 10.30 s |
+
+A whole search is therefore about 1.3 s, and concurrency 24 is roughly fifteen times faster
+than 6, which is what makes fan-out width the dominant performance lever in the system.
+
 `packages/client/src/search.live.test.ts` runs one whole search against the live Source in
-the same lane as the contract test, and holds it to the latency recorded on 2026-08-23
-before any of this code existed. It reads the listing, reads every candidate's seat map raw
-at the same width, and then runs the real search over the same work, so the comparison is
-against both the recorded figure and the Source as it is answering today. It passes when
-the search's fan-out is inside the larger of the two, and the larger of the two is what
-keeps a slow afternoon at the Source from reading as a regression in this code. What it
-catches is a fan-out that has lost its width or grown a stall, which is the only way this
-code can be the reason a search is slow.
+the same lane as the contract test and holds it to that table. It reads the listing, reads
+every **bookable** candidate's seat map raw at the recorded optimum width, and then runs the
+real search over the same work. Its fan-out is allowed the larger of two bounds: the
+recorded 0.67 s scaled to the seat maps actually read, and the same raw pass taken moments
+earlier converted to its concurrency-12 equivalent by the table's own ratio, which is to say
+no slower than the same work at half the width. The whole search is then allowed that bound
+plus the recorded bootstrap and listing, which is the 1.3 s figure written out from its
+parts.
+
+Taking the larger of the two bounds is what keeps a slow afternoon at the Source from
+reading as a regression in this code, and what it catches is a fan-out that has lost its
+width or grown a stall, which is the only way this code can be the reason a search is slow.
+The width is written out in the test rather than imported: if the fan-out's own width ever
+changed, the recorded bound would catch it, so the two do not have to be the same constant
+to be comparable.
 
 It needs `SEATSCOUT_UPSTREAM_ORIGIN` and `SEATSCOUT_AREA` like everything else in that
 lane, and it spends roughly two searches' worth of requests: one raw pass and one real one.
