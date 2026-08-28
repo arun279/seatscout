@@ -12,20 +12,22 @@ export interface SeatGroupTerms {
 
 type Gap = "pod" | "aisle" | null;
 
-interface Run {
-  readonly seats: readonly Seat[];
-  readonly gaps: readonly Gap[];
+interface Placed {
+  readonly seat: Seat;
+  readonly gapBefore: Gap;
 }
 
-const CONTIGUOUS_PITCH = 1.45;
-const AISLE_PITCH = 2.05;
+type Run = readonly Placed[];
+
+const WIDEST_CONTIGUOUS_PITCH = 1.45;
+const WIDEST_POD_PITCH = 2.05;
 
 const accessible = (seat: Seat) => seat.designation !== "standard";
 
 const gapBetween = (left: Seat, right: Seat): Gap => {
   const pitch = (right.x - left.x) / left.width;
-  if (pitch <= CONTIGUOUS_PITCH) return null;
-  if (pitch > AISLE_PITCH) return "aisle";
+  if (pitch <= WIDEST_CONTIGUOUS_PITCH) return null;
+  if (pitch > WIDEST_POD_PITCH) return "aisle";
   return accessible(left) || accessible(right) ? null : "pod";
 };
 
@@ -37,7 +39,7 @@ const rowsOf = (seats: readonly Seat[]): readonly (readonly Seat[])[] => {
     else row.push(seat);
   }
   return [...rows.entries()]
-    .sort(([nearer], [further]) => nearer - further)
+    .sort(([above], [below]) => above - below)
     .map(([, row]) => row.toSorted((left, right) => left.x - right.x));
 };
 
@@ -45,38 +47,42 @@ const runsIn = (
   row: readonly Seat[],
   eligible: (seat: Seat) => boolean,
 ): readonly Run[] => {
-  const runs: Run[] = [];
+  const runs: Placed[][] = [];
   let previous: Seat | undefined;
-  let current: { seats: Seat[]; gaps: Gap[] } | undefined;
+  let current: Placed[] | undefined;
   for (const seat of row) {
-    const gap = previous === undefined ? null : gapBetween(previous, seat);
+    const gapBefore =
+      previous === undefined ? null : gapBetween(previous, seat);
     previous = seat;
     if (!eligible(seat)) {
       current = undefined;
       continue;
     }
-    if (gap === "aisle") current = undefined;
+    if (gapBefore === "aisle") current = undefined;
     if (current === undefined) {
-      current = { seats: [], gaps: [] };
+      current = [];
       runs.push(current);
-    } else current.gaps.push(gap);
-    current.seats.push(seat);
+    }
+    current.push({ seat, gapBefore });
   }
   return runs;
 };
 
-const podsIn = (run: Run, start: number, partySize: number) =>
-  run.gaps.slice(start, start + partySize - 1).filter((gap) => gap === "pod")
-    .length;
-
-const seatGroupFrom = (run: Run, partySize: number): SeatGroup | null => {
-  const slack = run.seats.length - partySize;
-  if (slack < 0) return null;
-  const chosen = Array.from({ length: slack + 1 }, (_, start) => ({
-    start,
-    podDividers: podsIn(run, start, partySize),
+const seatGroupFrom = (run: Run, terms: SeatGroupTerms): SeatGroup | null => {
+  const slack = run.length - terms.partySize;
+  const windows = Array.from({ length: slack + 1 }, (_, start) => ({
+    seats: run.slice(start, start + terms.partySize),
+    podDividers: run
+      .slice(start + 1, start + terms.partySize)
+      .filter((placed) => placed.gapBefore === "pod").length,
     offCentre: Math.abs(slack - 2 * start),
-  })).reduce((best, window) =>
+  })).filter(
+    (window) =>
+      !terms.accessibleSeating ||
+      window.seats.some((placed) => accessible(placed.seat)),
+  );
+  if (windows.length === 0) return null;
+  const chosen = windows.reduce((best, window) =>
     window.podDividers < best.podDividers ||
     (window.podDividers === best.podDividers &&
       window.offCentre < best.offCentre)
@@ -84,7 +90,7 @@ const seatGroupFrom = (run: Run, partySize: number): SeatGroup | null => {
       : best,
   );
   return {
-    seats: run.seats.slice(chosen.start, chosen.start + partySize),
+    seats: chosen.seats.map((placed) => placed.seat),
     podDividers: chosen.podDividers,
   };
 };
@@ -97,6 +103,6 @@ export const seatGroupsIn = (
     seat.bookable && (terms.accessibleSeating || !accessible(seat));
   return rowsOf(seats)
     .flatMap((row) => runsIn(row, eligible))
-    .map((run) => seatGroupFrom(run, terms.partySize))
+    .map((run) => seatGroupFrom(run, terms))
     .filter((group) => group !== null);
 };

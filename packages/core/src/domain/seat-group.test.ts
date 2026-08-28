@@ -11,7 +11,7 @@ import {
 type Band = "contiguous" | "pod" | "aisle";
 
 interface Cell {
-  readonly band: Band;
+  readonly gapBefore: Band;
   readonly designation: Designation;
   readonly bookable: boolean;
 }
@@ -36,20 +36,20 @@ const FETCHED_AT = 1000;
 const SEAT_WIDTH = 100;
 const ROW_PITCH = 500;
 
-const HUNDREDTHS: Readonly<Record<Band, number>> = {
+const SPACING: Readonly<Record<Band, number>> = {
   contiguous: 130,
   pod: 180,
   aisle: 300,
 };
 
 const cellOf = (
-  band: Band,
+  gapBefore: Band,
   bookable: boolean,
   designation: Designation = "standard",
-): Cell => ({ band, designation, bookable });
+): Cell => ({ gapBefore, designation, bookable });
 
-const free = (band: Band = "contiguous") => cellOf(band, true);
-const taken = (band: Band = "contiguous") => cellOf(band, false);
+const free = (gapBefore: Band = "contiguous") => cellOf(gapBefore, true);
+const taken = (gapBefore: Band = "contiguous") => cellOf(gapBefore, false);
 
 const seatAt = (id: string, x: number, y: number, cell: Cell): Seat => ({
   id,
@@ -77,7 +77,7 @@ const roomFrom = (rows: readonly (readonly Cell[])[]): Room => {
         `${depth}.${column}`,
         row
           .slice(1, column + 1)
-          .reduce((x, before) => x + HUNDREDTHS[before.band], 0),
+          .reduce((x, before) => x + SPACING[before.gapBefore], 0),
         depth * ROW_PITCH,
         cell,
       ),
@@ -103,24 +103,22 @@ const idsIn = (groups: readonly SeatGroup[]) =>
   }));
 
 const bandBetween = ({ lower, higher }: Pair): Band => {
-  const [group] = seatGroupsIn(
-    [
-      { ...lower, bookable: true },
-      { ...higher, bookable: true },
-    ],
-    { partySize: 2, accessibleSeating: true },
-  );
+  const pair = [lower, higher].map((seat) => ({ ...seat, bookable: true }));
+  const [group] = seatGroupsIn(pair, {
+    partySize: 2,
+    accessibleSeating: pair.some((seat) => seat.designation !== "standard"),
+  });
   if (group === undefined) return "aisle";
   return group.podDividers === 1 ? "pod" : "contiguous";
 };
 
 const pairAt = (
-  hundredths: number,
+  spacing: number,
   left: Designation,
   right: Designation,
 ): Pair => ({
   lower: seatAt("0.0", 0, 0, cellOf("contiguous", true, left)),
-  higher: seatAt("0.1", hundredths, 0, cellOf("contiguous", true, right)),
+  higher: seatAt("0.1", spacing, 0, cellOf("contiguous", true, right)),
 });
 
 const asStandard = ({ lower, higher }: Pair): Pair => ({
@@ -143,20 +141,20 @@ const rowsOf = (seats: readonly Seat[]): readonly (readonly Seat[])[] => {
     if (row === undefined) rows.set(seat.y, [seat]);
     else row.push(seat);
   }
-  return [...rows.values()].map((row) =>
-    row.toSorted((left, right) => left.x - right.x),
-  );
+  return [...rows.entries()]
+    .sort(([above], [below]) => above - below)
+    .map(([, row]) => row.toSorted((left, right) => left.x - right.x));
 };
 
-const pairsIn = (row: readonly Seat[]): readonly Pair[] =>
-  row
-    .slice(1)
-    .flatMap((higher, index) =>
-      row.slice(index, index + 1).map((lower) => ({ lower, higher })),
-    );
-
-const inRowPairs = (auditoriums: readonly (readonly Seat[])[]) =>
-  auditoriums.flatMap((seats) => rowsOf(seats).flatMap(pairsIn));
+const pairsIn = (row: readonly Seat[]): readonly Pair[] => {
+  const pairs: Pair[] = [];
+  let lower: Seat | undefined;
+  for (const higher of row) {
+    if (lower !== undefined) pairs.push({ lower, higher });
+    lower = higher;
+  }
+  return pairs;
+};
 
 const tallyBands = (pairs: readonly Pair[]) => {
   const tally = { contiguous: 0, pod: 0, aisle: 0 };
@@ -167,13 +165,16 @@ const tallyBands = (pairs: readonly Pair[]) => {
 const ordinary = (seat: Seat) =>
   seat.bookable && seat.designation === "standard";
 
+const accessibleIn = (seats: readonly Seat[]) =>
+  seats.filter((seat) => seat.designation !== "standard").length;
+
 const designation = fc.oneof(
   { arbitrary: fc.constant<Designation>("standard"), weight: 6 },
   { arbitrary: fc.constant<Designation>("wheelchair"), weight: 1 },
   { arbitrary: fc.constant<Designation>("companion"), weight: 1 },
 );
 
-const band = fc.oneof(
+const gapBefore = fc.oneof(
   { arbitrary: fc.constant<Band>("contiguous"), weight: 6 },
   { arbitrary: fc.constant<Band>("pod"), weight: 3 },
   { arbitrary: fc.constant<Band>("aisle"), weight: 1 },
@@ -202,7 +203,7 @@ const ADVERSARIAL_ROWS: readonly (readonly Cell[])[] = [
 
 const rows = fc.oneof(
   fc.constantFrom(...ADVERSARIAL_ROWS),
-  fc.array(fc.record({ band, designation, bookable: fc.boolean() }), {
+  fc.array(fc.record({ gapBefore, designation, bookable: fc.boolean() }), {
     minLength: 1,
     maxLength: 12,
   }),
@@ -230,9 +231,9 @@ describe("Seat Group construction", () => {
           expect(
             new Set(places.map((place, index) => place.column - index)).size,
           ).toBe(1);
-          expect(places.slice(1).map((place) => place.cell.band)).not.toContain(
-            "aisle",
-          );
+          expect(
+            places.slice(1).map((place) => place.cell.gapBefore),
+          ).not.toContain("aisle");
         }
       }),
     );
@@ -246,14 +247,27 @@ describe("Seat Group construction", () => {
           accessibleSeating: false,
         })) {
           const places = placesIn(room, group);
+          const designations = places.map((place) => place.cell.designation);
 
-          expect(places.map((place) => place.cell.designation)).toEqual(
-            places.map(() => "standard"),
-          );
+          expect(designations).not.toContain("wheelchair");
+          expect(designations).not.toContain("companion");
           expect(group.podDividers).toBe(
-            places.slice(1).filter((place) => place.cell.band === "pod").length,
+            places.slice(1).filter((place) => place.cell.gapBefore === "pod")
+              .length,
           );
         }
+      }),
+    );
+  });
+
+  it("offers nothing without a wheelchair or companion Seat once a Query asks for accessible seating", () => {
+    fc.assert(
+      fc.property(rooms, partySize, (room, size) => {
+        for (const group of seatGroupsIn(room.seats, {
+          partySize: size,
+          accessibleSeating: true,
+        }))
+          expect(accessibleIn(group.seats)).toBeGreaterThan(0);
       }),
     );
   });
@@ -284,12 +298,40 @@ describe("Seat Group construction", () => {
 
           expect(groups).toHaveLength(length >= size ? 1 : 0);
           for (const group of groups) {
-            const before = placesIn(room, group)[0]?.column ?? 0;
+            const before = Math.min(
+              ...placesIn(room, group).map((place) => place.column),
+            );
             const after = length - size - before;
 
             expect(after - before).toBeGreaterThanOrEqual(0);
             expect(after - before).toBeLessThanOrEqual(1);
           }
+        },
+      ),
+    );
+  });
+
+  it("crosses a console only when every window in the run crosses one", () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.constantFrom<Band>("contiguous", "pod"), {
+          minLength: 1,
+          maxLength: 12,
+        }),
+        fc.integer({ min: 1, max: 6 }),
+        (gaps, size) => {
+          const room = roomFrom([gaps.map((band) => free(band))]);
+          const consoleFreeWindow = Array.from(
+            { length: Math.max(0, gaps.length - size + 1) },
+            (_, start) => gaps.slice(start + 1, start + size),
+          ).some((inside) => inside.every((band) => band !== "pod"));
+          const [group] = seatGroupsIn(room.seats, {
+            partySize: size,
+            accessibleSeating: false,
+          });
+
+          if (group === undefined) return;
+          expect(group.podDividers === 0).toBe(consoleFreeWindow);
         },
       ),
     );
@@ -313,26 +355,7 @@ describe("Seat Group construction", () => {
     );
   });
 
-  it("still seats a party once wheelchair and companion Seats are asked for", () => {
-    fc.assert(
-      fc.property(rooms, partySize, (room, size) => {
-        const ordinarily = seatGroupsIn(room.seats, {
-          partySize: size,
-          accessibleSeating: false,
-        });
-        const askedFor = seatGroupsIn(room.seats, {
-          partySize: size,
-          accessibleSeating: true,
-        });
-
-        expect(askedFor.length).toBeGreaterThanOrEqual(
-          ordinarily.length > 0 ? 1 : 0,
-        );
-      }),
-    );
-  });
-
-  it("puts the band boundaries where D37 measured them, and calls an accessible space's own width no console", () => {
+  it("puts the band boundaries where the corpus measured them, and calls an accessible space's own width no console", () => {
     expect({
       "1.45": bandBetween(pairAt(145, "standard", "standard")),
       "1.46": bandBetween(pairAt(146, "standard", "standard")),
@@ -354,7 +377,7 @@ describe("Seat Group construction", () => {
     });
   });
 
-  it("crosses a console only when no window in the run avoids one", () => {
+  it("takes the window that avoids a console, and says how many it could not avoid", () => {
     const forParty = (room: Room) =>
       idsIn(
         seatGroupsIn(room.seats, { partySize: 3, accessibleSeating: false }),
@@ -384,7 +407,7 @@ describe("Seat Group construction", () => {
   });
 
   it("hands a wheelchair space and its companion seat to a Query that asks for them and to no other", () => {
-    const room = roomFrom([
+    const beside = roomFrom([
       [
         free(),
         cellOf("pod", true, "wheelchair"),
@@ -392,14 +415,21 @@ describe("Seat Group construction", () => {
         free(),
       ],
     ]);
-    const forParty = (size: number, accessibleSeating: boolean) =>
+    const atOneEnd = roomFrom([
+      [free(), free(), free(), free(), cellOf("pod", true, "wheelchair")],
+    ]);
+    const withNone = roomFrom([[free(), free(), free()]]);
+    const forParty = (room: Room, size: number, accessibleSeating: boolean) =>
       idsIn(seatGroupsIn(room.seats, { partySize: size, accessibleSeating }));
 
     expect({
-      "a pair, ordinarily": forParty(2, false),
-      "one alone, ordinarily": forParty(1, false),
-      "a pair, asked for": forParty(2, true),
-      "all four, asked for": forParty(4, true),
+      "a pair, ordinarily": forParty(beside, 2, false),
+      "one alone, ordinarily": forParty(beside, 1, false),
+      "a pair, asked for": forParty(beside, 2, true),
+      "all four, asked for": forParty(beside, 4, true),
+      "a pair off centre, ordinarily": forParty(atOneEnd, 2, false),
+      "a pair off centre, asked for": forParty(atOneEnd, 2, true),
+      "a room with none, asked for": forParty(withNone, 2, true),
     }).toEqual({
       "a pair, ordinarily": [],
       "one alone, ordinarily": [
@@ -410,10 +440,17 @@ describe("Seat Group construction", () => {
       "all four, asked for": [
         { seats: ["0.0", "0.1", "0.2", "0.3"], podDividers: 0 },
       ],
+      "a pair off centre, ordinarily": [
+        { seats: ["0.1", "0.2"], podDividers: 0 },
+      ],
+      "a pair off centre, asked for": [
+        { seats: ["0.3", "0.4"], podDividers: 0 },
+      ],
+      "a room with none, asked for": [],
     });
   });
 
-  it("orders Seat Groups from the front row back and along each row, whatever order the Seats arrived in", () => {
+  it("orders Seat Groups as the room is drawn, whatever order the Seats arrived in", () => {
     const room = roomFrom([
       [free(), free(), free("aisle"), free(), free()],
       [free(), free(), free()],
@@ -433,9 +470,11 @@ describe("Seat Group construction", () => {
 });
 
 describe("Seat Group construction over the captured corpus", () => {
-  it("sorts every in-row gap into D37's three bands, and re-reads an accessible space's width as no console", () => {
-    const pairs = inRowPairs(capturedAuditoriums());
+  it("sorts every in-row gap into the three bands, and re-reads an accessible space's width as no console", () => {
+    const drawnRows = capturedAuditoriums().flatMap(rowsOf);
+    const pairs = drawnRows.flatMap(pairsIn);
 
+    expect(drawnRows).toHaveLength(376);
     expect(pairs).toHaveLength(6395);
     expect(tallyBands(pairs.map(asStandard))).toEqual({
       contiguous: 5688,
@@ -478,7 +517,9 @@ describe("Seat Group construction over the captured corpus", () => {
 
   it("holds every neighbour link the Source sent to the geometry, and finds that links are not adjacency", () => {
     const auditoriums = capturedAuditoriums();
-    const pairs = inRowPairs(auditoriums);
+    const pairs = auditoriums.flatMap((seats) =>
+      rowsOf(seats).flatMap(pairsIn),
+    );
     const linksAcross = ({ lower, higher }: Pair) =>
       (lower.rightNeighbour === higher.id ? 1 : 0) +
       (higher.leftNeighbour === lower.id ? 1 : 0);
@@ -506,19 +547,29 @@ describe("Seat Group construction over the captured corpus", () => {
     });
   });
 
-  it("offers no wheelchair or companion Seat until a Query asks for one", () => {
+  it("answers every captured Auditorium that has a bookable accessible Seat with one, and no other Auditorium at all", () => {
     const auditoriums = capturedAuditoriums();
-    const accessibleSeatsFor = (accessibleSeating: boolean) =>
-      auditoriums
-        .flatMap((seats) =>
-          seatGroupsIn(seats, { partySize: 2, accessibleSeating }),
-        )
-        .flatMap((group) => group.seats)
-        .filter((seat) => seat.designation !== "standard").length;
+    const groupsFor = (seats: readonly Seat[], accessibleSeating: boolean) =>
+      seatGroupsIn(seats, { partySize: 2, accessibleSeating });
 
     expect({
-      ordinarily: accessibleSeatsFor(false),
-      askedFor: accessibleSeatsFor(true),
-    }).toEqual({ ordinarily: 0, askedFor: 129 });
+      withABookableAccessibleSeat: auditoriums.filter(
+        (seats) => accessibleIn(seats.filter((seat) => seat.bookable)) > 0,
+      ).length,
+      answeringWithOne: auditoriums.filter(
+        (seats) => groupsFor(seats, true).length > 0,
+      ).length,
+      groupsCarryingNone: auditoriums
+        .flatMap((seats) => groupsFor(seats, true))
+        .filter((group) => accessibleIn(group.seats) === 0).length,
+      offeredOrdinarily: auditoriums
+        .flatMap((seats) => groupsFor(seats, false))
+        .reduce((total, group) => total + accessibleIn(group.seats), 0),
+    }).toEqual({
+      withABookableAccessibleSeat: 40,
+      answeringWithOne: 40,
+      groupsCarryingNone: 0,
+      offeredOrdinarily: 0,
+    });
   });
 });

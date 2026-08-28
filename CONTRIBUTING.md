@@ -532,40 +532,41 @@ search result. It takes a party size and whether accessible seating was asked fo
 answers with runs of adjacent bookable Seats, each exactly the size of the party and each
 carrying the number of consoles it crosses.
 
-**Adjacency is geometry.** Seats fall into rows by the `y` they are drawn at, which is one
-value per row in all 376 captured rows, and into order along a row by `x`. The spacing
-between two neighbours, divided by a Seat's width, lands in one of three bands measured
-across the whole corpus: 5,688 gaps up to 1.45 are contiguous, 540 between 1.45 and 2.05
-are the console between two recliners, and 167 above 2.05 are an aisle. A run never crosses
-an aisle. It may cross a console, and it says how many, because three people can sit either
-side of one and dropping the Showtime or implying an unbroken row are both dishonest.
+**Rows and adjacency come from the drawing.** Seats fall into rows by the `y` they are
+drawn at, which yields the corpus's 376 rows, and into order along a row by `x`. The
+spacing between two neighbours, divided by a Seat's width, lands in one of three bands: up
+to 1.45 is contiguous, up to 2.05 is the console between two recliners, and above that is
+an aisle. Over the 6,395 in-row gaps the corpus holds, that is 5,688, 540 and 167. The two
+boundaries are cuts through a continuous distribution rather than gaps in it, which is why
+a console is recorded rather than treated as a break: a run never crosses an aisle, may
+cross a console, and says how many, because three people can sit either side of one.
 
 **A gap beside an accessible space is that space's own width, not a console.** 78 of the
-540 middle-band gaps sit next to a wheelchair or companion Seat, and they are every
-middle-band gap in the four chains that build no recliner pods at all. The Seats either
-side of one are contiguous.
+540 sit next to a wheelchair or companion Seat, and the Seats either side of one are
+contiguous, which leaves 462 real consoles.
 
 **A run yields one Seat Group, not every window in it.** The chosen window crosses the
-fewest consoles, and among those sits most centrally in the run. Centre is the only choice
-that does not depend on which end of the row you count from: seat numbers fall as `x` rises
-in 33 of the 42 captured Auditoriums and rise in the other 9, so neither end of a row is
-the one to start at.
+fewest consoles and, among those, sits most centrally in the run. Centring is what makes
+the answer independent of which end of the row it is measured from; where the slack is odd
+and two windows are equally central, the lower `x` wins, because the rule has to be
+decidable and the room offers nothing further to decide it with.
 
 **Wheelchair and companion Seats break an ordinary run** rather than being deleted from
 the row before the geometry is read, which would leave the Seats either side of an
-accessible space looking two aisles apart. A Query asking for accessible seating admits
-them instead, and offers them alongside ordinary Seats in the same group.
+accessible space looking two aisles apart. A Query that asks for accessible seating admits
+them and then answers only with Seat Groups that carry one: over the corpus that turns 40
+of 42 Auditoriums into 40 that offer a pair including an accessible Seat, where merely
+lifting the exclusion offers ordinary pairs in two of them and leaves the barrier standing.
 
-**The neighbour links are held to the geometry rather than relied on.** All 10,974 links
-the aggregator sent name the immediately adjacent Seat in the same row, on the side they
-claim, and not one crosses a console or an aisle. They are also not adjacency: 279 gaps the
-geometry calls contiguous carry no link at all. A test asserts the agreement; nothing reads
-a link to build a run.
+**The neighbour links are held to the geometry rather than read.** All 10,974 the
+aggregator sent name the immediately adjacent Seat in the same row, on the side they claim,
+and not one crosses a console or an aisle, while 279 contiguous gaps carry no link at all.
+A test asserts the agreement over the corpus; the live half belongs to the nightly contract
+test, and no code builds a run from a link.
 
 Two measurements are what this is judged by. All 42 captured Auditoriums have three free
-Seats in one row and all 42 seat a party of three. Five of them, four of one chain and one
-of another, can only do it across a console, which is what treating a console as an aisle
-would silently cost.
+Seats in one row and all 42 seat a party of three. Five of them can only do it across a
+console, which is what treating a console as an aisle would silently cost.
 
 ## The native application
 
