@@ -162,6 +162,7 @@ describe("the session", () => {
       "content-type": "application/json",
       cookie: "CF_Authorization=this-hop-only",
       origin: "https://proxy.test",
+      referer: "https://proxy.test/results",
       "user-agent": "seatscout/0.0.0",
       "x-upstream-cookie": "session=held",
     });
@@ -170,18 +171,30 @@ describe("the session", () => {
       "accept",
       "content-type",
       "cookie",
+      "referer",
       "user-agent",
     ]);
     expect(upstream.received[0]?.headers.get("cookie")).toBe("session=held");
+    expect(upstream.received[0]?.headers.get("referer")).toBe(`${UPSTREAM}/`);
   });
 
-  it("sends nothing upstream and returns nothing when neither side holds one", async () => {
+  it("names the upstream as its own referer, which is what the upstream admits", async () => {
+    const upstream = network();
+    await through(upstream, {
+      "cf-access-jwt-assertion": await upstream.assertion(),
+    });
+
+    expect(headerNamesOf(upstream.received[0])).toEqual(["referer"]);
+    expect(upstream.received[0]?.headers.get("referer")).toBe(`${UPSTREAM}/`);
+  });
+
+  it("returns nothing when neither side holds a session", async () => {
     const upstream = network();
     const response = await through(upstream, {
       "cf-access-jwt-assertion": await upstream.assertion(),
     });
 
-    expect(headerNamesOf(upstream.received[0])).toEqual([]);
+    expect(upstream.received[0]?.headers.has("cookie")).toBe(false);
     expect(response.headers.has("x-upstream-set-cookie")).toBe(false);
   });
 

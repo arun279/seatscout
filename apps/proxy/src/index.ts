@@ -54,8 +54,8 @@ const refusal = async (
   }
 };
 
-const upstreamHeaders = (from: Headers) => {
-  const headers = new Headers();
+const upstreamHeaders = (from: Headers, upstream: string) => {
+  const headers = new Headers({ referer: new URL("/", upstream).toString() });
   for (const name of FORWARDED) {
     const value = from.get(name);
     if (value !== null) headers.set(name, value);
@@ -108,7 +108,7 @@ export default {
       new URL(pathname + search, configuration.upstream),
       {
         method: request.method,
-        headers: upstreamHeaders(request.headers),
+        headers: upstreamHeaders(request.headers, configuration.upstream),
         body: request.body,
         redirect: "manual",
       },

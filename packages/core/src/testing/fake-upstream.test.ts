@@ -138,6 +138,116 @@ describe("the fake upstream", () => {
     ).toThrow("120");
   });
 
+  it("answers a route the corpus never recorded when the script supplies one", async () => {
+    const fetch = fakeUpstream({
+      seed: 1,
+      routes: {
+        "/napi/preferences/themes": {
+          status: 201,
+          headers: { "X-Upstream-Set-Cookie": "userlocation=here" },
+          body: '{"ok":true}',
+        },
+        "/napi/preferences/plain": { status: 204 },
+      },
+    });
+    const scripted = await fetch("/napi/preferences/themes");
+    const plain = await fetch("/napi/preferences/plain?ignored=1");
+
+    expect(scripted.status).toBe(201);
+    expect(scripted.headers.get("x-upstream-set-cookie")).toBe(
+      "userlocation=here",
+    );
+    expect(await scripted.text()).toBe('{"ok":true}');
+    expect(plain.status).toBe(204);
+    expect(plain.headers.get("X-Upstream-Set-Cookie")).toBeNull();
+    expect(await plain.text()).toBe("");
+  });
+
+  it("replaces a recorded route with the one the script supplies", async () => {
+    const fetch = fakeUpstream({
+      seed: 1,
+      routes: { "/napi/nearbyTheaters": { status: 503 } },
+    });
+    const response = await fetch("/napi/nearbyTheaters?zipCode=75006");
+
+    expect(response.status).toBe(503);
+    expect(await response.text()).toBe("");
+  });
+
+  it("hands a route its scripted statuses in order, then falls back to the capture", async () => {
+    const fetch = fakeUpstream({
+      seed: 1,
+      sequences: { "/napi/nearbyTheaters": [403, 500] },
+    });
+    const statuses = await statusesOf(fetch, [
+      "/napi/nearbyTheaters",
+      "/napi/nearbyTheaters",
+      "/napi/nearbyTheaters",
+    ]);
+
+    expect(statuses).toEqual([403, 500, 200]);
+    expect(await statusesOf(fetch, seatMapPaths().slice(0, 2))).toEqual([
+      200, 200,
+    ]);
+  });
+
+  it("takes a scripted sequence over a fault scripted at every request", async () => {
+    const fetch = fakeUpstream({
+      seed: 1,
+      faults: [{ status: 500, percent: 100 }],
+      sequences: { "/napi/nearbyTheaters": [403] },
+    });
+
+    expect(
+      await statusesOf(fetch, ["/napi/nearbyTheaters", "/napi/nearbyTheaters"]),
+    ).toEqual([403, 500]);
+  });
+
+  it("strips the body and the headers a faulted route would otherwise have carried", async () => {
+    const fetch = fakeUpstream({
+      seed: 1,
+      routes: {
+        "/napi/preferences/themes": {
+          status: 200,
+          headers: { "x-upstream-set-cookie": "userlocation=here" },
+          body: '{"ok":true}',
+        },
+      },
+      sequences: { "/napi/preferences/themes": [500] },
+    });
+    const response = await fetch("/napi/preferences/themes");
+
+    expect(response.status).toBe(500);
+    expect(response.headers.get("x-upstream-set-cookie")).toBeNull();
+    expect(await response.text()).toBe("");
+  });
+
+  it("records what each request sent, unrecorded routes included", async () => {
+    const fetch = fakeUpstream({ seed: 1 });
+
+    await fetch("/napi/nearbyTheaters?zipCode=75006&limit=25");
+    await fetch("/napi/preferences/themes", {
+      method: "POST",
+      headers: { "Content-Type": "text/plain", "X-Upstream-Cookie": "a=b" },
+      body: "_expiry=1",
+    }).catch(() => undefined);
+
+    expect(fetch.requests).toEqual([
+      {
+        path: "/napi/nearbyTheaters?zipCode=75006&limit=25",
+        method: "GET",
+        headers: {},
+        body: null,
+      },
+      {
+        path: "/napi/preferences/themes",
+        method: "POST",
+        headers: { "content-type": "text/plain", "x-upstream-cookie": "a=b" },
+        body: "_expiry=1",
+      },
+    ]);
+  });
+
   it("leaves arrival order untouched by the faults scripted alongside it", async () => {
     const paths = seatMapPaths();
 
