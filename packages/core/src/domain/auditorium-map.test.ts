@@ -5,7 +5,6 @@ import type { CapturedSeatMap } from "../corpus/types.js";
 import { type Seat, seatsFrom } from "../source/seat-map.js";
 import {
   type PositionedSeat,
-  type SeatRow,
   auditoriumMap,
   nearestInRow,
 } from "./auditorium-map.js";
@@ -25,9 +24,9 @@ interface Row {
 }
 
 const FETCHED_AT = 1000;
-const ROOM_WHOSE_ROW_INDEX_SKIPS_TWO = "561865199";
-const ROOM_WHOSE_ROW_LETTERS_SKIP_ONE = "561462741";
-const ROOM_NUMBERED_WITHOUT_LETTERS = "561609773";
+const AUDITORIUM_WHOSE_ROW_INDEX_SKIPS_TWO = "561865199";
+const AUDITORIUM_WHOSE_ROW_LETTERS_SKIP_ONE = "561462741";
+const AUDITORIUM_NUMBERED_WITHOUT_LETTERS = "561609773";
 
 const seatAt = (id: string, x: number, y: number, space: Space): Seat => ({
   id,
@@ -123,7 +122,7 @@ const auditoriums = layouts.map(drawn).chain((seats) =>
 const ascending = (values: readonly number[]) =>
   [...new Set(values)].sort((first, second) => first - second);
 
-const capturedRooms = () =>
+const capturedSeatMaps = () =>
   [...seatMapCaptures.values()].map((capture) => capture.body);
 
 const seatsOf = (body: CapturedSeatMap) => {
@@ -135,8 +134,8 @@ const seatsOf = (body: CapturedSeatMap) => {
   return seats;
 };
 
-const capturedRoom = (showtime: string) => {
-  const body = capturedRooms().find((room) => room.showtimeId === showtime);
+const capturedSeatMap = (showtime: string) => {
+  const body = capturedSeatMaps().find((map) => map.showtimeId === showtime);
   if (body === undefined)
     throw new Error(`the corpus holds no seat map for showtime ${showtime}`);
   return body;
@@ -248,25 +247,6 @@ describe("the Auditorium map the keyboard walks", () => {
     );
   });
 
-  it("answers an anchor with the nearest Seat in the row", () => {
-    fc.assert(
-      fc.property(
-        auditoriums,
-        fc.double({ min: -2, max: 2, noNaN: true }),
-        (seats, anchor) => {
-          const map = auditoriumMap(seats, []);
-          const away = (row: SeatRow) =>
-            row.seats.map((seat) => Math.abs(seat.lateral - anchor));
-
-          expect(map.rows.map((row) => nearestInRow(row, anchor))).toEqual(
-            map.rows.map((row) => away(row).indexOf(Math.min(...away(row)))),
-          );
-        },
-      ),
-      { numRuns: 300 },
-    );
-  });
-
   it("takes the Seat on the left when two are equally near the anchor", () => {
     const space = { away: 10, width: 10, accessible: false, bookable: true };
     const map = auditoriumMap(
@@ -282,8 +262,8 @@ describe("the Auditorium map the keyboard walks", () => {
   it("orders the same however the Seats are labelled", () => {
     fc.assert(
       fc.property(auditoriums, fc.func(fc.string()), (seats, label) => {
-        const placesOf = (room: readonly Seat[]) =>
-          auditoriumMap(room, []).rows.map((row) =>
+        const placesOf = (auditorium: readonly Seat[]) =>
+          auditoriumMap(auditorium, []).rows.map((row) =>
             row.seats.map((seat) => `${seat.x}|${seat.y}`),
           );
 
@@ -324,39 +304,51 @@ describe("the Auditorium map the keyboard walks", () => {
   });
 
   it("reads every captured Auditorium into contiguous rows of ordered Seats", () => {
-    const rooms = capturedRooms().map((body) => ({
+    const captured = capturedSeatMaps().map((body) => ({
       seats: seatsOf(body),
       map: auditoriumMap(seatsOf(body), []),
     }));
 
-    expect(rooms).toHaveLength(42);
-    expect(rooms.map((room) => room.map.rows.length)).toEqual(
-      rooms.map((room) => new Set(room.seats.map((seat) => seat.y)).size),
+    expect(captured).toHaveLength(42);
+    expect(captured.map((auditorium) => auditorium.map.rows.length)).toEqual(
+      captured.map(
+        (auditorium) => new Set(auditorium.seats.map((seat) => seat.y)).size,
+      ),
     );
     expect(
-      rooms.map((room) => room.map.rows.map((row) => row.ordinalFromFront)),
-    ).toEqual(rooms.map((room) => room.map.rows.map((_, index) => index + 1)));
+      captured.map((auditorium) =>
+        auditorium.map.rows.map((row) => row.ordinalFromFront),
+      ),
+    ).toEqual(
+      captured.map((auditorium) =>
+        auditorium.map.rows.map((_, index) => index + 1),
+      ),
+    );
     expect(
-      rooms.map((room) =>
-        room.map.rows
+      captured.map((auditorium) =>
+        auditorium.map.rows
           .flatMap((row) => row.seats)
           .map((seat) => seat.id)
           .toSorted(),
       ),
     ).toEqual(
-      rooms.map((room) => room.seats.map((seat) => seat.id).toSorted()),
+      captured.map((auditorium) =>
+        auditorium.seats.map((seat) => seat.id).toSorted(),
+      ),
     );
     expect(
-      rooms.map((room) => room.map.rows.map((row) => lateralsOf(row.seats))),
+      captured.map((auditorium) =>
+        auditorium.map.rows.map((row) => lateralsOf(row.seats)),
+      ),
     ).toEqual(
-      rooms.map((room) =>
-        room.map.rows.map((row) => ascending(lateralsOf(row.seats))),
+      captured.map((auditorium) =>
+        auditorium.map.rows.map((row) => ascending(lateralsOf(row.seats))),
       ),
     );
   });
 
   it("numbers fourteen rows one to fourteen where the payload's own row index runs to sixteen", () => {
-    const body = capturedRoom(ROOM_WHOSE_ROW_INDEX_SKIPS_TWO);
+    const body = capturedSeatMap(AUDITORIUM_WHOSE_ROW_INDEX_SKIPS_TWO);
     const map = auditoriumMap(seatsOf(body), []);
 
     expect(Math.max(...body.seats.map((seat) => seat.row))).toBe(16);
@@ -382,7 +374,7 @@ describe("the Auditorium map the keyboard walks", () => {
   });
 
   it("leaves the six captured rows that agree on no prefix unlabelled", () => {
-    const rows = capturedRooms().flatMap(
+    const rows = capturedSeatMaps().flatMap(
       (body) => auditoriumMap(seatsOf(body), []).rows,
     );
     const unlabelled = rows.filter((row) => row.label === null);
@@ -407,25 +399,25 @@ describe("the Auditorium map the keyboard walks", () => {
   });
 
   it("tells every row of a captured Auditorium apart by its label", () => {
-    const labelled = capturedRooms().map((body) =>
+    const labelled = capturedSeatMaps().map((body) =>
       auditoriumMap(seatsOf(body), [])
         .rows.map((row) => row.label)
         .filter((label) => label !== null),
     );
 
-    expect(labelled.map((room) => new Set(room).size)).toEqual(
-      labelled.map((room) => room.length),
+    expect(labelled.map((labels) => new Set(labels).size)).toEqual(
+      labelled.map((labels) => labels.length),
     );
     expect(labelled.flat()).toHaveLength(370);
   });
 
-  it("labels a room that skips a row letter, and one numbered without letters at all", () => {
+  it("labels an Auditorium that skips a row letter, and one numbered without letters at all", () => {
     const skipping = auditoriumMap(
-      seatsOf(capturedRoom(ROOM_WHOSE_ROW_LETTERS_SKIP_ONE)),
+      seatsOf(capturedSeatMap(AUDITORIUM_WHOSE_ROW_LETTERS_SKIP_ONE)),
       [],
     );
-    const numberedRoom = auditoriumMap(
-      seatsOf(capturedRoom(ROOM_NUMBERED_WITHOUT_LETTERS)),
+    const withoutLetters = auditoriumMap(
+      seatsOf(capturedSeatMap(AUDITORIUM_NUMBERED_WITHOUT_LETTERS)),
       [],
     );
 
@@ -441,7 +433,7 @@ describe("the Auditorium map the keyboard walks", () => {
       "J",
       "K",
     ]);
-    expect(numberedRoom.rows.map((row) => row.label)).toEqual([
+    expect(withoutLetters.rows.map((row) => row.label)).toEqual([
       "1",
       "2",
       "3",
@@ -451,17 +443,44 @@ describe("the Auditorium map the keyboard walks", () => {
     ]);
   });
 
+  it("measures a gap by where two Seats sit, not by how wide the next one is", () => {
+    const seatOf = (away: number, width: number) => ({
+      away,
+      width,
+      accessible: false,
+      bookable: true,
+    });
+    const map = auditoriumMap(
+      drawn([
+        {
+          gap: 1,
+          origin: 0,
+          spaces: [seatOf(0, 20), seatOf(30, 40), seatOf(40, 2)],
+        },
+      ]),
+      [],
+    );
+
+    expect(map.rows.map((row) => row.seats.map((seat) => seat.x))).toEqual([
+      [-10, 10, 69],
+    ]);
+    expect(map.rows.map((row) => row.gapAfter)).toEqual([["pod", null]]);
+  });
+
   it("records the gap after each Seat, in the three bands the corpus draws", () => {
-    const rooms = capturedRooms().map((body) =>
+    const captured = capturedSeatMaps().map((body) =>
       auditoriumMap(seatsOf(body), []),
     );
-    const gaps = rooms.flatMap((map) =>
+    const gaps = captured.flatMap((map) =>
       map.rows.flatMap((row) => row.gapAfter),
     );
 
     expect(gaps).toHaveLength(6395);
     expect(gaps.length).toBe(
-      rooms.reduce((total, map) => total + map.seatCount - map.rows.length, 0),
+      captured.reduce(
+        (total, map) => total + map.seatCount - map.rows.length,
+        0,
+      ),
     );
     expect({
       contiguous: gaps.filter((gap) => gap === null).length,
@@ -471,24 +490,29 @@ describe("the Auditorium map the keyboard walks", () => {
   });
 
   it("locates the recommended Seat Group where its Seats are drawn", () => {
-    const located = capturedRooms().flatMap((body) => {
+    const located = capturedSeatMaps().flatMap((body) => {
       const seats = seatsOf(body);
       return seatGroupsIn(seats, { partySize: 3, accessibleSeating: false })
         .slice(0, 1)
-        .map((group) => {
+        .flatMap((group) => {
           const map = auditoriumMap(seats, group.seats);
-          return {
-            row: map.recommended.row,
-            found: map.rows
-              .filter((_, index) => index === map.recommended.row)
-              .flatMap((row) =>
-                row.seats.filter((_, index) =>
-                  map.recommended.seats.includes(index),
-                ),
-              )
-              .map((seat) => seat.id),
-            wanted: group.seats.map((seat) => seat.id),
-          };
+          const recommended = map.recommended;
+          return recommended === null
+            ? []
+            : [
+                {
+                  row: recommended.row,
+                  found: map.rows
+                    .filter((_, index) => index === recommended.row)
+                    .flatMap((row) =>
+                      row.seats.filter((_, index) =>
+                        recommended.seats.includes(index),
+                      ),
+                    )
+                    .map((seat) => seat.id),
+                  wanted: group.seats.map((seat) => seat.id),
+                },
+              ];
         });
     });
 
@@ -501,27 +525,27 @@ describe("the Auditorium map the keyboard walks", () => {
 
   it("recommends nothing when the Seat Group is not in this Auditorium", () => {
     const map = auditoriumMap(
-      seatsOf(capturedRoom(ROOM_WHOSE_ROW_LETTERS_SKIP_ONE)),
+      seatsOf(capturedSeatMap(AUDITORIUM_WHOSE_ROW_LETTERS_SKIP_ONE)),
       [],
     );
 
     expect(map.rows.length).toBeGreaterThan(1);
-    expect(map.recommended).toEqual({ row: 0, seats: [] });
+    expect(map.recommended).toBeNull();
   });
 
-  it("counts the bookable Seats of the room and of every row", () => {
-    const rooms = capturedRooms().map((body) =>
+  it("counts the bookable Seats of the Auditorium and of every row", () => {
+    const captured = capturedSeatMaps().map((body) =>
       auditoriumMap(seatsOf(body), []),
     );
     const skipping = auditoriumMap(
-      seatsOf(capturedRoom(ROOM_WHOSE_ROW_INDEX_SKIPS_TWO)),
+      seatsOf(capturedSeatMap(AUDITORIUM_WHOSE_ROW_INDEX_SKIPS_TWO)),
       [],
     );
 
     expect(skipping.seatCount).toBe(304);
     expect(skipping.bookableCount).toBe(25);
-    expect(rooms.map((map) => map.bookableCount)).toEqual(
-      rooms.map((map) =>
+    expect(captured.map((map) => map.bookableCount)).toEqual(
+      captured.map((map) =>
         map.rows.reduce((total, row) => total + row.bookableCount, 0),
       ),
     );

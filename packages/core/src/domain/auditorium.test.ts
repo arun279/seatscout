@@ -43,6 +43,9 @@ const depthsOf = (auditorium: readonly NormalisedPosition[]) =>
 const lateralsOf = (auditorium: readonly NormalisedPosition[]) =>
   auditorium.map((seat) => seat.lateral);
 
+const offCentreOf = (auditorium: readonly NormalisedPosition[]) =>
+  auditorium.map((seat) => seat.seatsOffCentre);
+
 const negated = (values: readonly number[]) => values.map((value) => 0 - value);
 
 const auditoriumOf = (body: CapturedSeatMap) => {
@@ -214,7 +217,7 @@ describe("the normalised Auditorium", () => {
     expect(shapes.manyCentres).toBeGreaterThan(0);
   });
 
-  it("negates every lateral when the Auditorium is drawn mirrored, and leaves depth alone", () => {
+  it("negates every sideways measure when the Auditorium is drawn mirrored, and leaves depth alone", () => {
     fc.assert(
       fc.property(
         auditoriums,
@@ -226,6 +229,9 @@ describe("the normalised Auditorium", () => {
           );
 
           expect(lateralsOf(mirrored)).toEqual(negated(lateralsOf(auditorium)));
+          expect(offCentreOf(mirrored)).toEqual(
+            negated(offCentreOf(auditorium)),
+          );
           expect(depthsOf(mirrored)).toEqual(depthsOf(auditorium));
         },
       ),

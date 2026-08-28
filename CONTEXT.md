@@ -99,7 +99,9 @@ a fraction of the room is not a thing anyone can picture.
 ## Row
 
 The Seats of one Auditorium drawn at one depth, taken in order of lateral, numbered from
-one at the front row with no gaps.
+one at the front row with no gaps. A Row also knows what separates each of its Seats from
+the next: nothing, a pod divider, or an aisle, in the same three bands a Seat Group is
+built from.
 
 **Not the Source's row index.** That index skips values in 14 of the 42 captured
 Auditoriums, so it cannot say which row of how many this is, and it is not carried past

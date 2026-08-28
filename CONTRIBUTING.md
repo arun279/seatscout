@@ -525,12 +525,14 @@ row against the direction they are drawn in. A property test relabels every gene
 with a generated function and holds every position unchanged.
 
 A Seat also carries **how many seat widths it sits from that centreline**, signed the way
-lateral is. It is the same offset over the same extent, divided by the Seat's own width
-instead of by half the room, because a Seat's place is announced as so many seats left or
-right of centre. Five Seats measured from a keyboard prototype fix it: the two on their
-room's centreline read 0.03 and 0.004, and the three off it read 2.62, 7.29 and 8.33, which
-are the "two and a half", "seven and a half" and "eight and a half seats left of centre"
-those Seats are spoken as.
+lateral is: the same offset over the same extent, divided by the Seat's own width instead
+of by half the room. Lateral is a fraction of one particular room and means nothing said
+aloud, while this is a distance anyone can picture, which is what an interface needs to say
+where a Seat is. It is not a count of the Seats between here and the middle of the row: the
+centreline is the room's, so a Seat halfway along a narrow row reads further out than one
+halfway along a wide one, for the reason the paragraph above gives. Mirroring an Auditorium
+negates it exactly as it negates lateral, which is the property that holds it, and five
+captured Seats pin its scale.
 
 The generated rooms are adversarial rather than tidy: uneven row gaps, rows of differing
 widths and origins, Seats of differing widths, coincident Seats, rooms of one row, rooms of
@@ -545,8 +547,10 @@ answers with runs of adjacent bookable Seats, each exactly the size of the party
 carrying the number of consoles it crosses.
 
 **Rows and adjacency come from the drawing.** Seats fall into rows by the `y` they are
-drawn at, which yields the corpus's 376 rows, and into order along a row by `x`. The
-spacing between two neighbours, divided by a Seat's width, lands in one of three bands: up
+drawn at, which yields the corpus's 376 rows, and into order along a row by where their
+centres sit, which is the position the whole application compares Seats by. The spacing
+between two neighbours, centre to centre and divided by a Seat's width, lands in one of
+three bands: up
 to 1.45 is contiguous, up to 2.05 is the console between two recliners, and above that is
 an aisle. Over the 6,395 in-row gaps the corpus holds, that is 5,688, 540 and 167. The two
 boundaries are cuts through a continuous distribution rather than gaps in it, which is why
@@ -560,8 +564,8 @@ contiguous, which leaves 462 real consoles.
 **A run yields one Seat Group, not every window in it.** The chosen window crosses the
 fewest consoles and, among those, sits most centrally in the run. Centring is what makes
 the answer independent of which end of the row it is measured from; where the slack is odd
-and two windows are equally central, the lower `x` wins, because the rule has to be
-decidable and the room offers nothing further to decide it with.
+and two windows are equally central, the one nearer the left wins, because the rule has to
+be decidable and the room offers nothing further to decide it with.
 
 **Wheelchair and companion Seats break an ordinary run** rather than being deleted from
 the row before the geometry is read, which would leave the Seats either side of an
@@ -585,15 +589,19 @@ console, which is what treating a console as an aisle would silently cost.
 `packages/core/src/domain/auditorium-map.ts` is the ordering the seat map's keyboard model
 reads, supplied by the domain model so the view improvises none of it. It answers with the
 Auditorium's Rows front to back, each holding its Seats left to right, its own number, its
-label, how many of its Seats are bookable and what sits in each gap along it. Beside them
-it answers where the recommended Seat Group is, as a Row and the places in it, and a
-function that answers a lateral with the nearest Seat in a given Row.
+label, how many of its Seats are bookable and what sits in each gap along it. It also says
+where the recommended Seat Group is, as places in `rows` and in that Row's `seats`, both
+counted from zero rather than from one as `ordinalFromFront` is, and null where the Seat
+Group is not in this Auditorium at all. `nearestInRow` takes a Row rather than a place in
+`rows`, because taking a place would need either an unchecked index or a branch nothing can
+reach, and a branch nothing can reach is a mutant nothing kills; a view that is moving from
+one Row to the next holds the Row already.
 
 **Rows and order come from the normalised position, never from a label.** Seats group by
 `depth` and order by `lateral`, and the function that does it is generic over anything
-carrying those two, so a printed label is not nameable inside it, which is the mechanism
-that keeps `normalised` honest one layer down. A property test relabels every generated
-room with a generated function and holds the order unchanged.
+carrying a normalised position, so a printed label is not nameable inside it, which is the
+mechanism that keeps `normalised` honest one layer down. A property test relabels every
+generated room with a generated function and holds the order unchanged.
 
 **A Row's number is its place in the order, and it is contiguous by construction.** The
 Source's own row index is not, skipping a value in 14 of the 42 captured Auditoriums, and
@@ -601,13 +609,14 @@ Cinemark West Plano screen 28 holds 14 Rows while that index runs to 16. It is a
 unreachable: `UpstreamSeat` never declared it, so no Seat carries it and ordering by one
 would not compile. What the corpus test asserts instead is that the fourteen Rows are
 numbered one to fourteen while the capture's own index reaches sixteen, and, over all 42,
-that the count of Rows equals the count of distinct depths.
+that the count of Rows equals the count of distinct `y` the room draws.
 
 **A Row's label is the initial its Seats agree on, or nothing.** Six of the 376 captured
-Rows agree on none, all of them AMC accessible Rows mixing `E18` with `WC17`, and the row
-chip is simply absent there. One initial is enough because it tells every Row of every
-captured Auditorium apart, which a test asserts rather than assumes; whole agreed prefixes
-are not, because eight Seats numbered `401` to `408` agree on `40` and sit in row 4.
+Rows agree on none, all of them AMC accessible Rows putting a `WC` Seat in a lettered Row,
+and those Rows have no label to show. One initial is enough because it tells every Row of
+every captured Auditorium apart, which a test asserts rather than assumes. The whole agreed
+prefix is not the answer, because eight Seats numbered `401` to `408` agree on `40` and sit
+in row 4.
 
 **The nearest Seat to a lateral is its own inverse.** Asking a Row for the Seat nearest a
 Seat's own lateral answers with that Seat, which is what makes Down and then Up land where
@@ -616,8 +625,10 @@ because the rule has to be decidable. The anchor itself is not here: a goal colu
 interface state.
 
 **The gap after each Seat is the Seat Group bands, not a second opinion.** `gapBetween` is
-shared with `seat-group.ts`, so a console is a console in both. Over the corpus that is
-5,766 contiguous gaps, 462 consoles and 167 aisles, one for each adjacent pair.
+shared with `seat-group.ts`, so a console is a console in both, and it measures centre to
+centre so that it agrees with the order a Row is taken in whatever the Seats' widths. Over
+the corpus that is 5,766 contiguous gaps, 462 consoles and 167 aisles: one per adjacent
+pair, so a Row of *n* Seats carries *n* − 1 of them and the last Seat has no gap after it.
 
 What the map deliberately does not carry is a third value for availability. A Seat is
 bookable or it is not, because `A` is the only upstream status whose meaning is

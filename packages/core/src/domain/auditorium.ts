@@ -10,7 +10,7 @@ export interface NormalisedPosition {
   readonly seatsOffCentre: number;
 }
 
-const centreOf = (seat: Placement) => seat.x + seat.width / 2;
+export const centreOf = (seat: Placement) => seat.x + seat.width / 2;
 
 const rowsOf = (seats: readonly Placement[]) =>
   [...new Set(seats.map((seat) => seat.y))].sort(

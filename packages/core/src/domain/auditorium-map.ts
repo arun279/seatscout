@@ -20,7 +20,7 @@ export interface AuditoriumMap {
   readonly recommended: {
     readonly row: number;
     readonly seats: readonly number[];
-  };
+  } | null;
 }
 
 const bookableIn = (seats: readonly Seat[]) =>
@@ -46,10 +46,10 @@ const gapsAlong = (seats: readonly Seat[]): readonly Gap[] => {
   return gaps;
 };
 
-const agreed = (left: string, right: string) => (left === right ? left : "");
-
 const labelOf = (row: readonly Seat[]) => {
-  const initial = row.map((seat) => seat.id.slice(0, 1)).reduce(agreed);
+  const initial = row
+    .map((seat) => seat.id.slice(0, 1))
+    .reduce((left, right) => (left === right ? left : ""));
   return initial === "" ? null : initial;
 };
 
@@ -72,14 +72,15 @@ export const auditoriumMap = (
     rows,
     seatCount: seats.length,
     bookableCount: bookableIn(seats),
-    recommended: rows
-      .map((row, index) => ({
-        row: index,
-        seats: row.seats.flatMap((seat, at) =>
-          wanted.has(seat.id) ? [at] : [],
-        ),
-      }))
-      .find((row) => row.seats.length > 0) ?? { row: 0, seats: [] },
+    recommended:
+      rows
+        .map((row, index) => ({
+          row: index,
+          seats: row.seats.flatMap((seat, at) =>
+            wanted.has(seat.id) ? [at] : [],
+          ),
+        }))
+        .find((row) => row.seats.length > 0) ?? null,
   };
 };
 
