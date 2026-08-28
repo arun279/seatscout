@@ -77,11 +77,12 @@ reserved seating, dine-in service, closed captioning, accessibility devices.
 
 One seat in one Auditorium for one Showtime, carrying its own availability.
 
-Every Seat has a **normalised position**: a *depth* from 0.0 at the screen to 1.0 at the
-back row, and a *lateral* from -1.0 at far left through 0.0 at the centreline to +1.0 at
-far right. Normalised position is derived from seat geometry, never from the seat's
-printed label, because labels are not ordered, not contiguous, and sometimes not letters
-at all.
+Every Seat has a **normalised position**: a *depth* from 0.0 at the front row to 1.0 at
+the back row, and a *lateral* from -1.0 at far left through 0.0 at the centreline to +1.0
+at far right. Depth starts at the front row rather than at the screen because nothing in a
+seat map locates the screen itself. Normalised position is derived from seat geometry,
+never from the seat's printed label, because labels are not ordered, not contiguous, and
+sometimes not letters at all.
 
 ## Seat Group
 
@@ -99,10 +100,22 @@ normalised position: a target depth, a target lateral, and how strongly to penal
 departures from them.
 
 **Reference** is the default Profile. It targets two thirds of the way back on the
-centreline, which is where SMPTE ST 202 places the reference microphone and where a
-THX-certified auditorium is calibrated. It penalises the last row, the front rows, and
-any Seat whose lateral viewing angle to the screen centreline exceeds 15 degrees, the
-comfort limit in SMPTE's cine theater design guideline.
+centreline, close to where SMPTE ST 202 places the reference microphone and where a
+THX-certified auditorium is calibrated. That two thirds is measured to the rear wall,
+which a seat map does not locate, so the target is a close approximation of that point on
+the row axis rather than the point itself.
+
+It penalises three things. Proximity to a wall, of which the last row is one case, because
+ST 202 keeps its measurement positions more than five feet from any wall. Proximity to the
+screen, because the same figure keeps them more than sixteen feet from it. And off-axis
+viewing angle, which is lateral offset divided by distance to the screen rather than
+lateral offset on its own, because the same sideways offset is a larger angle the nearer
+you sit.
+
+The resulting score orders Seats and does nothing else. It is never shown as a number, and
+a ranking explanation names the reasons instead. Accessible Seats and unavailable Seats
+are filtered before ranking rather than scored, because they are predicates rather than
+matters of degree.
 
 ## Query
 
