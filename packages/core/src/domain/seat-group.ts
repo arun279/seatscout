@@ -32,7 +32,9 @@ export const gapBetween = (left: Seat, right: Seat): Gap => {
   return accessible(left) || accessible(right) ? null : "pod";
 };
 
-const rowsOf = (seats: readonly Seat[]): readonly (readonly Seat[])[] => {
+export const rowsOf = (
+  seats: readonly Seat[],
+): readonly (readonly Seat[])[] => {
   const rows = new Map<number, Seat[]>();
   for (const seat of seats) {
     const row = rows.get(seat.y);

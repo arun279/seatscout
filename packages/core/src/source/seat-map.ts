@@ -53,16 +53,20 @@ const SEAT_FIELDS: Readonly<Record<keyof UpstreamSeat, "string" | "number">> = {
 const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
   value instanceof Object;
 
-const isSeat = (value: unknown): value is UpstreamSeat =>
-  isRecord(value) &&
-  Object.entries(SEAT_FIELDS).every(
-    ([field, kind]) => typeof value[field] === kind,
+export const fieldsMissingFrom = (value: unknown): readonly string[] =>
+  Object.entries(SEAT_FIELDS).flatMap(([field, kind]) =>
+    isRecord(value) && typeof value[field] === kind ? [] : [field],
   );
+
+export const isUpstreamSeat = (value: unknown): value is UpstreamSeat =>
+  fieldsMissingFrom(value).length === 0;
 
 const carriesSeats = (
   value: unknown,
 ): value is { readonly seats: readonly UpstreamSeat[] } =>
-  isRecord(value) && Array.isArray(value.seats) && value.seats.every(isSeat);
+  isRecord(value) &&
+  Array.isArray(value.seats) &&
+  value.seats.every(isUpstreamSeat);
 
 const decoded = (body: string): { readonly value: unknown } | null => {
   try {

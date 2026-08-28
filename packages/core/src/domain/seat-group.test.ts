@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { seatMapCaptures } from "../corpus/captures.js";
 import { type Designation, type Seat, seatsFrom } from "../source/seat-map.js";
 import {
+  rowsOf,
   type SeatGroup,
   type SeatGroupTerms,
   seatGroupsIn,
@@ -133,18 +134,6 @@ const capturedAuditoriums = (): readonly (readonly Seat[])[] =>
       throw new Error("the corpus holds a seat map that will not read");
     return seats;
   });
-
-const rowsOf = (seats: readonly Seat[]): readonly (readonly Seat[])[] => {
-  const rows = new Map<number, Seat[]>();
-  for (const seat of seats) {
-    const row = rows.get(seat.y);
-    if (row === undefined) rows.set(seat.y, [seat]);
-    else row.push(seat);
-  }
-  return [...rows.entries()]
-    .sort(([above], [below]) => above - below)
-    .map(([, row]) => row.toSorted((left, right) => left.x - right.x));
-};
 
 const pairsIn = (row: readonly Seat[]): readonly Pair[] => {
   const pairs: Pair[] = [];

@@ -1,0 +1,71 @@
+name: Contract
+
+on:
+  schedule:
+    - cron: "7 21 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: contract-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2
+        with:
+          runtime: node@24.20.0
+          cache: true
+          install: false
+      - run: pnpm install --frozen-lockfile
+      - name: Read the live Source
+        shell: bash
+        env:
+          SEATSCOUT_UPSTREAM_ORIGIN: ${{ secrets.SEATSCOUT_UPSTREAM_ORIGIN }}
+          SEATSCOUT_AREA: ${{ secrets.SEATSCOUT_AREA }}
+        run: pnpm test:live 2>&1 | tee contract.log
+      - name: Add the reading to the run summary
+        if: ${{ !cancelled() }}
+        run: |
+          {
+            echo '```'
+            tail -n 200 contract.log || echo "the run reached no reading"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Say so where the maintainer will see it
+        if: failure()
+        env:
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          {
+            echo "The nightly contract check failed. Either the upstream answers something"
+            echo "the corpus never recorded, or it could not be read at all."
+            echo
+            echo "$RUN"
+            echo
+            echo '```'
+            tail -n 60 contract.log || echo "the run reached no reading"
+            echo '```'
+          } > issue.md
+          gh label create upstream-contract --color B60205 --force \
+            --description "The live Source stopped matching what the corpus recorded"
+          open=$(gh issue list --label upstream-contract --state open --limit 1 --json number --jq '.[0].number // empty')
+          if [ -n "$open" ]; then
+            gh issue comment "$open" --body-file issue.md
+          else
+            gh issue create --label upstream-contract --body-file issue.md \
+              --title "The live Source no longer matches the contract the corpus recorded"
+          fi
