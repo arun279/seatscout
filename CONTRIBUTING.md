@@ -256,6 +256,34 @@ which is the disagreement knip's Expo plugin reports.
 Run it with `pnpm --filter @seatscout/native start` and open the printed URL in Expo Go.
 `/ios` and `/android` are ignored because `expo prebuild` generates them.
 
+## The proxy
+
+`apps/proxy` is the whole hosted component. It verifies the access layer's assertion,
+translates the session headers, and forwards the upstream bytes without reading them. It
+does nothing else, and `apps/proxy/wrangler.json` declares no storage binding, which a test
+asserts against the file rather than against intent. Run it with
+`pnpm --filter @seatscout/proxy dev`.
+
+Three variables configure it and none is committed. `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD`
+name the access application whose assertion is verified against the signing keys that team
+domain publishes; `UPSTREAM_ORIGIN` is the aggregator a request is forwarded to. Missing
+any of them, the proxy serves nothing, so a half-configured deployment fails closed.
+
+On the web the session cannot travel in the cookie headers. The Fetch standard makes
+`Set-Cookie` a forbidden response-header name, which a basic filtered response excludes
+from what page scripts can read, and `Cookie` is a forbidden request-header that script
+cannot set. The proxy therefore reads `X-Upstream-Cookie` and sends it upstream as
+`Cookie`, and returns the session as `X-Upstream-Set-Cookie`, having merged what the
+upstream set into what the caller sent, so the client can hold the value as an opaque
+string. A native client sets `Cookie` itself and uses neither header.
+
+Only `accept`, `content-type` and `user-agent` cross to the upstream alongside that cookie.
+The caller's own cookies, the access assertion and the platform's `cf-` headers belong to
+this hop and stay here. An upstream redirect is handed back rather than followed, because
+one call to the proxy is one upstream request.
+
+See [ADR 2](docs/adr/0002-computation-on-the-client.md) for why.
+
 ## Dependency updates
 
 Renovate runs self-hosted from `.github/workflows/renovate.yml`, so no GitHub App has to

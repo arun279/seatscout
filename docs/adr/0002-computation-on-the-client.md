@@ -32,6 +32,16 @@ proxy that forwards bytes without parsing them consumes roughly one millisecond 
 ten millisecond ceiling. The ceiling only becomes a constraint if the server parses and
 scores the payloads it is forwarding.
 
+That figure is now measured rather than estimated. The proxy was bundled and served by the
+platform runtime directly, with no development harness around it and local stand-ins for
+the access certificates and the upstream, and its isolate sampled by the JavaScript engine's
+own CPU profiler over the debugging protocol at a one millisecond interval. It spends 0.98
+to 1.09 milliseconds of CPU per invocation over four runs of 3,000 requests each; the same
+worker refusing an unauthenticated request, which verifies nothing and calls nothing, spends
+0.31 to 0.55. Payload size does not enter it, because the body is never read. Measuring
+through the development server instead reads roughly five milliseconds, of which nearly
+three is the harness answering a request the worker refuses immediately.
+
 ## Decision
 
 The server verifies the caller's access token, forwards the request upstream with the

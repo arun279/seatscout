@@ -4,7 +4,9 @@ packages:
   - tools/*
 
 allowBuilds:
+  esbuild: true
   lefthook: true
+  workerd: true
 
 overrides:
   qs: 6.15.3
