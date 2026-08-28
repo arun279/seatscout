@@ -211,6 +211,43 @@ exists to be under. And it is written as `[allowlist]` rather than `[[allowlists
 because the version the scan job installs predates the array form and ignores it without
 saying so, which would leave the entry silently inert.
 
+## The fake upstream
+
+Tests substitute at `fetch`, never at the Source port. The port exists, but no caller
+varies across it, and substituting there would mock away the session handling, retry and
+parsing the adapter is judged on. `packages/core/src/testing/fake-upstream.ts` is
+therefore the seam the unit suite runs on. `fakeUpstream({ seed })` returns a `Fetch`, and
+`Fetch` is declared in `packages/core/src/transport.ts` rather than borrowed from a host,
+because the import ban leaves Core no host type to borrow.
+
+It replays the corpus by route. Every capture is indexed under the path it was recorded
+at, query string dropped, because the capture redacts the location parameters and no
+adapter would reproduce them. A route the corpus never recorded throws instead of
+answering, so no test can pass against a response nothing observed. The three refusals the
+capture met arrive as themselves rather than as an invented failure payload.
+
+Faults are scripted as a status and a share of requests in percent, drawn against a
+hundred-slot table. `[{ status: 500, percent: 20 }, { status: 403, percent: 5 }]` is a
+fifth of requests failing and a twentieth needing a session refresh. A faulted response
+carries the scripted status and an empty body, because no body was ever recorded for one.
+
+Arrival order is where the seed earns its place. Every request draws a latency, and
+requests issued in the same turn are delivered in latency order rather than request order,
+so code that accidentally depends on completion order fails rather than passes. Nothing
+sleeps: a batch is released on the next microtask and its promises are resolved in the
+order the seed decided, so out-of-order arrival costs no wall clock at all. The generator
+is `pure-rand`'s xoroshiro128+, and `fake-upstream.test.ts` asserts both directions of
+what determinism means: one seed reproduces its order exactly, and another seed produces a
+different one. Each request draws its latency and then its fault percentile, in that order
+and always, so scripting faults into an existing test does not reshuffle the arrival order
+it was written against.
+
+The harness is not part of Core's compiled product. `tsconfig.json` excludes `src/testing`
+beside `src/corpus` and `tsconfig.test.json` takes it, so nothing that imports the corpus
+reaches `dist`. The import ban is untouched either way: the Biome override still covers
+all of `packages/core/**`, and the harness imports nothing but the corpus and a generator
+that is pure TypeScript.
+
 ## The native application
 
 `apps/native` is an Expo application that launches and renders its own name. It carries no
