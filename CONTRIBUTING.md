@@ -55,5 +55,3 @@ without installing anything. It falls back to the workflow's own token, which ca
 update `.github/workflows` and whose pull requests do not start a CI run. Set a
 `RENOVATE_TOKEN` repository secret to a personal access token with the `repo` and
 `workflow` scopes to lift both limits.
-
-This line contains a deliberate mispelling.

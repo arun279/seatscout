@@ -23,6 +23,9 @@ importers:
       lefthook:
         specifier: 2.1.10
         version: 2.1.10
+      lodash:
+        specifier: 4.17.20
+        version: 4.17.20
       typescript:
         specifier: 7.0.2
         version: 7.0.2
@@ -1151,6 +1154,9 @@ packages:
     resolution: {integrity: sha512-WkUDrojuJs0xkgGf2udWxa3yGBRxPtxUkB79i6aCZLRgc7PM8fZe9TosfPDcvEpQZbuFASnHYmRLBLUbmLOIIA==}
     engines: {node: '>= 12.0.0'}
 
+  lodash@4.17.20:
+    resolution: {integrity: sha512-PlhdFcillOINfeV7Ni6oF1TAEayyZBoZ8bcshTHqOYJYlrqzRK5hagpagky5o4HfCzzd1TRkXPMFq6cKk9rGmA==}
+
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
@@ -2226,6 +2232,8 @@ snapshots:
       lightningcss-linux-x64-musl: 1.33.0
       lightningcss-win32-arm64-msvc: 1.33.0
       lightningcss-win32-x64-msvc: 1.33.0
+
+  lodash@4.17.20: {}
 
   magic-string@0.30.21:
     dependencies:
