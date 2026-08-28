@@ -6,5 +6,8 @@
   "main": "./src/index.ts",
   "scripts": {
     "build": "tsc --build --pretty false"
+  },
+  "dependencies": {
+    "@seatscout/core": "workspace:*"
   }
 }

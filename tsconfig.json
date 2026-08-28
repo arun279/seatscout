@@ -4,11 +4,14 @@
     { "path": "packages/core" },
     { "path": "packages/core/tsconfig.test.json" },
     { "path": "packages/client" },
+    { "path": "packages/client/tsconfig.test.json" },
     { "path": "apps/native" },
     { "path": "apps/web" },
+    { "path": "apps/web/tsconfig.test.json" },
     { "path": "apps/proxy" },
     { "path": "apps/proxy/tsconfig.test.json" },
     { "path": "tools/release-plan" },
-    { "path": "tools/footprint" }
+    { "path": "tools/footprint" },
+    { "path": "tests/e2e" }
   ]
 }
