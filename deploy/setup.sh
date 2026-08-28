@@ -77,11 +77,16 @@ ask() {
 }
 
 ask_secret() {
-  local key="$1" prompt="$2" input
+  local key="$1" prompt="$2" input current="${!1:-}"
   while true; do
-    printf '  %s%s%s ' "$BOLD" "$prompt" "$RESET"
+    if [[ -n "$current" ]]; then
+      printf '  %s%s%s %s[Enter keeps the one already in this shell]%s ' "$BOLD" "$prompt" "$RESET" "$DIM" "$RESET"
+    else
+      printf '  %s%s%s ' "$BOLD" "$prompt" "$RESET"
+    fi
     read -rs input || true
     printf '\n'
+    [[ -z "$input" && -n "$current" ]] && input="$current"
     [[ -n "$input" ]] && break
     warn "That was empty."
   done
@@ -147,7 +152,8 @@ open_url "https://dash.cloudflare.com/profile/api-tokens"
 step "Create Token > Create Custom Token."
 step "One permission: Account > Workers Scripts > Edit. Scope it to this account only."
 step "Nothing else is needed: the workflow supplies the account ID itself."
-step "The token is shown once."
+step "The token is shown once, and the last stage needs it again to set the worker"
+step "secrets. Re-running later means exporting CLOUDFLARE_API_TOKEN beforehand."
 say ""
 ask_secret CLOUDFLARE_API_TOKEN "Paste the token (hidden):"
 printf '%s' "$CLOUDFLARE_API_TOKEN" | gh secret set CLOUDFLARE_API_TOKEN

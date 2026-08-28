@@ -164,8 +164,8 @@ fi
 ( umask 077 && printf 'header = "CF-Access-Client-Id: %s"\nheader = "CF-Access-Client-Secret: %s"\n' \
   "$SEATSCOUT_ACCESS_CLIENT_ID" "$SEATSCOUT_ACCESS_CLIENT_SECRET" > "$WORK/token" )
 
-SHELL_RESPONSE="$(admitted "$SEATSCOUT_URL/")"
-if [[ "$(status_of "$SHELL_RESPONSE")" == "302" && "$(redirect_of "$SHELL_RESPONSE")" == *".$LOGIN_HOST/"* ]]; then
+ADMITTED_ROOT="$(admitted "$SEATSCOUT_URL/")"
+if [[ "$(status_of "$ADMITTED_ROOT")" == "302" && "$(redirect_of "$ADMITTED_ROOT")" == *".$LOGIN_HOST/"* ]]; then
   bad "the service token was sent to sign in rather than admitted" \
     "Add a policy with action Service Auth and an Include rule naming that token"
   report_and_exit
