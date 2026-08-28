@@ -795,8 +795,10 @@ configuration is five keys rather than a routing table. Two consequences are wor
 knowing. Asset requests are free and outside the daily request quota, which is what makes
 the free tier sufficient rather than a compromise. And the assertion the proxy verifies is
 therefore checked on proxy requests and not on asset requests, which is correct: the
-access layer is what gates the built shell, and the shell is this repository's own source
-with no user data and no reach upstream.
+access layer is what gates what `apps/web` builds, and that is this repository's own
+compiled source, with no user data in it and no reach upstream. `apps/web` builds no page
+yet, so today every path including `/` reaches the proxy; the shell arrives with the
+installable shell.
 
 `assets` declares a directory and nothing else. Naming a binding would hand the Worker a
 reader for what it publishes, and `run_worker_first` would put the Worker in front of
@@ -811,10 +813,13 @@ says so in the run summary, so a fork gets a green build rather than a confusing
 with one of the two set it fails and names the other, because that is a half-configured
 repository rather than one nobody has set up.
 
-The `quality` job runs `wrangler deploy --dry-run`, which needs no credentials and no
-account. It is what holds the claim that a second instance stands up from this repository
-alone: it bundles the Worker, reads the asset directory and reports the bindings, and it
-would fail if the configuration ever needed a value only the original deployment has.
+The `quality` job runs `wrangler deploy --dry-run`, which needs no credentials, no account
+and no network. It bundles the Worker, reads the asset directory and reports the bindings,
+so a configuration that no longer produces a deployable Worker fails a pull request rather
+than a deploy. It is half of what holds the claim that a second instance stands up from
+this repository alone; the other half is the configuration test above, which is what keeps
+a value belonging to one deployment out of the configuration in the first place. Neither
+substitutes for a real deploy against a real account, and neither claims to.
 
 `deploy/` holds the runbook and two scripts, `setup.sh` to walk the dashboards and
 `verify.sh` to read back what took effect without reading a secret. They are in the

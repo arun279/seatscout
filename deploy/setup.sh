@@ -21,7 +21,7 @@ say()  { printf '  %s\n' "$1"; }
 step() { printf '  %s•%s %s\n' "$BLUE" "$RESET" "$1"; }
 note() { printf '  %s%s%s\n' "$DIM" "$1" "$RESET"; }
 warn() { printf '  %s⚠ %s%s\n' "$YELLOW" "$1" "$RESET"; }
-done_() { printf '  %s✓%s %s\n' "$GREEN" "$RESET" "$1"; }
+ok()    { printf '  %s✓%s %s\n' "$GREEN" "$RESET" "$1"; }
 
 stage() {
   [[ -t 1 ]] && { tput clear 2>/dev/null || printf '\033[2J\033[3J\033[H'; }
@@ -48,10 +48,8 @@ confirm() {
 }
 
 remembered() {
-  [[ -f "$ENV_FILE" ]] || return 1
-  local line
-  line="$(grep -E "^${1}=" "$ENV_FILE" | tail -n1)" || return 1
-  printf '%s' "${line#*=}"
+  [[ -f "$ENV_FILE" ]] || return 0
+  sed -n "s/^$1=//p" "$ENV_FILE" | tail -n1
 }
 
 remember() {
@@ -62,7 +60,7 @@ remember() {
 }
 
 ask() {
-  local key="$1" prompt="$2" pattern="${3:-.}" current input
+  local key="$1" prompt="$2" pattern="$3" current input
   current="$(remembered "$key" || true)"
   while true; do
     if [[ -n "$current" ]]; then
@@ -92,12 +90,14 @@ ask_secret() {
 
 worker_secret() {
   printf '%s' "$2" | (cd apps/proxy && pnpm exec wrangler secret put "$1" >/dev/null)
-  done_ "$1 is set on the worker"
+  ok "$1 is set on the worker"
 }
 
 command -v node >/dev/null 2>&1 || { printf 'Install Node.js first.\n'; exit 1; }
 command -v gh >/dev/null 2>&1 || { printf 'Install the GitHub CLI first: https://cli.github.com\n'; exit 1; }
 gh auth status >/dev/null 2>&1 || { printf 'Run gh auth login first.\n'; exit 1; }
+(cd apps/proxy && pnpm exec wrangler --version >/dev/null 2>&1) ||
+  { printf 'Run pnpm install first: the last stage sets the worker secrets with wrangler.\n'; exit 1; }
 
 WORKER="$(node -p 'require("./apps/proxy/wrangler.json").name')"
 
@@ -122,7 +122,7 @@ say ""
 ask TEAM_NAME "Team name:" '^[a-z0-9][a-z0-9-]*$'
 ACCESS_TEAM_DOMAIN="https://$TEAM_NAME.cloudflareaccess.com"
 remember ACCESS_TEAM_DOMAIN "$ACCESS_TEAM_DOMAIN"
-done_ "Your team domain is $ACCESS_TEAM_DOMAIN"
+ok "Your team domain is $ACCESS_TEAM_DOMAIN"
 warn "Renaming the team later breaks stage 3 and the worker's ACCESS_TEAM_DOMAIN."
 pause
 
@@ -151,7 +151,7 @@ step "The token is shown once."
 say ""
 ask_secret CLOUDFLARE_API_TOKEN "Paste the token (hidden):"
 printf '%s' "$CLOUDFLARE_API_TOKEN" | gh secret set CLOUDFLARE_API_TOKEN
-done_ "CLOUDFLARE_API_TOKEN is a repository secret"
+ok "CLOUDFLARE_API_TOKEN is a repository secret"
 
 stage "Account ID"
 open_url "https://dash.cloudflare.com/?to=/:account/workers-and-pages"
@@ -161,7 +161,7 @@ say ""
 ask CLOUDFLARE_ACCOUNT_ID "Account ID:" '^[0-9a-f]{32}$'
 printf '%s' "$CLOUDFLARE_ACCOUNT_ID" | gh secret set CLOUDFLARE_ACCOUNT_ID
 remember CLOUDFLARE_ACCOUNT_ID "$CLOUDFLARE_ACCOUNT_ID"
-done_ "CLOUDFLARE_ACCOUNT_ID is a repository secret"
+ok "CLOUDFLARE_ACCOUNT_ID is a repository secret"
 pause
 
 stage "First deploy"
@@ -178,7 +178,7 @@ step "Open the $WORKER worker. Its workers.dev URL is on the page."
 say ""
 ask SEATSCOUT_URL "Deployment URL:" "^https://$WORKER\.[a-z0-9-]+\.workers\.dev$"
 remember SEATSCOUT_URL "$SEATSCOUT_URL"
-warn "Until the next stage the built shell at that URL is public. The proxy is not:"
+warn "Until the next stage what apps/web builds is public at that URL. The proxy is not:"
 warn "it refuses every request carrying no access assertion."
 pause
 
@@ -223,5 +223,5 @@ say ""
 say "    export SEATSCOUT_ACCESS_CLIENT_ID=..."
 say "    export SEATSCOUT_ACCESS_CLIENT_SECRET=..."
 say ""
-done_ "Setup is done. Check it with ./verify.sh"
+ok "Setup is done. Check it with ./verify.sh"
 say ""

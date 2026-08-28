@@ -9,6 +9,7 @@ cd "$REPO_DIR"
 ENV_FILE="$HERE/.env"
 REQUIRED_SECRETS=(CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID)
 LOGIN_HOST="cloudflareaccess.com"
+EXPIRY="_expiry"
 
 if [[ -t 1 ]] && command -v tput >/dev/null 2>&1 && [[ "$(tput colors 2>/dev/null || echo 0)" -ge 8 ]]; then
   BOLD=$(tput bold); DIM=$(tput dim); RESET=$(tput sgr0)
@@ -24,7 +25,7 @@ trap 'rm -rf "$WORK"' EXIT
 section() { printf '\n%s%s%s\n' "$BOLD" "$1" "$RESET"; }
 ok()      { printf '  %s✓%s %s\n' "$GREEN" "$RESET" "$1"; }
 note()    { printf '  %s%s%s\n' "$DIM" "$1" "$RESET"; }
-skip()    { printf '  %s—%s %s\n' "$YELLOW" "$RESET" "$1"; }
+skip()    { printf '  %s·%s %s\n' "$YELLOW" "$RESET" "$1"; }
 bad()     { printf '  %s✗%s %s\n' "$RED" "$RESET" "$1"; FAILURES+=("$2"); }
 
 report_and_exit() {
@@ -77,15 +78,17 @@ fi
 (( ${#FAILURES[@]} )) && report_and_exit
 
 WORKER="$(node -p 'require("./apps/proxy/wrangler.json").name')"
-BOOTSTRAP="$(sed -n 's/^const BOOTSTRAP = "\(.*\)";$/\1/p' packages/core/src/source/aggregator.ts)"
+ADAPTER=packages/core/src/source/aggregator.ts
+BOOTSTRAP="$(sed -n 's/^const BOOTSTRAP = "\(.*\)";$/\1/p' "$ADAPTER")"
+BOOTSTRAP_FORM="$(sed -n 's/^const BOOTSTRAP_FORM = "\(.*\)";$/\1/p' "$ADAPTER")"
 
 section "Repository"
 
-if [[ -n "$BOOTSTRAP" ]]; then
-  ok "the worker is $WORKER and the session opens at $BOOTSTRAP"
+if [[ -n "$BOOTSTRAP" && -n "$BOOTSTRAP_FORM" ]] && grep -q "$EXPIRY=" "$ADAPTER"; then
+  ok "the worker is $WORKER and the session opens with POST $BOOTSTRAP"
 else
-  bad "no bootstrap route in packages/core/src/source/aggregator.ts" \
-    "This script reads the route the adapter opens a session on; it has been renamed or moved"
+  bad "$ADAPTER no longer bootstraps the way this script does" \
+    "This script mirrors the adapter's bootstrap rather than restating it; that request has changed"
   report_and_exit
 fi
 
@@ -167,30 +170,30 @@ if [[ "$(status_of "$SHELL_RESPONSE")" == "302" && "$(redirect_of "$SHELL_RESPON
     "Add a policy with action Service Auth and an Include rule naming that token"
   report_and_exit
 fi
-ok "the service token is admitted, answered $(status_of "$SHELL_RESPONSE")"
+ok "the service token is admitted rather than sent to sign in"
 
-PROXIED="$(admitted "$SEATSCOUT_URL$BOOTSTRAP")"
+PROXIED="$(admitted -X POST -H "content-type: $BOOTSTRAP_FORM" \
+  --data "$EXPIRY=$(date +%s)000" "$SEATSCOUT_URL$BOOTSTRAP")"
 BODY="$(cat "$WORK/body")"
+STATUS="$(status_of "$PROXIED")"
 
-case "$BODY" in
-  "The proxy is not configured")
-    bad "the worker holds no configuration" \
-      "Set ACCESS_TEAM_DOMAIN, ACCESS_AUD and UPSTREAM_ORIGIN: wrangler secret put <name>" ;;
-  "No access assertion")
-    bad "Access admitted the request but the worker received no assertion" \
-      "The router in front of a worker serving static assets did not pass Cf-Access-Jwt-Assertion. See deploy/README.md" ;;
-  "The access assertion did not verify")
-    bad "the assertion arrived and did not verify" \
-      "ACCESS_TEAM_DOMAIN or ACCESS_AUD names a different Access application" ;;
-  *)
-    ok "the assertion reaches the worker and verifies, upstream answered $(status_of "$PROXIED")" ;;
-esac
-
-if grep -qi '^x-upstream-set-cookie:' "$WORK/head"; then
-  ok "the session bootstrap round-trips and comes back in X-Upstream-Set-Cookie"
+if [[ "$BODY" == "The proxy is not configured" ]]; then
+  bad "the worker holds no configuration" \
+    "Set ACCESS_TEAM_DOMAIN, ACCESS_AUD and UPSTREAM_ORIGIN: wrangler secret put <name>"
+elif [[ "$BODY" == "No access assertion" ]]; then
+  bad "Access admitted the request but the worker received no assertion" \
+    "The router in front of a worker serving static assets did not pass Cf-Access-Jwt-Assertion. See deploy/README.md"
+elif [[ "$BODY" == "The access assertion did not verify" ]]; then
+  bad "the assertion arrived and did not verify" \
+    "ACCESS_TEAM_DOMAIN or ACCESS_AUD names a different Access application"
+elif [[ "$STATUS" != 2* ]]; then
+  bad "the proxy carried the bootstrap upstream and the upstream answered $STATUS" \
+    "The upstream admits a request on the Referer the proxy sets from UPSTREAM_ORIGIN; check it names the right origin"
+elif grep -qi '^x-upstream-set-cookie:' "$WORK/head"; then
+  ok "the assertion verifies and the bootstrap round-trips as X-Upstream-Set-Cookie"
 else
-  bad "the bootstrap returned no session" \
-    "Check UPSTREAM_ORIGIN, and that $BOOTSTRAP is still what opens a session"
+  bad "the upstream answered $STATUS and opened no session" \
+    "The proxy returns the merged session as X-Upstream-Set-Cookie; the upstream set none"
 fi
 
 (( ${#FAILURES[@]} )) && report_and_exit

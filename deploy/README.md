@@ -25,8 +25,8 @@ cd deploy
 A **Cloudflare account** on the free plan. Workers gives 100,000 script requests a day,
 10 ms of CPU per invocation and 50 subrequests per invocation; requests to static assets
 are free and unlimited and do not count against the daily figure. A search issues about
-one proxy request per candidate screening, so the daily allowance is thousands of
-searches. Nothing here reaches a paid feature.
+one proxy request per candidate screening, which measured about 48, so the daily
+allowance is roughly two thousand searches. Nothing here reaches a paid feature.
 
 **Cloudflare Zero Trust**, also free, up to 50 users. Sign-up asks for a payment method on
 the free plan and does not charge it.
@@ -67,44 +67,45 @@ application.
 2. **Turn on Zero Trust** and choose a team name. Your team domain is
    `https://<team-name>.cloudflareaccess.com`, and it is later at Zero Trust > Settings.
    Changing the team name afterwards invalidates the OAuth redirect in step 3 and the
-   `ACCESS_TEAM_DOMAIN` in step 10.
+   `ACCESS_TEAM_DOMAIN` in step 9.
 3. **Add Google as an identity provider.** In the Google Cloud console, configure the
    consent screen with audience type External, then create an OAuth client of type Web
    application with `https://<team-name>.cloudflareaccess.com` as an authorised JavaScript
    origin and `https://<team-name>.cloudflareaccess.com/cdn-cgi/access/callback` as an
    authorised redirect URI. Then in Cloudflare, Zero Trust > Integrations > Identity
    providers > Add new > Google, paste the client ID and secret, save, and use **Test**.
-4. **Create an API token.** Manage Account > API Tokens > Create Token > Create Custom
-   Token. One permission: Account > Workers Scripts > Edit, scoped to this account alone.
-   The token is shown once. Nothing else is needed because the workflow sets
-   `CLOUDFLARE_ACCOUNT_ID`, which is what would otherwise make `wrangler` look the account
-   up and need permission to read your memberships.
-5. **Copy the account ID.** Workers & Pages > Account Details > Account ID, or press
-   Ctrl/Cmd-K anywhere in the dashboard and run "Copy account ID".
-6. **Set the two repository secrets**, which is what the deploy workflow reads.
-7. **Deploy once**, so the Worker exists for the next step to point Access at. The
+   Reaching the login page is not access; the allowlist in step 7 is what decides.
+4. **Create an API token and set it as `CLOUDFLARE_API_TOKEN`.** Manage Account > API
+   Tokens > Create Token > Create Custom Token. One permission: Account > Workers Scripts
+   > Edit, scoped to this account alone. The token is shown once. Nothing else is needed
+   because the workflow sets `CLOUDFLARE_ACCOUNT_ID`, which is what would otherwise make
+   `wrangler` look the account up and need permission to read your memberships.
+5. **Copy the account ID and set it as `CLOUDFLARE_ACCOUNT_ID`.** Workers & Pages >
+   Account Details > Account ID, or press Ctrl/Cmd-K anywhere in the dashboard and run
+   "Copy account ID".
+6. **Deploy once**, so the Worker exists for the next step to point Access at. The
    workflow runs on merge to `main` and on manual dispatch. The Worker appears at
-   `https://seatscout.<your-subdomain>.workers.dev`, the name coming from `name` in
+   `https://<name>.<your-subdomain>.workers.dev`, the name coming from `name` in
    `apps/proxy/wrangler.json`.
 
-   Between this step and the next the static assets are public. That is the built web
-   shell, which is this repository's own source, and it is all that is reachable: the
-   proxy refuses every request that carries no access assertion, so it fails closed with
-   or without an Access application in front of it.
-8. **Put Access in front of the Worker.** Workers & Pages > seatscout > Access >
+   Between this step and the next, what `apps/web` builds is public. It is this
+   repository's own compiled source and holds nothing about anybody, and it is all that
+   is reachable: the proxy refuses every request that carries no access assertion, so it
+   fails closed with or without an Access application in front of it.
+7. **Put Access in front of the Worker.** Workers & Pages > the Worker > Access >
    **Protect this Worker behind Access** > All traffic. This covers the `workers.dev`
    hostname, any route and any preview in one place, and it needs no domain of your own.
    The policy options offered there are coarse, so edit the policy afterwards at Zero
    Trust > Access controls > Applications: action **Allow**, rule type **Include**,
    selector **Emails**, and your allowlist as the value. Access is deny by default, so
    anyone not matched is refused.
-9. **Copy the Application Audience (AUD) tag** from the application's Additional settings.
+8. **Copy the Application Audience (AUD) tag** from the application's Additional settings.
    It is 64 hexadecimal characters and it changes only if the application is deleted and
    recreated.
-10. **Set the three Worker secrets.** `setup.sh` does this with `wrangler secret put`
-    using the token from step 4. `UPSTREAM_ORIGIN` is the origin the proxy forwards to;
-    this repository does not name it and neither does the deployment configuration.
-11. **Create a service token** so a script can prove an admitted identity gets in without
+9. **Set the three Worker secrets.** `setup.sh` does this with `wrangler secret put`
+   using the token from step 4. `UPSTREAM_ORIGIN` is the origin the proxy forwards to;
+   this repository does not name it and neither does the deployment configuration.
+10. **Create a service token** so a script can prove an admitted identity gets in without
     a browser. Zero Trust > Access controls > Service credentials > Service Tokens >
     Create. Then add a second policy on the application with action **Service Auth** and
     an Include rule naming that token. The client secret is shown once. Service Auth
@@ -127,16 +128,23 @@ It proves:
 - both repository secrets are set, by name only, because GitHub cannot return a value;
 - the most recent deploy of `main` succeeded;
 - an anonymous request is redirected to your team domain, so Access is in front;
-- with the service token, the shell is served, so an admitted identity gets in;
-- with the service token, a proxy request is answered rather than refused, which is the
-  only way to establish that the assertion Access attaches actually reaches the Worker.
+- with the service token, the same request is admitted rather than sent to sign in;
+- with the service token, the session bootstrap the adapter performs is carried through
+  the deployed proxy, the upstream answers it, and the session comes back in
+  `X-Upstream-Set-Cookie`. It issues the request `packages/core` issues, reading the route
+  and the content type out of the adapter rather than restating them, and refuses to run
+  if that request has changed shape.
+
+  That one check settles four things at once, and reports which of them failed rather than
+  only that something did. Whether the Worker holds its three secrets. Whether the
+  assertion Access attaches actually reaches the Worker, which is worth naming because
   Cloudflare documents that a Worker serving static assets runs behind an internal router
-  Worker, and documents that the router does not pass the `ctx.access` object through it.
-  Nothing states either way whether the `Cf-Access-Jwt-Assertion` **header** survives that
-  hop. The proxy answers with a different body for each failure, so this check reports
-  which of the three it is rather than only that something failed;
-- with the service token, a session bootstrap through the deployed proxy returns a
-  session in `X-Upstream-Set-Cookie`.
+  Worker and documents that the router does not pass the `ctx.access` object through it,
+  while nothing states either way whether the `Cf-Access-Jwt-Assertion` **header**
+  survives that hop. Whether the assertion verifies against the team domain and audience
+  you configured. And whether the `Referer` the proxy sets from `UPSTREAM_ORIGIN` is what
+  the upstream admits, which is why a non-2xx answer is a failure here: the upstream
+  refuses a missing `Referer` with a message that blames the session instead.
 
 It cannot prove that a non-allowlisted account is refused. Reaching the refusal means
 completing a Google login as somebody who is not on the list, which needs a browser and a
