@@ -5,5 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "tsc --build --pretty false"
+  },
+  "dependencies": {
+    "@seatscout/client": "workspace:*"
   }
 }

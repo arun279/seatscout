@@ -56,3 +56,37 @@ export interface Catalogue {
   readonly bookable: readonly Showtime[];
   readonly unbookable: readonly Unbookable[];
 }
+
+export interface CatalogueFilters {
+  readonly theaters?: readonly TheaterId[];
+  readonly formats?: readonly Format[];
+  readonly from?: number;
+  readonly until?: number;
+}
+
+const within = (
+  at: number,
+  from: number | undefined,
+  until: number | undefined,
+) => (from === undefined || at >= from) && (until === undefined || at < until);
+
+const admits = (filters: CatalogueFilters) => (showtime: Showtime) =>
+  (filters.theaters?.includes(showtime.presentation.theater.id) ?? true) &&
+  (filters.formats?.some((format) =>
+    showtime.presentation.formats.includes(format),
+  ) ??
+    true) &&
+  within(Date.parse(showtime.startsAt), filters.from, filters.until);
+
+export const matching = (
+  catalogue: Catalogue,
+  filters: CatalogueFilters,
+): Catalogue => {
+  const admitted = admits(filters);
+  return {
+    bookable: catalogue.bookable.filter(admitted),
+    unbookable: catalogue.unbookable.filter((entry) =>
+      admitted(entry.showtime),
+    ),
+  };
+};

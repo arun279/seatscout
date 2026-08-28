@@ -13,7 +13,9 @@ Run `pnpm install` after cloning. The install registers the lefthook Git hooks.
 ## Quality gates
 
 Pull requests run formatting, linting, spelling, type checking, dead-code analysis, unit
-tests, the build, and the empty end-to-end harness. Run the same gates locally with:
+tests, the build, and the end-to-end suite. The end-to-end suite drives a real browser, so
+the `quality` job installs Chromium before it runs, and it runs after the build because
+what it loads is the built output. Run the same gates locally with:
 
 ```sh
 pnpm format:check
@@ -99,9 +101,11 @@ One thing is carved out: `apps/native`. ADR 3 puts everything correctness critic
 test that kills a mutated screen is one that restates the screen. That is the tautology
 this gate exists to detect, so it is excluded rather than given tests written to satisfy
 it. `apps/web` stays inside the gate: it is the view layer that will hold real behaviour,
-keyboard traversal among it, and it is an empty module today, so including it costs nothing
-now and judges that logic on arrival rather than exempting it by a line written while the
-directory was empty. What they are for is the end-to-end suite, which a mutation
+keyboard traversal among it, and the platform adapters it already holds are judged there
+rather than exempted by a line written while the directory was empty. That is why the
+browser store adapter has unit tests of its own beside the browser run of its contract: a
+suite the mutation gate cannot execute cannot be what judges a mutated adapter. What
+`apps/native` is for is the end-to-end suite, which a mutation
 run over the unit tests cannot stand in for. The stateless proxy is not part of the
 carve-out: it has its own assertions, including that an unauthenticated request is
 rejected, and a fail-closed check is exactly the kind most worth proving can fail.
@@ -567,6 +571,106 @@ test, and no code builds a run from a link.
 Two measurements are what this is judged by. All 42 captured Auditoriums have three free
 Seats in one row and all 42 seat a party of three. Five of them can only do it across a
 console, which is what treating a console as an aisle would silently cost.
+
+## The catalogue phase and the on-device cache
+
+Every search begins by resolving its catalogue terms, and that work is split across three
+packages along the seam ADR 3 draws.
+
+`packages/core/src/domain/catalogue.ts` narrows a Catalogue to the terms a Showtime can
+answer: the Theaters it may be at, the Formats it must carry one of, and the window its
+start time falls in. Narrowing a Catalogue yields a Catalogue, so both halves are narrowed
+by one predicate and a Showtime the listing already knows to be unbookable is still reported
+against the terms it matches. Absence of a term is what means "no constraint"; an empty list
+of Theaters or of Formats admits nothing, because a filter that accepts none accepts none.
+Chain and Amenity are deliberately not among the terms: the listing carries a chain code and
+no chain name, and the adapter drops the amenities that do not name a Format, so neither
+exists above the boundary to filter on.
+
+`packages/client` holds the cache. `openCatalogue` answers a `Reading<Catalogue>` for a set
+of terms, from the store while its entry is fresh and from the Source otherwise, remembering
+what the Source answered. A cache hit reports the moment the listing was actually fetched
+and an attempt count of zero, so the age a result carries is the age it has and a hit is
+told apart from a read. There is no staleness threshold and adding one would be wrong:
+re-verification before a booking hand-off is unconditional, so a stale catalogue cannot
+reach one.
+
+**The catalogue is cached for two hours, and it is the only thing in the workspace with a
+lifetime.** Seat availability is never cached at all. Two hours is the conservative end of
+"hours": one listing request costs 375 ms measured against the live aggregator and is
+dwarfed by the seat-map fan-out that follows it, while a listing held too long is a
+screening nobody is shown. `cacheForMs` overrides it, and a value of zero reads the Source
+every time.
+
+**A cached catalogue routinely offers Showtimes that have already begun.** 80 of the 824
+Showtimes in the captured listing were already past at capture, so roughly one candidate in
+ten can be expected to have started. That is the `started` Coverage outcome rather than a
+cache fault, and the phase carries those Showtimes through with their reason rather than
+hiding them.
+
+`packages/client` compiles against Core's own sources rather than through a project
+reference, and Core publishes two entry points to make that legible: `@seatscout/core` and
+`@seatscout/core/testing`, which is the fake upstream the client's tests substitute at. A
+project reference would be the conventional wiring and cannot be used here, because
+`tsc --build --noEmit`, which is what `pnpm typecheck` runs, refuses a referenced project
+that disables emit.
+
+### What may be written
+
+`KeyValueStore` is two operations. `read` answers `unknown`, because what a device hands
+back is not to be believed and the caller has to say what it will accept. `write` takes a
+`CachedCatalogue`, and that is the whole of the deny list: **a Seat cannot be written to the
+store, because the only thing the store accepts is a record carrying a Catalogue, and a
+Catalogue holds Showtimes rather than Seats**. `store.write(key, seats)` is a type error,
+and so is `store.write(key, JSON.stringify(seats))`, which is the way round that a store of
+strings would have left open. It is the technique `corpus/types.ts` and the catalogue
+adapter already use for what may be *read*, pointed at what may be written.
+
+What comes back is checked against exactly what the cache dereferences: a numeric fetch
+moment, and a catalogue carrying two arrays. Anything else is a miss and the Source is read
+again. Checking deeper would restate the adapter's own parse against data the adapter wrote.
+
+A cache entry is named after the three terms that identify it, encoded as a JSON array, so
+an area holding the separator cannot collide with another entry. Terms that only narrow the
+answer are not part of the name, so changing a Format filter re-reads the cache rather than
+the Source.
+
+### The store contract, run twice
+
+`storeContract` is part of the package's surface rather than of its tests, because an
+adapter author is who needs it and the native adapter is who needs it next. Each clause
+answers with what the store did wrong, or with nothing.
+
+The in-memory store runs it under vitest. The browser adapter runs the same clauses in a
+real browser: `tests/e2e/store-contract.spec.ts` serves the built
+`packages/client/dist/store-contract.js` and `apps/web/dist/store.js` from one origin and
+renders each clause's verdict onto a page, which is also what makes a headed run readable by
+a person. Neither module imports anything at run time, which is why they load straight out
+of `dist` with no bundler and no import map. A contract that passes only in Node proves
+nothing about the adapter that ships, which is why the browser run exists; and because the
+mutation gate runs vitest and not Playwright, the adapter is judged by unit tests of its own
+as well.
+
+The contract's own tests are what keep it from being vacuous: each broken store fails
+exactly the clause it breaks, the operations and keys it performs are pinned, and its
+diagnostics are asserted, because a contract that cannot say what went wrong is a contract
+nobody can act on.
+
+### The browser adapter
+
+`apps/web/src/store.ts` is where it lives. Core may not reach for `localStorage`, and
+`packages/client` may not either: it runs unchanged in a native runtime, which has no Web
+Storage. Per-platform adapters belong to the per-platform unit, which is what ADR 3 already
+says about view layers.
+
+Web Storage can be absent or refuse outright: a private window, cleared site data, storage
+disabled by policy. **Reaching it is attempted once, and where it refuses the cache falls
+back to a store that lives as long as the page.** That is the honest answer rather than a
+failure, because the port never promised durability, memory is still on the device, and a
+search that cannot cache is one that reads the Source again rather than one that breaks. A write the
+storage refuses, which is what an exhausted quota looks like, is dropped rather than raised,
+because a write that did not land is a miss and a miss costs one request. A value that comes
+back as something other than what was written reads as absent for the same reason.
 
 ## The native application
 

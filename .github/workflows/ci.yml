@@ -38,6 +38,8 @@ jobs:
       - run: pnpm dead-code
       - run: pnpm test:unit
       - run: pnpm build
+      - name: Install the browser the end-to-end suite drives
+        run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
 
   footprint:
