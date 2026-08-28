@@ -191,7 +191,7 @@ const catalogued = (theaters: readonly UpstreamTheater[]): Catalogue => {
       if (reason === null) bookable.push(showtime);
       else unbookable.push({ showtime, reason });
     }
-  return { bookable, unbookable };
+  return { bookable, unbookable, unidentified: [] };
 };
 
 export const catalogueFrom = (body: string): Catalogue | null => {

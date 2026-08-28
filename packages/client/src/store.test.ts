@@ -19,7 +19,7 @@ const AWKWARD_KEY = 'a "quoted" \\ key with a ☃ in it';
 
 const EMPTY: CachedCatalogue = {
   fetchedAt: 0,
-  catalogue: { bookable: [], unbookable: [] },
+  catalogue: { bookable: [], unbookable: [], unidentified: [] },
 };
 
 const failing = (checks: readonly ContractCheck[]) =>
@@ -143,15 +143,15 @@ describe("the key-value store contract", () => {
     const checks = await storeContract(forgetful());
 
     expect(invented[0]?.failure).toBe(
-      'unwritten read {"fetchedAt":0,"catalogue":{"bookable":[],"unbookable":[]}} rather than nothing',
+      'unwritten read {"fetchedAt":0,"catalogue":{"bookable":[],"unbookable":[],"unidentified":[]}} rather than nothing',
     );
     expect(checks.map((check) => check.failure)).toEqual([
       null,
-      'written read undefined rather than {"fetchedAt":1,"catalogue":{"bookable":[],"unbookable":[]}}',
-      'replaced read undefined rather than {"fetchedAt":3,"catalogue":{"bookable":[],"unbookable":[]}}',
-      'undisturbed read undefined rather than {"fetchedAt":4,"catalogue":{"bookable":[],"unbookable":[]}}',
-      'copied read undefined rather than {"fetchedAt":6,"catalogue":{"bookable":[],"unbookable":[]}}',
-      `${AWKWARD_KEY} read undefined rather than {"fetchedAt":7,"catalogue":{"bookable":[],"unbookable":[]}}`,
+      'written read undefined rather than {"fetchedAt":1,"catalogue":{"bookable":[],"unbookable":[],"unidentified":[]}}',
+      'replaced read undefined rather than {"fetchedAt":3,"catalogue":{"bookable":[],"unbookable":[],"unidentified":[]}}',
+      'undisturbed read undefined rather than {"fetchedAt":4,"catalogue":{"bookable":[],"unbookable":[],"unidentified":[]}}',
+      'copied read undefined rather than {"fetchedAt":6,"catalogue":{"bookable":[],"unbookable":[],"unidentified":[]}}',
+      `${AWKWARD_KEY} read undefined rather than {"fetchedAt":7,"catalogue":{"bookable":[],"unbookable":[],"unidentified":[]}}`,
     ]);
   });
 

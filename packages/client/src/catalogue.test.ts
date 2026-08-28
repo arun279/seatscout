@@ -22,6 +22,7 @@ const LISTINGS = "/napi/theaterShowtimeGroupings";
 const SEAT_MAP = "/napi/seatMap/";
 const TERMS: CatalogueTerms = { movie: WIDE_RELEASE, date: TODAY, area: AREA };
 const TWO_HOURS = 7_200_000;
+const EMPTY = { bookable: [], unbookable: [], unidentified: [] };
 const FETCHED_AT = 1000;
 
 type Written = Parameters<KeyValueStore["write"]>[1];
@@ -211,23 +212,19 @@ describe("the catalogue phase", () => {
       null,
       "a catalogue, honestly",
       {},
-      { fetchedAt: "recently", catalogue: { bookable: [], unbookable: [] } },
-      {
-        fetchedAt: `${FETCHED_AT}`,
-        catalogue: { bookable: [], unbookable: [] },
-      },
+      { fetchedAt: "recently", catalogue: EMPTY },
+      { fetchedAt: `${FETCHED_AT}`, catalogue: EMPTY },
       { fetchedAt: FETCHED_AT },
       { fetchedAt: FETCHED_AT, catalogue: null },
-      { fetchedAt: FETCHED_AT, catalogue: { bookable: [] } },
-      { fetchedAt: FETCHED_AT, catalogue: { unbookable: [] } },
+      { fetchedAt: FETCHED_AT, catalogue: { ...EMPTY, bookable: undefined } },
+      { fetchedAt: FETCHED_AT, catalogue: { ...EMPTY, unbookable: undefined } },
       {
         fetchedAt: FETCHED_AT,
-        catalogue: { bookable: "none", unbookable: [] },
+        catalogue: { ...EMPTY, unidentified: undefined },
       },
-      {
-        fetchedAt: FETCHED_AT,
-        catalogue: { bookable: [], unbookable: "none" },
-      },
+      { fetchedAt: FETCHED_AT, catalogue: { ...EMPTY, bookable: "none" } },
+      { fetchedAt: FETCHED_AT, catalogue: { ...EMPTY, unbookable: "none" } },
+      { fetchedAt: FETCHED_AT, catalogue: { ...EMPTY, unidentified: "none" } },
     ];
     const reread: number[] = [];
     for (const value of unreadable) {

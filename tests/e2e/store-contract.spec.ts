@@ -64,7 +64,9 @@ test("the browser adapter satisfies the store contract against real Web Storage"
   expect(raised).toEqual([]);
   expect(
     await page.evaluate((key) => localStorage.getItem(key), AWKWARD_KEY),
-  ).toBe('{"fetchedAt":7,"catalogue":{"bookable":[],"unbookable":[]}}');
+  ).toBe(
+    '{"fetchedAt":7,"catalogue":{"bookable":[],"unbookable":[],"unidentified":[]}}',
+  );
 });
 
 test("the browser adapter satisfies the same contract where storage is refused", async ({

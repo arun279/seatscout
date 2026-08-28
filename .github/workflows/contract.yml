@@ -44,17 +44,18 @@ jobs:
         run: |
           {
             echo "The nightly contract check failed. Either the upstream answers something"
-            echo "the corpus never recorded, or it could not be read at all. The reading is"
+            echo "the corpus never recorded, a full search fanned out slower than the"
+            echo "recorded baseline, or the Source could not be read at all. The reading is"
             echo "in the run log, which is redacted where this issue would not be."
             echo
             echo "$RUN"
           } > issue.md
           gh label create upstream-contract --color B60205 --force \
-            --description "The live Source stopped matching what the corpus recorded"
+            --description "The live Source stopped answering as the corpus and the baseline recorded"
           open=$(gh issue list --label upstream-contract --state open --limit 1 --json number --jq '.[0].number // empty')
           if [ -n "$open" ]; then
             gh issue comment "$open" --body-file issue.md
           else
             gh issue create --label upstream-contract --body-file issue.md \
-              --title "The live Source no longer matches the contract the corpus recorded"
+              --title "The live Source no longer answers as the corpus and the baseline recorded"
           fi

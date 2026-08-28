@@ -45,6 +45,8 @@ export interface Showtime {
   readonly ticketing: TicketingUrl;
 }
 
+export type Unidentified = Omit<Showtime, "id">;
+
 export type UnbookableReason = "noSeatMap" | "started" | "soldOut";
 
 export interface Unbookable {
@@ -55,6 +57,7 @@ export interface Unbookable {
 export interface Catalogue {
   readonly bookable: readonly Showtime[];
   readonly unbookable: readonly Unbookable[];
+  readonly unidentified: readonly Unidentified[];
 }
 
 export interface ShowtimeTerms {
@@ -70,7 +73,7 @@ const within = (
   until: number | undefined,
 ) => (from === undefined || at >= from) && (until === undefined || at < until);
 
-const admits = (terms: ShowtimeTerms) => (showtime: Showtime) =>
+const admits = (terms: ShowtimeTerms) => (showtime: Unidentified) =>
   (terms.theaters?.includes(showtime.presentation.theater.id) ?? true) &&
   (terms.formats?.some((format) =>
     showtime.presentation.formats.includes(format),
@@ -88,5 +91,6 @@ export const narrowed = (
     unbookable: catalogue.unbookable.filter((entry) =>
       admitted(entry.showtime),
     ),
+    unidentified: catalogue.unidentified.filter(admitted),
   };
 };

@@ -4,11 +4,11 @@ import { browserStore } from "./store.js";
 
 const REMEMBERED: CachedCatalogue = {
   fetchedAt: 1,
-  catalogue: { bookable: [], unbookable: [] },
+  catalogue: { bookable: [], unbookable: [], unidentified: [] },
 };
 
 const REMEMBERED_TEXT =
-  '{"fetchedAt":1,"catalogue":{"bookable":[],"unbookable":[]}}';
+  '{"fetchedAt":1,"catalogue":{"bookable":[],"unbookable":[],"unidentified":[]}}';
 
 const webStorage = () => {
   const held = new Map<string, string>();
