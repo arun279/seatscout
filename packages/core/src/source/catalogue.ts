@@ -53,6 +53,11 @@ interface Listing {
   readonly sellability: string | undefined;
 }
 
+export interface Listed {
+  readonly rows: number;
+  readonly sellabilityOfBookable: readonly (string | undefined)[];
+}
+
 type Kind = "boolean" | "number" | "string";
 
 const THEATER_FIELDS: Readonly<Record<keyof UpstreamNamedTheater, Kind>> = {
@@ -79,6 +84,8 @@ const SHOWTIME_FIELDS: Readonly<
 };
 
 const SALES_OFF = "disabled";
+
+export const ON_SALE = "available";
 
 const FORMATS: Readonly<Record<string, Format>> = {
   "Cinemark XD": "XD",
@@ -207,23 +214,29 @@ const catalogued = (listings: readonly Listing[]): Catalogue => {
   return { bookable, unbookable, unidentified };
 };
 
-const listedIn = (value: unknown): readonly Listing[] | null =>
-  carriesShowtimes(value)
-    ? value.theaterShowtimes.theaters.flatMap(listingsOf)
+const listingsIn = (body: string): readonly Listing[] | null => {
+  const answer = decoded(body);
+  return answer !== null && carriesShowtimes(answer.value)
+    ? answer.value.theaterShowtimes.theaters.flatMap(listingsOf)
     : null;
+};
 
 export const catalogueFrom = (body: string): Catalogue | null => {
-  const answer = decoded(body);
-  const listings = answer === null ? null : listedIn(answer.value);
+  const listings = listingsIn(body);
   return listings === null ? null : catalogued(listings);
 };
 
-export const sellabilityOfBookableIn = (
-  value: unknown,
-): readonly (string | undefined)[] =>
-  (listedIn(value) ?? []).flatMap((listing) =>
-    listing.reason === null ? [listing.sellability] : [],
-  );
+export const listedIn = (body: string): Listed | null => {
+  const listings = listingsIn(body);
+  return listings === null
+    ? null
+    : {
+        rows: listings.length,
+        sellabilityOfBookable: listings.flatMap((listing) =>
+          listing.reason === null ? [listing.sellability] : [],
+        ),
+      };
+};
 
 export const theatersFrom = (body: string): readonly Theater[] | null => {
   const answer = decoded(body);

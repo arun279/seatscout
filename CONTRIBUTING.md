@@ -196,14 +196,13 @@ one is the first of the four mechanisms that hold the vocabulary boundary.
 
 **The sellability word is judged, and it is the one word this half reads.** The catalogue reads
 one value of it and takes every other value to say nothing the three flags do not already say.
-That premise is what goes red here: a word the corpus never recorded, carried by a row the
-catalogue would spend a request on, and a row that carries no such word at all, are both
-divergences. It is the same argument as the unrecognised seat type. Reading the word for one
-value is only safe while something notices a second value arriving, and a fifth word that means
-"not on sale" would otherwise reach a maintainer as a theater quietly spending the retry budget,
-which is exactly how the fourth one did. The adapter exports the words of its own bookable rows
-rather than its listing shapes, so the boundary holds and there is no second declaration to
-drift.
+The premise stated as an invariant is that a row the flags call bookable carries the word for
+on sale, and that is what goes red: a bookable row carrying any other word, or none. It is the
+same argument as the unrecognised seat type. Reading the word for one value is only safe while
+something notices a second value arriving, and a word that means "not on sale" would otherwise
+reach a maintainer as a Theater quietly spending the retry budget, which is exactly how the
+first one did. The adapter hands over the words of its own bookable rows rather than its listing
+shapes, so the boundary holds and there is no second declaration of the listing to drift.
 
 **The answers come from a global setup rather than from the test.** `tools/live-answers.mjs`
 opens a session, reads an area, takes the day's widest release, and asks for one seat map per
@@ -545,9 +544,9 @@ one value: every other word, recorded or not, leaves the row where the flags put
 three reasons are also what a seat map refusal comes back with; this one is not, and the
 reading type says so, so no status code can be mapped to it.
 
-That tolerance is what the nightly contract test watches. A word the corpus never recorded, on
-a row the catalogue would spend a request on, is a divergence, and so is a row that carries no
-such word at all.
+That tolerance is what the nightly contract test watches: a row the catalogue would spend a
+request on that does not carry the word for on sale, whether it carries a different one or
+none, is a divergence.
 
 An answer missing anything a Showtime or a Theater is built from is refused whole rather than
 read into a listing with holes in it, for the reason a partial seat map is refused: a listing

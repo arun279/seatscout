@@ -19,7 +19,7 @@ import {
   fakeUpstream,
 } from "../testing/fake-upstream.js";
 import { openSource } from "./aggregator.js";
-import { sellabilityOfBookableIn } from "./catalogue.js";
+import { listedIn } from "./catalogue.js";
 import type { Reading, Source, Unreadable } from "./port.js";
 
 const BOOTSTRAP = "/napi/preferences/themes";
@@ -494,15 +494,21 @@ describe("the catalogue", () => {
 
   it("reads the words the Source put on the rows a request would be spent on", () => {
     const capture = groupingCapture(WIDE_RELEASE, TODAY);
+    const listed = (body: unknown) => listedIn(JSON.stringify(body));
 
-    expect(new Set(sellabilityOfBookableIn(capture))).toEqual(
-      new Set(["available"]),
-    );
-    expect(sellabilityOfBookableIn(withOneTheaterOffSale())).toHaveLength(158);
-    expect(sellabilityOfBookableIn(without(capture, "type"))).toEqual(
-      new Array(172).fill(undefined),
-    );
-    expect(sellabilityOfBookableIn("not a listing at all")).toEqual([]);
+    expect(listed(capture)).toEqual({
+      rows: 176,
+      sellabilityOfBookable: new Array(172).fill("available"),
+    });
+    expect(listed(withOneTheaterOffSale())).toEqual({
+      rows: 176,
+      sellabilityOfBookable: new Array(158).fill("available"),
+    });
+    expect(listed(without(capture, "type"))).toEqual({
+      rows: 176,
+      sellabilityOfBookable: new Array(172).fill(undefined),
+    });
+    expect(listedIn("not a listing at all")).toBeNull();
   });
 
   it("spends no request on a Theater whose sales are off, and leaves the circuit closed for the rest of the area", async () => {
