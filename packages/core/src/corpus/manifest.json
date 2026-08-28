@@ -1,0 +1,2103 @@
+{
+  "capturedAt": "2026-08-28T07:40:37.741Z",
+  "config": {
+    "zip": "[REDACTED]",
+    "date": "2026-08-28",
+    "movies": 4,
+    "perChain": 4,
+    "delayMs": 500
+  },
+  "redaction": {
+    "rule": "response headers are never written; location query parameters and every bootstrap cookie value are replaced",
+    "locationQueryParams": [
+      "zip",
+      "zipCode",
+      "lat",
+      "long"
+    ],
+    "strippedBodyFields": [
+      "distance"
+    ],
+    "secretCount": 16
+  },
+  "chains": [
+    "AFC",
+    "ALAM",
+    "AMC",
+    "CNMK",
+    "CPLS",
+    "FLIX",
+    "GLXY",
+    "HOOK",
+    "L",
+    "REGL",
+    "SMG",
+    "VZ"
+  ],
+  "chainsNearbyWithoutSeatMaps": [],
+  "requestLedger": [
+    {
+      "path": "/napi/nearbyTheaters?zipCode=[REDACTED]&limit=25",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/theaterMovieShowtimes/aacbt?chainCode=CNMK&startDate=2026-08-28&isdesktop=true&partnerRestrictedTicketing=",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/theaterShowtimeGroupings/243819/2026-08-28?isdesktop=true&isDesktopMOP=true&zip=[REDACTED]&partnerRestrictedTicketing=",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/theaterShowtimeGroupings/246329/2026-08-28?isdesktop=true&isDesktopMOP=true&zip=[REDACTED]&partnerRestrictedTicketing=",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/theaterShowtimeGroupings/245569/2026-08-28?isdesktop=true&isDesktopMOP=true&zip=[REDACTED]&partnerRestrictedTicketing=",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/theaterShowtimeGroupings/246427/2026-08-28?isdesktop=true&isDesktopMOP=true&zip=[REDACTED]&partnerRestrictedTicketing=",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/theaterShowtimeGroupings/245569/2026-08-27?isdesktop=true&isDesktopMOP=true&zip=[REDACTED]&partnerRestrictedTicketing=",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561682851",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561740133",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561865199",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561774053",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561462741",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561882799",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561565820",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561748075",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561527971",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561633859",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561644741",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561527997",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561457969",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561478479",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561505814",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561609773",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561728326",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/562032831",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/562120610",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561783660",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561641004",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561641328",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561641342",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/558983758",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561562293",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561527779",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561755033",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561562311",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/559055311",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561230736",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561409762",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561409722",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561409686",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561409765",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561443345",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561443587",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561443380",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561443492",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561898208",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561898204",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561898261",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/558585360",
+      "status": 200,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561442975",
+      "status": 400,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561549583",
+      "status": 410,
+      "attempt": 1
+    },
+    {
+      "path": "/napi/seatMap/561682781",
+      "status": 404,
+      "attempt": 1
+    }
+  ],
+  "showtimeTypeCounts": {
+    "available": 743,
+    "soldout": 1,
+    "pastshowtime": 80
+  },
+  "seatMaps": [
+    {
+      "file": "seatmaps/CNMK-aacbt-561682851.json",
+      "chain": "CNMK",
+      "theaterId": "aacbt",
+      "theaterName": "Cinemark Dallas XD and IMAX",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Premium Format",
+      "amenities": "Cinemark XD, Reserved seating, Luxury Lounge Recliners",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561682851,
+      "httpStatus": 200,
+      "auditoriumId": 5,
+      "seatsInArray": 277,
+      "rows": 11,
+      "columns": 31,
+      "extentX": 618,
+      "extentY": 238,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": false,
+      "rawSeatStatusCounts": {
+        "A": 255,
+        "R": 22
+      },
+      "seatTypeCounts": {
+        "standard": 266,
+        "companion": 5,
+        "wheelchair": 6
+      },
+      "areaCodes": [
+        "reserved1"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 255,
+      "reportedTotalAvailableSeatCount": 255,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/CNMK-aaudu-561740133.json",
+      "chain": "CNMK",
+      "theaterId": "aaudu",
+      "theaterName": "Cinemark Lewisville and XD",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Premium Format",
+      "amenities": "Cinemark XD, Reserved seating, Luxury Lounge Recliners",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561740133,
+      "httpStatus": 200,
+      "auditoriumId": 4,
+      "seatsInArray": 208,
+      "rows": 8,
+      "columns": 28,
+      "extentX": 558,
+      "extentY": 178,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": false,
+      "rawSeatStatusCounts": {
+        "A": 206,
+        "R": 2
+      },
+      "seatTypeCounts": {
+        "standard": 197,
+        "companion": 6,
+        "wheelchair": 5
+      },
+      "areaCodes": [
+        "reserved1"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 208,
+      "reportedTotalAvailableSeatCount": 206,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/CNMK-aacut-561865199.json",
+      "chain": "CNMK",
+      "theaterId": "aacut",
+      "theaterName": "Cinemark West Plano and XD",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Premium Format",
+      "amenities": "Cinemark XD, D-Box, Reserved seating, Luxury Lounge Recliners",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561865199,
+      "httpStatus": 200,
+      "auditoriumId": 28,
+      "seatsInArray": 304,
+      "rows": 14,
+      "columns": 26,
+      "extentX": 518,
+      "extentY": 318,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": false,
+      "rawSeatStatusCounts": {
+        "R": 279,
+        "A": 25
+      },
+      "seatTypeCounts": {
+        "standard": 304
+      },
+      "areaCodes": [
+        "reserved1"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 25,
+      "reportedTotalAvailableSeatCount": 25,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/CNMK-aacbz-561774053.json",
+      "chain": "CNMK",
+      "theaterId": "aacbz",
+      "theaterName": "Cinemark Central Plano",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Standard",
+      "amenities": "Reserved seating, Luxury Lounge Recliners",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561774053,
+      "httpStatus": 200,
+      "auditoriumId": 9,
+      "seatsInArray": 48,
+      "rows": 5,
+      "columns": 10,
+      "extentX": 218,
+      "extentY": 98,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": true,
+      "rawSeatStatusCounts": {
+        "A": 43,
+        "R": 5
+      },
+      "seatTypeCounts": {
+        "standard": 44,
+        "companion": 2,
+        "wheelchair": 2
+      },
+      "areaCodes": [
+        "reserved1"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 47,
+      "reportedTotalAvailableSeatCount": 43,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/AMC-aaxju-561462741.json",
+      "chain": "AMC",
+      "theaterId": "aaxju",
+      "theaterName": "AMC Village on the Parkway 9",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Premium Format",
+      "amenities": "Reserved seating, Closed caption, Accessibility devices available, Recliner Seats",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561462741,
+      "httpStatus": 200,
+      "auditoriumId": 1,
+      "seatsInArray": 294,
+      "rows": 10,
+      "columns": 43,
+      "extentX": 706.179,
+      "extentY": 379.68600000000004,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": false,
+      "rawSeatStatusCounts": {
+        "A": 291,
+        "R": 3
+      },
+      "seatTypeCounts": {
+        "standard": 283,
+        "companion": 6,
+        "wheelchair": 5
+      },
+      "areaCodes": [
+        "reserved1"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 294,
+      "reportedTotalAvailableSeatCount": 291,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/AMC-aaego-561882799.json",
+      "chain": "AMC",
+      "theaterId": "aaego",
+      "theaterName": "AMC Grapevine Mills 24",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Premium Format",
+      "amenities": "Reserved seating, Closed caption, Accessibility devices available, Recliner Seats",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561882799,
+      "httpStatus": 200,
+      "auditoriumId": 16,
+      "seatsInArray": 262,
+      "rows": 12,
+      "columns": 30,
+      "extentX": 1276.8560000000002,
+      "extentY": 1071.095,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": false,
+      "rawSeatStatusCounts": {
+        "A": 261,
+        "R": 1
+      },
+      "seatTypeCounts": {
+        "standard": 248,
+        "companion": 7,
+        "wheelchair": 7
+      },
+      "areaCodes": [
+        "reserved1"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 262,
+      "reportedTotalAvailableSeatCount": 261,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/AMC-aatzh-561565820.json",
+      "chain": "AMC",
+      "theaterId": "aatzh",
+      "theaterName": "AMC NorthPark 15",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Premium Format",
+      "amenities": "Reserved seating, Closed caption, Accessibility devices available, Recliner Seats",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561565820,
+      "httpStatus": 200,
+      "auditoriumId": 9,
+      "seatsInArray": 239,
+      "rows": 10,
+      "columns": 31,
+      "extentX": 616.836,
+      "extentY": 449.631,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": false,
+      "rawSeatStatusCounts": {
+        "A": 213,
+        "R": 26
+      },
+      "seatTypeCounts": {
+        "standard": 224,
+        "companion": 8,
+        "wheelchair": 7
+      },
+      "areaCodes": [
+        "reserved1"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 239,
+      "reportedTotalAvailableSeatCount": 213,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/AMC-aacrp-561748075.json",
+      "chain": "AMC",
+      "theaterId": "aacrp",
+      "theaterName": "AMC Irving Mall 14",
+      "movieId": 243819,
+      "movieVariantId": 246116,
+      "format": "3D",
+      "amenities": "Laser at AMC, Reserved seating, Closed caption, Accessibility devices available, Recliner Seats",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561748075,
+      "httpStatus": 200,
+      "auditoriumId": 12,
+      "seatsInArray": 57,
+      "rows": 7,
+      "columns": 11,
+      "extentX": 352.59999999999997,
+      "extentY": 471.29999999999995,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": false,
+      "rawSeatStatusCounts": {
+        "A": 57
+      },
+      "seatTypeCounts": {
+        "standard": 50,
+        "companion": 3,
+        "wheelchair": 4
+      },
+      "areaCodes": [
+        "reserved1"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 57,
+      "reportedTotalAvailableSeatCount": 57,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/HOOK-aawza-561527971.json",
+      "chain": "HOOK",
+      "theaterId": "aawza",
+      "theaterName": "Hooky Entertainment Addison + SDX",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Premium Format",
+      "amenities": "Reserved seating, SDX",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561527971,
+      "httpStatus": 200,
+      "auditoriumId": 1,
+      "seatsInArray": 164,
+      "rows": 7,
+      "columns": 26,
+      "extentX": 1245.5,
+      "extentY": 697.2,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": false,
+      "rawSeatStatusCounts": {
+        "A": 164
+      },
+      "seatTypeCounts": {
+        "standard": 155,
+        "companion": 5,
+        "wheelchair": 4
+      },
+      "areaCodes": [
+        "reserved0"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 182,
+      "reportedTotalAvailableSeatCount": 165,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/HOOK-aaqfm-561633859.json",
+      "chain": "HOOK",
+      "theaterId": "aaqfm",
+      "theaterName": "Violet Crown Dallas",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Standard",
+      "amenities": "Reserved seating",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561633859,
+      "httpStatus": 200,
+      "auditoriumId": 4,
+      "seatsInArray": 76,
+      "rows": 6,
+      "columns": 15,
+      "extentX": 1373.2,
+      "extentY": 978.6,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": true,
+      "rawSeatStatusCounts": {
+        "A": 73,
+        "X": 3
+      },
+      "seatTypeCounts": {
+        "standard": 69,
+        "wheelchair": 3,
+        "companion": 4
+      },
+      "areaCodes": [
+        "reserved0"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 90,
+      "reportedTotalAvailableSeatCount": 73,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/HOOK-aauac-561644741.json",
+      "chain": "HOOK",
+      "theaterId": "aauac",
+      "theaterName": "Hooky Entertainment Southlake + SDX",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Premium Format",
+      "amenities": "Reserved seating, Luxury Recliners, SDX",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561644741,
+      "httpStatus": 200,
+      "auditoriumId": 1,
+      "seatsInArray": 250,
+      "rows": 10,
+      "columns": 30,
+      "extentX": 1298.9,
+      "extentY": 837.7,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": false,
+      "rawSeatStatusCounts": {
+        "A": 248,
+        "O": 1,
+        "X": 1
+      },
+      "seatTypeCounts": {
+        "standard": 240,
+        "companion": 5,
+        "wheelchair": 5
+      },
+      "areaCodes": [
+        "reserved0",
+        "",
+        "reserved54"
+      ],
+      "seatBlocks": 0,
+      "areas": 2,
+      "reportedTotalSeatCount": 340,
+      "reportedTotalAvailableSeatCount": 254,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/HOOK-aawza-561527997.json",
+      "chain": "HOOK",
+      "theaterId": "aawza",
+      "theaterName": "Hooky Entertainment Addison + SDX",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Standard",
+      "amenities": "Reserved seating",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561527997,
+      "httpStatus": 200,
+      "auditoriumId": 6,
+      "seatsInArray": 58,
+      "rows": 5,
+      "columns": 14,
+      "extentX": 1121.6,
+      "extentY": 793,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": true,
+      "rawSeatStatusCounts": {
+        "A": 58
+      },
+      "seatTypeCounts": {
+        "standard": 50,
+        "companion": 4,
+        "wheelchair": 4
+      },
+      "areaCodes": [
+        "reserved0"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 70,
+      "reportedTotalAvailableSeatCount": 58,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/ALAM-aaygw-561457969.json",
+      "chain": "ALAM",
+      "theaterId": "aaygw",
+      "theaterName": "Alamo Drafthouse Las Colinas",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Standard",
+      "amenities": "Reserved seating, Recliner Seats, Accessibility devices available, Dine-In Delivery to Seat, Ad Free Preshow",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561457969,
+      "httpStatus": 200,
+      "auditoriumId": 6,
+      "seatsInArray": 125,
+      "rows": 9,
+      "columns": 17,
+      "extentX": 1056,
+      "extentY": 1130.4,
+      "labelStyle": "numeric",
+      "labelLetterMatchesRowIndex": null,
+      "rawSeatStatusCounts": {
+        "A": 125
+      },
+      "seatTypeCounts": {
+        "standard": 115,
+        "companion": 5,
+        "wheelchair": 5
+      },
+      "areaCodes": [
+        "reserved0000000002"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 125,
+      "reportedTotalAvailableSeatCount": 125,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/ALAM-aawym-561478479.json",
+      "chain": "ALAM",
+      "theaterId": "aawym",
+      "theaterName": "Alamo Drafthouse Cinema Richardson",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Standard",
+      "amenities": "Reserved seating, Recliner Seats, Accessibility devices available, Dine-In Delivery to Seat, Ad Free Preshow",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561478479,
+      "httpStatus": 200,
+      "auditoriumId": 4,
+      "seatsInArray": 158,
+      "rows": 9,
+      "columns": 20,
+      "extentX": 1099.6000000000001,
+      "extentY": 1026.3999999999999,
+      "labelStyle": "numeric",
+      "labelLetterMatchesRowIndex": null,
+      "rawSeatStatusCounts": {
+        "A": 156,
+        "R": 2
+      },
+      "seatTypeCounts": {
+        "standard": 153,
+        "wheelchair": 5
+      },
+      "areaCodes": [
+        "reserved0000000003",
+        "reserved0000000004"
+      ],
+      "seatBlocks": 5,
+      "areas": 1,
+      "reportedTotalSeatCount": 158,
+      "reportedTotalAvailableSeatCount": 156,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/ALAM-aayhw-561505814.json",
+      "chain": "ALAM",
+      "theaterId": "aayhw",
+      "theaterName": "Alamo Drafthouse Lake Highlands",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Standard",
+      "amenities": "Reserved seating, Recliner Seats, Accessibility devices available, Dine-In Delivery to Seat, Ad Free Preshow",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561505814,
+      "httpStatus": 200,
+      "auditoriumId": 1,
+      "seatsInArray": 155,
+      "rows": 9,
+      "columns": 21,
+      "extentX": 1271.365,
+      "extentY": 1116.083,
+      "labelStyle": "numeric",
+      "labelLetterMatchesRowIndex": null,
+      "rawSeatStatusCounts": {
+        "A": 155
+      },
+      "seatTypeCounts": {
+        "standard": 144,
+        "companion": 6,
+        "wheelchair": 5
+      },
+      "areaCodes": [
+        "reserved0000000002"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 155,
+      "reportedTotalAvailableSeatCount": 155,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/ALAM-aaxtr-561609773.json",
+      "chain": "ALAM",
+      "theaterId": "aaxtr",
+      "theaterName": "Alamo Drafthouse Cinema Cedars",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Standard",
+      "amenities": "Reserved seating, Recliner Seats, Accessibility devices available, Dine-In Delivery to Seat, Ad Free Preshow",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561609773,
+      "httpStatus": 200,
+      "auditoriumId": 5,
+      "seatsInArray": 71,
+      "rows": 6,
+      "columns": 15,
+      "extentX": 1201.4,
+      "extentY": 1003.8,
+      "labelStyle": "numeric",
+      "labelLetterMatchesRowIndex": null,
+      "rawSeatStatusCounts": {
+        "A": 71
+      },
+      "seatTypeCounts": {
+        "standard": 67,
+        "wheelchair": 4
+      },
+      "areaCodes": [
+        "reserved0000000002"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 71,
+      "reportedTotalAvailableSeatCount": 71,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/SMG-aaxps-561728326.json",
+      "chain": "SMG",
+      "theaterId": "aaxps",
+      "theaterName": "Studio Movie Grill The Colony",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Standard",
+      "amenities": "Reserved seating",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561728326,
+      "httpStatus": 200,
+      "auditoriumId": 10,
+      "seatsInArray": 168,
+      "rows": 10,
+      "columns": 22,
+      "extentX": 1231.4,
+      "extentY": 1181.5,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": false,
+      "rawSeatStatusCounts": {
+        "O": 8,
+        "A": 160
+      },
+      "seatTypeCounts": {
+        "standard": 158,
+        "companion": 5,
+        "wheelchair": 5
+      },
+      "areaCodes": [
+        "",
+        "reserved1"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 160,
+      "reportedTotalAvailableSeatCount": 160,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/SMG-aabed-562032831.json",
+      "chain": "SMG",
+      "theaterId": "aabed",
+      "theaterName": "Studio Movie Grill Plano",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Standard",
+      "amenities": "Reserved seating",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 562032831,
+      "httpStatus": 200,
+      "auditoriumId": 6,
+      "seatsInArray": 110,
+      "rows": 10,
+      "columns": 14,
+      "extentX": 444.466,
+      "extentY": 637.0020000000001,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": true,
+      "rawSeatStatusCounts": {
+        "A": 104,
+        "O": 6
+      },
+      "seatTypeCounts": {
+        "standard": 102,
+        "companion": 4,
+        "wheelchair": 4
+      },
+      "areaCodes": [
+        "reserved1",
+        ""
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 106,
+      "reportedTotalAvailableSeatCount": 106,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/SMG-aautc-562120610.json",
+      "chain": "SMG",
+      "theaterId": "aautc",
+      "theaterName": "Studio Movie Grill-Dallas",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Standard",
+      "amenities": "Reserved seating",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 562120610,
+      "httpStatus": 200,
+      "auditoriumId": 8,
+      "seatsInArray": 227,
+      "rows": 9,
+      "columns": 31,
+      "extentX": 1277.6,
+      "extentY": 712.3000000000001,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": false,
+      "rawSeatStatusCounts": {
+        "A": 222,
+        "O": 5
+      },
+      "seatTypeCounts": {
+        "standard": 217,
+        "companion": 5,
+        "wheelchair": 5
+      },
+      "areaCodes": [
+        "reserved1",
+        ""
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 222,
+      "reportedTotalAvailableSeatCount": 222,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/SMG-aawup-561783660.json",
+      "chain": "SMG",
+      "theaterId": "aawup",
+      "theaterName": "Studio Movie Grill Spring Valley",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Standard",
+      "amenities": "Reserved seating",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561783660,
+      "httpStatus": 200,
+      "auditoriumId": 15,
+      "seatsInArray": 254,
+      "rows": 12,
+      "columns": 28,
+      "extentX": 1298.6000000000001,
+      "extentY": 1150.8000000000002,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": true,
+      "rawSeatStatusCounts": {
+        "O": 31,
+        "A": 223
+      },
+      "seatTypeCounts": {
+        "standard": 244,
+        "companion": 5,
+        "wheelchair": 5
+      },
+      "areaCodes": [
+        "",
+        "reserved1"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 225,
+      "reportedTotalAvailableSeatCount": 225,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/GLXY-aayyj-561641004.json",
+      "chain": "GLXY",
+      "theaterId": "aayyj",
+      "theaterName": "Galaxy Grandscape",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Premium Format",
+      "amenities": "Sony Digital Cinema, Reserved seating, No passes, Closed caption, Digital, Accessibility devices available, Luxury Recliners",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561641004,
+      "httpStatus": 200,
+      "auditoriumId": 15,
+      "seatsInArray": 276,
+      "rows": 12,
+      "columns": 29,
+      "extentX": 963,
+      "extentY": 958.1999999999999,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": false,
+      "rawSeatStatusCounts": {
+        "A": 274,
+        "R": 2
+      },
+      "seatTypeCounts": {
+        "standard": 256,
+        "companion": 15,
+        "wheelchair": 5
+      },
+      "areaCodes": [
+        "reserved1"
+      ],
+      "seatBlocks": 19,
+      "areas": 1,
+      "reportedTotalSeatCount": 276,
+      "reportedTotalAvailableSeatCount": 274,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/GLXY-aayyj-561641328.json",
+      "chain": "GLXY",
+      "theaterId": "aayyj",
+      "theaterName": "Galaxy Grandscape",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Standard",
+      "amenities": "Reserved seating, No passes, Closed caption, Digital, Accessibility devices available, Luxury Recliners",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561641328,
+      "httpStatus": 200,
+      "auditoriumId": 10,
+      "seatsInArray": 119,
+      "rows": 8,
+      "columns": 18,
+      "extentX": 1025,
+      "extentY": 1051.1,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": false,
+      "rawSeatStatusCounts": {
+        "A": 119
+      },
+      "seatTypeCounts": {
+        "standard": 103,
+        "companion": 12,
+        "wheelchair": 4
+      },
+      "areaCodes": [
+        "reserved1"
+      ],
+      "seatBlocks": 7,
+      "areas": 1,
+      "reportedTotalSeatCount": 119,
+      "reportedTotalAvailableSeatCount": 119,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/GLXY-aayyj-561641342.json",
+      "chain": "GLXY",
+      "theaterId": "aayyj",
+      "theaterName": "Galaxy Grandscape",
+      "movieId": 246329,
+      "movieVariantId": 246329,
+      "format": "Standard",
+      "amenities": "Reserved seating, Spanish Dubbed, No passes, Closed caption, Digital, Luxury Recliners",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561641342,
+      "httpStatus": 200,
+      "auditoriumId": 6,
+      "seatsInArray": 52,
+      "rows": 6,
+      "columns": 12,
+      "extentX": 950.3000000000001,
+      "extentY": 971.7,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": false,
+      "rawSeatStatusCounts": {
+        "A": 52
+      },
+      "seatTypeCounts": {
+        "standard": 40,
+        "companion": 9,
+        "wheelchair": 3
+      },
+      "areaCodes": [
+        "reserved1"
+      ],
+      "seatBlocks": 2,
+      "areas": 1,
+      "reportedTotalSeatCount": 52,
+      "reportedTotalAvailableSeatCount": 52,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/GLXY-aayyj-558983758.json",
+      "chain": "GLXY",
+      "theaterId": "aayyj",
+      "theaterName": "Galaxy Grandscape",
+      "movieId": 245569,
+      "movieVariantId": 245569,
+      "format": "Premium Format",
+      "amenities": "DFX, Reserved seating, No passes, Closed caption, Digital, Accessibility devices available",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 558983758,
+      "httpStatus": 200,
+      "auditoriumId": 1,
+      "seatsInArray": 270,
+      "rows": 12,
+      "columns": 29,
+      "extentX": 966.9,
+      "extentY": 958.1999999999999,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": false,
+      "rawSeatStatusCounts": {
+        "A": 246,
+        "R": 4,
+        "O": 20
+      },
+      "seatTypeCounts": {
+        "standard": 250,
+        "companion": 15,
+        "wheelchair": 5
+      },
+      "areaCodes": [
+        "reserved1",
+        ""
+      ],
+      "seatBlocks": 19,
+      "areas": 1,
+      "reportedTotalSeatCount": 250,
+      "reportedTotalAvailableSeatCount": 246,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/CPLS-aaxpp-561562293.json",
+      "chain": "CPLS",
+      "theaterId": "aaxpp",
+      "theaterName": "Moviehouse & Eatery Flower Mound",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Standard",
+      "amenities": "Reserved seating, Accessibility devices available",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561562293,
+      "httpStatus": 200,
+      "auditoriumId": 4,
+      "seatsInArray": 138,
+      "rows": 9,
+      "columns": 21,
+      "extentX": 1270.7,
+      "extentY": 1061.7,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": false,
+      "rawSeatStatusCounts": {
+        "A": 88,
+        "X": 45,
+        "R": 5
+      },
+      "seatTypeCounts": {
+        "standard": 130,
+        "companion": 4,
+        "wheelchair": 4
+      },
+      "areaCodes": [
+        "reserved0"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 207,
+      "reportedTotalAvailableSeatCount": 126,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/CPLS-aaykn-561527779.json",
+      "chain": "CPLS",
+      "theaterId": "aaykn",
+      "theaterName": "Cinepolis Luxury Cinema Victory Park",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Standard",
+      "amenities": "Reserved seating, Recliner Seats, Cinepolis Luxury Experience, Accessibility devices available",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561527779,
+      "httpStatus": 200,
+      "auditoriumId": 8,
+      "seatsInArray": 129,
+      "rows": 9,
+      "columns": 23,
+      "extentX": 1202.9,
+      "extentY": 982.8,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": true,
+      "rawSeatStatusCounts": {
+        "A": 120,
+        "R": 7,
+        "X": 2
+      },
+      "seatTypeCounts": {
+        "standard": 118,
+        "companion": 6,
+        "wheelchair": 5
+      },
+      "areaCodes": [
+        "reserved0"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 252,
+      "reportedTotalAvailableSeatCount": 120,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/CPLS-aayfm-561755033.json",
+      "chain": "CPLS",
+      "theaterId": "aayfm",
+      "theaterName": "Cinépolis  Euless",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Standard",
+      "amenities": "Reserved seating, Recliner Seats, Accessibility devices available",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561755033,
+      "httpStatus": 200,
+      "auditoriumId": 10,
+      "seatsInArray": 70,
+      "rows": 7,
+      "columns": 14,
+      "extentX": 1170.2,
+      "extentY": 1169.8,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": true,
+      "rawSeatStatusCounts": {
+        "X": 13,
+        "A": 57
+      },
+      "seatTypeCounts": {
+        "standard": 66,
+        "wheelchair": 4
+      },
+      "areaCodes": [
+        "reserved0"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 98,
+      "reportedTotalAvailableSeatCount": 64,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/CPLS-aaxpp-561562311.json",
+      "chain": "CPLS",
+      "theaterId": "aaxpp",
+      "theaterName": "Moviehouse & Eatery Flower Mound",
+      "movieId": 246329,
+      "movieVariantId": 246329,
+      "format": "Standard",
+      "amenities": "Reserved seating, Accessibility devices available",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561562311,
+      "httpStatus": 200,
+      "auditoriumId": 7,
+      "seatsInArray": 99,
+      "rows": 8,
+      "columns": 17,
+      "extentX": 1281.6000000000001,
+      "extentY": 1166.4,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": true,
+      "rawSeatStatusCounts": {
+        "X": 27,
+        "A": 72
+      },
+      "seatTypeCounts": {
+        "standard": 91,
+        "wheelchair": 4,
+        "companion": 4
+      },
+      "areaCodes": [
+        "reserved0"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 152,
+      "reportedTotalAvailableSeatCount": 95,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/AFC-aapoy-559055311.json",
+      "chain": "AFC",
+      "theaterId": "aapoy",
+      "theaterName": "Angelika Film Center & Cafe",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Standard",
+      "amenities": "Reserved seating, No passes, Closed caption, Accessibility devices available",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 559055311,
+      "httpStatus": 200,
+      "auditoriumId": 4,
+      "seatsInArray": 207,
+      "rows": 13,
+      "columns": 19,
+      "extentX": 942.4,
+      "extentY": 1215.2,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": false,
+      "rawSeatStatusCounts": {
+        "A": 205,
+        "R": 2
+      },
+      "seatTypeCounts": {
+        "standard": 203,
+        "companion": 2,
+        "wheelchair": 2
+      },
+      "areaCodes": [
+        "reserved1"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 209,
+      "reportedTotalAvailableSeatCount": 207,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/AFC-aapoy-561230736.json",
+      "chain": "AFC",
+      "theaterId": "aapoy",
+      "theaterName": "Angelika Film Center & Cafe",
+      "movieId": 245569,
+      "movieVariantId": 245569,
+      "format": "Standard",
+      "amenities": "Reserved seating, No passes, Closed caption, Accessibility devices available",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561230736,
+      "httpStatus": 200,
+      "auditoriumId": 5,
+      "seatsInArray": 300,
+      "rows": 15,
+      "columns": 23,
+      "extentX": 917.4,
+      "extentY": 1120.1999999999998,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": false,
+      "rawSeatStatusCounts": {
+        "A": 297,
+        "O": 1,
+        "R": 2
+      },
+      "seatTypeCounts": {
+        "standard": 292,
+        "companion": 4,
+        "wheelchair": 4
+      },
+      "areaCodes": [
+        "reserved1",
+        ""
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 299,
+      "reportedTotalAvailableSeatCount": 297,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/FLIX-aayja-561409762.json",
+      "chain": "FLIX",
+      "theaterId": "aayja",
+      "theaterName": "Flix Brewhouse Little Elm",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Standard",
+      "amenities": "Reserved seating, Accessibility devices available",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561409762,
+      "httpStatus": 200,
+      "auditoriumId": 4,
+      "seatsInArray": 199,
+      "rows": 10,
+      "columns": 21,
+      "extentX": 1214.724,
+      "extentY": 1126.248,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": false,
+      "rawSeatStatusCounts": {
+        "A": 196,
+        "O": 1,
+        "R": 2
+      },
+      "seatTypeCounts": {
+        "standard": 194,
+        "wheelchair": 5
+      },
+      "areaCodes": [
+        "reserved0000000001",
+        ""
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 204,
+      "reportedTotalAvailableSeatCount": 202,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/FLIX-aayja-561409722.json",
+      "chain": "FLIX",
+      "theaterId": "aayja",
+      "theaterName": "Flix Brewhouse Little Elm",
+      "movieId": 246329,
+      "movieVariantId": 246329,
+      "format": "Standard",
+      "amenities": "Reserved seating, Accessibility devices available",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561409722,
+      "httpStatus": 200,
+      "auditoriumId": 1,
+      "seatsInArray": 122,
+      "rows": 9,
+      "columns": 16,
+      "extentX": 1065.975,
+      "extentY": 1163.6070000000002,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": false,
+      "rawSeatStatusCounts": {
+        "A": 122
+      },
+      "seatTypeCounts": {
+        "standard": 117,
+        "wheelchair": 5
+      },
+      "areaCodes": [
+        "reserved0000000001"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 127,
+      "reportedTotalAvailableSeatCount": 127,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/FLIX-aayja-561409686.json",
+      "chain": "FLIX",
+      "theaterId": "aayja",
+      "theaterName": "Flix Brewhouse Little Elm",
+      "movieId": 245569,
+      "movieVariantId": 245569,
+      "format": "Standard",
+      "amenities": "Reserved seating, Accessibility devices available",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561409686,
+      "httpStatus": 200,
+      "auditoriumId": 3,
+      "seatsInArray": 74,
+      "rows": 7,
+      "columns": 13,
+      "extentX": 1046.932,
+      "extentY": 1064.228,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": true,
+      "rawSeatStatusCounts": {
+        "A": 74
+      },
+      "seatTypeCounts": {
+        "standard": 70,
+        "wheelchair": 4
+      },
+      "areaCodes": [
+        "reserved0000000001"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 78,
+      "reportedTotalAvailableSeatCount": 78,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/FLIX-aayja-561409765.json",
+      "chain": "FLIX",
+      "theaterId": "aayja",
+      "theaterName": "Flix Brewhouse Little Elm",
+      "movieId": 246427,
+      "movieVariantId": 246427,
+      "format": "Standard",
+      "amenities": "Reserved seating, Accessibility devices available",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561409765,
+      "httpStatus": 200,
+      "auditoriumId": 7,
+      "seatsInArray": 47,
+      "rows": 5,
+      "columns": 11,
+      "extentX": 1275.557,
+      "extentY": 1056.249,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": true,
+      "rawSeatStatusCounts": {
+        "A": 47
+      },
+      "seatTypeCounts": {
+        "standard": 45,
+        "wheelchair": 2
+      },
+      "areaCodes": [
+        "reserved0000000001"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 49,
+      "reportedTotalAvailableSeatCount": 49,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/VZ-aaysq-561443345.json",
+      "chain": "VZ",
+      "theaterId": "aaysq",
+      "theaterName": "Strike + Reel Luxury Dine-In and XD",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Premium Format",
+      "amenities": "Reserved seating, XD",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561443345,
+      "httpStatus": 200,
+      "auditoriumId": 5,
+      "seatsInArray": 160,
+      "rows": 8,
+      "columns": 23,
+      "extentX": 1213.8,
+      "extentY": 791.1999999999999,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": true,
+      "rawSeatStatusCounts": {
+        "A": 156,
+        "R": 4
+      },
+      "seatTypeCounts": {
+        "standard": 150,
+        "companion": 5,
+        "wheelchair": 5
+      },
+      "areaCodes": [
+        "reserved1"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 160,
+      "reportedTotalAvailableSeatCount": 156,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/VZ-aaysq-561443587.json",
+      "chain": "VZ",
+      "theaterId": "aaysq",
+      "theaterName": "Strike + Reel Luxury Dine-In and XD",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Standard",
+      "amenities": "Reserved seating",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561443587,
+      "httpStatus": 200,
+      "auditoriumId": 1,
+      "seatsInArray": 46,
+      "rows": 5,
+      "columns": 12,
+      "extentX": 1271.6999999999998,
+      "extentY": 927,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": true,
+      "rawSeatStatusCounts": {
+        "A": 36,
+        "R": 10
+      },
+      "seatTypeCounts": {
+        "standard": 42,
+        "companion": 2,
+        "wheelchair": 2
+      },
+      "areaCodes": [
+        "reserved1"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 46,
+      "reportedTotalAvailableSeatCount": 36,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/VZ-aaysq-561443380.json",
+      "chain": "VZ",
+      "theaterId": "aaysq",
+      "theaterName": "Strike + Reel Luxury Dine-In and XD",
+      "movieId": 246329,
+      "movieVariantId": 246329,
+      "format": "Standard",
+      "amenities": "Reserved seating",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561443380,
+      "httpStatus": 200,
+      "auditoriumId": 4,
+      "seatsInArray": 123,
+      "rows": 8,
+      "columns": 18,
+      "extentX": 1260,
+      "extentY": 1023.5,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": true,
+      "rawSeatStatusCounts": {
+        "A": 123
+      },
+      "seatTypeCounts": {
+        "standard": 113,
+        "companion": 5,
+        "wheelchair": 5
+      },
+      "areaCodes": [
+        "reserved1"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 123,
+      "reportedTotalAvailableSeatCount": 123,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/VZ-aaysq-561443492.json",
+      "chain": "VZ",
+      "theaterId": "aaysq",
+      "theaterName": "Strike + Reel Luxury Dine-In and XD",
+      "movieId": 245569,
+      "movieVariantId": 245569,
+      "format": "Standard",
+      "amenities": "Reserved seating",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561443492,
+      "httpStatus": 200,
+      "auditoriumId": 7,
+      "seatsInArray": 123,
+      "rows": 8,
+      "columns": 18,
+      "extentX": 1260,
+      "extentY": 1023.5,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": true,
+      "rawSeatStatusCounts": {
+        "A": 122,
+        "O": 1
+      },
+      "seatTypeCounts": {
+        "standard": 113,
+        "companion": 5,
+        "wheelchair": 5
+      },
+      "areaCodes": [
+        "reserved1",
+        ""
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 122,
+      "reportedTotalAvailableSeatCount": 122,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/REGL-aacaw-561898208.json",
+      "chain": "REGL",
+      "theaterId": "aacaw",
+      "theaterName": "Regal UA Galaxy Theatre & ScreenX - Dallas",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Premium Format",
+      "amenities": "Reserved seating, No passes, Closed caption, Accessibility devices available, Recliner Seats, Stadium Seating, Laser Projection",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561898208,
+      "httpStatus": 200,
+      "auditoriumId": 5,
+      "seatsInArray": 291,
+      "rows": 12,
+      "columns": 30,
+      "extentX": 763.171,
+      "extentY": 605.9399999999999,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": true,
+      "rawSeatStatusCounts": {
+        "O": 46,
+        "A": 245
+      },
+      "seatTypeCounts": {
+        "standard": 281,
+        "companion": 5,
+        "wheelchair": 5
+      },
+      "areaCodes": [
+        "",
+        "reserved1"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 245,
+      "reportedTotalAvailableSeatCount": 245,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/REGL-aacaw-561898204.json",
+      "chain": "REGL",
+      "theaterId": "aacaw",
+      "theaterName": "Regal UA Galaxy Theatre & ScreenX - Dallas",
+      "movieId": 243819,
+      "movieVariantId": 243819,
+      "format": "Standard",
+      "amenities": "Reserved seating, Closed caption, Accessibility devices available, Recliner Seats, Stadium Seating, Laser Projection",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561898204,
+      "httpStatus": 200,
+      "auditoriumId": 3,
+      "seatsInArray": 50,
+      "rows": 6,
+      "columns": 10,
+      "extentX": 413.655,
+      "extentY": 463.244,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": true,
+      "rawSeatStatusCounts": {
+        "O": 10,
+        "A": 40
+      },
+      "seatTypeCounts": {
+        "standard": 46,
+        "companion": 2,
+        "wheelchair": 2
+      },
+      "areaCodes": [
+        "",
+        "reserved1"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 40,
+      "reportedTotalAvailableSeatCount": 40,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/REGL-aacaw-561898261.json",
+      "chain": "REGL",
+      "theaterId": "aacaw",
+      "theaterName": "Regal UA Galaxy Theatre & ScreenX - Dallas",
+      "movieId": 246329,
+      "movieVariantId": 246329,
+      "format": "Standard",
+      "amenities": "Reserved seating, Closed caption, Accessibility devices available, Recliner Seats, Stadium Seating, Laser Projection",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 561898261,
+      "httpStatus": 200,
+      "auditoriumId": 1,
+      "seatsInArray": 80,
+      "rows": 8,
+      "columns": 13,
+      "extentX": 1071.9,
+      "extentY": 1211.1999999999998,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": true,
+      "rawSeatStatusCounts": {
+        "O": 13,
+        "A": 67
+      },
+      "seatTypeCounts": {
+        "standard": 76,
+        "wheelchair": 4
+      },
+      "areaCodes": [
+        "",
+        "reserved1"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 67,
+      "reportedTotalAvailableSeatCount": 67,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/REGL-aacaw-558585360.json",
+      "chain": "REGL",
+      "theaterId": "aacaw",
+      "theaterName": "Regal UA Galaxy Theatre & ScreenX - Dallas",
+      "movieId": 245569,
+      "movieVariantId": 245569,
+      "format": "Premium Format",
+      "amenities": "Reserved seating, No passes, Closed caption, Accessibility devices available, Recliner Seats, Stadium Seating, Laser Projection",
+      "hasReservedSeating": true,
+      "showtimeType": "available",
+      "showtimeId": 558585360,
+      "httpStatus": 200,
+      "auditoriumId": 5,
+      "seatsInArray": 291,
+      "rows": 12,
+      "columns": 30,
+      "extentX": 763.171,
+      "extentY": 605.9399999999999,
+      "labelStyle": "alphanumeric",
+      "labelLetterMatchesRowIndex": true,
+      "rawSeatStatusCounts": {
+        "O": 46,
+        "A": 245
+      },
+      "seatTypeCounts": {
+        "standard": 281,
+        "companion": 5,
+        "wheelchair": 5
+      },
+      "areaCodes": [
+        "",
+        "reserved1"
+      ],
+      "seatBlocks": 0,
+      "areas": 1,
+      "reportedTotalSeatCount": 245,
+      "reportedTotalAvailableSeatCount": 245,
+      "hasGeometry": true,
+      "hasNeighbourLinks": true
+    },
+    {
+      "file": "seatmaps/L-aaddm-561442975.json",
+      "chain": "L",
+      "theaterId": "aaddm",
+      "theaterName": "Landmark Inwood Theatre",
+      "movieId": 246329,
+      "movieVariantId": 246329,
+      "format": "Standard",
+      "amenities": "Accessibility devices available, Couch Seating, Bean Bag Seating",
+      "hasReservedSeating": false,
+      "showtimeType": "available",
+      "showtimeId": 561442975,
+      "httpStatus": 400,
+      "auditoriumId": null,
+      "upstreamError": [
+        {
+          "id": "GeneralAdmissionShowtimeError",
+          "message": "The selected showtime is general admission only, no seat map is available."
+        }
+      ]
+    },
+    {
+      "file": "seatmaps/AMC-aaoxj-561549583.json",
+      "chain": "AMC",
+      "theaterId": "aaoxj",
+      "theaterName": "AMC Stonebriar 24",
+      "movieId": 245569,
+      "movieVariantId": 245569,
+      "format": "Standard",
+      "amenities": "Laser at AMC, Reserved seating, Closed caption, Accessibility devices available, Recliner Seats",
+      "hasReservedSeating": true,
+      "showtimeType": "soldout",
+      "showtimeId": 561549583,
+      "httpStatus": 410,
+      "auditoriumId": null,
+      "upstreamError": [
+        {
+          "id": "PerformanceSoldOut",
+          "message": "This showtime is sold out, please choose another."
+        }
+      ]
+    },
+    {
+      "file": "seatmaps/CNMK-aacbt-561682781.json",
+      "chain": "CNMK",
+      "theaterId": "aacbt",
+      "theaterName": "Cinemark Dallas XD and IMAX",
+      "movieId": 245569,
+      "movieVariantId": 245569,
+      "format": "Premium Format",
+      "amenities": "Cinemark XD, D-Box, Reserved seating, Luxury Lounge Recliners",
+      "hasReservedSeating": true,
+      "showtimeType": "pastshowtime",
+      "showtimeId": 561682781,
+      "httpStatus": 404,
+      "auditoriumId": null,
+      "upstreamError": [
+        {
+          "id": "ExpiredPerformance",
+          "message": "Showtime expired, is no longer available."
+        }
+      ]
+    }
+  ],
+  "files": [
+    "seatmaps/AFC-aapoy-559055311.json",
+    "seatmaps/AFC-aapoy-561230736.json",
+    "seatmaps/ALAM-aawym-561478479.json",
+    "seatmaps/ALAM-aaxtr-561609773.json",
+    "seatmaps/ALAM-aaygw-561457969.json",
+    "seatmaps/ALAM-aayhw-561505814.json",
+    "seatmaps/AMC-aacrp-561748075.json",
+    "seatmaps/AMC-aaego-561882799.json",
+    "seatmaps/AMC-aaoxj-561549583.json",
+    "seatmaps/AMC-aatzh-561565820.json",
+    "seatmaps/AMC-aaxju-561462741.json",
+    "seatmaps/CNMK-aacbt-561682781.json",
+    "seatmaps/CNMK-aacbt-561682851.json",
+    "seatmaps/CNMK-aacbz-561774053.json",
+    "seatmaps/CNMK-aacut-561865199.json",
+    "seatmaps/CNMK-aaudu-561740133.json",
+    "seatmaps/CPLS-aaxpp-561562293.json",
+    "seatmaps/CPLS-aaxpp-561562311.json",
+    "seatmaps/CPLS-aayfm-561755033.json",
+    "seatmaps/CPLS-aaykn-561527779.json",
+    "seatmaps/FLIX-aayja-561409686.json",
+    "seatmaps/FLIX-aayja-561409722.json",
+    "seatmaps/FLIX-aayja-561409762.json",
+    "seatmaps/FLIX-aayja-561409765.json",
+    "seatmaps/GLXY-aayyj-558983758.json",
+    "seatmaps/GLXY-aayyj-561641004.json",
+    "seatmaps/GLXY-aayyj-561641328.json",
+    "seatmaps/GLXY-aayyj-561641342.json",
+    "seatmaps/HOOK-aaqfm-561633859.json",
+    "seatmaps/HOOK-aauac-561644741.json",
+    "seatmaps/HOOK-aawza-561527971.json",
+    "seatmaps/HOOK-aawza-561527997.json",
+    "seatmaps/L-aaddm-561442975.json",
+    "seatmaps/REGL-aacaw-558585360.json",
+    "seatmaps/REGL-aacaw-561898204.json",
+    "seatmaps/REGL-aacaw-561898208.json",
+    "seatmaps/REGL-aacaw-561898261.json",
+    "seatmaps/SMG-aabed-562032831.json",
+    "seatmaps/SMG-aautc-562120610.json",
+    "seatmaps/SMG-aawup-561783660.json",
+    "seatmaps/SMG-aaxps-561728326.json",
+    "seatmaps/VZ-aaysq-561443345.json",
+    "seatmaps/VZ-aaysq-561443380.json",
+    "seatmaps/VZ-aaysq-561443492.json",
+    "seatmaps/VZ-aaysq-561443587.json",
+    "showtimes/grouping-243819-2026-08-28.json",
+    "showtimes/grouping-245569-2026-08-27.json",
+    "showtimes/grouping-245569-2026-08-28.json",
+    "showtimes/grouping-246329-2026-08-28.json",
+    "showtimes/grouping-246427-2026-08-28.json",
+    "showtimes/theater-showtimes-aacbt-2026-08-28.json",
+    "theaters/nearby-theaters.json"
+  ]
+}
