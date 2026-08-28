@@ -149,12 +149,18 @@ THX-certified auditorium is calibrated. That two thirds is measured to the rear 
 which a seat map does not locate, so the target is a close approximation of that point on
 the row axis rather than the point itself.
 
-It penalises three things. Proximity to a wall, of which the last row is one case, because
+It penalises four things. Proximity to a wall, of which the last row is one case, because
 ST 202 keeps its measurement positions more than five feet from any wall. Proximity to the
-screen, because the same figure keeps them more than sixteen feet from it. And off-axis
-viewing angle, which is lateral offset divided by distance to the screen rather than
-lateral offset on its own, because the same sideways offset is a larger angle the nearer
-you sit.
+screen, because the same figure keeps them more than sixteen feet from it. Off-axis viewing
+angle, which is lateral offset divided by distance to the screen rather than lateral offset
+on its own, because the same sideways offset is a larger angle the nearer you sit. And each
+pod divider the Seat Group crosses, because a run that crosses none is better than one that
+crosses two and ordering is the only thing the score does.
+
+Two of those are distances the seat map does not carry, so the Profile holds the geometry it
+is scored in as well as its targets and weights: how far the screen stands in front of the
+front row, how far apart rows stand, and where the front band ends. All are adjustable, and
+the ordering does not turn on them.
 
 The resulting score orders Seats and does nothing else. It is never shown as a number, and
 a ranking explanation names the reasons instead. Accessible Seats and unavailable Seats

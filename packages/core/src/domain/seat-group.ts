@@ -1,8 +1,8 @@
 import type { Seat } from "../source/seat-map.js";
 import { centreOf } from "./auditorium.js";
 
-export interface SeatGroup {
-  readonly seats: readonly Seat[];
+export interface SeatGroup<T = Seat> {
+  readonly seats: readonly T[];
   readonly podDividers: number;
 }
 
@@ -13,12 +13,12 @@ export interface SeatGroupTerms {
 
 export type Gap = "pod" | "aisle" | null;
 
-interface Placed {
-  readonly seat: Seat;
+interface Placed<T> {
+  readonly seat: T;
   readonly gapBefore: Gap;
 }
 
-type Run = readonly Placed[];
+type Run<T> = readonly Placed<T>[];
 
 const WIDEST_CONTIGUOUS_PITCH = 1.45;
 const WIDEST_POD_PITCH = 2.05;
@@ -32,10 +32,10 @@ export const gapBetween = (left: Seat, right: Seat): Gap => {
   return accessible(left) || accessible(right) ? null : "pod";
 };
 
-export const rowsOf = (
-  seats: readonly Seat[],
-): readonly (readonly Seat[])[] => {
-  const rows = new Map<number, Seat[]>();
+export const rowsOf = <T extends Seat>(
+  seats: readonly T[],
+): readonly (readonly T[])[] => {
+  const rows = new Map<number, T[]>();
   for (const seat of seats) {
     const row = rows.get(seat.y);
     if (row === undefined) rows.set(seat.y, [seat]);
@@ -48,13 +48,13 @@ export const rowsOf = (
     );
 };
 
-const runsIn = (
-  row: readonly Seat[],
+const runsIn = <T extends Seat>(
+  row: readonly T[],
   eligible: (seat: Seat) => boolean,
-): readonly Run[] => {
-  const runs: Placed[][] = [];
-  let previous: Seat | undefined;
-  let current: Placed[] | undefined;
+): readonly Run<T>[] => {
+  const runs: Placed<T>[][] = [];
+  let previous: T | undefined;
+  let current: Placed<T>[] | undefined;
   for (const seat of row) {
     const gapBefore =
       previous === undefined ? null : gapBetween(previous, seat);
@@ -73,7 +73,10 @@ const runsIn = (
   return runs;
 };
 
-const seatGroupFrom = (run: Run, terms: SeatGroupTerms): SeatGroup | null => {
+const seatGroupFrom = <T extends Seat>(
+  run: Run<T>,
+  terms: SeatGroupTerms,
+): SeatGroup<T> | null => {
   const slack = run.length - terms.partySize;
   const windows = Array.from({ length: slack + 1 }, (_, start) => ({
     seats: run.slice(start, start + terms.partySize),
@@ -100,10 +103,10 @@ const seatGroupFrom = (run: Run, terms: SeatGroupTerms): SeatGroup | null => {
   };
 };
 
-export const seatGroupsIn = (
-  seats: readonly Seat[],
+export const seatGroupsIn = <T extends Seat>(
+  seats: readonly T[],
   terms: SeatGroupTerms,
-): readonly SeatGroup[] => {
+): readonly SeatGroup<T>[] => {
   const eligible = (seat: Seat) =>
     seat.bookable && (terms.accessibleSeating || !accessible(seat));
   return rowsOf(seats)
