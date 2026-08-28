@@ -1,0 +1,7 @@
+[
+  {
+    "name": "web app",
+    "path": "apps/web/dist/**/*.js",
+    "limit": "15 B"
+  }
+]
