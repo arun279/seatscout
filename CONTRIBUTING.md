@@ -493,11 +493,13 @@ else.
 carries one `y` in all 42 captured Auditoriums, and the count of distinct `y` values equals
 the count of rows in all 42, so rows need no clustering tolerance and no invented threshold.
 Depth is the row's rank over the last row's rank rather than its distance down the room,
-because the maps are not drawn to one scale: one chain draws Seats on a square lattice, row
-pitch equal to column pitch in all four of its captured rooms, where the other ten draw the
-row pitch at 1.5 to 2.3 times the column pitch. A depth measured in map units would therefore
-mean a different thing per chain. A property test draws each generated room twice, once as
-generated and once with every row gap set to one, and holds the two sets of depths identical.
+because rows are not evenly spaced: 41 of the 42 rooms draw at least two different row gaps,
+14 of them draw their widest gap at least half again as wide as their narrowest, and one
+twelve row house draws one gap 2.11 times another. Under a depth measured in map units an
+aisle would push the row behind it further back than a row deserves, and "eighth row of
+fourteen" would stop meaning eight fourteenths. A property test draws each generated room
+twice, once as generated and once with every row gap set to one, and holds the two sets of
+depths identical.
 
 **Depth starts at the front row because nothing in a seat map locates the screen.** The
 vertical offset that reads like a throw distance is the whitespace the background reserves
@@ -507,8 +509,8 @@ for the screen glyph, and it ranges from 1.9 to 11.4 seat widths across the corp
 own centre placed on the extent of every Seat centre in the Auditorium. Rows are neither
 alike nor concentric: 25 of the 42 maps widen toward the back, 15 narrow, 2 are equal, and
 one room spreads its row midpoints across 4.6 seat widths. Normalising a row against its own
-extent would put the outermost Seat of a four-Seat row exactly where it puts the outermost
-Seat of a thirty two Seat row, which is the opposite of what a normalised position is for.
+extent would put the outermost Seat of a row of four exactly where it puts the outermost Seat
+of a row of thirty two, which is the opposite of what a normalised position is for.
 
 **No label is read, and none can be.** `normalised` is generic over anything carrying `x`,
 `y` and `width`, so a Seat's printed label is not nameable inside it and ordering by one is a

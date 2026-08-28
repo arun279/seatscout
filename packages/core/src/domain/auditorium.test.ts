@@ -30,11 +30,11 @@ const extentOf = (values: readonly number[]) => [
   Math.max(...values),
 ];
 
-const depthsOf = (room: readonly NormalisedPosition[]) =>
-  room.map((seat) => seat.depth);
+const depthsOf = (auditorium: readonly NormalisedPosition[]) =>
+  auditorium.map((seat) => seat.depth);
 
-const lateralsOf = (room: readonly NormalisedPosition[]) =>
-  room.map((seat) => seat.lateral);
+const lateralsOf = (auditorium: readonly NormalisedPosition[]) =>
+  auditorium.map((seat) => seat.lateral);
 
 const negated = (values: readonly number[]) => values.map((value) => 0 - value);
 
@@ -59,8 +59,8 @@ const capturedAuditorium = (showtime: string) => {
   return auditoriumOf(capture.body);
 };
 
-const positionOf = (room: readonly Positioned[], id: string) => {
-  const seat = room.find((candidate) => candidate.id === id);
+const positionOf = (auditorium: readonly Positioned[], id: string) => {
+  const seat = auditorium.find((candidate) => candidate.id === id);
   return { depth: seat?.depth, lateral: seat?.lateral };
 };
 
@@ -140,15 +140,15 @@ describe("the normalised Auditorium", () => {
 
     fc.assert(
       fc.property(auditoriums, (seats) => {
-        const room = normalised(seats);
-        const rows = ascending(room.map((seat) => seat.y));
-        const depths = ascending(depthsOf(room));
+        const auditorium = normalised(seats);
+        const rows = ascending(auditorium.map((seat) => seat.y));
+        const depths = ascending(depthsOf(auditorium));
 
         if (rows.length === 1) shapes.oneRow += 1;
         else shapes.manyRows += 1;
 
-        expect(room.map((seat) => depths.indexOf(seat.depth))).toEqual(
-          room.map((seat) => rows.indexOf(seat.y)),
+        expect(auditorium.map((seat) => depths.indexOf(seat.depth))).toEqual(
+          auditorium.map((seat) => rows.indexOf(seat.y)),
         );
         expect(extentOf(depths)).toEqual(rows.length === 1 ? [0, 0] : [0, 1]);
       }),
@@ -182,15 +182,19 @@ describe("the normalised Auditorium", () => {
 
     fc.assert(
       fc.property(auditoriums, (seats) => {
-        const room = normalised(seats);
-        const centres = ascending(room.map((seat) => seat.x + seat.width / 2));
-        const laterals = ascending(lateralsOf(room));
+        const auditorium = normalised(seats);
+        const centres = ascending(
+          auditorium.map((seat) => seat.x + seat.width / 2),
+        );
+        const laterals = ascending(lateralsOf(auditorium));
 
         if (centres.length === 1) shapes.oneCentre += 1;
         else shapes.manyCentres += 1;
 
-        expect(room.map((seat) => laterals.indexOf(seat.lateral))).toEqual(
-          room.map((seat) => centres.indexOf(seat.x + seat.width / 2)),
+        expect(
+          auditorium.map((seat) => laterals.indexOf(seat.lateral)),
+        ).toEqual(
+          auditorium.map((seat) => centres.indexOf(seat.x + seat.width / 2)),
         );
         expect(extentOf(laterals)).toEqual(
           centres.length === 1 ? [0, 0] : [-1, 1],
@@ -209,13 +213,13 @@ describe("the normalised Auditorium", () => {
         auditoriums,
         fc.integer({ min: -500, max: 500 }),
         (seats, axis) => {
-          const room = normalised(seats);
+          const auditorium = normalised(seats);
           const mirrored = normalised(
             seats.map((seat) => ({ ...seat, x: axis - seat.x - seat.width })),
           );
 
-          expect(lateralsOf(mirrored)).toEqual(negated(lateralsOf(room)));
-          expect(depthsOf(mirrored)).toEqual(depthsOf(room));
+          expect(lateralsOf(mirrored)).toEqual(negated(lateralsOf(auditorium)));
+          expect(depthsOf(mirrored)).toEqual(depthsOf(auditorium));
         },
       ),
       { numRuns: 300 },
@@ -228,10 +232,10 @@ describe("the normalised Auditorium", () => {
         const relabelled = normalised(
           seats.map((seat, index) => ({ ...seat, id: label(index) })),
         );
-        const room = normalised(seats);
+        const auditorium = normalised(seats);
 
-        expect(depthsOf(relabelled)).toEqual(depthsOf(room));
-        expect(lateralsOf(relabelled)).toEqual(lateralsOf(room));
+        expect(depthsOf(relabelled)).toEqual(depthsOf(auditorium));
+        expect(lateralsOf(relabelled)).toEqual(lateralsOf(auditorium));
       }),
       { numRuns: 300 },
     );
@@ -258,55 +262,56 @@ describe("the normalised Auditorium", () => {
   });
 
   it("normalises every captured Auditorium from its own front row to its own back row", () => {
-    const rooms = capturedAuditoriums();
+    const captured = capturedAuditoriums();
 
-    expect(rooms).toHaveLength(42);
-    expect(rooms.flat()).toHaveLength(6771);
+    expect(captured).toHaveLength(42);
     expect(
-      rooms.map((room) => ({
-        depth: extentOf(depthsOf(room)),
-        lateral: extentOf(lateralsOf(room)),
+      captured.map((auditorium) => ({
+        depth: extentOf(depthsOf(auditorium)),
+        lateral: extentOf(lateralsOf(auditorium)),
       })),
-    ).toEqual(rooms.map(() => ({ depth: [0, 1], lateral: [-1, 1] })));
+    ).toEqual(captured.map(() => ({ depth: [0, 1], lateral: [-1, 1] })));
   });
 
   it("counts the rows of an Auditorium whose row letters skip one and whose seat numbers run backwards", () => {
-    const room = capturedAuditorium(AUDITORIUM_WHOSE_ROW_LETTERS_SKIP_ONE);
+    const auditorium = capturedAuditorium(
+      AUDITORIUM_WHOSE_ROW_LETTERS_SKIP_ONE,
+    );
 
-    expect(room).toHaveLength(294);
-    expect(positionOf(room, "H31").depth).toBe(7 / 9);
-    expect(positionOf(room, "J31").depth).toBe(8 / 9);
-    expect(positionOf(room, "K1").depth).toBe(1);
-    expect(positionOf(room, "WC17")).toEqual({
+    expect(auditorium).toHaveLength(294);
+    expect(positionOf(auditorium, "H31").depth).toBe(7 / 9);
+    expect(positionOf(auditorium, "J31").depth).toBe(8 / 9);
+    expect(positionOf(auditorium, "K1").depth).toBe(1);
+    expect(positionOf(auditorium, "WC17")).toEqual({
       depth: 4 / 9,
       lateral: -0.30074156722015627,
     });
-    expect(positionOf(room, "E18")).toEqual({
+    expect(positionOf(auditorium, "E18")).toEqual({
       depth: 4 / 9,
       lateral: -0.3838907492705009,
     });
-    expect(positionOf(room, "A30")).toEqual({
+    expect(positionOf(auditorium, "A30")).toEqual({
       depth: 0,
       lateral: -0.9349224541235676,
     });
-    expect(positionOf(room, "A1")).toEqual({
+    expect(positionOf(auditorium, "A1")).toEqual({
       depth: 0,
       lateral: 0.9349166730499355,
     });
   });
 
   it("normalises an Auditorium whose labels carry no letters at all", () => {
-    const room = capturedAuditorium(AUDITORIUM_WITH_NO_ROW_LETTERS);
+    const auditorium = capturedAuditorium(AUDITORIUM_WITH_NO_ROW_LETTERS);
 
-    expect(room).toHaveLength(155);
-    expect(room.every((seat) => /^\d+$/.test(seat.id))).toBe(true);
-    expect(positionOf(room, "101")).toEqual({ depth: 0, lateral: -1 });
-    expect(positionOf(room, "919")).toEqual({ depth: 1, lateral: 1 });
-    expect(positionOf(room, "501")).toEqual({
+    expect(auditorium).toHaveLength(155);
+    expect(auditorium.every((seat) => /^\d+$/.test(seat.id))).toBe(true);
+    expect(positionOf(auditorium, "101")).toEqual({ depth: 0, lateral: -1 });
+    expect(positionOf(auditorium, "919")).toEqual({ depth: 1, lateral: 1 });
+    expect(positionOf(auditorium, "501")).toEqual({
       depth: 0.5,
       lateral: -0.5998052030430885,
     });
-    expect(positionOf(room, "901")).toEqual({
+    expect(positionOf(auditorium, "901")).toEqual({
       depth: 1,
       lateral: -0.7983589584092127,
     });

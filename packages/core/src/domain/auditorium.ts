@@ -16,8 +16,11 @@ const rowsOf = (seats: readonly Placement[]) =>
     (nearer, further) => nearer - further,
   );
 
-const lateralOf = (centre: number, left: number, right: number) =>
-  left === right ? 0 : (centre - left - (right - centre)) / (right - left);
+const lateralOf = (centre: number, left: number, right: number) => {
+  const fromLeft = centre - left;
+  const fromRight = right - centre;
+  return left === right ? 0 : (fromLeft - fromRight) / (right - left);
+};
 
 export const normalised = <T extends Placement>(
   seats: readonly T[],
