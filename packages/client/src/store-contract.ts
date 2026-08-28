@@ -15,8 +15,6 @@ interface Clause {
   readonly run: (store: KeyValueStore) => Promise<string | null>;
 }
 
-const ABSENT = "null";
-
 const AWKWARD_KEY = 'a "quoted" \\ key with a ☃ in it';
 
 const sample = (fetchedAt: number): Sample => ({
@@ -37,7 +35,12 @@ const wrote = async (store: KeyValueStore, key: string, item: Sample) => {
 const CLAUSES: readonly Clause[] = [
   {
     name: "a key that was never written reads as absent",
-    run: (store) => reads(store, "unwritten", ABSENT),
+    run: async (store) => {
+      const got = await store.read("unwritten");
+      return got === undefined
+        ? null
+        : `unwritten read ${JSON.stringify(got)} rather than nothing`;
+    },
   },
   {
     name: "a written value reads back unchanged",
@@ -59,8 +62,18 @@ const CLAUSES: readonly Clause[] = [
     },
   },
   {
+    name: "what is read back is the store's own value, not the caller's object",
+    run: async (store) => {
+      const item = sample(6);
+      await store.write("copied", item.value);
+      return (await store.read("copied")) === item.value
+        ? "copied read back the very object it was given"
+        : reads(store, "copied", item.text);
+    },
+  },
+  {
     name: "a key carrying quotes, a backslash and a snowman is a key like any other",
-    run: (store) => wrote(store, AWKWARD_KEY, sample(6)),
+    run: (store) => wrote(store, AWKWARD_KEY, sample(7)),
   },
 ];
 

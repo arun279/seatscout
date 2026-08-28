@@ -57,7 +57,7 @@ export interface Catalogue {
   readonly unbookable: readonly Unbookable[];
 }
 
-export interface CatalogueFilters {
+export interface ShowtimeTerms {
   readonly theaters?: readonly TheaterId[];
   readonly formats?: readonly Format[];
   readonly from?: number;
@@ -70,19 +70,19 @@ const within = (
   until: number | undefined,
 ) => (from === undefined || at >= from) && (until === undefined || at < until);
 
-const admits = (filters: CatalogueFilters) => (showtime: Showtime) =>
-  (filters.theaters?.includes(showtime.presentation.theater.id) ?? true) &&
-  (filters.formats?.some((format) =>
+const admits = (terms: ShowtimeTerms) => (showtime: Showtime) =>
+  (terms.theaters?.includes(showtime.presentation.theater.id) ?? true) &&
+  (terms.formats?.some((format) =>
     showtime.presentation.formats.includes(format),
   ) ??
     true) &&
-  within(Date.parse(showtime.startsAt), filters.from, filters.until);
+  within(Date.parse(showtime.startsAt), terms.from, terms.until);
 
-export const matching = (
+export const narrowed = (
   catalogue: Catalogue,
-  filters: CatalogueFilters,
+  terms: ShowtimeTerms,
 ): Catalogue => {
-  const admitted = admits(filters);
+  const admitted = admits(terms);
   return {
     bookable: catalogue.bookable.filter(admitted),
     unbookable: catalogue.unbookable.filter((entry) =>

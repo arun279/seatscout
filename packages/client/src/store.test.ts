@@ -11,6 +11,7 @@ const NAMES = [
   "a written value reads back unchanged",
   "a later write replaces the earlier one",
   "one key does not disturb another",
+  "what is read back is the store's own value, not the caller's object",
   "a key carrying quotes, a backslash and a snowman is a key like any other",
 ];
 
@@ -25,7 +26,7 @@ const failing = (checks: readonly ContractCheck[]) =>
   checks.filter((check) => check.failure !== null).map((check) => check.name);
 
 const forgetful = (): KeyValueStore => ({
-  read: async () => null,
+  read: async () => undefined,
   write: async () => undefined,
 });
 
@@ -34,31 +35,41 @@ const optimistic = (): KeyValueStore => {
   return {
     read: async (key) => {
       const value = await held.read(key);
-      return value === null ? EMPTY : value;
+      return value === undefined ? EMPTY : value;
     },
     write: held.write,
   };
 };
 
 const writeOnce = (): KeyValueStore => {
-  const held = new Map<string, CachedCatalogue>();
+  const held = new Map<string, string>();
   return {
     read: async (key) => {
-      const value = held.get(key);
-      return value === undefined ? null : value;
+      const text = held.get(key);
+      return text === undefined ? undefined : JSON.parse(text);
     },
     write: async (key, value) => {
-      if (!held.has(key)) held.set(key, value);
+      if (!held.has(key)) held.set(key, JSON.stringify(value));
     },
   };
 };
 
 const oneSlot = (): KeyValueStore => {
-  let held: CachedCatalogue | null = null;
+  let held: string | undefined;
   return {
-    read: async () => held,
+    read: async () => (held === undefined ? undefined : JSON.parse(held)),
     write: async (_key, value) => {
-      held = value;
+      held = JSON.stringify(value);
+    },
+  };
+};
+
+const byReference = (): KeyValueStore => {
+  const held = new Map<string, CachedCatalogue>();
+  return {
+    read: async (key) => held.get(key),
+    write: async (key, value) => {
+      held.set(key, value);
     },
   };
 };
@@ -95,6 +106,9 @@ describe("the key-value store contract", () => {
       "write undisturbed",
       "write disturbing",
       "read undisturbed",
+      "write copied",
+      "read copied",
+      "read copied",
       `write ${AWKWARD_KEY}`,
       `read ${AWKWARD_KEY}`,
     ]);
@@ -106,6 +120,7 @@ describe("the key-value store contract", () => {
       ["forgetting what it was told", forgetful],
       ["refusing to replace a value", writeOnce],
       ["keeping one value for every key", oneSlot],
+      ["handing back the object it was given", byReference],
     ] as const;
     const found: (readonly [string, readonly string[]])[] = [];
     for (const [fault, open] of broken)
@@ -113,21 +128,39 @@ describe("the key-value store contract", () => {
 
     expect(found).toEqual([
       ["answering a key it was never given", [NAMES[0]]],
-      ["forgetting what it was told", [NAMES[1], NAMES[2], NAMES[3], NAMES[4]]],
+      [
+        "forgetting what it was told",
+        [NAMES[1], NAMES[2], NAMES[3], NAMES[4], NAMES[5]],
+      ],
       ["refusing to replace a value", [NAMES[2]]],
       ["keeping one value for every key", [NAMES[3]]],
+      ["handing back the object it was given", [NAMES[4]]],
     ]);
   });
 
   it("says which key answered what, and what it should have answered", async () => {
+    const invented = await storeContract(optimistic());
     const checks = await storeContract(forgetful());
 
+    expect(invented[0]?.failure).toBe(
+      'unwritten read {"fetchedAt":0,"catalogue":{"bookable":[],"unbookable":[]}} rather than nothing',
+    );
     expect(checks.map((check) => check.failure)).toEqual([
       null,
-      'written read null rather than {"fetchedAt":1,"catalogue":{"bookable":[],"unbookable":[]}}',
-      'replaced read null rather than {"fetchedAt":3,"catalogue":{"bookable":[],"unbookable":[]}}',
-      'undisturbed read null rather than {"fetchedAt":4,"catalogue":{"bookable":[],"unbookable":[]}}',
-      `${AWKWARD_KEY} read null rather than {"fetchedAt":6,"catalogue":{"bookable":[],"unbookable":[]}}`,
+      'written read undefined rather than {"fetchedAt":1,"catalogue":{"bookable":[],"unbookable":[]}}',
+      'replaced read undefined rather than {"fetchedAt":3,"catalogue":{"bookable":[],"unbookable":[]}}',
+      'undisturbed read undefined rather than {"fetchedAt":4,"catalogue":{"bookable":[],"unbookable":[]}}',
+      'copied read undefined rather than {"fetchedAt":6,"catalogue":{"bookable":[],"unbookable":[]}}',
+      `${AWKWARD_KEY} read undefined rather than {"fetchedAt":7,"catalogue":{"bookable":[],"unbookable":[]}}`,
     ]);
+  });
+
+  it("says when a store hands back the caller's own object", async () => {
+    const checks = await storeContract(byReference());
+
+    expect(checks[4]).toEqual({
+      name: NAMES[4],
+      failure: "copied read back the very object it was given",
+    });
   });
 });

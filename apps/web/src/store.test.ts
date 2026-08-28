@@ -1,5 +1,5 @@
 import { type CachedCatalogue, storeContract } from "@seatscout/client";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { browserStore } from "./store.js";
 
 const REMEMBERED: CachedCatalogue = {
@@ -30,10 +30,22 @@ const failing = async (store: ReturnType<typeof browserStore>) =>
     .map((check) => check.failure);
 
 describe("the browser store", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it("satisfies the store contract against Web Storage, and writes through to it", async () => {
     const storage = webStorage();
 
     expect(await failing(browserStore(() => storage))).toEqual([]);
+    expect(storage.held.get("written")).toBe(REMEMBERED_TEXT);
+  });
+
+  it("reaches the browser's own Web Storage when it is given no other", async () => {
+    const storage = webStorage();
+    vi.stubGlobal("localStorage", storage);
+    await browserStore().write("written", REMEMBERED);
+
     expect(storage.held.get("written")).toBe(REMEMBERED_TEXT);
   });
 
@@ -73,6 +85,6 @@ describe("the browser store", () => {
     const store = browserStore(() => storage);
     storage.setItem("mangled", "half a catalo");
 
-    expect(await store.read("mangled")).toBeNull();
+    expect(await store.read("mangled")).toBeUndefined();
   });
 });

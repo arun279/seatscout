@@ -11,14 +11,14 @@ export interface KeyValueStore {
 }
 
 export const inMemoryStore = (): KeyValueStore => {
-  const held = new Map<string, CachedCatalogue>();
+  const held = new Map<string, string>();
   return {
     read: async (key) => {
-      const value = held.get(key);
-      return value === undefined ? null : value;
+      const text = held.get(key);
+      return text === undefined ? undefined : JSON.parse(text);
     },
     write: async (key, value) => {
-      held.set(key, value);
+      held.set(key, JSON.stringify(value));
     },
   };
 };

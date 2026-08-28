@@ -1,15 +1,15 @@
 import {
   type Catalogue,
-  type CatalogueFilters,
-  matching,
+  narrowed,
   type Reading,
+  type ShowtimeTerms,
   type Source,
 } from "@seatscout/core";
 import type { CachedCatalogue, KeyValueStore } from "./store.js";
 
 const CACHE_FOR_MS = 2 * 60 * 60 * 1000;
 
-export interface CatalogueTerms extends CatalogueFilters {
+export interface CatalogueTerms extends ShowtimeTerms {
   readonly movie: string;
   readonly date: string;
   readonly area: string;
@@ -43,7 +43,7 @@ export const openCatalogue = (deps: CatalogueDependencies) => {
     if (isCached(held) && deps.now() - held.fetchedAt < cacheFor)
       return {
         ok: true,
-        payload: matching(held.catalogue, terms),
+        payload: narrowed(held.catalogue, terms),
         fetchedAt: held.fetchedAt,
         attempts: 0,
       };
@@ -57,6 +57,6 @@ export const openCatalogue = (deps: CatalogueDependencies) => {
       fetchedAt: reading.fetchedAt,
       catalogue: reading.payload,
     });
-    return { ...reading, payload: matching(reading.payload, terms) };
+    return { ...reading, payload: narrowed(reading.payload, terms) };
   };
 };

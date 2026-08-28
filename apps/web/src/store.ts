@@ -5,17 +5,17 @@ interface WebStorage {
   readonly setItem: (key: string, value: string) => void;
 }
 
-const attempted = <Value>(act: () => Value): Value | null => {
+const attempted = <Value>(act: () => Value): Value | undefined => {
   try {
     return act();
-  } catch {
-    return null;
-  }
+  } catch {}
 };
 
 const storeOver = (storage: WebStorage): KeyValueStore => ({
-  read: async (key) =>
-    attempted(() => JSON.parse(String(storage.getItem(key)))),
+  read: async (key) => {
+    const text = storage.getItem(key);
+    return text === null ? undefined : attempted(() => JSON.parse(text));
+  },
   write: async (key, value) => {
     attempted(() => storage.setItem(key, JSON.stringify(value)));
   },
@@ -25,5 +25,5 @@ export const browserStore = (
   open: () => WebStorage = () => localStorage,
 ): KeyValueStore => {
   const storage = attempted(open);
-  return storage === null ? inMemoryStore() : storeOver(storage);
+  return storage === undefined ? inMemoryStore() : storeOver(storage);
 };

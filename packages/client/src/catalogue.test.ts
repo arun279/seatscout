@@ -19,9 +19,12 @@ const TODAY = "2026-08-28";
 const YESTERDAY = "2026-08-27";
 const WIDE_RELEASE = "245569";
 const LISTINGS = "/napi/theaterShowtimeGroupings";
+const SEAT_MAP = "/napi/seatMap/";
 const TERMS: CatalogueTerms = { movie: WIDE_RELEASE, date: TODAY, area: AREA };
 const TWO_HOURS = 7_200_000;
 const FETCHED_AT = 1000;
+
+type Written = Parameters<KeyValueStore["write"]>[1];
 
 interface Options {
   readonly cacheForMs?: number;
@@ -90,13 +93,14 @@ const counted = (reading: Reading<Catalogue>) => ({
   unbookable: payloadOf(reading).unbookable.length,
 });
 
-const keysIn = (value: unknown): readonly string[] => {
-  if (Array.isArray(value)) return value.flatMap(keysIn);
-  if (value === null || typeof value !== "object") return [];
-  return Object.entries(value).flatMap(([key, nested]) => [
-    key,
-    ...keysIn(nested),
-  ]);
+const seatMapShowtime = () => {
+  const captured = recordedCaptures().find(
+    (capture) =>
+      capture.status === 200 &&
+      routeOf(capture.request.path).startsWith(SEAT_MAP),
+  );
+  if (captured === undefined) throw new Error("no seat map was captured");
+  return routeOf(captured.request.path).slice(SEAT_MAP.length);
 };
 
 describe("the catalogue phase", () => {
@@ -266,44 +270,35 @@ describe("the catalogue phase", () => {
     ).toBe(77);
   });
 
-  it("is handed the catalogue it read and never a Seat", async () => {
+  it("hands the store the whole listing and nothing besides, then narrows on the way out", async () => {
     const watched = watching();
-    const { resolve, source } = opened({ store: watched.store });
-    const captured = recordedCaptures().find(
-      (capture) =>
-        capture.status === 200 &&
-        routeOf(capture.request.path).includes("/seatMap/"),
-    );
-    const reading = await resolve(TERMS);
-    const seats = payloadOf(
-      await source.seatsFor(
-        `${routeOf(captured?.request.path ?? "")
-          .split("/")
-          .at(-1)}`,
-      ),
-    );
-    const seatWords = new Set(keysIn(seats));
+    const { resolve } = opened({ store: watched.store });
+    const reading = await resolve({ ...TERMS, formats: ["IMAX"] });
+    const stored = watched.written[0]?.value;
 
-    expectTypeOf<KeyValueStore["write"]>()
-      .parameter(1)
-      .toEqualTypeOf<CachedCatalogue>();
-    expectTypeOf<string>().not.toExtend<CachedCatalogue>();
-    expectTypeOf(seats).not.toExtend<
-      CachedCatalogue["catalogue"]["bookable"]
-    >();
+    expect(watched.written).toHaveLength(1);
+    expect(Object.keys(stored ?? {}).toSorted()).toEqual([
+      "catalogue",
+      "fetchedAt",
+    ]);
+    expect(stored?.fetchedAt).toBe(FETCHED_AT);
+    expect({
+      bookable: stored?.catalogue.bookable.length,
+      unbookable: stored?.catalogue.unbookable.length,
+    }).toEqual({ bookable: 172, unbookable: 4 });
+    expect(counted(reading)).toEqual({ bookable: 1, unbookable: 0 });
+  });
+
+  it("will not accept Seats where the store takes a catalogue", async () => {
+    const { source } = opened();
+    const seats = payloadOf(await source.seatsFor(seatMapShowtime()));
 
     expect(seats.length).toBeGreaterThan(0);
     expect(seats.some((seat) => seat.bookable)).toBe(true);
-    expect(watched.written).toEqual([
-      {
-        key: expect.any(String),
-        value: { fetchedAt: FETCHED_AT, catalogue: payloadOf(reading) },
-      },
-    ]);
-    expect(
-      [...new Set(keysIn(watched.written.map((entry) => entry.value)))]
-        .filter((word) => seatWords.has(word))
-        .toSorted(),
-    ).toEqual(["bookable", "fetchedAt", "id"]);
+    expectTypeOf<string>().not.toExtend<Written>();
+    expectTypeOf({
+      fetchedAt: FETCHED_AT,
+      catalogue: { bookable: seats, unbookable: [] },
+    }).not.toExtend<Written>();
   });
 });

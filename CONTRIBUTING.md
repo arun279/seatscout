@@ -577,11 +577,13 @@ console, which is what treating a console as an aisle would silently cost.
 Every search begins by resolving its catalogue terms, and that work is split across three
 packages along the seam ADR 3 draws.
 
-`packages/core/src/domain/catalogue.ts` narrows a Catalogue to the terms a Showtime can
-answer: the Theaters it may be at, the Formats it must carry one of, and the window its
-start time falls in. Narrowing a Catalogue yields a Catalogue, so both halves are narrowed
-by one predicate and a Showtime the listing already knows to be unbookable is still reported
-against the terms it matches. Absence of a term is what means "no constraint"; an empty list
+`packages/core/src/domain/catalogue.ts` narrows a Catalogue to `ShowtimeTerms`, which is the
+part of a Query a Showtime can answer by itself: the Theaters it may be at, the Formats it
+must carry one of, and the window its start time falls in. The client's `CatalogueTerms`
+extends it with the three that name a listing rather than narrow it, which is the whole of
+the difference between the two. Narrowing a Catalogue yields a Catalogue, so both halves are
+narrowed by one predicate and a Showtime the listing already knows to be unbookable is still
+reported against the terms it satisfies. Absence of a term is what means "no constraint"; an empty list
 of Theaters or of Formats admits nothing, because a filter that accepts none accepts none.
 Chain and Amenity are deliberately not among the terms: the listing carries a chain code and
 no chain name, and the adapter drops the amenities that do not name a Format, so neither
@@ -599,8 +601,8 @@ reach one.
 lifetime.** Seat availability is never cached at all. Two hours is the conservative end of
 "hours": one listing request costs 375 ms measured against the live aggregator and is
 dwarfed by the seat-map fan-out that follows it, while a listing held too long is a
-screening nobody is shown. `cacheForMs` overrides it, and a value of zero reads the Source
-every time.
+screening that was added after it was written and is never offered. `cacheForMs` overrides
+it, and a value of zero reads the Source every time.
 
 **A cached catalogue routinely offers Showtimes that have already begun.** 80 of the 824
 Showtimes in the captured listing were already past at capture, so roughly one candidate in
@@ -615,6 +617,13 @@ project reference would be the conventional wiring and cannot be used here, beca
 `tsc --build --noEmit`, which is what `pnpm typecheck` runs, refuses a referenced project
 that disables emit.
 
+Core's entry now names `openSource` and the port's types, which the client needs because
+ADR 3 puts orchestration outside Core. The Source port is still internal in the sense that
+matters: no caller of the product's own interface meets it, and tests substitute at `fetch`
+rather than at it. What a package's entry exports is held to what another package imports,
+which is the rule that keeps Core's entry from listing everything under `src` and is why
+`openCatalogue` is not on the client's entry until something outside the client composes it.
+
 ### What may be written
 
 `KeyValueStore` is two operations. `read` answers `unknown`, because what a device hands
@@ -626,9 +635,16 @@ and so is `store.write(key, JSON.stringify(seats))`, which is the way round that
 strings would have left open. It is the technique `corpus/types.ts` and the catalogue
 adapter already use for what may be *read*, pointed at what may be written.
 
-What comes back is checked against exactly what the cache dereferences: a numeric fetch
-moment, and a catalogue carrying two arrays. Anything else is a miss and the Source is read
-again. Checking deeper would restate the adapter's own parse against data the adapter wrote.
+What comes back is checked before it is used: a numeric fetch moment, and a catalogue
+carrying its two arrays. Anything else is a miss and the Source is read again. It is not
+checked deeper than that, because deeper is the adapter's own parse restated against data
+the adapter wrote, and because the store it came from is the reader's own device rather than
+a third party's answer.
+
+Nothing is read back as absent that a store answered with `null`, because absent is
+`undefined`. `read` answers `unknown`, so `null` is a value a store might hold like any
+other, and conflating the two would make a store that lost an entry indistinguishable from
+one that held a null.
 
 A cache entry is named after the three terms that identify it, encoded as a JSON array, so
 an area holding the separator cannot collide with another entry. Terms that only narrow the
@@ -639,7 +655,10 @@ the Source.
 
 `storeContract` is part of the package's surface rather than of its tests, because an
 adapter author is who needs it and the native adapter is who needs it next. Each clause
-answers with what the store did wrong, or with nothing.
+answers with what the store did wrong, or with nothing. One of them is why the in-memory
+store serialises rather than holding the object it was given: a store hands back its own
+value, so a test double that hands back the caller's object would let a caller mutate what
+another caller is about to read, and would pass in Node what fails in a browser.
 
 The in-memory store runs it under vitest. The browser adapter runs the same clauses in a
 real browser: `tests/e2e/store-contract.spec.ts` serves the built
@@ -656,6 +675,17 @@ The contract's own tests are what keep it from being vacuous: each broken store 
 exactly the clause it breaks, the operations and keys it performs are pinned, and its
 diagnostics are asserted, because a contract that cannot say what went wrong is a contract
 nobody can act on.
+
+Its values are empty Catalogues, because a `Showtime` carries branded identity that only
+parsing a response can mint and a contract that forged one would need the cast this
+repository does not contain. What the contract owns is the store's behaviour; a populated
+Catalogue makes its round trip through a real store in the catalogue phase's own tests.
+
+`tests/e2e` is type checked like the rest of the workspace rather than only transpiled by
+the runner, with `skipLibCheck` on for that project alone. Playwright's declarations name
+`Buffer` and `Symbol.asyncDispose`, which would otherwise oblige the workspace to install
+Node's types and raise its library for one directory; our own use of those declarations is
+checked either way.
 
 ### The browser adapter
 

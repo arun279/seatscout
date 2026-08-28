@@ -59,12 +59,12 @@ test("the browser adapter satisfies the store contract against real Web Storage"
 }) => {
   const raised = await opened(page);
 
-  await expect(page.locator("#verdict")).toHaveText("5 of 5 checks passed");
+  await expect(page.locator("#verdict")).toHaveText("6 of 6 checks passed");
   await expect(page.locator("li[data-verdict='failed']")).toHaveCount(0);
   expect(raised).toEqual([]);
   expect(
     await page.evaluate((key) => localStorage.getItem(key), AWKWARD_KEY),
-  ).toBe('{"fetchedAt":6,"catalogue":{"bookable":[],"unbookable":[]}}');
+  ).toBe('{"fetchedAt":7,"catalogue":{"bookable":[],"unbookable":[]}}');
 });
 
 test("the browser adapter satisfies the same contract where storage is refused", async ({
@@ -79,7 +79,7 @@ test("the browser adapter satisfies the same contract where storage is refused",
   });
   const raised = await opened(page);
 
-  await expect(page.locator("#verdict")).toHaveText("5 of 5 checks passed");
+  await expect(page.locator("#verdict")).toHaveText("6 of 6 checks passed");
   await expect(page.locator("li[data-verdict='failed']")).toHaveCount(0);
   expect(raised).toEqual([]);
 });
