@@ -5,6 +5,9 @@
     "path": "/napi/nearbyTheaters?zipCode=[REDACTED]&limit=25"
   },
   "status": 200,
+  "responseHeaders": {
+    "set-cookie": "SESSION=eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJzaWQiOiAiOWYyYzQxYmE3ZTZkIiwgImV4cCI6IDE3ODgwMDAwMDB9.upxzbxnn9gt_Z2StsLeQjAorOU4JtsCYY1KMfyvIYJU; Path=/; HttpOnly"
+  },
   "body": {
     "chainInfo": "",
     "concessionsEnabled": true,
