@@ -105,8 +105,17 @@ appear only for a Query that asks for them.
 
 ## Seat Group
 
-A run of adjacent Seats at one Showtime, uninterrupted by an aisle, large enough for the
-party.
+Exactly as many adjacent Seats at one Showtime as the party needs, taken from one run
+uninterrupted by an aisle.
+
+Adjacency is read from where the Seats are drawn, never from the Source's neighbour links.
+A Seat Group may cross a **pod divider**, the console between two recliners, and it records
+how many it crosses. One that crosses none is better than one that crosses two, and neither
+is excluded, because three people can sit either side of a console.
+
+An unbroken run yields one Seat Group rather than every party-sized window in it. A run of
+ten free Seats holds eight overlapping threes, and offering all eight is a list of
+duplicates.
 
 **This is the unit of a search result.** A search returns Seat Groups, not Showtimes. A
 Showtime with no acceptable Seat Group is not a result, however well it matches on Movie,
@@ -139,7 +148,13 @@ matters of degree.
 ## Query
 
 A description of what someone is looking for. Any combination of Movie, Chain, Theater,
-Format, Amenity, geographic area, date and time window, party size, and Seat Profile.
+Format, Amenity, geographic area, date and time window, party size, accessible seating,
+and Seat Profile.
+
+Accessible seating is a deliberate term rather than a relaxation. A Query that asks for it
+is answered only with Seat Groups that carry a wheelchair or companion Seat, because
+offering ordinary Seats to someone who asked for an accessible one leaves the exclusion in
+place under another name.
 
 A Query is satisfiable or not; it is never partially applied silently. Every result
 states which Query terms it satisfied.

@@ -525,6 +525,49 @@ widths and origins, Seats of differing widths, coincident Seats, rooms of one ro
 one Seat, Seats delivered in shuffled order, and labels whose letters and numbers both run
 against the geometry.
 
+## Seat Groups
+
+`packages/core/src/domain/seat-group.ts` turns an Auditorium's Seats into the unit of a
+search result. It takes a party size and whether accessible seating was asked for, and
+answers with runs of adjacent bookable Seats, each exactly the size of the party and each
+carrying the number of consoles it crosses.
+
+**Rows and adjacency come from the drawing.** Seats fall into rows by the `y` they are
+drawn at, which yields the corpus's 376 rows, and into order along a row by `x`. The
+spacing between two neighbours, divided by a Seat's width, lands in one of three bands: up
+to 1.45 is contiguous, up to 2.05 is the console between two recliners, and above that is
+an aisle. Over the 6,395 in-row gaps the corpus holds, that is 5,688, 540 and 167. The two
+boundaries are cuts through a continuous distribution rather than gaps in it, which is why
+a console is recorded rather than treated as a break: a run never crosses an aisle, may
+cross a console, and says how many, because three people can sit either side of one.
+
+**A gap beside an accessible space is that space's own width, not a console.** 78 of the
+540 sit next to a wheelchair or companion Seat, and the Seats either side of one are
+contiguous, which leaves 462 real consoles.
+
+**A run yields one Seat Group, not every window in it.** The chosen window crosses the
+fewest consoles and, among those, sits most centrally in the run. Centring is what makes
+the answer independent of which end of the row it is measured from; where the slack is odd
+and two windows are equally central, the lower `x` wins, because the rule has to be
+decidable and the room offers nothing further to decide it with.
+
+**Wheelchair and companion Seats break an ordinary run** rather than being deleted from
+the row before the geometry is read, which would leave the Seats either side of an
+accessible space looking two aisles apart. A Query that asks for accessible seating admits
+them and then answers only with Seat Groups that carry one: over the corpus that turns 40
+of 42 Auditoriums into 40 that offer a pair including an accessible Seat, where merely
+lifting the exclusion offers ordinary pairs in two of them and leaves the barrier standing.
+
+**The neighbour links are held to the geometry rather than read.** All 10,974 the
+aggregator sent name the immediately adjacent Seat in the same row, on the side they claim,
+and not one crosses a console or an aisle, while 279 contiguous gaps carry no link at all.
+A test asserts the agreement over the corpus; the live half belongs to the nightly contract
+test, and no code builds a run from a link.
+
+Two measurements are what this is judged by. All 42 captured Auditoriums have three free
+Seats in one row and all 42 seat a party of three. Five of them can only do it across a
+console, which is what treating a console as an aisle would silently cost.
+
 ## The native application
 
 `apps/native` is an Expo application that launches and renders its own name. It carries no
