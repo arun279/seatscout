@@ -168,6 +168,10 @@ the three that must not be read: the chain-specific seat label, which `type` alr
 carries normalised, and the two upstream seat counts, which disagree with the `seats`
 array in most captured maps and with each other in half of them.
 
+One of those shapes is declared in product code rather than here. A captured seat is an
+`UpstreamSeat`, which the seat map adapter owns because it is the thing that parses one, and
+the corpus is what checks that declaration against forty two real answers at compile time.
+
 The corpus is not part of Core's compiled product. `tsconfig.json` excludes it and
 `tsconfig.test.json` takes it, so `pnpm build` does not copy five megabytes of fixtures
 into `dist`, and product code reaching for a fixture would have to put it back.
@@ -191,6 +195,12 @@ can notice a thinner capture. `SPAN_THE_CAPTURE_REACHED` in `captures.test.ts` i
 notices: the Chains, Auditoriums and Auditorium sizes this corpus reaches, which a refresh
 may exceed and may not fall below. Lowering it is a reviewed line in a diff, like the
 bundle ratchet.
+
+`seat-map.test.ts` asserts exact corpus-wide tallies instead, and those a refresh does have to
+re-derive. They are floors nowhere because a floor cannot tell a mutation that judges one Seat
+wrongly from one that judges none, which is the whole point of that suite. A refresh that moves
+them is a refresh that has moved a measured fact, so it moves with the numbers quoted here and
+in the seat status research.
 
 The captured payloads themselves are excluded from Biome in `biome.json` and from cspell
 in `cspell.json`. They are a recording rather than source: formatting them would stop them
@@ -305,7 +315,7 @@ What comes back is a reading: either the payload, or one of four reasons there i
 | 400, general admission | `noSeatMap` | the operator's own page; retrying can never work |
 | 404, the screening has begun | `started` | the next screening |
 | 410 | `soldOut` | another time at that theater |
-| retries exhausted, the transport refused, or the circuit is open | `unreachable` | retry |
+| retries exhausted, the transport refused, the answer would not parse, or the circuit is open | `unreachable` | retry |
 
 The first three are what the aggregator answers a **seat map** request with, so only the seat
 map reads them. A 404 on a showtime listing is not a screening that has begun, and translating
@@ -316,8 +326,44 @@ No status code, route or upstream field name exists above this boundary. Every r
 carries when it was fetched and how many attempts it took, for one that failed as much as one
 that read.
 
-A reading's payload is still the response text. The parsers that turn it into domain objects
-land inside this adapter, not above it, so the boundary does not move when they do.
+A seat map reading's payload is Seats. Discovery and showtimes still hand back the response
+text, and their parsers land inside this adapter when they are written, not above it, so the
+boundary does not move when they do.
+
+### Seats and Availability
+
+`seat-map.ts` is both halves of the translation: `UpstreamSeat` describes the answer, `Seat`
+describes what the rest of the application sees, and nothing carries an upstream word across.
+A Seat carries its identifier, its drawn rectangle, its designation, the Availability
+judgement, and the Provenance that judgement was made from.
+
+**Availability fails closed.** A status is bookable only if it is on an explicit
+known-bookable list, and every other status, recognised or not, is not bookable. The list has
+one entry. Of the four statuses the corpus contains, three are undocumented or unexplained,
+and a fifth that earlier notes claimed meant "available" was never once observed, so guessing
+at any of them would be presenting a seat as free on the strength of a code nobody has
+established the meaning of.
+
+**Neither seat count is read, and neither can be.** The two count fields disagreed with the
+`seats` array in twenty seven of the forty two captured Auditoriums; one reports available
+seats where another reports total ones, and one reports more available seats than its array
+holds. The parse narrows the answer to its `seats` array and to `UpstreamSeat`, neither of
+which declares a count, so reading one is a compile error rather than a convention. The test
+reads the Auditorium whose count field says twenty five and whose array holds three hundred
+and four.
+
+**Neighbour links are carried, never believed.** `leftNeighbour` and `rightNeighbour` are
+whatever the aggregator sent, with its empty string translated to absence. They are a
+cross-check and not adjacency: in one captured Auditorium of three hundred Seats, two hundred
+and ninety carry no link at all while its drawn geometry is perfectly regular, so adjacency read
+from links would yield nothing there. Adjacency comes from geometry.
+
+**A partial answer is no answer.** An answer that is not JSON, that carries no `seats` array,
+or that holds a seat missing any field a Seat is built from is refused rather than read into an
+Auditorium with holes in it. An Auditorium short of Seats is worse than one that could not be
+read, because only one of the two says so. `UpstreamSeat` declares exactly the nine fields the
+translation reads and `SEAT_FIELDS` gives each of them a type, keyed by `keyof UpstreamSeat`, so
+a field added to the one and not the other does not compile.
 
 ### The session
 

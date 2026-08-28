@@ -260,10 +260,9 @@ describe("the aggregating source", () => {
   });
 
   it("replaces the session whenever a read returns a new one", async () => {
-    const seatMap = "/napi/seatMap/561882799";
     const { fetch, source } = rig({
       routes: {
-        [seatMap]: {
+        "/napi/nearbyTheaters": {
           status: 200,
           headers: { "x-upstream-set-cookie": "userlocation=moved" },
           body: "{}",
@@ -271,7 +270,7 @@ describe("the aggregating source", () => {
       },
     });
 
-    await source.seatsFor("561882799");
+    await source.theatersNear("75006");
     await source.seatsFor("561748075");
     await source.seatsFor("561565820");
 

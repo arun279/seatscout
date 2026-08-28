@@ -1,3 +1,5 @@
+import type { UpstreamSeat } from "../source/seat-map.js";
+
 export interface Capture<Body> {
   readonly capturedAt: string;
   readonly request: { readonly method: string; readonly path: string };
@@ -5,23 +7,14 @@ export interface Capture<Body> {
   readonly body: Body;
 }
 
-interface CapturedSeat {
-  readonly id: string;
+interface CapturedSeat extends UpstreamSeat {
   readonly row: number;
   readonly column: number;
-  readonly type: string;
-  readonly leftNeighbor: string;
-  readonly rightNeighbor: string;
-  readonly x: number;
-  readonly y: number;
-  readonly width: number;
-  readonly height: number;
   readonly sellIndividuallyWithinSeatBlock: boolean;
   readonly attributes: {
     readonly messageHeader?: string;
     readonly messageBody?: string;
   };
-  readonly status: string;
   readonly areaCode: string;
   readonly areaId: string;
 }

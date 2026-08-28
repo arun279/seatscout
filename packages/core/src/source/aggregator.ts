@@ -2,6 +2,7 @@ import type { Fetch } from "../transport.js";
 import { type RetryPolicy, delayAfter } from "./backoff.js";
 import { type BreakerPolicy, circuitBreaker } from "./breaker.js";
 import type { Reading, Source, Unreadable } from "./port.js";
+import { seatsFrom } from "./seat-map.js";
 
 const BOOTSTRAP = "/napi/preferences/themes";
 const BOOTSTRAP_FORM = "application/x-www-form-urlencoded; charset=UTF-8";
@@ -10,6 +11,8 @@ const UPSTREAM_SET_COOKIE = "x-upstream-set-cookie";
 const THEATERS_ASKED_FOR = 25;
 
 type Refusals = Readonly<Record<number, Unreadable>>;
+
+type Translate<Payload> = (body: string, fetchedAt: number) => Payload | null;
 
 const SEAT_MAP_REFUSALS: Refusals = {
   400: "noSeatMap",
@@ -41,6 +44,8 @@ interface Answer {
 
 const rejected = (answer: Answer | null) =>
   answer !== null && answer.status === 403;
+
+const verbatim = (body: string) => body;
 
 export const openSource = (deps: SourceDependencies): Source => {
   const policy = deps.policy ?? defaultPolicy;
@@ -97,38 +102,41 @@ export const openSource = (deps: SourceDependencies): Source => {
     return false;
   };
 
-  const unreachable = (attempts: number): Reading => ({
+  const unreachable = (attempts: number): Reading<never> => ({
     ok: false,
     reason: "unreachable",
     fetchedAt: deps.now(),
     attempts,
   });
 
-  const settled = (
+  const settled = <Payload>(
     answer: Answer | null,
     attempts: number,
     refusals: Refusals,
-  ): Reading | null => {
+    translate: Translate<Payload>,
+  ): Reading<Payload> | null => {
     if (answer === null) return null;
-    if (answer.status === 200)
-      return {
-        ok: true,
-        payload: answer.body,
-        fetchedAt: deps.now(),
-        attempts,
-      };
-    const reason = refusals[answer.status];
-    return reason === undefined
-      ? null
-      : { ok: false, reason, fetchedAt: deps.now(), attempts };
+    const fetchedAt = deps.now();
+    if (answer.status !== 200) {
+      const reason = refusals[answer.status];
+      return reason === undefined
+        ? null
+        : { ok: false, reason, fetchedAt, attempts };
+    }
+    const payload = translate(answer.body, fetchedAt);
+    return payload === null ? null : { ok: true, payload, fetchedAt, attempts };
   };
 
-  const read = async (path: string, refusals: Refusals = {}) => {
+  const read = async <Payload>(
+    path: string,
+    translate: Translate<Payload>,
+    refusals: Refusals = {},
+  ) => {
     let refreshable = true;
     for (let attempt = 1; attempt <= policy.attempts; attempt += 1) {
       if (breaker.refuses()) return unreachable(attempt - 1);
       const answer = await send(path);
-      const reading = settled(answer, attempt, refusals);
+      const reading = settled(answer, attempt, refusals, translate);
       if (reading !== null) {
         breaker.succeeded();
         return reading;
@@ -145,12 +153,18 @@ export const openSource = (deps: SourceDependencies): Source => {
     theatersNear: (area) =>
       read(
         `/napi/nearbyTheaters?zipCode=${encodeURIComponent(area)}&limit=${THEATERS_ASKED_FOR}`,
+        verbatim,
       ),
     showtimesFor: (movie, date, area) =>
       read(
         `/napi/theaterShowtimeGroupings/${encodeURIComponent(movie)}/${encodeURIComponent(date)}?isdesktop=true&isDesktopMOP=true&zip=${encodeURIComponent(area)}&partnerRestrictedTicketing=`,
+        verbatim,
       ),
     seatsFor: (showtime) =>
-      read(`/napi/seatMap/${encodeURIComponent(showtime)}`, SEAT_MAP_REFUSALS),
+      read(
+        `/napi/seatMap/${encodeURIComponent(showtime)}`,
+        seatsFrom,
+        SEAT_MAP_REFUSALS,
+      ),
   };
 };

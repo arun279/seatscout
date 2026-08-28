@@ -1,9 +1,11 @@
+import type { Seat } from "./seat-map.js";
+
 export type Unreadable = "noSeatMap" | "started" | "soldOut" | "unreachable";
 
-export type Reading =
+export type Reading<Payload> =
   | {
       readonly ok: true;
-      readonly payload: string;
+      readonly payload: Payload;
       readonly fetchedAt: number;
       readonly attempts: number;
     }
@@ -15,11 +17,11 @@ export type Reading =
     };
 
 export interface Source {
-  readonly theatersNear: (area: string) => Promise<Reading>;
+  readonly theatersNear: (area: string) => Promise<Reading<string>>;
   readonly showtimesFor: (
     movie: string,
     date: string,
     area: string,
-  ) => Promise<Reading>;
-  readonly seatsFor: (showtime: string) => Promise<Reading>;
+  ) => Promise<Reading<string>>;
+  readonly seatsFor: (showtime: string) => Promise<Reading<readonly Seat[]>>;
 }
