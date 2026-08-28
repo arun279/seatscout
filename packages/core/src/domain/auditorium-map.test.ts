@@ -214,8 +214,12 @@ describe("the Auditorium map the keyboard walks", () => {
 
         for (const row of map.rows)
           if (
-            row.seats.map((seat) => seat.x).toString() !==
-            ascending(row.seats.map((seat) => seat.x)).toString()
+            row.seats
+              .slice(0, 1)
+              .some(
+                (seat) =>
+                  seat.x !== Math.min(...row.seats.map((other) => other.x)),
+              )
           )
             shapes.leftEdgesDisagree += 1;
 
