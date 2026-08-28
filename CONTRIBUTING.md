@@ -137,6 +137,10 @@ notices. It reads one seat map answer and reports every way it diverges from wha
 recorded, `contract.live.test.ts` holds the live aggregator to that, and
 `.github/workflows/contract.yml` runs it nightly.
 
+The same lane carries one more reading of the world: the live search timing described under
+Running a search. A failure there opens the same issue, because the two are the same
+question asked of the same Source, and the run log names which of them it was.
+
 It states an assumption about the world rather than behaviour of this code, so it is not a
 required check and never gates a pull request. The mutation gate is off that list for a
 different reason, cost, and the two arguments are not interchangeable. `pnpm test:live` runs it against
@@ -200,31 +204,38 @@ it while it stays open rather than opening another. It closes nothing: whether t
 question is settled is a judgement about the code, not about how the world happened to look
 last night.
 
-## The Core import ban
+## The import ban
 
-`packages/core` must stay portable to any runtime, so it may not reach for the DOM,
-React, React Native, or a runtime-specific API. Two gates hold that.
+Everything under `packages/` must stay portable to any runtime, so it may not reach for
+the DOM, React, React Native, or a runtime-specific API. `packages/core` holds the domain
+model and the Source adapter; `packages/client` holds orchestration and the on-device
+cache, and it runs unchanged in a native runtime that has no Web Storage. Two gates hold
+that for both.
 
-Its `tsconfig.json` sets `lib` to the language alone and `types` to nothing, so no
-runtime's globals are declared to it. `document`, `window`, `caches`, `process` and
+Each package's `tsconfig.json` sets `lib` to the language alone and `types` to nothing, so
+no runtime's globals are declared to it. `document`, `window`, `caches`, `process` and
 everything else supplied by a host rather than by the language are undeclared, and using
-one is a type error. Core therefore has no `fetch` either: what it needs from a host
-arrives as an injected dependency typed by core itself, which is the shape that keeps it
+one is a type error. Neither package has a `fetch` either: what they need from a host
+arrives as an injected dependency typed by core itself, which is the shape that keeps them
 portable.
 
-A Biome override on `packages/core/**` then covers what the compiler cannot see.
-`noRestrictedImports` rejects React, React Native, Expo, Node, Cloudflare and sibling
-workspace packages. `noRestrictedGlobals` rejects the host globals by name, which matters
-because a single `/// <reference lib="dom" />` re-declares the whole DOM to the compiler
-and the type error disappears.
+A Biome override on `packages/**` then covers what the compiler cannot see.
+`noRestrictedImports` rejects React, React Native, Expo, Node and Cloudflare, and a second
+override adds sibling workspace packages for `packages/core`, which reaches none.
+`noRestrictedGlobals` rejects the host globals by name, which matters because a single
+`/// <reference lib="dom" />` re-declares the whole DOM to the compiler and the type error
+disappears.
 
-Core's tests are compiled by a project of their own. `tsconfig.json` excludes
+Tests are compiled by a project of their own in each package. `tsconfig.json` excludes
 `src/**/*.test.ts` and `tsconfig.test.json` takes them, with the language's default
 libraries and no emit, because the test runner's declaration files reference `setTimeout`,
-`AbortSignal` and other host globals that core does not have and cannot be checked under
-core's `lib`. Both projects are referenced from the root, so test code is type checked
-rather than skipped, and the Biome override still covers all of `packages/core`: a
-`document` in a core test is a lint error where it is no longer a type error.
+`AbortSignal` and other host globals that neither package has and that cannot be checked
+under its `lib`. Both projects are referenced from the root, so test code is type checked
+rather than skipped, and the Biome override still covers all of `packages/`: a `document`
+in a test is a lint error where it is no longer a type error. The live tests are why the
+split matters here rather than only in principle: one of them reaches the real Source
+through the host's own `fetch`, which satisfies the port structurally and is nameable in
+the test project alone.
 
 See [ADR 3](docs/adr/0003-separate-view-layers-shared-core.md) for why.
 
@@ -905,6 +916,113 @@ score falling away outward along both sides of every row. Across 144 weightings 
 distances swept against five benchmark Auditoriums, one from each of five Chains, that holds
 at 720 of 720. And the equal-offset invariant above holds at 42 of 42 and, for the separable
 form, at 0.
+
+## Running a search
+
+`packages/client/src/search.ts` is the mechanism the rest of the workspace exists for, and
+the only place that composes all of it. `openSearch` takes the dependencies the catalogue
+phase takes and answers with a function from a Query to a `Search`: `snapshot()`,
+`subscribe()`, a terminal `done` that never rejects, and `abort()`. A Search is hot, so the
+listing read starts when it is made rather than when something is awaited.
+
+A Query is the catalogue terms plus the party size, whether accessible seating was asked
+for, and a Seat Profile that defaults to Reference. The catalogue terms resolve from the
+on-device cache; everything else needs a seat map, so it fans out.
+
+**A snapshot is the whole ranking, and its reference is stable between changes.**
+`snapshot()` answers with the same object every time until something changes and a
+different one afterwards, which is React's `useSyncExternalStore` contract and the reason
+that shape was chosen: a store that builds a fresh object per call re-renders every
+consumer forever. Its arrays are copies rather than the accumulators behind them, so a
+snapshot a caller is still holding cannot change under it.
+
+**Scores are immutable and knowledge is monotone.** A score is a pure function of the Seat
+Group and the Profile, computed once when the Auditorium arrives and never recomputed, so a
+later arrival changes where a result sits and never what it is. A result in one snapshot is
+in every later one, and no Coverage outcome ever loses a member.
+
+**The ranking is a total order, so it does not depend on arrival order.** Best score first,
+and where two Showtimes score alike, the lower Showtime. Two Showtimes can score exactly
+alike, because two rooms drawn the same score the same, and a stable sort alone would leave
+the tie broken by whichever answered first. Within one Auditorium the same rule applies to
+the Seat Groups: the room's best, and among equals the one nearest the front and the left,
+which is the order `seatGroupsIn` already yields.
+
+**A Showtime contributes one result: the best Seat Group in the room (D36).** A Showtime
+whose room cannot seat the party is still checked and still counted; it simply has nothing
+to offer.
+
+**A result carries no ticketing URL.** `SeatGroupResult.showtime` is a view of `Showtime`
+without `ticketing`, built field by field rather than spread, so the URL is absent at
+runtime and not merely erased from the type. Only re-verification yields one
+([ADR 4](docs/adr/0004-booking-ends-at-a-deep-link.md)). Coverage entries are the other
+way round and do carry it, because the remedy for a Showtime nobody can check is the
+operator's own page.
+
+**A result says what the filters removed.** Availability and Designation are predicates
+applied before ranking rather than terms in the score, so a result states how many of the
+Auditorium's Seats each of them held back: the unavailable ones, and then the accessible
+ones among what is left, which makes the two counts and the ranked Seats a partition of the
+room. A Query that asks for accessible seating removes none on that ground and says so with
+a zero.
+
+**Coverage has six outcomes and its ledger closes in every snapshot.** Checked, sold out,
+no seat map, already started, never identified and could not be reached; not reached yet is
+the remainder rather than a field, so the six and the remainder add to `candidates` in every
+snapshot and not only in the last. Three of them are populated by the listing before a
+request is spent, and the fan-out adds to the same three from what a seat map refusal says.
+An expired screening is `started` and never `failed`, because a cached listing routinely
+offers screenings that have begun and a retry cannot help one; `failed` stays the only
+retryable set.
+
+A listing that cannot be read is not a search with no candidates. It settles in a phase of
+its own, `unreachable`, because a screen that says "nothing matched" when nothing was
+looked at is the silent partial result Coverage exists to prevent.
+
+**The fan-out is 24 workers over one queue.** Twenty four is the measured optimum rather
+than a number chosen here: 48 seat maps complete in 0.67 s at that width against 10.30 s at
+6, which makes fan-out width the dominant performance lever in the system. Workers pull from
+one shared iterator, so nothing is indexed and no worker holds a slice. `abort()` empties
+the queue rather than cancelling what is already in flight: no further request is issued, an
+answer that arrives after it is discarded rather than recorded, and `done` settles with the
+snapshot as it stood.
+
+### Reading a response body
+
+A `fetch()` is not complete until its body is consumed. Collecting responses across a
+fan-out and reading their bodies afterwards holds every connection open and can stall; the
+runtime's own release notes record having to grandfather deployed code that did it. So:
+
+```ts
+// Wrong. Every connection stays open while no body is being read.
+const responses = await Promise.all(paths.map((path) => fetch(path)));
+const bodies = await Promise.all(responses.map((response) => response.text()));
+
+// Right. Each body is consumed as soon as its own headers arrive.
+const bodies = await Promise.all(paths.map(async (path) => (await fetch(path)).text()));
+```
+
+`tools/lint/no-collected-responses.grit` is a Biome plugin that refuses the first form, in
+both halves: a `map` callback that calls the transport and awaits nothing is collecting
+responses, and a `map` callback that reads a body off its own parameter is reading them
+afterwards. It runs in `pnpm lint`, so it gates a pull request and the pre-commit hook
+alike. Biome's own rules were looked at first and none of them expresses this; a plugin is
+Biome's supported way to add one.
+
+### The live timing
+
+`packages/client/src/search.live.test.ts` runs one whole search against the live Source in
+the same lane as the contract test, and holds it to the latency recorded on 2026-08-23
+before any of this code existed. It reads the listing, reads every candidate's seat map raw
+at the same width, and then runs the real search over the same work, so the comparison is
+against both the recorded figure and the Source as it is answering today. It passes when
+the search's fan-out is inside the larger of the two, and the larger of the two is what
+keeps a slow afternoon at the Source from reading as a regression in this code. What it
+catches is a fan-out that has lost its width or grown a stall, which is the only way this
+code can be the reason a search is slow.
+
+It needs `SEATSCOUT_UPSTREAM_ORIGIN` and `SEATSCOUT_AREA` like everything else in that
+lane, and it spends roughly two searches' worth of requests: one raw pass and one real one.
 
 ## The native application
 
