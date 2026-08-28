@@ -62,6 +62,8 @@ const lowercased = (headers: Readonly<Record<string, string>>) =>
 export const routeOf = (url: string): string =>
   new URL(url, "https://upstream.invalid").pathname;
 
+export { seatMapCaptures, showtimeGroupingCaptures };
+
 export const recordedCaptures = (): readonly Capture<unknown>[] => [
   ...seatMapCaptures.values(),
   ...seatMapFailureCaptures.values(),

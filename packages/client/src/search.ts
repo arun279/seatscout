@@ -1,50 +1,26 @@
-import {
-  type NormalisedPosition,
-  REFERENCE,
-  type RankReasons,
-  type Reading,
-  type Seat,
-  type SeatGroup,
-  type SeatGroupTerms,
-  type SeatProfile,
-  type Scored,
-  type Showtime,
-  type ShowtimeId,
-  type UnbookableReason,
-  type Unidentified,
-  normalised,
-  scoringIn,
-  seatGroupsIn,
+import type {
+  Reading,
+  Seat,
+  Showtime,
+  ShowtimeId,
+  UnbookableReason,
+  Unidentified,
 } from "@seatscout/core";
 import {
   type CatalogueDependencies,
   type CatalogueTerms,
   openCatalogue,
 } from "./catalogue.js";
+import {
+  type RankingTerms,
+  type SeatGroupResult,
+  rankingIn,
+  resultOf,
+} from "./ranking.js";
 
 const WIDTH = 24;
 
-export interface SearchTerms extends CatalogueTerms, SeatGroupTerms {
-  readonly profile?: SeatProfile;
-}
-
-export interface RemovedSeats {
-  readonly unavailable: number;
-  readonly accessible: number;
-}
-
-export interface SeatGroupResult {
-  readonly key: string;
-  readonly score: number;
-  readonly seats: readonly Seat[];
-  readonly podDividers: number;
-  readonly position: NormalisedPosition;
-  readonly reasons: RankReasons;
-  readonly showtime: Omit<Showtime, "ticketing">;
-  readonly removed: RemovedSeats;
-  readonly fetchedAt: number;
-  readonly attempts: number;
-}
+export interface SearchTerms extends CatalogueTerms, RankingTerms {}
 
 export interface Coverage {
   readonly candidates: number;
@@ -71,10 +47,6 @@ export interface Search {
   readonly abort: () => void;
 }
 
-interface Best extends Scored {
-  readonly group: SeatGroup<Seat>;
-}
-
 const NOTHING: Coverage = {
   candidates: 0,
   checked: 0,
@@ -87,48 +59,6 @@ const NOTHING: Coverage = {
 
 const bestFirst = (left: SeatGroupResult, right: SeatGroupResult) =>
   right.score - left.score || left.showtime.id - right.showtime.id;
-
-const removedFrom = (
-  seats: readonly Seat[],
-  terms: SeatGroupTerms,
-): RemovedSeats => ({
-  unavailable: seats.filter((seat) => !seat.bookable).length,
-  accessible: terms.accessibleSeating
-    ? 0
-    : seats.filter((seat) => seat.bookable && seat.designation !== "standard")
-        .length,
-});
-
-const bestIn = (seats: readonly Seat[], terms: SearchTerms): Best | null => {
-  const placed = normalised(seats);
-  const score = scoringIn(placed, terms.profile ?? REFERENCE);
-  const [best] = seatGroupsIn(placed, terms)
-    .map((group) => ({ group, ...score(group) }))
-    .toSorted((left, right) => right.score - left.score);
-  return best ?? null;
-};
-
-const resultOf = (
-  showtime: Showtime,
-  reading: Extract<Reading<readonly Seat[]>, { ok: true }>,
-  best: Best,
-  terms: SearchTerms,
-): SeatGroupResult => ({
-  key: `${showtime.id}:${best.group.seats.map((seat) => seat.id).join("+")}`,
-  score: best.score,
-  seats: best.group.seats,
-  podDividers: best.group.podDividers,
-  position: best.position,
-  reasons: best.reasons,
-  showtime: {
-    id: showtime.id,
-    startsAt: showtime.startsAt,
-    presentation: showtime.presentation,
-  },
-  removed: removedFrom(reading.payload, terms),
-  fetchedAt: reading.fetchedAt,
-  attempts: reading.attempts,
-});
 
 export const openSearch = (deps: CatalogueDependencies) => {
   const resolve = openCatalogue(deps);
@@ -176,8 +106,9 @@ export const openSearch = (deps: CatalogueDependencies) => {
         return;
       }
       checked += 1;
-      const best = bestIn(reading.payload, terms);
-      if (best !== null) results.push(resultOf(showtime, reading, best, terms));
+      const [best] = rankingIn(reading.payload, terms).offered;
+      if (best !== undefined)
+        results.push(resultOf(showtime, reading, best, terms));
     };
 
     const check = async (showtime: Showtime) => {
