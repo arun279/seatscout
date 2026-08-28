@@ -43,7 +43,8 @@ export const openSource = (deps: SourceDependencies): Source => {
   const policy = deps.policy ?? defaultPolicy;
   const breaker = circuitBreaker(policy, deps.now);
   let session: string | null = null;
-  let opening: Promise<void> | null = null;
+  let sessionOpened = false;
+  let openingSession: Promise<void> | null = null;
 
   const bootstrap = async () => {
     const response = await deps.fetch(BOOTSTRAP, {
@@ -53,15 +54,16 @@ export const openSource = (deps: SourceDependencies): Source => {
     });
     await response.text();
     session = response.headers.get(OPENED_SESSION);
+    sessionOpened = true;
   };
 
   const held = async (): Promise<string | null> => {
-    if (session !== null) return session;
-    if (opening === null)
-      opening = bootstrap().finally(() => {
-        opening = null;
+    if (sessionOpened) return session;
+    if (openingSession === null)
+      openingSession = bootstrap().finally(() => {
+        openingSession = null;
       });
-    await opening;
+    await openingSession;
     return session;
   };
 
@@ -106,7 +108,7 @@ export const openSource = (deps: SourceDependencies): Source => {
     refreshable: boolean,
   ): Promise<boolean> => {
     if (refreshable && rejected(answer)) {
-      session = null;
+      sessionOpened = false;
       return false;
     }
     if (attempt < policy.attempts)

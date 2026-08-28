@@ -251,14 +251,16 @@ describe("the aggregating source", () => {
     expect(waits).toEqual([40]);
   });
 
-  it("reads without a session header when the bootstrap opens no session", async () => {
+  it("reads without a session header when the bootstrap opens no session, and asks once", async () => {
     const { fetch, source } = rig({
       routes: { [BOOTSTRAP]: { status: 200, body: "{}" } },
     });
     const reading = await source.seatsFor("561748075");
+    await source.seatsFor("561882799");
 
     expect(reading.ok).toBe(true);
     expect(fetch.requests[1]?.headers).toEqual({});
+    expect(pathsOf(fetch).filter((path) => path === BOOTSTRAP)).toHaveLength(1);
   });
 
   it("fails the read when no session can be opened rather than reading on regardless", async () => {
