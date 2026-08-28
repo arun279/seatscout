@@ -29,15 +29,25 @@ jobs:
           echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  $RUNNER_TEMP/actionlint.tar.gz" | sha256sum --check
           tar -x -f "$RUNNER_TEMP/actionlint.tar.gz" -C "$RUNNER_TEMP" actionlint
           sudo install -m 0755 "$RUNNER_TEMP/actionlint" /usr/local/bin/actionlint
+      - name: Install shellcheck
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/shellcheck.tar.gz" https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.gz
+          echo "b7af85e41cc99489dcc21d66c6d5f3685138f06d34651e6d34b42ec6d54fe6f6  $RUNNER_TEMP/shellcheck.tar.gz" | sha256sum --check
+          tar -x -f "$RUNNER_TEMP/shellcheck.tar.gz" -C "$RUNNER_TEMP" shellcheck-v0.11.0/shellcheck
+          sudo install -m 0755 "$RUNNER_TEMP/shellcheck-v0.11.0/shellcheck" /usr/local/bin/shellcheck
       - run: pnpm install --frozen-lockfile
       - run: pnpm format:check
       - run: pnpm lint
       - run: actionlint
+      - run: shellcheck deploy/*.sh
       - run: pnpm spell
       - run: pnpm typecheck
       - run: pnpm dead-code
       - run: pnpm test:unit
       - run: pnpm build
+      - name: Check the deployment builds from the repository alone
+        working-directory: apps/proxy
+        run: pnpm exec wrangler deploy --dry-run
       - name: Install the browser the end-to-end suite drives
         run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
