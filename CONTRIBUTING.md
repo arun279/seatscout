@@ -1210,7 +1210,12 @@ the one hand-off this path is not asked to keep.
 aggregator's own response the parser reads. A `string` is not one, nothing mints one, and a
 search result's Showtime is `Omit<Showtime, "ticketing">`, built field by field so the URL is
 absent at runtime rather than merely erased from the type. So the only value of that type a
-caller can reach is the one a successful verification returns.
+caller can reach *from a result* is the one a successful verification returns.
+
+A Catalogue still carries Showtimes and a Showtime still carries its URL, which is deliberate
+rather than an oversight: the remedy for a Showtime nobody can check is the operator's own
+page, and the named Coverage outcomes depend on it. What has no path to one is a result, which
+is the hand-off ADR 4 is about.
 
 The one way past it is a type assertion, which is why `noUnsafeTypeAssertion` is on. Both
 spellings are refused, `as` and the angle-bracket form, and `as const` is not an assertion in
