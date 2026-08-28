@@ -128,6 +128,78 @@ produces no failing test, and the runner scores that as a survivor rather than a
 a suite that derives its fixtures at module scope reports mutants as surviving that its
 assertions would otherwise have caught.
 
+## The nightly contract test
+
+The mutation gate judges the code against the tests. Nothing above it judges the world: every
+other test runs against the committed corpus, so the whole suite stays green while the
+upstream quietly changes shape underneath it. `packages/core/src/testing/contract.ts` is what
+notices. It reads one seat map answer and reports every way it diverges from what the corpus
+recorded, `contract.live.test.ts` holds the live aggregator to that, and
+`.github/workflows/contract.yml` runs it nightly.
+
+It states an assumption about the world rather than behaviour of this code, so it is not a
+required check and never gates a pull request. The mutation gate is off that list for a
+different reason, cost, and the two arguments are not interchangeable. `pnpm test:live` runs it against
+`SEATSCOUT_UPSTREAM_ORIGIN` and `SEATSCOUT_AREA`, neither of which has a default for the
+reason `corpus:refresh` has none. It has a vitest configuration of its own, and the root
+configuration excludes `*.live.test.ts`, so neither the unit suite nor the mutation run ever
+reaches the network.
+
+**The corpus is the contract.** The recorded vocabulary is derived from the 42 captured maps
+at the point of use rather than written down beside them: the top-level and seat key sets,
+the four seat statuses and the three seat types. Nothing has to be kept in step with a
+refresh, and a list written by hand cannot drift from what was measured. Six things are
+reported: a body that is not JSON, a field the parse needs and the answer no longer carries,
+a key never captured before, a seat status or a seat type outside the recorded vocabulary,
+and a neighbour link that disagrees with the geometry.
+
+**An unrecognised seat type is why this exists at all.** The seat map adapter maps a type it
+does not recognise to `standard` rather than failing closed on it, deliberately, because
+failing closed would drop whole Chains out of every search for the sake of a word nobody had
+classified. That is only safe while something notices the vocabulary moving, and this is that
+something. Availability is the other way round and fails closed, so a status outside the
+recorded set is reported here rather than reaching a result as a Seat nobody can buy.
+
+**The neighbour links are the live half of an invariant the corpus already carries.** The
+Seat Group test holds all 10,974 captured links to the geometric bands; that guards the
+fixtures. Here every link a live map sends must name the Seat immediately beside it in the
+same row, on the side it claims, across a gap the same band rule calls contiguous. It is the
+adapter's own rule applied to today's rooms, not a second copy of it.
+
+**A refusal is not a divergence.** The aggregator declines a seat map request often and
+politely, and it is wrong to report that as the shape having moved: a Showtime that sold out
+overnight would turn this red, and a check that is red for reasons nobody can act on is a
+check people learn to ignore. Only a 200 is judged. The reasons a refusal carries are not
+judged either, because the adapter reads the status code and not the reason, and because the
+first live run met a reason the corpus never captured. What guards against a wholesale
+refusal is coverage: at least one answer must read as an Auditorium with Seats in it, so an
+upstream that refuses everything fails rather than passing vacantly.
+
+**The answers come from a global setup rather than from the test.** `tools/live-answers.mjs`
+opens a session, reads an area, takes the day's widest release, and asks for one seat map per
+Chain plus whatever the listing already knows to be unbookable, which is under twenty requests
+half a second apart, the spacing the corpus refresh uses and the spacing at which 156
+consecutive reads met no 5xx. Core has no `fetch` and cannot get one, so the reading happens
+outside it and arrives as provided values; that is also what keeps the judgement itself a pure
+function the mutation gate can reach. It is a second client of the aggregator rather than a
+share of `capture-corpus.mjs`, because that tool's session exists to harvest the values it has
+to redact and its getter exists to keep a request ledger, and neither belongs here.
+
+**Nothing it writes may name the aggregator or the area.** A failure message that quotes a URL
+would put both into a public run log and, worse, into a public issue, which is what the corpus
+redaction exists to prevent. So a message names a route with its query string dropped, and a
+transport failure is re-raised without the cause that carries the host. The workflow follows
+the same rule: the issue it opens carries a link to the run and no captured output at all,
+because the runner masks its secrets in the log and masks nothing in an issue body.
+
+**A failed run opens an issue.** A scheduled run's own notification reaches one person, and
+which person is a rule rather than a choice: whoever created the workflow, unless someone
+later changed its cron line, unless someone later re-enabled it. That is neither discoverable
+nor stable under editing, so the workflow labels and opens one issue instead, and comments on
+it while it stays open rather than opening another. It closes nothing: whether the contract
+question is settled is a judgement about the code, not about how the world happened to look
+last night.
+
 ## The Core import ban
 
 `packages/core` must stay portable to any runtime, so it may not reach for the DOM,
@@ -577,8 +649,8 @@ lifting the exclusion offers ordinary pairs in two of them and leaves the barrie
 **The neighbour links are held to the geometry rather than read.** All 10,974 the
 aggregator sent name the immediately adjacent Seat in the same row, on the side they claim,
 and not one crosses a console or an aisle, while 279 contiguous gaps carry no link at all.
-A test asserts the agreement over the corpus; the live half belongs to the nightly contract
-test, and no code builds a run from a link.
+A test asserts the agreement over the corpus, the nightly contract test asserts it over
+today's rooms, and no code builds a run from a link.
 
 Two measurements are what this is judged by. All 42 captured Auditoriums have three free
 Seats in one row and all 42 seat a party of three. Five of them can only do it across a

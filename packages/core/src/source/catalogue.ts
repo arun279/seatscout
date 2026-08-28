@@ -11,6 +11,7 @@ import type {
   Unbookable,
   UnbookableReason,
 } from "../domain/catalogue.js";
+import { decoded, isRecord } from "./json.js";
 
 interface UpstreamNamedTheater {
   readonly formattedID: TheaterId;
@@ -92,9 +93,6 @@ const FORMATS: Readonly<Record<string, Format>> = {
   XD: "XD",
   "XL at AMC": "XL",
 };
-
-const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
-  value instanceof Object;
 
 const carries = (
   value: unknown,
@@ -194,14 +192,6 @@ const catalogued = (theaters: readonly UpstreamTheater[]): Catalogue => {
       else unbookable.push({ showtime, reason });
     }
   return { bookable, unbookable };
-};
-
-const decoded = (body: string): { readonly value: unknown } | null => {
-  try {
-    return { value: JSON.parse(body) };
-  } catch {
-    return null;
-  }
 };
 
 export const catalogueFrom = (body: string): Catalogue | null => {

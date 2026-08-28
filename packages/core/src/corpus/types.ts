@@ -7,7 +7,7 @@ export interface Capture<Body> {
   readonly body: Body;
 }
 
-interface CapturedSeat extends UpstreamSeat {
+export interface CapturedSeat extends UpstreamSeat {
   readonly row: number;
   readonly column: number;
   readonly sellIndividuallyWithinSeatBlock: boolean;

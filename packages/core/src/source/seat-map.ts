@@ -1,3 +1,5 @@
+import { decoded, isRecord } from "./json.js";
+
 export interface UpstreamSeat {
   readonly id: string;
   readonly type: string;
@@ -50,31 +52,24 @@ const SEAT_FIELDS: Readonly<Record<keyof UpstreamSeat, "string" | "number">> = {
   height: "number",
 };
 
-const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
-  value instanceof Object;
+export const fieldsMissingFrom = (value: unknown): readonly string[] =>
+  Object.entries(SEAT_FIELDS)
+    .filter(([field, kind]) => !isRecord(value) || typeof value[field] !== kind)
+    .map(([field]) => field);
 
-const isSeat = (value: unknown): value is UpstreamSeat =>
-  isRecord(value) &&
-  Object.entries(SEAT_FIELDS).every(
-    ([field, kind]) => typeof value[field] === kind,
-  );
+export const isUpstreamSeat = (value: unknown): value is UpstreamSeat =>
+  fieldsMissingFrom(value).length === 0;
 
 const carriesSeats = (
   value: unknown,
 ): value is { readonly seats: readonly UpstreamSeat[] } =>
-  isRecord(value) && Array.isArray(value.seats) && value.seats.every(isSeat);
-
-const decoded = (body: string): { readonly value: unknown } | null => {
-  try {
-    return { value: JSON.parse(body) };
-  } catch {
-    return null;
-  }
-};
+  isRecord(value) &&
+  Array.isArray(value.seats) &&
+  value.seats.every(isUpstreamSeat);
 
 const linked = (neighbour: string) => (neighbour === "" ? null : neighbour);
 
-const seatFrom = (seat: UpstreamSeat, fetchedAt: number): Seat => ({
+export const seatFrom = (seat: UpstreamSeat, fetchedAt: number): Seat => ({
   id: seat.id,
   designation: ACCESSIBLE_DESIGNATIONS[seat.type] ?? "standard",
   bookable: BOOKABLE_STATUSES.includes(seat.status),

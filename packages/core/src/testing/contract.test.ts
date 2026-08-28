@@ -1,0 +1,222 @@
+import { describe, expect, it } from "vitest";
+import { seatMapCaptures, seatMapFailureCaptures } from "../corpus/captures.js";
+import type { CapturedSeat, CapturedSeatMap } from "../corpus/types.js";
+import { type Answer, divergencesIn } from "./contract.js";
+
+const FETCHED_AT = 1000;
+
+interface Found {
+  readonly map: CapturedSeatMap;
+  readonly seat: CapturedSeat;
+  readonly at: number;
+}
+
+const answerOf = (body: unknown, status: number): Answer => ({
+  status,
+  body: JSON.stringify(body),
+  fetchedAt: FETCHED_AT,
+});
+
+const seatWhere = (holds: (seat: CapturedSeat) => boolean): Found => {
+  const found = [...seatMapCaptures.values()].flatMap((capture) =>
+    capture.body.seats.flatMap((seat, at) =>
+      holds(seat) ? [{ map: capture.body, seat, at }] : [],
+    ),
+  );
+  const first = found[0];
+  if (first === undefined) throw new Error("no captured Seat answers that");
+  return first;
+};
+
+const changed = (
+  found: Found,
+  change: Readonly<Record<string, unknown>>,
+): Answer =>
+  answerOf(
+    {
+      ...found.map,
+      seats: found.map.seats.map((seat, at) =>
+        at === found.at ? { ...seat, ...change } : seat,
+      ),
+    },
+    200,
+  );
+
+const ordinary = () => seatWhere((seat) => seat.type === "standard");
+
+const eachWord = (field: string, words: readonly string[]) =>
+  Object.fromEntries(
+    words.map((word) => [
+      word,
+      divergencesIn(changed(ordinary(), { [field]: word })),
+    ]),
+  );
+
+describe("the contract the corpus recorded", () => {
+  it("finds nothing diverging in any captured answer", () => {
+    expect(
+      [...seatMapCaptures.values(), ...seatMapFailureCaptures.values()].flatMap(
+        (capture) => divergencesIn(answerOf(capture.body, capture.status)),
+      ),
+    ).toEqual([]);
+  });
+
+  it("recognises every seat status the corpus recorded and no other", () => {
+    expect(eachWord("status", ["A", "R", "O", "X", "H", "Z"])).toEqual({
+      A: [],
+      R: [],
+      O: [],
+      X: [],
+      H: [{ kind: "status", name: "H" }],
+      Z: [{ kind: "status", name: "Z" }],
+    });
+  });
+
+  it("recognises every seat type the corpus recorded and no other", () => {
+    expect(
+      eachWord("type", [
+        "standard",
+        "wheelchair",
+        "companion",
+        "recliner",
+        "WHL",
+      ]),
+    ).toEqual({
+      standard: [],
+      wheelchair: [],
+      companion: [],
+      recliner: [{ kind: "type", name: "recliner" }],
+      WHL: [{ kind: "type", name: "WHL" }],
+    });
+  });
+
+  it("names a field the parse needs and the answer no longer carries", () => {
+    expect({
+      "a seat without its width": divergencesIn(
+        changed(ordinary(), { width: undefined }),
+      ),
+      "a map without its seats": divergencesIn(
+        answerOf({ ...ordinary().map, seats: undefined }, 200),
+      ),
+      "a map whose seats are not a list": divergencesIn(
+        answerOf({ ...ordinary().map, seats: 25 }, 200),
+      ),
+      "a body that is not a map at all": divergencesIn(answerOf(null, 200)),
+      "a body that is not JSON": divergencesIn({
+        status: 200,
+        body: "<html>",
+        fetchedAt: FETCHED_AT,
+      }),
+    }).toEqual({
+      "a seat without its width": [{ kind: "missing", name: "width" }],
+      "a map without its seats": [{ kind: "missing", name: "seats" }],
+      "a map whose seats are not a list": [{ kind: "missing", name: "seats" }],
+      "a body that is not a map at all": [{ kind: "missing", name: "seats" }],
+      "a body that is not JSON": [{ kind: "unreadable", name: "json" }],
+    });
+  });
+
+  it("names a field the answer carries that the corpus never recorded", () => {
+    expect({
+      "on a seat": divergencesIn(changed(ordinary(), { seatTier: "Recliner" })),
+      "on the map": divergencesIn(
+        answerOf(
+          { ...ordinary().map, promotionBanner: "Half price Tuesdays" },
+          200,
+        ),
+      ),
+    }).toEqual({
+      "on a seat": [{ kind: "unexpected", name: "seatTier" }],
+      "on the map": [{ kind: "unexpected", name: "promotionBanner" }],
+    });
+  });
+
+  it("names a Seat whose link no longer points at the Seat beside it", () => {
+    const found = seatWhere(
+      (seat) => seat.leftNeighbor !== "" && seat.rightNeighbor !== "",
+    );
+    const stray = [{ kind: "link", name: found.seat.id }];
+
+    expect({
+      "its left link names the Seat on its right": divergencesIn(
+        changed(found, { leftNeighbor: found.seat.rightNeighbor }),
+      ),
+      "its right link names the Seat on its left": divergencesIn(
+        changed(found, { rightNeighbor: found.seat.leftNeighbor }),
+      ),
+    }).toEqual({
+      "its left link names the Seat on its right": stray,
+      "its right link names the Seat on its left": stray,
+    });
+  });
+
+  it("names both ends of a link once the gap under it reads as an aisle", () => {
+    const found = seatWhere(
+      (seat) => seat.leftNeighbor === "" && seat.rightNeighbor !== "",
+    );
+
+    expect(
+      divergencesIn(changed(found, { width: found.seat.width / 4 })),
+    ).toEqual([
+      { kind: "link", name: found.seat.id },
+      { kind: "link", name: found.seat.rightNeighbor },
+    ]);
+  });
+
+  it("names a Seat whose link reaches past the end of its row", () => {
+    const room = ordinary().map;
+    const edgeAt = (
+      widest: (seat: CapturedSeat, edge: CapturedSeat) => boolean,
+    ) => {
+      const edge = room.seats.reduce((furthest, seat) =>
+        widest(seat, furthest) ? seat : furthest,
+      );
+      return { map: room, seat: edge, at: room.seats.indexOf(edge) };
+    };
+    const left = edgeAt((seat, edge) => seat.x < edge.x);
+    const right = edgeAt((seat, edge) => seat.x > edge.x);
+
+    expect({
+      "past the left end": divergencesIn(
+        changed(left, { leftNeighbor: "nowhere" }),
+      ),
+      "past the right end": divergencesIn(
+        changed(right, { rightNeighbor: "nowhere" }),
+      ),
+    }).toEqual({
+      "past the left end": [{ kind: "link", name: left.seat.id }],
+      "past the right end": [{ kind: "link", name: right.seat.id }],
+    });
+  });
+
+  it("says nothing about an answer the aggregator declined to give", () => {
+    const refused = (status: number, body: string) =>
+      divergencesIn({ status, body, fetchedAt: FETCHED_AT });
+
+    expect({
+      "general admission": refused(
+        400,
+        '[{"id":"GeneralAdmissionShowtimeError","message":""}]',
+      ),
+      "a screening that has begun": refused(
+        404,
+        '[{"id":"ExpiredPerformance","message":""}]',
+      ),
+      "a screening that sold out": refused(
+        410,
+        '[{"id":"PerformanceSoldOut","message":""}]',
+      ),
+      "a reason the corpus never met": refused(
+        404,
+        '[{"id":"ShowtimeNotFound","message":""}]',
+      ),
+      "a transport failure": refused(500, ""),
+    }).toEqual({
+      "general admission": [],
+      "a screening that has begun": [],
+      "a screening that sold out": [],
+      "a reason the corpus never met": [],
+      "a transport failure": [],
+    });
+  });
+});
