@@ -11,7 +11,12 @@ type Env = {
   UPSTREAM_ORIGIN?: string;
 };
 
-type Configuration = { teamDomain: string; aud: string; upstream: string };
+type Configuration = {
+  teamDomain: string;
+  aud: string;
+  upstream: string;
+  referer: string;
+};
 
 const configurationOf = ({
   ACCESS_TEAM_DOMAIN,
@@ -23,6 +28,7 @@ const configurationOf = ({
         teamDomain: ACCESS_TEAM_DOMAIN,
         aud: ACCESS_AUD,
         upstream: UPSTREAM_ORIGIN,
+        referer: `${new URL(UPSTREAM_ORIGIN).origin}/`,
       }
     : null;
 
@@ -54,8 +60,8 @@ const refusal = async (
   }
 };
 
-const upstreamHeaders = (from: Headers, upstream: string) => {
-  const headers = new Headers({ referer: `${new URL(upstream).origin}/` });
+const upstreamHeaders = (from: Headers, referer: string) => {
+  const headers = new Headers({ referer });
   for (const name of FORWARDED) {
     const value = from.get(name);
     if (value !== null) headers.set(name, value);
@@ -108,7 +114,7 @@ export default {
       new URL(pathname + search, configuration.upstream),
       {
         method: request.method,
-        headers: upstreamHeaders(request.headers, configuration.upstream),
+        headers: upstreamHeaders(request.headers, configuration.referer),
         body: request.body,
         redirect: "manual",
       },

@@ -19,7 +19,10 @@ interface Rig {
   readonly at: (moment: number) => void;
 }
 
-const rig = (script: Omit<UpstreamScript, "seed">, policy?: SourcePolicy) => {
+const rig = (
+  script: Omit<UpstreamScript, "seed">,
+  policy?: SourcePolicy,
+): Rig => {
   const fetch = fakeUpstream({
     seed: 4,
     ...script,
@@ -34,7 +37,7 @@ const rig = (script: Omit<UpstreamScript, "seed">, policy?: SourcePolicy) => {
   });
   const waits: number[] = [];
   let clock = 1000;
-  const rigged: Rig = {
+  return {
     fetch,
     waits,
     at: (moment) => {
@@ -47,11 +50,10 @@ const rig = (script: Omit<UpstreamScript, "seed">, policy?: SourcePolicy) => {
         waits.push(ms);
         return Promise.resolve();
       },
-      random: () => 1,
+      random: () => 0.5,
       policy,
     }),
   };
-  return rigged;
 };
 
 const pathsOf = (fetch: FakeUpstream) =>
@@ -167,7 +169,7 @@ describe("the aggregating source", () => {
       fetchedAt: 1000,
       attempts: 3,
     });
-    expect(waits).toEqual([500, 1000]);
+    expect(waits).toEqual([250, 500]);
     expect(pathsOf(fetch).filter((path) => path === SEAT_MAP)).toHaveLength(3);
   });
 
@@ -235,6 +237,99 @@ describe("the aggregating source", () => {
     expect(fetch.requests).toHaveLength(issued + 1);
   });
 
+  it("keeps a seat map's refusals out of another route's answer", async () => {
+    const nearby = "/napi/nearbyTheaters";
+    const { source } = rig({ sequences: { [nearby]: [410, 410, 410] } });
+
+    expect(await source.theatersNear("75006")).toEqual({
+      ok: false,
+      reason: "unreachable",
+      fetchedAt: 1000,
+      attempts: 3,
+    });
+  });
+
+  it("escapes what it is given rather than letting it rewrite the request", async () => {
+    const { fetch, source } = rig({});
+
+    await source.theatersNear("75006&limit=1");
+
+    expect(pathsOf(fetch)[1]).toBe(
+      "/napi/nearbyTheaters?zipCode=75006%26limit%3D1&limit=25",
+    );
+  });
+
+  it("replaces the session whenever a read returns a new one", async () => {
+    const seatMap = "/napi/seatMap/561882799";
+    const { fetch, source } = rig({
+      routes: {
+        [seatMap]: {
+          status: 200,
+          headers: { "x-upstream-set-cookie": "userlocation=moved" },
+          body: "{}",
+        },
+      },
+    });
+
+    await source.seatsFor("561882799");
+    await source.seatsFor("561748075");
+    await source.seatsFor("561565820");
+
+    expect(fetch.requests[1]?.headers).toEqual({
+      "x-upstream-cookie": SESSION,
+    });
+    expect(fetch.requests[2]?.headers).toEqual({
+      "x-upstream-cookie": "userlocation=moved",
+    });
+    expect(fetch.requests[3]?.headers).toEqual({
+      "x-upstream-cookie": "userlocation=moved",
+    });
+  });
+
+  it("fails the read when the bootstrap is refused rather than reading on regardless", async () => {
+    const { fetch, source } = rig({
+      sequences: { [BOOTSTRAP]: [500, 500, 500] },
+    });
+
+    expect(await source.seatsFor("561748075")).toEqual({
+      ok: false,
+      reason: "unreachable",
+      fetchedAt: 1000,
+      attempts: 3,
+    });
+    expect(pathsOf(fetch)).toEqual([BOOTSTRAP, BOOTSTRAP, BOOTSTRAP]);
+  });
+
+  it("opens the circuit on the default policy's own threshold and break", async () => {
+    const dead = ["561748075", "561882799", "561565820"];
+    const { fetch, source, at } = rig({
+      sequences: Object.fromEntries(
+        [...dead, "561462741"].map((showtime) => [
+          `/napi/seatMap/${showtime}`,
+          [500, 500, 500],
+        ]),
+      ),
+    });
+
+    for (const showtime of dead.slice(0, 2))
+      expect((await source.seatsFor(showtime)).ok).toBe(false);
+    const stillTrying = fetch.requests.length;
+    expect((await source.seatsFor("561565820")).ok).toBe(false);
+    expect(fetch.requests.length).toBeGreaterThan(stillTrying);
+
+    const opened = fetch.requests.length;
+    await source.seatsFor("561462741");
+    expect(fetch.requests).toHaveLength(opened);
+
+    at(5999);
+    await source.seatsFor("561462741");
+    expect(fetch.requests).toHaveLength(opened);
+
+    at(6000);
+    await source.seatsFor("561462741");
+    expect(fetch.requests).toHaveLength(opened + 1);
+  });
+
   it("takes a supplied policy in place of the default", async () => {
     const { source, waits } = rig(
       { sequences: { [SEAT_MAP]: [500, 500] } },
@@ -248,7 +343,7 @@ describe("the aggregating source", () => {
     const reading = await source.seatsFor("561748075");
 
     expect(reading.attempts).toBe(2);
-    expect(waits).toEqual([40]);
+    expect(waits).toEqual([20]);
   });
 
   it("reads without a session header when the bootstrap opens no session, and asks once", async () => {

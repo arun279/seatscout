@@ -294,10 +294,11 @@ publishing it would oblige every caller to learn session handling and retry sema
 it. See [ADR 1](docs/adr/0001-single-aggregating-source.md).
 
 Its three operations are domain questions rather than upstream routes: theaters near an area,
-showtimes for a movie on a date in an area, and seats for a showtime. What comes back is a
-reading: either the payload, or one of four reasons there is none. Three are the aggregator's
-own refusals translated into something a moviegoer can act on, and the fourth is everything a
-retry could not fix.
+showtimes for a movie on a date in an area, and seats for a showtime. Discovery asks for 25
+theaters, which is the number the corpus capture asks for. Every value the caller supplies is
+escaped before it reaches a route, so an area holding an ampersand cannot rewrite the request.
+
+What comes back is a reading: either the payload, or one of four reasons there is none.
 
 | upstream | reading | remedy |
 |---|---|---|
@@ -305,6 +306,11 @@ retry could not fix.
 | 404, the screening has begun | `started` | the next screening |
 | 410 | `soldOut` | another time at that theater |
 | retries exhausted, the transport refused, or the circuit is open | `unreachable` | retry |
+
+The first three are what the aggregator answers a **seat map** request with, so only the seat
+map reads them. A 404 on a showtime listing is not a screening that has begun, and translating
+it as one would be the leak this boundary exists to stop; on the other two operations those
+statuses are failures like any other.
 
 No status code, route or upstream field name exists above this boundary. Every reading also
 carries when it was fetched and how many attempts it took, for one that failed as much as one
@@ -316,9 +322,12 @@ land inside this adapter, not above it, so the boundary does not move when they 
 ### The session
 
 The adapter opens a session once and holds it, and a fan-out of any width opens one rather
-than one each, because concurrent callers join the bootstrap already in flight. A request the
-aggregator rejects drops the session and re-opens it once per reading; a second rejection is
-a failure like any other rather than a second bootstrap.
+than one each, because concurrent callers join the bootstrap already in flight. A bootstrap
+the aggregator refuses opens nothing, and the read fails rather than going on unauthenticated.
+A request the aggregator rejects drops the session and re-opens it once per reading; a second
+rejection is a failure like any other rather than a second bootstrap. Any response carrying a
+session replaces the one held, because the proxy returns the whole jar rather than what
+changed.
 
 The session travels as `X-Upstream-Cookie` and arrives as `X-Upstream-Set-Cookie`, which is
 what the proxy translates to and from the real headers, and never as `Cookie` or
@@ -342,10 +351,17 @@ three attempts the window never reaches one.
 
 The breaker is the three states of Nygard's *Release It!*, held as a consecutive-failure
 count and the moment a break ends: closed while readings answer, open for a fixed break once
-enough consecutive readings have failed, and half open for one trial when that break expires.
-A refusal counts as an answer, because the aggregator answered. A ratio over a sampling
-window, which is what current circuit-breaker libraries default to, does not fit: their
-minimum throughput is a hundred calls and a whole search is forty eight.
+enough consecutive readings have failed, and half open for exactly one trial when that break
+expires, because the request that finds a break just expired would otherwise be all of them at
+once. It is asked before every attempt rather than once per reading, so an open circuit stops
+work already under way. A refusal counts as an answer, because the aggregator answered. A
+ratio over a sampling window, which is what current circuit-breaker libraries default to, does
+not fit: their minimum throughput is a hundred calls and a whole search is forty eight.
+
+What it counts is readings, so it bounds everything after the third failed one and not the
+retries of readings already in flight. A fan-out whose readings all fail together therefore
+spends its whole retry budget before the circuit can open; what the breaker saves is the rest
+of a fan-out that fails progressively, and the next search.
 
 Both are one policy, replaceable in full. Every default cites a published figure or a
 measurement of the aggregator:
@@ -354,7 +370,7 @@ measurement of the aggregator:
 |---|---|---|
 | attempts | 3 | what `tools/capture-corpus.mjs` already does against this aggregator; at the 7% error rate measured under fan-out a third attempt leaves about one in 2,800 |
 | first delay | 500 ms | one measured round trip, bracketed by a 335 ms mean at concurrency 24 and a 510 ms median over five sequential reads |
-| failures before opening | 3 | a failed reading is already three attempts, so a trip is nine consecutive upstream failures, and it costs three readings of a fan-out measured at forty eight |
+| failures before opening | 3 | a failed reading is already three attempts, so a trip is nine consecutive upstream failures, which at the measured rate is not the independent error rate under any reading |
 | break | 5 s | the published default of Polly's circuit-breaker strategy, and longer than a whole measured search |
 
 ### What Core cannot do for itself

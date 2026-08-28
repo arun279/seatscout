@@ -5,10 +5,13 @@ import type { Reading, Source, Unreadable } from "./port.js";
 
 const BOOTSTRAP = "/napi/preferences/themes";
 const BOOTSTRAP_FORM = "application/x-www-form-urlencoded; charset=UTF-8";
-const SESSION = "x-upstream-cookie";
-const OPENED_SESSION = "x-upstream-set-cookie";
+const UPSTREAM_COOKIE = "x-upstream-cookie";
+const UPSTREAM_SET_COOKIE = "x-upstream-set-cookie";
+const THEATERS_ASKED_FOR = 25;
 
-const REFUSALS: Readonly<Record<number, Unreadable>> = {
+type Refusals = Readonly<Record<number, Unreadable>>;
+
+const SEAT_MAP_REFUSALS: Refusals = {
   400: "noSeatMap",
   404: "started",
   410: "soldOut",
@@ -36,7 +39,7 @@ interface Answer {
   readonly body: string;
 }
 
-const rejected = (answer: Answer | null): answer is Answer =>
+const rejected = (answer: Answer | null) =>
   answer !== null && answer.status === 403;
 
 export const openSource = (deps: SourceDependencies): Source => {
@@ -53,7 +56,8 @@ export const openSource = (deps: SourceDependencies): Source => {
       body: `_expiry=${deps.now()}`,
     });
     await response.text();
-    session = response.headers.get(OPENED_SESSION);
+    if (response.status !== 200) return;
+    session = response.headers.get(UPSTREAM_SET_COOKIE);
     sessionOpened = true;
   };
 
@@ -70,14 +74,27 @@ export const openSource = (deps: SourceDependencies): Source => {
   const send = async (path: string): Promise<Answer | null> => {
     try {
       const carried = await held();
+      if (!sessionOpened) return null;
       const response = await deps.fetch(
         path,
-        carried === null ? undefined : { headers: { [SESSION]: carried } },
+        carried === null
+          ? undefined
+          : { headers: { [UPSTREAM_COOKIE]: carried } },
       );
+      const reopened = response.headers.get(UPSTREAM_SET_COOKIE);
+      if (reopened !== null) session = reopened;
       return { status: response.status, body: await response.text() };
     } catch {
       return null;
     }
+  };
+
+  const dropRejectedSession = (answer: Answer | null, refreshable: boolean) => {
+    if (refreshable && rejected(answer)) {
+      sessionOpened = false;
+      return true;
+    }
+    return false;
   };
 
   const unreachable = (attempts: number): Reading => ({
@@ -87,7 +104,11 @@ export const openSource = (deps: SourceDependencies): Source => {
     attempts,
   });
 
-  const settled = (answer: Answer | null, attempts: number): Reading | null => {
+  const settled = (
+    answer: Answer | null,
+    attempts: number,
+    refusals: Refusals,
+  ): Reading | null => {
     if (answer === null) return null;
     if (answer.status === 200)
       return {
@@ -96,38 +117,25 @@ export const openSource = (deps: SourceDependencies): Source => {
         fetchedAt: deps.now(),
         attempts,
       };
-    const reason = REFUSALS[answer.status];
+    const reason = refusals[answer.status];
     return reason === undefined
       ? null
       : { ok: false, reason, fetchedAt: deps.now(), attempts };
   };
 
-  const recover = async (
-    answer: Answer | null,
-    attempt: number,
-    refreshable: boolean,
-  ): Promise<boolean> => {
-    if (refreshable && rejected(answer)) {
-      sessionOpened = false;
-      return false;
-    }
-    if (attempt < policy.attempts)
-      await deps.wait(delayAfter(attempt, policy, deps.random));
-    return refreshable;
-  };
-
-  const read = async (path: string): Promise<Reading> => {
-    if (breaker.isOpen()) return unreachable(0);
-
+  const read = async (path: string, refusals: Refusals = {}) => {
     let refreshable = true;
     for (let attempt = 1; attempt <= policy.attempts; attempt += 1) {
+      if (breaker.refuses()) return unreachable(attempt - 1);
       const answer = await send(path);
-      const reading = settled(answer, attempt);
+      const reading = settled(answer, attempt, refusals);
       if (reading !== null) {
         breaker.succeeded();
         return reading;
       }
-      refreshable = await recover(answer, attempt, refreshable);
+      if (dropRejectedSession(answer, refreshable)) refreshable = false;
+      else if (attempt < policy.attempts)
+        await deps.wait(delayAfter(attempt, policy.firstDelayMs, deps.random));
     }
     breaker.failed();
     return unreachable(policy.attempts);
@@ -135,11 +143,14 @@ export const openSource = (deps: SourceDependencies): Source => {
 
   return {
     theatersNear: (area) =>
-      read(`/napi/nearbyTheaters?zipCode=${area}&limit=25`),
+      read(
+        `/napi/nearbyTheaters?zipCode=${encodeURIComponent(area)}&limit=${THEATERS_ASKED_FOR}`,
+      ),
     showtimesFor: (movie, date, area) =>
       read(
-        `/napi/theaterShowtimeGroupings/${movie}/${date}?isdesktop=true&isDesktopMOP=true&zip=${area}&partnerRestrictedTicketing=`,
+        `/napi/theaterShowtimeGroupings/${encodeURIComponent(movie)}/${encodeURIComponent(date)}?isdesktop=true&isDesktopMOP=true&zip=${encodeURIComponent(area)}&partnerRestrictedTicketing=`,
       ),
-    seatsFor: (showtime) => read(`/napi/seatMap/${showtime}`),
+    seatsFor: (showtime) =>
+      read(`/napi/seatMap/${encodeURIComponent(showtime)}`, SEAT_MAP_REFUSALS),
   };
 };

@@ -248,14 +248,21 @@ describe("the fake upstream", () => {
     ]);
   });
 
-  it("leaves arrival order untouched by the faults scripted alongside it", async () => {
+  it("leaves arrival order untouched by the faults and sequences scripted alongside it", async () => {
     const paths = seatMapPaths();
+    const unscripted = await arrivalOrder(fakeUpstream({ seed: 7 }), paths);
 
     expect(
       await arrivalOrder(
         fakeUpstream({ seed: 7, faults: [{ status: 500, percent: 40 }] }),
         paths,
       ),
-    ).toEqual(await arrivalOrder(fakeUpstream({ seed: 7 }), paths));
+    ).toEqual(unscripted);
+    expect(
+      await arrivalOrder(
+        fakeUpstream({ seed: 7, sequences: { [paths[0] ?? ""]: [500, 500] } }),
+        paths,
+      ),
+    ).toEqual(unscripted);
   });
 });

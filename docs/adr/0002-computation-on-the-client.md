@@ -48,9 +48,10 @@ The server verifies the caller's access token, forwards the request upstream wit
 caller's own session cookies, and streams the response back without parsing it. It holds
 no database, no cache, and no user state.
 
-It supplies one header of its own. The upstream admits a request on its `Referer` and
-refuses one without it, and `Referer` is a forbidden request-header name that page script
-cannot set, so the proxy names the upstream as the referer itself.
+It supplies one header of its own, which measurement established after this decision was
+accepted. The upstream admits a request on its `Referer` and refuses one without it, whatever
+session it carries, and `Referer` is a forbidden request-header name that page script cannot
+set. The proxy therefore names the upstream as the referer itself.
 
 Everything else happens on the device: parsing, seat normalisation, scoring, filtering,
 ranking, and caching.

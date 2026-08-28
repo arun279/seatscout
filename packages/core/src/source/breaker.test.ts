@@ -12,6 +12,9 @@ const rig = () => {
     at: (moment: number) => {
       clock = moment;
     },
+    failTimes: (times: number) => {
+      for (let failure = 0; failure < times; failure += 1) breaker.failed();
+    },
   };
 };
 
@@ -22,54 +25,60 @@ describe("the circuit breaker", () => {
 
     for (let failure = 0; failure < 3; failure += 1) {
       breaker.failed();
-      seen.push(breaker.isOpen());
+      seen.push(breaker.refuses());
     }
     expect(seen).toEqual([false, false, true]);
   });
 
-  it("counts consecutive failures only, so a success in between resets it", () => {
-    const { breaker } = rig();
-
-    breaker.failed();
-    breaker.failed();
-    breaker.succeeded();
-    breaker.failed();
-    breaker.failed();
-
-    expect(breaker.isOpen()).toBe(false);
-  });
-
-  it("stays open for the whole break and lets a trial through the moment it ends", () => {
+  it("admits every request while it is closed", () => {
     const { breaker, at } = rig();
 
-    for (let failure = 0; failure < 3; failure += 1) breaker.failed();
+    at(9000);
+    expect([breaker.refuses(), breaker.refuses()]).toEqual([false, false]);
+  });
+
+  it("counts consecutive failures only, so a success in between resets it", () => {
+    const { breaker, failTimes } = rig();
+
+    failTimes(2);
+    breaker.succeeded();
+    failTimes(2);
+
+    expect(breaker.refuses()).toBe(false);
+  });
+
+  it("stays open for the whole break and admits one trial when it ends", () => {
+    const { breaker, at, failTimes } = rig();
+
+    failTimes(3);
     at(4999);
-    expect(breaker.isOpen()).toBe(true);
+    expect(breaker.refuses()).toBe(true);
     at(5000);
-    expect(breaker.isOpen()).toBe(false);
+    expect(breaker.refuses()).toBe(false);
+    expect(breaker.refuses()).toBe(true);
   });
 
   it("opens for another break when the trial fails", () => {
-    const { breaker, at } = rig();
+    const { breaker, at, failTimes } = rig();
 
-    for (let failure = 0; failure < 3; failure += 1) breaker.failed();
+    failTimes(3);
     at(5000);
     breaker.failed();
     at(9999);
-    expect(breaker.isOpen()).toBe(true);
+    expect(breaker.refuses()).toBe(true);
     at(10000);
-    expect(breaker.isOpen()).toBe(false);
+    expect(breaker.refuses()).toBe(false);
   });
 
   it("closes at once on a success, because an answer is evidence the break is over", () => {
-    const { breaker, at } = rig();
+    const { breaker, at, failTimes } = rig();
 
-    for (let failure = 0; failure < 3; failure += 1) breaker.failed();
+    failTimes(3);
     at(3000);
     breaker.succeeded();
 
-    expect(breaker.isOpen()).toBe(false);
+    expect(breaker.refuses()).toBe(false);
     breaker.failed();
-    expect(breaker.isOpen()).toBe(false);
+    expect(breaker.refuses()).toBe(false);
   });
 });

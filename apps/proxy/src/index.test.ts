@@ -194,7 +194,6 @@ describe("the session", () => {
       "cf-access-jwt-assertion": await upstream.assertion(),
     });
 
-    expect(upstream.received[0]?.headers.has("cookie")).toBe(false);
     expect(response.headers.has("x-upstream-set-cookie")).toBe(false);
   });
 

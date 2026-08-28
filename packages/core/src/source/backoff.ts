@@ -5,6 +5,6 @@ export interface RetryPolicy {
 
 export const delayAfter = (
   failedAttempts: number,
-  policy: RetryPolicy,
+  firstDelayMs: number,
   random: () => number,
-): number => random() * policy.firstDelayMs * 2 ** (failedAttempts - 1);
+): number => random() * firstDelayMs * 2 ** (failedAttempts - 1);
