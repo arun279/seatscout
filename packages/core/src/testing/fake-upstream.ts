@@ -24,26 +24,32 @@ interface Arrival {
   readonly response: FetchResponse;
 }
 
-const routeOf = (url: string): string =>
+export const routeOf = (url: string): string =>
   new URL(url, "https://upstream.invalid").pathname;
 
-const recordedRoutes = (): ReadonlyMap<string, Capture<unknown>> =>
-  new Map<string, Capture<unknown>>(
-    [
-      ...seatMapCaptures.values(),
-      ...seatMapFailureCaptures.values(),
-      ...showtimeGroupingCaptures.values(),
-      ...theaterMovieShowtimesCaptures.values(),
-      ...nearbyTheatersCaptures.values(),
-    ].map((capture) => [routeOf(capture.request.path), capture]),
-  );
+export const recordedCaptures = (): readonly Capture<unknown>[] => [
+  ...seatMapCaptures.values(),
+  ...seatMapFailureCaptures.values(),
+  ...showtimeGroupingCaptures.values(),
+  ...theaterMovieShowtimesCaptures.values(),
+  ...nearbyTheatersCaptures.values(),
+];
 
 export const fakeUpstream = (script: UpstreamScript): Fetch => {
-  const routes = recordedRoutes();
   const draws = xoroshiro128plus(script.seed);
+  const routes = new Map<string, Capture<unknown>>(
+    recordedCaptures().map((capture) => [
+      routeOf(capture.request.path),
+      capture,
+    ]),
+  );
   const faultSlots = script.faults?.flatMap((fault) =>
     new Array<number>(fault.percent).fill(fault.status),
   );
+  if (faultSlots && faultSlots.length > 100)
+    throw new Error(
+      `a fault script may not exceed a hundred percent; this one reaches ${faultSlots.length}`,
+    );
 
   let batch: Arrival[] = [];
   const releaseBatch = () => {
@@ -56,7 +62,8 @@ export const fakeUpstream = (script: UpstreamScript): Fetch => {
   return (url) => {
     const route = routeOf(url);
     const capture = routes.get(route);
-    if (!capture) throw new Error(`no capture was recorded for ${route}`);
+    if (!capture)
+      return Promise.reject(new Error(`no capture was recorded for ${route}`));
 
     const arrivesAfter = uniformInt(draws, 0, 999);
     const percentile = uniformInt(draws, 0, 99);
@@ -68,6 +75,7 @@ export const fakeUpstream = (script: UpstreamScript): Fetch => {
       resolve,
       response: {
         status: faulted ?? capture.status,
+        headers: { get: () => null },
         text: () =>
           Promise.resolve(
             faulted === undefined ? JSON.stringify(capture.body) : "",
