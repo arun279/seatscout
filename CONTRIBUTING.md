@@ -41,8 +41,10 @@ rule and its standard limit. Unknown words go in the `words` list in `cspell.jso
 `packages/core` must stay portable to any runtime, so it may not reach for the DOM,
 React, React Native, or a runtime-specific API. Two gates hold that:
 
-- Its `tsconfig.json` sets `lib` to the language alone and `types` to nothing, so
-  `document`, `window`, `console` and Node globals do not exist to it.
+- Its `tsconfig.json` sets `lib` to the language plus `WebWorker`, TypeScript's
+  declaration of the web platform without a document, and `types` to nothing. `document`,
+  `window`, `localStorage`, `HTMLElement` and the Node globals therefore do not exist to
+  it, while `fetch`, `Response`, `URL` and `AbortController` do.
 - A Biome `noRestrictedImports` override on `packages/core/**` rejects imports of
   `node:*`, `cloudflare:*`, React, React Native and Expo.
 
