@@ -1,9 +1,9 @@
 import type { TicketingUrl } from "@seatscout/core";
 import { type CatalogueDependencies, openCatalogue } from "./catalogue.js";
-import { type SeatGroupResult, rankingIn, resultOf } from "./ranking.js";
+import { type SeatGroupResult, rankingIn } from "./ranking.js";
 import type { SearchTerms } from "./search.js";
 
-type Gone = "taken" | "unreachable";
+type Unverified = "taken" | "unreachable";
 
 export type Verified =
   | {
@@ -13,12 +13,12 @@ export type Verified =
     }
   | {
       readonly ok: false;
-      readonly reason: Gone;
+      readonly reason: Unverified;
       readonly alternatives: readonly SeatGroupResult[];
     };
 
 const gone = (
-  reason: Gone,
+  reason: Unverified,
   alternatives: readonly SeatGroupResult[] = [],
 ): Verified => ({ ok: false, reason, alternatives });
 
@@ -38,18 +38,18 @@ export const openVerification = (deps: CatalogueDependencies) => {
     const reading = await deps.source.seatsFor(`${showtime.id}`);
     if (!reading.ok)
       return gone(reading.reason === "unreachable" ? "unreachable" : "taken");
-    const ranking = rankingIn(reading.payload, terms);
+    const ranking = rankingIn(reading, terms);
     const held = ranking.holding(result);
     return held === null
       ? gone(
           "taken",
           ranking.offered.map((alternative) =>
-            resultOf(showtime, reading, alternative, terms),
+            ranking.resultOf(showtime, alternative),
           ),
         )
       : {
           ok: true,
-          result: resultOf(showtime, reading, held, terms),
+          result: ranking.resultOf(showtime, held),
           ticketing: showtime.ticketing,
         };
   };

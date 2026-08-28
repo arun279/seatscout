@@ -18,7 +18,7 @@ export interface RankingTerms extends SeatGroupTerms {
   readonly profile?: SeatProfile;
 }
 
-export interface RemovedSeats {
+interface RemovedSeats {
   readonly unavailable: number;
   readonly accessible: number;
 }
@@ -36,13 +36,14 @@ export interface SeatGroupResult {
   readonly attempts: number;
 }
 
-export interface Ranked extends Scored {
+interface Ranked extends Scored {
   readonly group: SeatGroup<Seat>;
 }
 
 export interface Ranking {
   readonly offered: readonly Ranked[];
   readonly holding: (group: SeatGroup<Seat>) => Ranked | null;
+  readonly resultOf: (showtime: Showtime, ranked: Ranked) => SeatGroupResult;
 }
 
 const removedFrom = (
@@ -57,11 +58,12 @@ const removedFrom = (
 });
 
 export const rankingIn = (
-  auditorium: readonly Seat[],
+  auditorium: Extract<Reading<readonly Seat[]>, { ok: true }>,
   terms: RankingTerms,
 ): Ranking => {
-  const placed = normalised(auditorium);
+  const placed = normalised(auditorium.payload);
   const score = scoringIn(placed, terms.profile ?? REFERENCE);
+  const removed = removedFrom(auditorium.payload, terms);
   const rank = (group: SeatGroup<Seat & NormalisedPosition>): Ranked => ({
     group,
     ...score(group),
@@ -78,27 +80,21 @@ export const rankingIn = (
         ? rank({ seats: held, podDividers: group.podDividers })
         : null;
     },
+    resultOf: (showtime, ranked) => ({
+      key: `${showtime.id}:${ranked.group.seats.map((seat) => seat.id).join("+")}`,
+      score: ranked.score,
+      seats: ranked.group.seats,
+      podDividers: ranked.group.podDividers,
+      position: ranked.position,
+      reasons: ranked.reasons,
+      showtime: {
+        id: showtime.id,
+        startsAt: showtime.startsAt,
+        presentation: showtime.presentation,
+      },
+      removed,
+      fetchedAt: auditorium.fetchedAt,
+      attempts: auditorium.attempts,
+    }),
   };
 };
-
-export const resultOf = (
-  showtime: Showtime,
-  reading: Extract<Reading<readonly Seat[]>, { ok: true }>,
-  ranked: Ranked,
-  terms: SeatGroupTerms,
-): SeatGroupResult => ({
-  key: `${showtime.id}:${ranked.group.seats.map((seat) => seat.id).join("+")}`,
-  score: ranked.score,
-  seats: ranked.group.seats,
-  podDividers: ranked.group.podDividers,
-  position: ranked.position,
-  reasons: ranked.reasons,
-  showtime: {
-    id: showtime.id,
-    startsAt: showtime.startsAt,
-    presentation: showtime.presentation,
-  },
-  removed: removedFrom(reading.payload, terms),
-  fetchedAt: reading.fetchedAt,
-  attempts: reading.attempts,
-});

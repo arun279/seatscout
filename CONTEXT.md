@@ -190,6 +190,20 @@ status codes are mapped onto a known-bookable set, and any code outside that set
 treated as not bookable. A Seat is never presented as available on the strength of an
 unrecognised code.
 
+## Re-verification
+
+Reading a Seat Group's Availability again at the moment of hand-off. It is the only thing
+that yields a ticketing URL.
+
+It answers one of three ways. The Seat Group is still there, and the answer carries the
+Showtime's ticketing URL exactly as the Source supplied it. It is **taken**, meaning at
+least one of its Seats can no longer be bought, and the answer carries the Auditorium's
+other Seat Groups instead, ranked. Or the Source was **unreachable**, and the answer carries
+nothing at all, because a Re-verification that could not judge must not offer a way to buy.
+
+**Not a freshness check.** Every hand-off re-verifies, whatever the age of what it was
+shown, so no reading is ever recent enough to skip one and there is no threshold to pick.
+
 ## Provenance
 
 The record attached to every result of where it came from and when: which Source, the

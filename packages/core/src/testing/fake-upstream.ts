@@ -10,6 +10,8 @@ import {
 import type { Capture } from "../corpus/types.js";
 import type { Fetch, FetchResponse } from "../transport.js";
 
+export { seatMapCaptures };
+
 interface ScriptedRoute {
   readonly status: number;
   readonly headers?: Readonly<Record<string, string>>;
@@ -61,8 +63,6 @@ const lowercased = (headers: Readonly<Record<string, string>>) =>
 
 export const routeOf = (url: string): string =>
   new URL(url, "https://upstream.invalid").pathname;
-
-export { seatMapCaptures, showtimeGroupingCaptures };
 
 export const recordedCaptures = (): readonly Capture<unknown>[] => [
   ...seatMapCaptures.values(),

@@ -15,7 +15,6 @@ import {
   type RankingTerms,
   type SeatGroupResult,
   rankingIn,
-  resultOf,
 } from "./ranking.js";
 
 const WIDTH = 24;
@@ -106,9 +105,9 @@ export const openSearch = (deps: CatalogueDependencies) => {
         return;
       }
       checked += 1;
-      const [best] = rankingIn(reading.payload, terms).offered;
-      if (best !== undefined)
-        results.push(resultOf(showtime, reading, best, terms));
+      const ranking = rankingIn(reading, terms);
+      const [best] = ranking.offered;
+      if (best !== undefined) results.push(ranking.resultOf(showtime, best));
     };
 
     const check = async (showtime: Showtime) => {

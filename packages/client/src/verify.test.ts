@@ -14,7 +14,6 @@ import {
   recordedCaptures,
   routeOf,
   seatMapCaptures,
-  showtimeGroupingCaptures,
 } from "@seatscout/core/testing";
 import { describe, expect, expectTypeOf, it } from "vitest";
 import type { SeatGroupResult } from "./ranking.js";
@@ -50,6 +49,7 @@ interface Options {
   readonly profile?: SeatProfile;
   readonly room?: string;
   readonly answer?: (result: SeatGroupResult, room: string) => Answer;
+  readonly searchedIn?: (room: string) => Answer;
   readonly script?: (bookable: readonly Showtime[]) => Script;
   readonly at?: number;
   readonly store?: (listed: Catalogue) => KeyValueStore;
@@ -103,13 +103,6 @@ const refusalNamed = (reason: string): Answer => {
   if (captured === undefined) throw new Error(`${reason} was never captured`);
   return { status: captured.status, body: JSON.stringify(captured.body) };
 };
-
-const capturedShowtimes = () =>
-  [...showtimeGroupingCaptures.values()]
-    .flatMap((capture) => capture.body.theaterShowtimes.theaters)
-    .flatMap((theater) => theater.variants)
-    .flatMap((variant) => variant.amenityGroups)
-    .flatMap((group) => group.showtimes);
 
 const roomsFor = (bookable: readonly Showtime[], answer: Answer) =>
   Object.fromEntries(
@@ -178,7 +171,10 @@ const verifying = async (options: Options = {}) => {
         seed: SEED,
         routes: {
           [BOOTSTRAP]: SESSION,
-          ...roomsFor(candidates.bookable, roomWhere(room)),
+          ...roomsFor(
+            candidates.bookable,
+            options.searchedIn?.(room) ?? roomWhere(room),
+          ),
         },
       }),
       SEARCHED_AT,
@@ -206,6 +202,7 @@ const verifying = async (options: Options = {}) => {
     now: () => at,
   });
   return {
+    listed,
     result,
     verify: () => verify(result, terms),
     requested: () => upstream.requests.map((request) => request.path),
@@ -215,20 +212,23 @@ const verifying = async (options: Options = {}) => {
 };
 
 describe("re-verifying a Seat Group", () => {
-  it("hands back the ticketing URL the Source supplied for that Showtime, byte for byte", async () => {
+  it("hands back the ticketing URL the listing carried for that Showtime and no other", async () => {
     const run = await verifying();
     const verified = await run.verify();
-    const rows = capturedShowtimes();
-    const supplied = rows
-      .filter((row) => row.id === run.result.showtime.id)
-      .map((row) => row.ticketingJumpPageURL);
-    const elsewhere = rows
-      .filter((row) => row.id !== run.result.showtime.id)
-      .map((row) => row.ticketingJumpPageURL);
+    const listed = [
+      ...run.listed.bookable,
+      ...run.listed.unbookable.map((entry) => entry.showtime),
+    ];
+    const supplied = listed
+      .filter((showtime) => showtime.id === run.result.showtime.id)
+      .map((showtime) => showtime.ticketing);
+    const elsewhere = listed
+      .filter((showtime) => showtime.id !== run.result.showtime.id)
+      .map((showtime) => showtime.ticketing);
 
     expect(supplied).toHaveLength(1);
     expect(verified.ok && verified.ticketing).toBe(supplied[0]);
-    expect(elsewhere).toHaveLength(823);
+    expect(elsewhere).toHaveLength(175);
     expect(elsewhere).not.toContain(supplied[0]);
   });
 
@@ -282,11 +282,12 @@ describe("re-verifying a Seat Group", () => {
   });
 
   it("does not call a Seat Group taken because a Seat beside it came free", async () => {
-    const run = await verifying({
-      answer: (_, room) => roomWhere(room, { F5: "A" }),
-    });
+    const freed = (room: string) => roomWhere(room, { F5: "A" });
+    const run = await verifying({ answer: (_, room) => freed(room) });
+    const shifted = await verifying({ searchedIn: freed });
     const verified = await run.verify();
 
+    expect(seatsIn(shifted.result)).toEqual(["F8", "F7"]);
     expect(verified.ok && seatsIn(verified.result)).toEqual(["F9", "F8"]);
     expect(verified.ok && verified.result.key).toBe(run.result.key);
     expect(verified.ok && verified.result.removed.unavailable).toBe(
@@ -304,8 +305,8 @@ describe("re-verifying a Seat Group", () => {
     );
     const verified = await Promise.all(runs.map((run) => run.verify()));
 
-    expect(verified.map((answer) => answer.ok)).toEqual([false, false, false]);
-    expect(verified.map((answer) => answer.ok || answer.reason)).toEqual([
+    expect(verified.map((one) => one.ok)).toEqual([false, false, false]);
+    expect(verified.map((one) => one.ok || one.reason)).toEqual([
       "taken",
       "taken",
       "taken",
@@ -320,7 +321,7 @@ describe("re-verifying a Seat Group", () => {
     expect(verified.ok).toBe(false);
     expect(verified.ok || verified.reason).toBe("unreachable");
     expect(alternativesIn(verified)).toEqual([]);
-    expect(Object.keys(verified)).toEqual(["ok", "reason", "alternatives"]);
+    expect(verified).not.toHaveProperty("ticketing");
     expect(run.auditoriumsRead()).toHaveLength(3);
   });
 
