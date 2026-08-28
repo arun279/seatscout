@@ -16,12 +16,15 @@
     "prepare": "lefthook install",
     "spell": "cspell lint --dot .",
     "test:e2e": "playwright test --pass-with-no-tests",
+    "test:mutation": "stryker run",
     "test:unit": "vitest run --passWithNoTests",
     "typecheck": "tsc --build --pretty false --noEmit"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.10",
     "@playwright/test": "1.62.1",
+    "@stryker-mutator/core": "10.0.0",
+    "@stryker-mutator/vitest-runner": "10.0.0",
     "cspell": "10.1.1",
     "fast-check": "4.9.0",
     "knip": "6.32.3",

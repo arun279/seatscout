@@ -1,0 +1,9 @@
+{
+  "$schema": "https://unpkg.com/@stryker-mutator/core@10.0.0/schema/stryker-schema.json",
+  "testRunner": "vitest",
+  "plugins": ["@stryker-mutator/vitest-runner"],
+  "inPlace": true,
+  "mutate": ["{packages,tools}/*/src/**/*.ts", "!**/*.test.ts"],
+  "reporters": ["clear-text"],
+  "thresholds": { "break": 100 }
+}
