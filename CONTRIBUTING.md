@@ -94,11 +94,14 @@ it changes the code and asks whether the suite notices. `stryker.config.json` mu
 no test kills. A file the unit suite does not judge shows up as an uncovered mutant and
 fails the run just as a survivor does.
 
-One thing is carved out: the two view layers, `apps/web` and `apps/native`. ADR 3 puts
-everything correctness critical in `packages`, so what is left in a view layer is screens,
-and the only test that kills a mutated screen is one that restates the screen. That is the
-tautology this gate exists to detect, so the view layers are excluded rather than given
-tests written to satisfy them. What they are for is the end-to-end suite, which a mutation
+One thing is carved out: `apps/native`. ADR 3 puts everything correctness critical in
+`packages`, and that application is a shell, so what is left in it is screens, and the only
+test that kills a mutated screen is one that restates the screen. That is the tautology
+this gate exists to detect, so it is excluded rather than given tests written to satisfy
+it. `apps/web` stays inside the gate: it is the view layer that will hold real behaviour,
+keyboard traversal among it, and it is an empty module today, so including it costs nothing
+now and judges that logic on arrival rather than exempting it by a line written while the
+directory was empty. What they are for is the end-to-end suite, which a mutation
 run over the unit tests cannot stand in for. The stateless proxy is not part of the
 carve-out: it has its own assertions, including that an unauthenticated request is
 rejected, and a fail-closed check is exactly the kind most worth proving can fail.
@@ -298,7 +301,9 @@ leaving the default in place puts `lib.dom.d.ts` beside those declarations and p
 collisions between the two, across duplicate identifiers, mismatched property and variable
 declarations, and differing modifiers. `skipLibCheck` is on because `expo-asset` ships a
 declaration file importing a type from `@react-native/assets-registry`, which publishes no
-types before 0.87 and cannot be raised past what React Native 0.86 pins. Neither option
+types before 0.87 and cannot be raised to it: 0.87 deprecated the package and its
+`registry.js` now re-exports `AssetRegistry` from `react-native`, which 0.86.3 does not
+have, so raising it type checks and then fails at runtime. Neither option
 covers for TypeScript 7: with the DOM library removed it checks React Native's own
 declarations with no errors, and the same tree run through TypeScript 6.0.3, which is what
 Expo's own SDK 57 template pins, reported the `expo-asset` error identically.
