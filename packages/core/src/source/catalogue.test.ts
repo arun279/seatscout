@@ -9,6 +9,7 @@ import type {
   Showtime,
   TicketingUrl,
   UnbookableReason,
+  Unidentified,
 } from "../domain/catalogue.js";
 import { type UpstreamScript, fakeUpstream } from "../testing/fake-upstream.js";
 import { openSource } from "./aggregator.js";
@@ -47,9 +48,12 @@ const payloadOf = <Found>(reading: Reading<Found>): Found => {
 const catalogueOf = async (movie: string, date: string): Promise<Catalogue> =>
   payloadOf(await sourced().showtimesFor(movie, date, AREA));
 
-const everyShowtime = (catalogue: Catalogue): readonly Showtime[] => [
+const everyShowtime = (
+  catalogue: Catalogue,
+): readonly (Showtime | Unidentified)[] => [
   ...catalogue.bookable,
   ...catalogue.unbookable.map((entry) => entry.showtime),
+  ...catalogue.unidentified,
 ];
 
 const counted = (catalogue: Catalogue, reason: UnbookableReason) =>
@@ -132,6 +136,50 @@ const answering = (route: string, body: unknown) => ({
   routes: { [route]: { status: 200, body: JSON.stringify(body) } },
 });
 
+const THEATERS_THE_SOURCE_STOPPED_IDENTIFYING = [
+  "AMC NorthPark 15",
+  "AMC Village on the Parkway 9",
+  "Cinemark Central Plano",
+  "Cinemark Dallas XD and IMAX",
+  "Cinemark Frisco Square and XD",
+  "Cinemark Legacy and XD",
+  "Cinemark Lewisville and XD",
+  "Cinemark Tinseltown Grapevine and XD",
+  "Cinemark West Plano and XD",
+];
+
+const withoutRowIds = (theater: CapturedTheaters[number]) => ({
+  ...theater,
+  variants: theater.variants.map((variant) => ({
+    ...variant,
+    amenityGroups: variant.amenityGroups.map((group) => ({
+      ...group,
+      showtimes: without(group.showtimes, "id"),
+    })),
+  })),
+});
+
+const asTheSourceAnsweredIt = () => {
+  const capture = groupingCapture(WIDE_RELEASE, TODAY);
+  return {
+    theaterShowtimes: {
+      ...capture.theaterShowtimes,
+      theaters: capture.theaterShowtimes.theaters.map((theater) =>
+        THEATERS_THE_SOURCE_STOPPED_IDENTIFYING.includes(theater.name)
+          ? withoutRowIds(theater)
+          : theater,
+      ),
+    },
+  };
+};
+
+const readingOf = (body: unknown) =>
+  sourced(answering(grouping(WIDE_RELEASE, TODAY), body)).showtimesFor(
+    WIDE_RELEASE,
+    TODAY,
+    AREA,
+  );
+
 describe("the catalogue", () => {
   it("turns a Movie, a date and an area into Showtimes in domain vocabulary", async () => {
     const theaters = groupingCapture(WIDE_RELEASE, TODAY).theaterShowtimes
@@ -172,6 +220,11 @@ describe("the catalogue", () => {
   it("cannot be handed a ticketing URL that was assembled from parts", () => {
     expectTypeOf<string>().not.toExtend<TicketingUrl>();
     expectTypeOf<TicketingUrl>().toExtend<string>();
+  });
+
+  it("cannot file a Showtime it did identify among the ones it did not", () => {
+    expectTypeOf<Showtime>().not.toExtend<Unidentified>();
+    expectTypeOf<Unidentified>().not.toExtend<Showtime>();
   });
 
   it("separates the bookable Showtimes from the ones it names a reason for", async () => {
@@ -287,7 +340,6 @@ describe("the catalogue", () => {
       "expired",
       "formattedID",
       "hasReservedSeating",
-      "id",
       "isSoldOut",
       "movieID",
       "name",
@@ -306,6 +358,115 @@ describe("the catalogue", () => {
     }
 
     expect(refused).toEqual(fields);
+  });
+
+  it("answers an area whose Theaters lost their Showtime identities rather than refusing it", async () => {
+    const catalogue = payloadOf(await readingOf(asTheSourceAnsweredIt()));
+
+    expect({
+      bookable: catalogue.bookable.length,
+      noSeatMap: counted(catalogue, "noSeatMap"),
+      started: counted(catalogue, "started"),
+      soldOut: counted(catalogue, "soldOut"),
+      unidentified: catalogue.unidentified.length,
+    }).toEqual({
+      bookable: 100,
+      noSeatMap: 3,
+      started: 0,
+      soldOut: 1,
+      unidentified: 72,
+    });
+  });
+
+  it("answers with every row every captured listing holds", async () => {
+    const listed: number[] = [];
+    const answered: number[] = [];
+    for (const [movie, date] of GROUPINGS) {
+      listed.push(
+        capturedRows(groupingCapture(movie, date).theaterShowtimes.theaters)
+          .length,
+      );
+      answered.push(everyShowtime(await catalogueOf(movie, date)).length);
+    }
+
+    expect(listed).toEqual([236, 80, 176, 175, 157]);
+    expect(answered).toEqual(listed);
+  });
+
+  it("answers with every row the Source listed, whether or not the row was identified", async () => {
+    const capture = groupingCapture(WIDE_RELEASE, TODAY);
+    const listed = capturedRows(capture.theaterShowtimes.theaters).length;
+    const whole = await catalogueOf(WIDE_RELEASE, TODAY);
+    const partly = payloadOf(await readingOf(asTheSourceAnsweredIt()));
+    const none = payloadOf(await readingOf(without(capture, "id")));
+
+    expect(listed).toBe(176);
+    expect([whole, partly, none].map((it) => everyShowtime(it).length)).toEqual(
+      [listed, listed, listed],
+    );
+    expect([
+      whole.unidentified.length,
+      partly.unidentified.length,
+      none.unidentified.length,
+    ]).toEqual([0, 72, 172]);
+  });
+
+  it("asks why a Showtime is unbookable before it asks whether it was identified", async () => {
+    const yesterday = "2026-08-27";
+    const capture = groupingCapture(WIDE_RELEASE, yesterday);
+    const catalogue = payloadOf(
+      await sourced(
+        answering(grouping(WIDE_RELEASE, yesterday), without(capture, "id")),
+      ).showtimesFor(WIDE_RELEASE, yesterday, AREA),
+    );
+
+    expect({
+      bookable: catalogue.bookable.length,
+      noSeatMap: counted(catalogue, "noSeatMap"),
+      started: counted(catalogue, "started"),
+      unidentified: catalogue.unidentified.length,
+    }).toEqual({ bookable: 0, noSeatMap: 3, started: 77, unidentified: 0 });
+  });
+
+  it("keeps the Presentation and the ticketing URL of a Showtime it cannot identify", async () => {
+    const supplied = capturedRows(
+      groupingCapture(WIDE_RELEASE, TODAY).theaterShowtimes.theaters.filter(
+        (theater) =>
+          THEATERS_THE_SOURCE_STOPPED_IDENTIFYING.includes(theater.name),
+      ),
+    );
+    const catalogue = payloadOf(await readingOf(asTheSourceAnsweredIt()));
+
+    expect(
+      [
+        ...new Set(
+          catalogue.unidentified.flatMap((showtime) => Object.keys(showtime)),
+        ),
+      ].toSorted(),
+    ).toEqual(["presentation", "startsAt", "ticketing"]);
+    expect(
+      catalogue.unidentified.map((showtime) => showtime.ticketing).toSorted(),
+    ).toEqual(supplied.map((row) => row.ticketingJumpPageURL).toSorted());
+    expect(
+      [
+        ...new Set(
+          catalogue.unidentified.map(
+            (showtime) => showtime.presentation.theater.name,
+          ),
+        ),
+      ].toSorted(),
+    ).toEqual(THEATERS_THE_SOURCE_STOPPED_IDENTIFYING);
+  });
+
+  it("refuses a whole listing whose identity is there and is not one", async () => {
+    const capture = groupingCapture(WIDE_RELEASE, TODAY);
+    const identities: readonly unknown[] = ["561528003", null, true];
+    const refused: unknown[] = [];
+    for (const identity of identities)
+      if (!(await readingOf(instead(capture, "id", identity))).ok)
+        refused.push(identity);
+
+    expect(refused).toEqual(identities);
   });
 
   it("refuses a whole listing that carries one part it cannot read", async () => {
@@ -444,6 +605,7 @@ describe("the catalogue", () => {
     );
     const domain = [
       await sourced().showtimesFor(WIDE_RELEASE, TODAY, AREA),
+      await readingOf(asTheSourceAnsweredIt()),
       await sourced().theatersNear(AREA),
     ];
 

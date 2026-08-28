@@ -66,7 +66,7 @@ const showtimeCountOf = (movie) =>
     (variant.amenityGroups ?? []).flatMap((group) => group.showtimes ?? []),
   ).length;
 
-const showtimesIn = (grouping) =>
+const seatMapTargetsIn = (grouping) =>
   (grouping.theaterShowtimes?.theaters ?? []).flatMap((theater) =>
     (theater.variants ?? []).flatMap((variant) =>
       (variant.amenityGroups ?? []).flatMap((group) =>
@@ -117,16 +117,18 @@ export default async function readTheLiveSource(project) {
   const today = new Date().toLocaleDateString("en-CA");
 
   const nearby = `/napi/nearbyTheaters?zipCode=${encodeURIComponent(AREA)}&limit=25`;
-  const anchor = bodyOf(await answer(nearby), nearby).theaters[0];
+  const area = await answer(nearby);
+  const anchor = bodyOf(area, nearby).theaters[0];
 
-  const listing = `/napi/theaterMovieShowtimes/${anchor.id.toLowerCase()}?chainCode=${anchor.chainCode}&startDate=${today}&isdesktop=true&partnerRestrictedTicketing=`;
-  const movies = bodyOf(await answer(listing), listing).viewModel.movies;
+  const schedule = `/napi/theaterMovieShowtimes/${anchor.id.toLowerCase()}?chainCode=${anchor.chainCode}&startDate=${today}&isdesktop=true&partnerRestrictedTicketing=`;
+  const movies = bodyOf(await answer(schedule), schedule).viewModel.movies;
   const widest = movies.reduce((most, movie) =>
     showtimeCountOf(movie) > showtimeCountOf(most) ? movie : most,
   );
 
   const grouping = `/napi/theaterShowtimeGroupings/${widest.id}/${today}?isdesktop=true&isDesktopMOP=true&zip=${encodeURIComponent(AREA)}&partnerRestrictedTicketing=`;
-  const showtimes = showtimesIn(bodyOf(await answer(grouping), grouping));
+  const listing = await answer(grouping);
+  const showtimes = seatMapTargetsIn(bodyOf(listing, grouping));
 
   const seatMaps = [];
   for (const showtime of [
@@ -136,11 +138,6 @@ export default async function readTheLiveSource(project) {
     seatMaps.push(await answer(`/napi/seatMap/${showtime.id}`));
 
   project.provide("liveSeatMaps", seatMaps);
-  project.provide("liveSearch", {
-    origin: HOST,
-    area: AREA,
-    movie: `${widest.id}`,
-    date: today,
-    headers: { "User-Agent": UA, Referer: `${HOST}/` },
-  });
+  project.provide("liveArea", area);
+  project.provide("liveListing", listing);
 }

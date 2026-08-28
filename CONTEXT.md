@@ -214,8 +214,10 @@ Theater and time, because each has a different remedy and only the last of them 
 retry. The six and the not-reached remainder add to the candidates in every reading of a
 search, not only in the last, so the arithmetic is an invariant rather than a hope.
 
-A screening the catalogue lists without the identity a seat map is asked for by is a
-candidate like any other, and it can never be checked, because there is nothing to ask a
-seat map for. It is counted among the candidates and named with its Theater and time, and
-it is offered the operator's own page rather than a retry. Leaving it out of the count
-instead is what would make the short list look whole.
+A screening the catalogue lists without the identity a seat map is asked for by is
+**unidentified**. It is a candidate like any other and it can never be checked, because
+there is nothing to ask a seat map for; it is counted among the candidates and named with
+its Theater and time, and it is offered the operator's own page rather than a retry.
+Leaving it out of the count instead is what would make the short list look whole. A
+Showtime the Source did identify and already said is sold out, general admission or over is
+not this: it keeps that reason and the remedy that goes with it.

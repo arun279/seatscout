@@ -1,7 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { seatMapCaptures, seatMapFailureCaptures } from "../corpus/captures.js";
+import {
+  nearbyTheatersCaptures,
+  seatMapCaptures,
+  seatMapFailureCaptures,
+  showtimeGroupingCaptures,
+} from "../corpus/captures.js";
 import type { CapturedSeat, CapturedSeatMap } from "../corpus/types.js";
-import { type Answer, divergencesIn } from "./contract.js";
+import {
+  type Answer,
+  areaDivergencesIn,
+  divergencesIn,
+  listingDivergencesIn,
+} from "./contract.js";
 
 const FETCHED_AT = 1000;
 
@@ -43,6 +53,28 @@ const changed = (
   );
 
 const ordinary = () => seatWhere((seat) => seat.type === "standard");
+
+const listingCapture = () => {
+  const capture = showtimeGroupingCaptures.get(
+    "showtimes/grouping-245569-2026-08-28.json",
+  );
+  if (capture === undefined) throw new Error("the listing was never captured");
+  return capture.body;
+};
+
+const identifiedNowhere = (body: unknown): Answer => ({
+  status: 200,
+  body: JSON.stringify(body, (key, value) =>
+    key === "id" ? undefined : value,
+  ),
+  fetchedAt: FETCHED_AT,
+});
+
+const areaCapture = () => {
+  const capture = nearbyTheatersCaptures.get("theaters/nearby-theaters.json");
+  if (capture === undefined) throw new Error("the area was never captured");
+  return capture.body;
+};
 
 const eachWord = (field: string, words: readonly string[]) =>
   Object.fromEntries(
@@ -218,5 +250,76 @@ describe("the contract the corpus recorded", () => {
       "a reason the corpus never met": [],
       "a transport failure": [],
     });
+  });
+
+  it("finds nothing diverging in a captured area or a captured listing", () => {
+    expect([
+      ...areaDivergencesIn(answerOf(areaCapture(), 200)),
+      ...listingDivergencesIn(answerOf(listingCapture(), 200)),
+    ]).toEqual([]);
+  });
+
+  it("names the area and the listing it could not read into domain objects", () => {
+    const area = areaCapture();
+    const listing = listingCapture();
+
+    expect(
+      areaDivergencesIn(
+        answerOf({ ...area, theaters: [...area.theaters, {}] }, 200),
+      ),
+    ).toEqual([{ kind: "missing", name: "theaters" }]);
+    expect(
+      listingDivergencesIn(answerOf({ ...listing, theaterShowtimes: {} }, 200)),
+    ).toEqual([{ kind: "missing", name: "catalogue" }]);
+  });
+
+  it("says so when an answer is not JSON at all", () => {
+    const answer: Answer = {
+      status: 200,
+      body: "<html>not today</html>",
+      fetchedAt: FETCHED_AT,
+    };
+
+    expect([
+      ...areaDivergencesIn(answer),
+      ...listingDivergencesIn(answer),
+    ]).toEqual([
+      { kind: "unreadable", name: "json" },
+      { kind: "unreadable", name: "json" },
+    ]);
+  });
+
+  it("judges a seat map only when the Source answered one", () => {
+    expect(
+      divergencesIn({
+        status: 500,
+        body: "<html>we are having trouble</html>",
+        fetchedAt: FETCHED_AT,
+      }),
+    ).toEqual([]);
+  });
+
+  it("says so when an area or a listing arrives with nothing in it", () => {
+    const area = areaCapture();
+
+    expect(areaDivergencesIn(answerOf({ ...area, theaters: [] }, 200))).toEqual(
+      [{ kind: "empty", name: "theaters" }],
+    );
+    expect(
+      listingDivergencesIn(
+        answerOf({ theaterShowtimes: { theaters: [] } }, 200),
+      ),
+    ).toEqual([{ kind: "empty", name: "catalogue" }]);
+  });
+
+  it("counts a Showtime a listing holds whether or not it was identified", () => {
+    expect(listingDivergencesIn(identifiedNowhere(listingCapture()))).toEqual(
+      [],
+    );
+    expect(
+      listingDivergencesIn(
+        identifiedNowhere({ theaterShowtimes: { theaters: [] } }),
+      ),
+    ).toEqual([{ kind: "empty", name: "catalogue" }]);
   });
 });
