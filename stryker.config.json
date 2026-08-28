@@ -5,6 +5,7 @@
   "inPlace": true,
   "mutate": [
     "{apps,packages,tools}/*/src/**/*.{ts,tsx}",
+    "!apps/{native,web}/src/**",
     "!**/*.{test,spec}.?(c|m)[jt]s?(x)"
   ],
   "reporters": ["clear-text"],

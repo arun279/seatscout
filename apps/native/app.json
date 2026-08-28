@@ -1,0 +1,9 @@
+{
+  "expo": {
+    "name": "SeatScout",
+    "slug": "seatscout",
+    "updates": {
+      "enabled": false
+    }
+  }
+}
