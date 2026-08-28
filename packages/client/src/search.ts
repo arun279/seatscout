@@ -27,6 +27,7 @@ export interface Coverage {
   readonly soldOut: readonly (Showtime | Unidentified)[];
   readonly noSeatMap: readonly (Showtime | Unidentified)[];
   readonly started: readonly (Showtime | Unidentified)[];
+  readonly salesOff: readonly (Showtime | Unidentified)[];
   readonly unidentified: readonly Unidentified[];
   readonly failed: readonly ShowtimeId[];
 }
@@ -52,6 +53,7 @@ const NOTHING: Coverage = {
   soldOut: [],
   noSeatMap: [],
   started: [],
+  salesOff: [],
   unidentified: [],
   failed: [],
 };
@@ -67,6 +69,7 @@ export const openSearch = (deps: CatalogueDependencies) => {
     const results: SeatGroupResult[] = [];
     const named: Record<UnbookableReason, (Showtime | Unidentified)[]> = {
       noSeatMap: [],
+      salesOff: [],
       soldOut: [],
       started: [],
     };
@@ -90,6 +93,7 @@ export const openSearch = (deps: CatalogueDependencies) => {
           soldOut: [...named.soldOut],
           noSeatMap: [...named.noSeatMap],
           started: [...named.started],
+          salesOff: [...named.salesOff],
           unidentified,
           failed: [...failed],
         },

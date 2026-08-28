@@ -25,6 +25,7 @@ interface UpstreamAmenity {
 
 interface UpstreamShowtime {
   readonly id?: ShowtimeId;
+  readonly type?: string;
   readonly dateLocal: string;
   readonly expired: boolean;
   readonly isSoldOut: boolean;
@@ -49,6 +50,7 @@ interface UpstreamTheater extends UpstreamNamedTheater {
 interface Listing {
   readonly showtime: Showtime | Unidentified;
   readonly reason: UnbookableReason | null;
+  readonly sellability: string | undefined;
 }
 
 type Kind = "boolean" | "number" | "string";
@@ -68,13 +70,15 @@ const GROUP_FIELDS: Readonly<Record<"hasReservedSeating" | "movieID", Kind>> = {
 };
 
 const SHOWTIME_FIELDS: Readonly<
-  Record<Exclude<keyof UpstreamShowtime, "id">, Kind>
+  Record<Exclude<keyof UpstreamShowtime, "id" | "type">, Kind>
 > = {
   dateLocal: "string",
   expired: "boolean",
   isSoldOut: "boolean",
   ticketingJumpPageURL: "string",
 };
+
+const SALES_OFF = "disabled";
 
 const FORMATS: Readonly<Record<string, Format>> = {
   "Cinemark XD": "XD",
@@ -108,7 +112,8 @@ const isAmenity = (value: unknown): value is UpstreamAmenity =>
 
 const isShowtime = (value: unknown): value is UpstreamShowtime =>
   carries(value, SHOWTIME_FIELDS) &&
-  (value.id === undefined || typeof value.id === "number");
+  (value.id === undefined || typeof value.id === "number") &&
+  (value.type === undefined || typeof value.type === "string");
 
 const isAmenityGroup = (value: unknown): value is UpstreamAmenityGroup =>
   carries(value, GROUP_FIELDS) &&
@@ -167,6 +172,7 @@ const notBookable = (
   if (!group.hasReservedSeating) return "noSeatMap";
   if (row.expired) return "started";
   if (row.isSoldOut) return "soldOut";
+  if (row.type === SALES_OFF) return "salesOff";
   return null;
 };
 
@@ -183,30 +189,41 @@ const listingsOf = (theater: UpstreamTheater): readonly Listing[] =>
         return {
           showtime: row.id === undefined ? listed : { ...listed, id: row.id },
           reason: notBookable(group, row),
+          sellability: row.type,
         };
       });
     }),
   );
 
-const catalogued = (theaters: readonly UpstreamTheater[]): Catalogue => {
+const catalogued = (listings: readonly Listing[]): Catalogue => {
   const bookable: Showtime[] = [];
   const unbookable: Unbookable[] = [];
   const unidentified: Unidentified[] = [];
-  for (const theater of theaters)
-    for (const { showtime, reason } of listingsOf(theater)) {
-      if (reason !== null) unbookable.push({ showtime, reason });
-      else if (showtime.id === undefined) unidentified.push(showtime);
-      else bookable.push(showtime);
-    }
+  for (const { showtime, reason } of listings) {
+    if (reason !== null) unbookable.push({ showtime, reason });
+    else if (showtime.id === undefined) unidentified.push(showtime);
+    else bookable.push(showtime);
+  }
   return { bookable, unbookable, unidentified };
 };
 
+const listedIn = (value: unknown): readonly Listing[] | null =>
+  carriesShowtimes(value)
+    ? value.theaterShowtimes.theaters.flatMap(listingsOf)
+    : null;
+
 export const catalogueFrom = (body: string): Catalogue | null => {
   const answer = decoded(body);
-  return answer === null || !carriesShowtimes(answer.value)
-    ? null
-    : catalogued(answer.value.theaterShowtimes.theaters);
+  const listings = answer === null ? null : listedIn(answer.value);
+  return listings === null ? null : catalogued(listings);
 };
+
+export const sellabilityOfBookableIn = (
+  value: unknown,
+): readonly (string | undefined)[] =>
+  (listedIn(value) ?? []).flatMap((listing) =>
+    listing.reason === null ? [listing.sellability] : [],
+  );
 
 export const theatersFrom = (body: string): readonly Theater[] | null => {
   const answer = decoded(body);

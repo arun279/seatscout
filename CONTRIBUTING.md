@@ -182,18 +182,28 @@ first live run met a reason the corpus never captured. What guards against a who
 refusal is coverage: at least one answer must read as an Auditorium with Seats in it, so an
 upstream that refuses everything fails rather than passing vacantly.
 
-**The catalogue is judged the same way and no further.** A live area must read into Theaters and
-a live listing into a Catalogue, and neither may arrive empty, which is the same vacuity guard
-the seat map half has: an area of no Theaters and a listing of no Showtimes both parse perfectly
-and mean the upstream stopped answering. That is the pairing the adapter owes for what it
-tolerates: it now carries a listing row whose identity the aggregator dropped rather than
-refusing the answer, and a tolerance nobody watches is how the next field leaves without anyone
-noticing. What is not
-judged is how many rows arrive without an identity, because a threshold on that is an invented
-number that would go red on a day nobody can act on. Nor is the missing field named, the way a
-missing seat field is: naming it would mean exporting the aggregator's listing shapes out of the
-adapter, and keeping them where no module above can name one is the first of the four
-mechanisms that hold the vocabulary boundary.
+**The catalogue is judged the same way, and on one word further.** A live area must read into
+Theaters and a live listing into a Catalogue, and neither may arrive empty, which is the same
+vacuity guard the seat map half has: an area of no Theaters and a listing of no Showtimes both
+parse perfectly and mean the upstream stopped answering. That is the pairing the adapter owes
+for what it tolerates: it carries a listing row whose identity the aggregator dropped rather
+than refusing the answer, and a tolerance nobody watches is how the next field leaves without
+anyone noticing. What is not judged is how many rows arrive without an identity, because a
+threshold on that is an invented number that would go red on a day nobody can act on. Nor is
+that missing field named, the way a missing seat field is: naming it would mean exporting the
+aggregator's listing shapes out of the adapter, and keeping them where no module above can name
+one is the first of the four mechanisms that hold the vocabulary boundary.
+
+**The sellability word is judged, and it is the one word this half reads.** The catalogue reads
+one value of it and takes every other value to say nothing the three flags do not already say.
+That premise is what goes red here: a word the corpus never recorded, carried by a row the
+catalogue would spend a request on, and a row that carries no such word at all, are both
+divergences. It is the same argument as the unrecognised seat type. Reading the word for one
+value is only safe while something notices a second value arriving, and a fifth word that means
+"not on sale" would otherwise reach a maintainer as a theater quietly spending the retry budget,
+which is exactly how the fourth one did. The adapter exports the words of its own bookable rows
+rather than its listing shapes, so the boundary holds and there is no second declaration to
+drift.
 
 **The answers come from a global setup rather than from the test.** `tools/live-answers.mjs`
 opens a session, reads an area, takes the day's widest release, and asks for one seat map per
@@ -517,12 +527,27 @@ are general admission and have no seat map to fetch. The predicate that decides 
 reserved seating on the enclosing group of amenities, and it is asked first, because a room
 that never has a seat map is a more durable fact about a Showtime than the time of day.
 
-A Showtime is bookable when its Presentation has reserved seating, has not begun, and is not
-sold out. Anything else is carried with the reason it is not, in the same words a seat map
-refusal would come back with, so a Showtime the catalogue already knows to be unbookable
-costs no request to find out. Those flags are read rather than the word itself: they agreed
-with it in all 928 captured rows, they are total where a word is open, and reading them keeps
-one more piece of upstream vocabulary out of the program.
+A Showtime is bookable when its Presentation has reserved seating, has not begun, is not sold
+out, and the listing does not say the Theater has stopped selling. Anything else is carried
+with the reason it is not, so a Showtime the catalogue already knows to be unbookable costs no
+request to find out. The first three are decided by flags rather than by the Source's own word
+for whether a screening is on sale: the flags agreed with the word in all 928 captured rows,
+they are total where a word is open, and reading them keeps one more piece of upstream
+vocabulary out of the program.
+
+**The fourth is decided by the word, because no flag can express it.** A Theater whose sales
+are switched off carries the same flags as one that is selling, on every row, so the whole
+listing reads as bookable while the Source's own word for those rows does not; the seat map
+route then refuses each of them with a status the adapter reads as a transport failure, which
+spends the retry budget and can open a circuit the whole area shares. It is asked last, after
+the three flags, so no row that already had a reason changes, and it is asked about exactly
+one value: every other word, recorded or not, leaves the row where the flags put it. The first
+three reasons are also what a seat map refusal comes back with; this one is not, and the
+reading type says so, so no status code can be mapped to it.
+
+That tolerance is what the nightly contract test watches. A word the corpus never recorded, on
+a row the catalogue would spend a request on, is a divergence, and so is a row that carries no
+such word at all.
 
 An answer missing anything a Showtime or a Theater is built from is refused whole rather than
 read into a listing with holes in it, for the reason a partial seat map is refused: a listing
@@ -1037,15 +1062,21 @@ ones among what is left. The two counts are disjoint in that order, so no Seat i
 twice. A Query that asks for accessible seating removes none on that ground and says so with
 a zero.
 
-**Coverage has six outcomes and its ledger closes in every snapshot.** Checked, sold out,
-no seat map, already started, never identified and could not be reached; not reached yet is
-the remainder rather than a field, so the six and the remainder add to `candidates` in every
-snapshot and not only in the last. Four of them are populated by the listing before a
-request is spent; the fan-out adds to three of those four from what a seat map refusal says,
-and to `failed`. An expired screening is `started` and never `failed`, because a cached
-listing routinely offers screenings that have begun and a retry cannot help one; `failed`
-stays the only retryable set, and it carries identities rather than Showtimes because a
-retry is the one remedy that has to name what it retries.
+**Coverage has seven outcomes and its ledger closes in every snapshot.** Checked, sold out,
+no seat map, already started, sales switched off, never identified and could not be reached;
+not reached yet is the remainder rather than a field, so the seven and the remainder add to
+`candidates` in every snapshot and not only in the last. Five of them are populated by the
+listing before a request is spent; the fan-out adds to three of those five from what a seat
+map refusal says, and to `failed`. An expired screening is `started` and never `failed`,
+because a cached listing routinely offers screenings that have begun and a retry cannot help
+one; `failed` stays the only retryable set, and it carries identities rather than Showtimes
+because a retry is the one remedy that has to name what it retries.
+
+A Showtime at a Theater that has stopped selling is named rather than counted, and its remedy
+is the operator's own page: retrying can never work while sales are off, and the fan-out never
+reaches it, because the listing gave its reason before a request was spent. Only the listing
+ever puts a Showtime there. No seat map refusal does, and the reading type the port hands back
+excludes the reason, so a status code cannot be mapped to it by accident.
 
 A Showtime the listing could not identify is the one candidate no request can be spent on,
 so its shortfall stands for the life of the cache entry: only a fresh listing can restore an

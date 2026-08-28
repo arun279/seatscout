@@ -1,6 +1,13 @@
-import { seatMapCaptures } from "../corpus/captures.js";
+import {
+  seatMapCaptures,
+  showtimeGroupingCaptures,
+} from "../corpus/captures.js";
 import { gapBetween, rowsOf } from "../domain/seat-group.js";
-import { catalogueFrom, theatersFrom } from "../source/catalogue.js";
+import {
+  catalogueFrom,
+  sellabilityOfBookableIn,
+  theatersFrom,
+} from "../source/catalogue.js";
 import { decoded, isRecord } from "../source/json.js";
 import {
   fieldsMissingFrom,
@@ -24,6 +31,7 @@ export interface Divergence {
     | "unexpected"
     | "status"
     | "type"
+    | "sellability"
     | "link";
   readonly name: string;
 }
@@ -130,35 +138,45 @@ export const divergencesIn = (answer: Answer): readonly Divergence[] => {
   ];
 };
 
-const readingDivergences = <Found>(
-  answer: Answer,
-  read: (body: string) => Found | null,
-  name: string,
-  counted: (found: Found) => number,
-): readonly Divergence[] => {
-  if (decoded(answer.body) === null) return diverging("unreadable", ["json"]);
-  const found = read(answer.body);
-  if (found === null) return diverging("missing", [name]);
-  return counted(found) === 0 ? diverging("empty", [name]) : [];
+const recordedSellability = (): ReadonlySet<string | undefined> =>
+  new Set(
+    [...showtimeGroupingCaptures.values()].flatMap((capture) =>
+      sellabilityOfBookableIn(capture.body),
+    ),
+  );
+
+const sellabilityDivergences = (listing: unknown): readonly Divergence[] => {
+  const known = recordedSellability();
+  const words = sellabilityOfBookableIn(listing);
+  return [
+    ...diverging("missing", words.includes(undefined) ? ["type"] : []),
+    ...diverging(
+      "sellability",
+      words.flatMap((word) =>
+        word !== undefined && !known.has(word) ? [word] : [],
+      ),
+    ),
+  ];
 };
 
-export const areaDivergencesIn = (answer: Answer): readonly Divergence[] =>
-  readingDivergences(
-    answer,
-    theatersFrom,
-    "theaters",
-    (theaters) => theaters.length,
-  );
+export const areaDivergencesIn = (answer: Answer): readonly Divergence[] => {
+  if (decoded(answer.body) === null) return diverging("unreadable", ["json"]);
+  const theaters = theatersFrom(answer.body);
+  if (theaters === null) return diverging("missing", ["theaters"]);
+  return theaters.length === 0 ? diverging("empty", ["theaters"]) : [];
+};
 
-export const listingDivergencesIn = (answer: Answer): readonly Divergence[] =>
-  readingDivergences(
-    answer,
-    catalogueFrom,
-    "catalogue",
-    (catalogue) =>
-      [
-        ...catalogue.bookable,
-        ...catalogue.unbookable,
-        ...catalogue.unidentified,
-      ].length,
-  );
+export const listingDivergencesIn = (answer: Answer): readonly Divergence[] => {
+  const answered = decoded(answer.body);
+  if (answered === null) return diverging("unreadable", ["json"]);
+  const catalogue = catalogueFrom(answer.body);
+  if (catalogue === null) return diverging("missing", ["catalogue"]);
+  const listed = [
+    ...catalogue.bookable,
+    ...catalogue.unbookable,
+    ...catalogue.unidentified,
+  ];
+  return listed.length === 0
+    ? diverging("empty", ["catalogue"])
+    : sellabilityDivergences(answered.value);
+};
