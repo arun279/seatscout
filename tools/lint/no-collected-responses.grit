@@ -1,0 +1,23 @@
+language js
+
+or {
+  `$_.map($callback)`,
+  `$_.flatMap($callback)`
+} where {
+  or {
+    and {
+      $callback <: contains or {
+        `fetch($...)`,
+        `$_.fetch($...)`,
+        `fetch`,
+        `$_.fetch`
+      },
+      ! $callback <: contains `await $_`
+    },
+    $callback <: or {
+      `($response) => $response.text()`,
+      `($response) => $response.json()`
+    }
+  },
+  register_diagnostic(span=$callback, message="Read each response body where its response arrives. Collecting responses across a fan-out and reading their bodies afterwards holds every connection open and can stall. CONTRIBUTING.md says what to write instead.")
+}

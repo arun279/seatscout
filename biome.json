@@ -11,6 +11,7 @@
   "formatter": {
     "indentStyle": "space"
   },
+  "plugins": ["./tools/lint/no-collected-responses.grit"],
   "linter": {
     "enabled": true,
     "rules": {
@@ -25,7 +26,7 @@
   },
   "overrides": [
     {
-      "includes": ["packages/core/**"],
+      "includes": ["packages/**"],
       "linter": {
         "rules": {
           "style": {
@@ -33,21 +34,21 @@
               "level": "error",
               "options": {
                 "deniedGlobals": {
-                  "Buffer": "packages/core stays platform free. See ADR 3.",
-                  "__dirname": "packages/core stays platform free. See ADR 3.",
-                  "__filename": "packages/core stays platform free. See ADR 3.",
-                  "caches": "packages/core stays platform free. See ADR 3.",
-                  "document": "packages/core stays platform free. See ADR 3.",
-                  "importScripts": "packages/core stays platform free. See ADR 3.",
-                  "indexedDB": "packages/core stays platform free. See ADR 3.",
-                  "localStorage": "packages/core stays platform free. See ADR 3.",
-                  "location": "packages/core stays platform free. See ADR 3.",
-                  "navigator": "packages/core stays platform free. See ADR 3.",
-                  "process": "packages/core stays platform free. See ADR 3.",
-                  "require": "packages/core stays platform free. See ADR 3.",
-                  "self": "packages/core stays platform free. See ADR 3.",
-                  "sessionStorage": "packages/core stays platform free. See ADR 3.",
-                  "window": "packages/core stays platform free. See ADR 3."
+                  "Buffer": "Everything under packages/ stays platform free. See ADR 3.",
+                  "__dirname": "Everything under packages/ stays platform free. See ADR 3.",
+                  "__filename": "Everything under packages/ stays platform free. See ADR 3.",
+                  "caches": "Everything under packages/ stays platform free. See ADR 3.",
+                  "document": "Everything under packages/ stays platform free. See ADR 3.",
+                  "importScripts": "Everything under packages/ stays platform free. See ADR 3.",
+                  "indexedDB": "Everything under packages/ stays platform free. See ADR 3.",
+                  "localStorage": "Everything under packages/ stays platform free. See ADR 3.",
+                  "location": "Everything under packages/ stays platform free. See ADR 3.",
+                  "navigator": "Everything under packages/ stays platform free. See ADR 3.",
+                  "process": "Everything under packages/ stays platform free. See ADR 3.",
+                  "require": "Everything under packages/ stays platform free. See ADR 3.",
+                  "self": "Everything under packages/ stays platform free. See ADR 3.",
+                  "sessionStorage": "Everything under packages/ stays platform free. See ADR 3.",
+                  "window": "Everything under packages/ stays platform free. See ADR 3."
                 }
               }
             },
@@ -68,10 +69,43 @@
                       "@react-native*/**",
                       "expo*",
                       "expo*/**",
+                      "@expo/**"
+                    ],
+                    "message": "Everything under packages/ stays platform free. See ADR 3."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/core/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "node:*",
+                      "node:*/**",
+                      "cloudflare:*",
+                      "@cloudflare/**",
+                      "wrangler",
+                      "react*",
+                      "react*/**",
+                      "@types/react*",
+                      "@react-native*/**",
+                      "expo*",
+                      "expo*/**",
                       "@expo/**",
                       "@seatscout/*"
                     ],
-                    "message": "packages/core stays platform free. See ADR 3."
+                    "message": "packages/core stays platform free, and reaches no sibling package. See ADR 3."
                   }
                 ]
               }

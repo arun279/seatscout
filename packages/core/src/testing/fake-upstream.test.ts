@@ -10,7 +10,10 @@ const arrivalOrder = async (fetch: Fetch, paths: readonly string[]) => {
   const arrived: string[] = [];
 
   await Promise.all(
-    paths.map((path) => fetch(path).then(() => arrived.push(path))),
+    paths.map(async (path) => {
+      await fetch(path);
+      arrived.push(path);
+    }),
   );
   return arrived;
 };
@@ -98,14 +101,19 @@ describe("the fake upstream", () => {
       seed: 3,
       faults: [{ status: 500, percent: 0 }],
     });
-    const faulted = await Promise.all(paths.map((path) => always(path)));
+    const faulted = await Promise.all(
+      paths.map(async (path) => {
+        const response = await always(path);
+        return { status: response.status, body: await response.text() };
+      }),
+    );
 
-    expect(new Set(faulted.map((response) => response.status))).toEqual(
+    expect(new Set(faulted.map((answer) => answer.status))).toEqual(
       new Set([500]),
     );
-    expect(
-      new Set(await Promise.all(faulted.map((response) => response.text()))),
-    ).toEqual(new Set([""]));
+    expect(new Set(faulted.map((answer) => answer.body))).toEqual(
+      new Set([""]),
+    );
     expect(new Set(await statusesOf(never, paths))).toEqual(new Set([200]));
   });
 
