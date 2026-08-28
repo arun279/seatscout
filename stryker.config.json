@@ -3,7 +3,10 @@
   "testRunner": "vitest",
   "plugins": ["@stryker-mutator/vitest-runner"],
   "inPlace": true,
-  "mutate": ["{packages,tools}/*/src/**/*.ts", "!**/*.test.ts"],
+  "mutate": [
+    "{apps,packages,tools}/*/src/**/*.{ts,tsx}",
+    "!**/*.{test,spec}.?(c|m)[jt]s?(x)"
+  ],
   "reporters": ["clear-text"],
   "thresholds": { "break": 100 }
 }

@@ -40,14 +40,10 @@ rule and its standard limit. Unknown words go in the `words` list in `cspell.jso
 
 A test that cannot fail is worse than no test, because it reports safety it does not
 provide, and nothing static tells one apart from a test that works. Mutation testing does:
-it changes the code and asks whether the suite notices. `stryker.config.json` mutates every
-source file under `packages/*/src` and `tools/*/src`, and `.github/workflows/nightly.yml`
-fails on any mutant no test kills.
-
-The view layers and the stateless proxy under `apps` are left out.
-[ADR 3](docs/adr/0003-separate-view-layers-shared-core.md) puts everything correctness
-critical in `packages`, and what is left in `apps` belongs to the end-to-end suite, which
-a mutation run over the unit tests cannot stand in for.
+it changes the code and asks whether the suite notices. `stryker.config.json` mutates the
+`src` of every workspace package, and `.github/workflows/nightly.yml` fails on any mutant
+no test kills. Nothing is carved out of that: a file the unit suite does not judge shows
+up as an uncovered mutant and fails the run just as a survivor does.
 
 The run is scheduled rather than attached to pull requests, and is deliberately not a
 required check. It re-judges all of the code against all of the tests every time, so it
