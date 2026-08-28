@@ -40,16 +40,24 @@ list in `cspell.json`.
 
 ## Footprint, comment load and bundle size
 
-The `footprint` job posts one pull request comment, updated in place as commits land. It
-reports lines added, removed and changed, split into product code, test code, build
-tooling and comments; the comment-to-code ratio against the merge base; and the absolute
-bundle size against the ratchet in `.size-limit.json`.
+The `footprint` job reports lines added, removed and changed in four buckets, each split
+into code and comments: product code from `apps/` and `packages/`, test code, build
+tooling, and everything else, which is where configuration, documentation and the lock
+file land. The total covers the first three, so a lock file rewrite is reported without
+drowning the lines somebody wrote. The same report carries the comment-to-code ratio
+against the merge base and the absolute bundle size against the ratchet in
+`.size-limit.json`.
 
-Two of those figures gate the merge. Comment load may not exceed the merge base, and no
+It goes to the run summary of every pull request, and to one pull request comment that is
+updated in place as commits land. A pull request from a fork gets the run summary only,
+because its token cannot write comments.
+
+Two of the figures gate the merge. Comment load may not exceed the merge base, and no
 bundle may exceed its ratchet. Raising a ratchet means editing `.size-limit.json`, which
 is a reviewed line in the diff. No figure here is an absolute this project invented. See
 [ADR 6](docs/adr/0006-gates-cite-a-standard-or-measure-a-regression.md) for why each is
-shaped the way it is, and why the counter is cloc rather than scc or tokei.
+shaped the way it is, why the counter is cloc rather than scc or tokei, and what the
+comment-load gate means while the merge base still carries no comments.
 
 Run the report locally against a built tree:
 

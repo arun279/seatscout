@@ -61,14 +61,15 @@ jobs:
       - name: Measure the footprint
         run: pnpm footprint --base "$BASE" --head "$HEAD" --out footprint.md
       - name: Check the report reproduces
+        if: ${{ !cancelled() }}
         run: |
-          pnpm footprint --base "$BASE" --head "$HEAD" --out footprint-again.md
+          pnpm footprint --base "$BASE" --head "$HEAD" --out footprint-again.md || true
           cmp footprint.md footprint-again.md
       - name: Add the report to the run summary
-        if: always()
+        if: ${{ !cancelled() }}
         run: cat footprint.md >> "$GITHUB_STEP_SUMMARY"
       - name: Post the report on the pull request
-        if: always() && github.event.pull_request.head.repo.full_name == github.repository
+        if: ${{ !cancelled() && github.event.pull_request.head.repo.full_name == github.repository }}
         uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
         with:
           header: footprint

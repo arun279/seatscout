@@ -29,7 +29,7 @@ export interface Measurement {
 
 export interface Report {
   readonly markdown: string;
-  readonly ok: boolean;
+  readonly passed: boolean;
 }
 
 const SOURCE = /\.[cm]?[jt]sx?$/;
@@ -40,21 +40,26 @@ const NOT_A_FILE = new Set(["header", "SUM"]);
 type Bucket = "product" | "test" | "tooling" | "other";
 type Kind = keyof Counts;
 type Split = Record<Bucket, Record<Kind, number>>;
+type Row = readonly [string, Bucket, Kind];
 
 const AUTHORED: readonly Bucket[] = ["product", "test", "tooling"];
 
-const LINE_ROWS: readonly (readonly [string, Bucket, Kind])[] = [
-  ["Product code", "product", "code"],
-  ["Product comments", "product", "comment"],
-  ["Test code", "test", "code"],
-  ["Test comments", "test", "comment"],
-  ["Tooling code", "tooling", "code"],
-  ["Tooling comments", "tooling", "comment"],
-  ["Other code", "other", "code"],
-  ["Other comments", "other", "comment"],
-];
+const LABELS: Record<Bucket, string> = {
+  product: "Product",
+  test: "Test",
+  tooling: "Tooling",
+  other: "Other",
+};
 
-export const filesOf = (report: Readonly<Record<string, Counts>>): Tree =>
+const rowsFor = (buckets: readonly Bucket[]): readonly Row[] =>
+  buckets.flatMap((bucket): readonly Row[] => [
+    [`${LABELS[bucket]} code`, bucket, "code"],
+    [`${LABELS[bucket]} comments`, bucket, "comment"],
+  ]);
+
+export const filesOf = <T>(
+  report: Readonly<Record<string, T>>,
+): Readonly<Record<string, T>> =>
   Object.fromEntries(
     Object.entries(report).filter(([key]) => !NOT_A_FILE.has(key)),
   );
@@ -82,10 +87,9 @@ const split = (tree: Tree): Split => {
 
 const authored = (tree: Tree): Counts => {
   const totals = split(tree);
-  return {
-    code: AUTHORED.reduce((sum, bucket) => sum + totals[bucket].code, 0),
-    comment: AUTHORED.reduce((sum, bucket) => sum + totals[bucket].comment, 0),
-  };
+  const sum = (kind: Kind) =>
+    AUTHORED.reduce((total, bucket) => total + totals[bucket][kind], 0);
+  return { code: sum("code"), comment: sum("comment") };
 };
 
 const perHundred = (counts: Counts): string =>
@@ -106,19 +110,24 @@ const lineRows = (diff: Diff): readonly (readonly string[])[] => {
     split(diff.removed),
     split(diff.modified),
   ];
-  const rows = LINE_ROWS.map(([label, bucket, kind]) => [
-    label,
-    ...columns.map((column) => String(column[bucket][kind])),
-  ]);
-  const total = columns.map((column) =>
+  const cellsFor = (rows: readonly Row[]) =>
+    rows.map(([label, bucket, kind]) => [
+      label,
+      ...columns.map((column) => String(column[bucket][kind])),
+    ]);
+  const authoredTotal = columns.map((column) =>
     String(
-      LINE_ROWS.reduce(
-        (sum, [, bucket, kind]) => sum + column[bucket][kind],
+      AUTHORED.reduce(
+        (total, bucket) => total + column[bucket].code + column[bucket].comment,
         0,
       ),
     ),
   );
-  return [...rows, ["Total", ...total]];
+  return [
+    ...cellsFor(rowsFor(AUTHORED)),
+    ["Authored total", ...authoredTotal],
+    ...cellsFor(rowsFor(["other"])),
+  ];
 };
 
 export const render = (measurement: Measurement): Report => {
@@ -130,7 +139,7 @@ export const render = (measurement: Measurement): Report => {
   const verdict = (within: boolean) => (within ? "Within it." : "Above it.");
 
   return {
-    ok: withinCommentLoad && withinRatchet,
+    passed: withinCommentLoad && withinRatchet,
     markdown: [
       "### Code footprint",
       "",

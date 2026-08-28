@@ -55,4 +55,4 @@ const report = render({
 
 if (values.out) writeFileSync(values.out, report.markdown);
 process.stdout.write(report.markdown);
-process.exitCode = report.ok ? 0 : 1;
+process.exitCode = report.passed ? 0 : 1;

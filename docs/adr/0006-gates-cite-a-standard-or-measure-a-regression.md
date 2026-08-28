@@ -36,19 +36,28 @@ at its documented default limit of 15. The rule and the limit are both published
 nothing here is this project's invention.
 
 **Comment load** is comments per line of first-party source, and it may not exceed the
-merge base. The norm is no comments at all: a comment is a signal that the code is
-unclear. Expressing the gate as a ratio rather than a count is what makes it liveable,
-because a comment that is genuinely needed can arrive with the code it explains. Only
-files with a JavaScript or TypeScript extension count, which keeps the version comments
-that pin action SHAs out of the measurement.
+merge base. Only files with a JavaScript or TypeScript extension count, which keeps the
+version comments that pin action SHAs out of the measurement.
+
+The ratio form is what keeps the gate honest as the code grows, but it is worth being
+plain about what it means today. The merge base carries no comments, so the ratio there is
+zero and the gate is currently absolute: one comment fails it, and no amount of
+accompanying code rescues it. That is the intended reading of a norm of none rather than
+an accident of the arithmetic. It also means the first deliberate comment cannot be
+merged without changing this decision, which is the point at which the question of whether
+it belongs gets asked properly.
 
 **Bundle size** is a ratchet recorded in `.size-limit.json` and enforced by size-limit.
-The recorded figure is the size last accepted on `main`, so exceeding it is a regression
-against `main`. It is lowered as the build improves, and it rises only by editing the
-file, which is a reviewed line in a diff. The glob covers every emitted script rather than
-an entry point, so deferring bytes into a chunk that loads later does not move the number.
-Remaining headroom is reported, so a ratchet that has drifted above the real size is
-visible.
+Nothing measures `main` at review time: the recorded figure is whatever a reviewer last
+accepted, and the gate holds the branch to it. It is lowered as the build improves, and it
+rises only by editing the file, which is a reviewed line in a diff. The glob covers every
+emitted script rather than an entry point, so deferring bytes into a chunk that loads
+later does not move the number. Remaining headroom is reported, so a ratchet that has
+drifted above the real size is visible.
+
+size-limit signals a breach through its exit status while still printing its verdict, so
+the report reads `passed` out of its JSON rather than looking at the status. That is why
+it is the one subprocess here whose exit code is ignored.
 
 The counter is [cloc](https://github.com/AlDanial/cloc), pinned to a released version and
 checked against its SHA-256 before use. scc and tokei were the alternatives, and both were
@@ -56,18 +65,20 @@ rejected for the same reason: neither diffs. cloc classifies every changed line 
 removed, modified or unchanged, and independently as code, comment or blank. That pair of
 classifications is the report rather than an input to it.
 
-cloc's JSON output is not byte-stable. Perl randomises hash ordering, so the object keys
-come out in a different order on every run while the counts stay identical. The report
-therefore parses the JSON and renders in an order of its own, and continuous integration
-renders the report twice and compares the two files byte for byte.
+cloc's diff report is not byte-stable, though its plain count of a tree is. Eight
+consecutive diffs of the same two commits produced eight different byte sequences and one
+set of numbers, which is Perl's randomised hash ordering reaching the JSON output. The
+report therefore parses the JSON and renders in an order of its own, and continuous
+integration renders the report twice and compares the two files byte for byte, whatever
+verdict the gates reached.
 
 ## Consequences
 
 The gates exist before the code they judge, which is the only time a regression gate can
 be introduced honestly.
 
-A change that adds a comment without adding the code it explains fails, and the way
-through is to make the code say what the comment was going to.
+A comment cannot be merged while the merge base has none, and the way through is to make
+the code say what the comment was going to.
 
 Raising the bundle ratchet is a line in a diff that a reviewer sees, rather than a number
 that quietly stops meaning anything.
@@ -76,7 +87,11 @@ cloc is a prerequisite for running the report locally, alongside gitleaks. Neith
 npm package, so neither is installed by `pnpm install`.
 
 The footprint report itself carries no threshold. It reports lines added, removed and
-changed, split into product code, test code and comments, and it exists so that growth is
-visible while it happens rather than discovered afterwards. Source outside `apps/` and
-`packages/` is reported as tooling rather than as product, because ADR 5 already draws
-that line and a report that blurred it would overstate what the application had grown by.
+changed, in four buckets: product code from `apps/` and `packages/`, test code, build
+tooling, and everything else, each split into code and comments.
+
+Two of those boundaries are deliberate. Source outside `apps/` and `packages/` is tooling
+rather than product, because ADR 5 already draws that line and blurring it would overstate
+what the application had grown by. And the total is over the first three buckets only,
+because the fourth holds generated files: a lock file rewrite is real footprint and is
+reported, but adding it to the total would drown the lines somebody actually wrote.
