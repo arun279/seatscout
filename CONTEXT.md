@@ -92,6 +92,20 @@ seat map locates the screen itself. Normalised position is derived from seat geo
 never from the seat's printed label, because labels are not ordered, not contiguous, and
 sometimes not letters at all.
 
+The same sideways offset is carried a second way, in *seat widths* from the same
+centreline, because a Seat's place is spoken as so many seats left or right of centre and
+a fraction of the room is not a thing anyone can picture.
+
+## Row
+
+The Seats of one Auditorium drawn at one depth, taken in order of lateral, numbered from
+one at the front row with no gaps.
+
+**Not the Source's row index.** That index skips values in 14 of the 42 captured
+Auditoriums, so it cannot say which row of how many this is, and it is not carried past
+the adapter at all. A Row's number is its place in the order, and its label is the initial
+its Seats agree on, or nothing where they agree on none.
+
 ## Designation
 
 What a Seat is for: an ordinary seat, a wheelchair space, or the companion seat beside one.

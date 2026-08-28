@@ -10,7 +10,7 @@ export interface SeatGroupTerms {
   readonly accessibleSeating: boolean;
 }
 
-type Gap = "pod" | "aisle" | null;
+export type Gap = "pod" | "aisle" | null;
 
 interface Placed {
   readonly seat: Seat;
@@ -24,7 +24,7 @@ const WIDEST_POD_PITCH = 2.05;
 
 const accessible = (seat: Seat) => seat.designation !== "standard";
 
-const gapBetween = (left: Seat, right: Seat): Gap => {
+export const gapBetween = (left: Seat, right: Seat): Gap => {
   const pitch = (right.x - left.x) / left.width;
   if (pitch <= WIDEST_CONTIGUOUS_PITCH) return null;
   if (pitch > WIDEST_POD_PITCH) return "aisle";

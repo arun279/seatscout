@@ -524,6 +524,14 @@ of the 376 rows carry no agreed label prefix, and 33 of the 42 rooms number the 
 row against the direction they are drawn in. A property test relabels every generated room
 with a generated function and holds every position unchanged.
 
+A Seat also carries **how many seat widths it sits from that centreline**, signed the way
+lateral is. It is the same offset over the same extent, divided by the Seat's own width
+instead of by half the room, because a Seat's place is announced as so many seats left or
+right of centre. Five Seats measured from a keyboard prototype fix it: the two on their
+room's centreline read 0.03 and 0.004, and the three off it read 2.62, 7.29 and 8.33, which
+are the "two and a half", "seven and a half" and "eight and a half seats left of centre"
+those Seats are spoken as.
+
 The generated rooms are adversarial rather than tidy: uneven row gaps, rows of differing
 widths and origins, Seats of differing widths, coincident Seats, rooms of one row, rooms of
 one Seat, Seats delivered in shuffled order, and labels whose letters and numbers both run
@@ -571,6 +579,50 @@ test, and no code builds a run from a link.
 Two measurements are what this is judged by. All 42 captured Auditoriums have three free
 Seats in one row and all 42 seat a party of three. Five of them can only do it across a
 console, which is what treating a console as an aisle would silently cost.
+
+## The order the keyboard walks
+
+`packages/core/src/domain/auditorium-map.ts` is the ordering the seat map's keyboard model
+reads, supplied by the domain model so the view improvises none of it. It answers with the
+Auditorium's Rows front to back, each holding its Seats left to right, its own number, its
+label, how many of its Seats are bookable and what sits in each gap along it. Beside them
+it answers where the recommended Seat Group is, as a Row and the places in it, and a
+function that answers a lateral with the nearest Seat in a given Row.
+
+**Rows and order come from the normalised position, never from a label.** Seats group by
+`depth` and order by `lateral`, and the function that does it is generic over anything
+carrying those two, so a printed label is not nameable inside it, which is the mechanism
+that keeps `normalised` honest one layer down. A property test relabels every generated
+room with a generated function and holds the order unchanged.
+
+**A Row's number is its place in the order, and it is contiguous by construction.** The
+Source's own row index is not, skipping a value in 14 of the 42 captured Auditoriums, and
+Cinemark West Plano screen 28 holds 14 Rows while that index runs to 16. It is also
+unreachable: `UpstreamSeat` never declared it, so no Seat carries it and ordering by one
+would not compile. What the corpus test asserts instead is that the fourteen Rows are
+numbered one to fourteen while the capture's own index reaches sixteen, and, over all 42,
+that the count of Rows equals the count of distinct depths.
+
+**A Row's label is the initial its Seats agree on, or nothing.** Six of the 376 captured
+Rows agree on none, all of them AMC accessible Rows mixing `E18` with `WC17`, and the row
+chip is simply absent there. One initial is enough because it tells every Row of every
+captured Auditorium apart, which a test asserts rather than assumes; whole agreed prefixes
+are not, because eight Seats numbered `401` to `408` agree on `40` and sit in row 4.
+
+**The nearest Seat to a lateral is its own inverse.** Asking a Row for the Seat nearest a
+Seat's own lateral answers with that Seat, which is what makes Down and then Up land where
+it started once the view holds the anchor still. A tie goes to the Seat on the left,
+because the rule has to be decidable. The anchor itself is not here: a goal column is
+interface state.
+
+**The gap after each Seat is the Seat Group bands, not a second opinion.** `gapBetween` is
+shared with `seat-group.ts`, so a console is a console in both. Over the corpus that is
+5,766 contiguous gaps, 462 consoles and 167 aisles, one for each adjacent pair.
+
+What the map deliberately does not carry is a third value for availability. A Seat is
+bookable or it is not, because `A` is the only upstream status whose meaning is
+established; there is no status the corpus establishes as "taken", so nothing here can say
+so and the view must not either.
 
 ## The catalogue phase and the on-device cache
 
