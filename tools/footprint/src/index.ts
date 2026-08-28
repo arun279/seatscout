@@ -18,6 +18,7 @@ const cloc = (...args: readonly string[]): string =>
     [...args, "--by-file", "--json", "--hide-rate", "--quiet"],
     {
       encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
     },
   );
 
