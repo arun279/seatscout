@@ -1,4 +1,5 @@
 import type { Seat } from "../source/seat-map.js";
+import { centreOf } from "./auditorium.js";
 
 export interface SeatGroup {
   readonly seats: readonly Seat[];
@@ -10,7 +11,7 @@ export interface SeatGroupTerms {
   readonly accessibleSeating: boolean;
 }
 
-type Gap = "pod" | "aisle" | null;
+export type Gap = "pod" | "aisle" | null;
 
 interface Placed {
   readonly seat: Seat;
@@ -24,8 +25,8 @@ const WIDEST_POD_PITCH = 2.05;
 
 const accessible = (seat: Seat) => seat.designation !== "standard";
 
-const gapBetween = (left: Seat, right: Seat): Gap => {
-  const pitch = (right.x - left.x) / left.width;
+export const gapBetween = (left: Seat, right: Seat): Gap => {
+  const pitch = (centreOf(right) - centreOf(left)) / left.width;
   if (pitch <= WIDEST_CONTIGUOUS_PITCH) return null;
   if (pitch > WIDEST_POD_PITCH) return "aisle";
   return accessible(left) || accessible(right) ? null : "pod";
@@ -40,7 +41,9 @@ const rowsOf = (seats: readonly Seat[]): readonly (readonly Seat[])[] => {
   }
   return [...rows.entries()]
     .sort(([above], [below]) => above - below)
-    .map(([, row]) => row.toSorted((left, right) => left.x - right.x));
+    .map(([, row]) =>
+      row.toSorted((left, right) => centreOf(left) - centreOf(right)),
+    );
 };
 
 const runsIn = (

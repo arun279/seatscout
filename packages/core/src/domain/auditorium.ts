@@ -7,9 +7,10 @@ export interface Placement {
 export interface NormalisedPosition {
   readonly depth: number;
   readonly lateral: number;
+  readonly seatsOffCentre: number;
 }
 
-const centreOf = (seat: Placement) => seat.x + seat.width / 2;
+export const centreOf = (seat: Placement) => seat.x + seat.width / 2;
 
 const rowsOf = (seats: readonly Placement[]) =>
   [...new Set(seats.map((seat) => seat.y))].sort(
@@ -30,10 +31,12 @@ export const normalised = <T extends Placement>(
   const back = rows.length - 1;
   const left = Math.min(...centres);
   const right = Math.max(...centres);
+  const centreline = (left + right) / 2;
 
   return seats.map((seat) => ({
     ...seat,
     depth: back === 0 ? 0 : rows.indexOf(seat.y) / back,
     lateral: lateralOf(centreOf(seat), left, right),
+    seatsOffCentre: (centreOf(seat) - centreline) / seat.width,
   }));
 };

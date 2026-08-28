@@ -21,6 +21,13 @@ interface Row {
 const FETCHED_AT = 1000;
 const AUDITORIUM_WHOSE_ROW_LETTERS_SKIP_ONE = "561462741";
 const AUDITORIUM_WITH_NO_ROW_LETTERS = "561505814";
+const NAMED_SEATS = [
+  ["561230736", "L11"],
+  ["561505814", "607"],
+  ["561462741", "WC17"],
+  ["561865199", "A21"],
+  ["561562293", "F8"],
+] as const;
 
 const ascending = (values: readonly number[]) =>
   [...new Set(values)].sort((first, second) => first - second);
@@ -35,6 +42,9 @@ const depthsOf = (auditorium: readonly NormalisedPosition[]) =>
 
 const lateralsOf = (auditorium: readonly NormalisedPosition[]) =>
   auditorium.map((seat) => seat.lateral);
+
+const offCentreOf = (auditorium: readonly NormalisedPosition[]) =>
+  auditorium.map((seat) => seat.seatsOffCentre);
 
 const negated = (values: readonly number[]) => values.map((value) => 0 - value);
 
@@ -207,7 +217,7 @@ describe("the normalised Auditorium", () => {
     expect(shapes.manyCentres).toBeGreaterThan(0);
   });
 
-  it("negates every lateral when the Auditorium is drawn mirrored, and leaves depth alone", () => {
+  it("negates every sideways measure when the Auditorium is drawn mirrored, and leaves depth alone", () => {
     fc.assert(
       fc.property(
         auditoriums,
@@ -219,6 +229,9 @@ describe("the normalised Auditorium", () => {
           );
 
           expect(lateralsOf(mirrored)).toEqual(negated(lateralsOf(auditorium)));
+          expect(offCentreOf(mirrored)).toEqual(
+            negated(offCentreOf(auditorium)),
+          );
           expect(depthsOf(mirrored)).toEqual(depthsOf(auditorium));
         },
       ),
@@ -249,15 +262,31 @@ describe("the normalised Auditorium", () => {
     ];
 
     expect(normalised(withoutLabels)).toEqual([
-      { x: 0, y: 40, width: 10, depth: 1, lateral: -1 },
-      { x: 30, y: 0, width: 10, depth: 0, lateral: 1 },
-      { x: 10, y: 0, width: 20, depth: 0, lateral: 0 },
+      { x: 0, y: 40, width: 10, depth: 1, lateral: -1, seatsOffCentre: -1.5 },
+      { x: 30, y: 0, width: 10, depth: 0, lateral: 1, seatsOffCentre: 1.5 },
+      { x: 10, y: 0, width: 20, depth: 0, lateral: 0, seatsOffCentre: 0 },
     ]);
   });
 
   it("puts a lone Seat on the centreline of the front row", () => {
     expect(normalised([{ x: 17, y: 9, width: 4 }])).toEqual([
-      { x: 17, y: 9, width: 4, depth: 0, lateral: 0 },
+      { x: 17, y: 9, width: 4, depth: 0, lateral: 0, seatsOffCentre: 0 },
+    ]);
+  });
+
+  it("counts a Seat's distance from the centreline in seat widths, over the same extent lateral uses", () => {
+    expect(
+      NAMED_SEATS.map(([showtime, id]) => [
+        id,
+        capturedAuditorium(showtime).find((seat) => seat.id === id)
+          ?.seatsOffCentre,
+      ]),
+    ).toEqual([
+      ["L11", -0.03264604810996329],
+      ["607", -0.004306171843486634],
+      ["WC17", -7.293109491097717],
+      ["A21", -8.333333333333334],
+      ["F8", -2.616702355460384],
     ]);
   });
 
