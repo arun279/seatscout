@@ -36,6 +36,32 @@ Biome uses its recommended rules plus the published
 [`noExcessiveCognitiveComplexity`](https://biomejs.dev/linter/rules/no-excessive-cognitive-complexity/)
 rule and its standard limit. Unknown words go in the `words` list in `cspell.json`.
 
+## The nightly mutation gate
+
+A test that cannot fail is worse than no test, because it reports safety it does not
+provide, and nothing static tells one apart from a test that works. Mutation testing does:
+it changes the code and asks whether the suite notices. `stryker.config.json` mutates every
+source file under `packages/*/src` and `tools/*/src`, and `.github/workflows/nightly.yml`
+fails on any mutant no test kills.
+
+The view layers and the stateless proxy under `apps` are left out.
+[ADR 3](docs/adr/0003-separate-view-layers-shared-core.md) puts everything correctness
+critical in `packages`, and what is left in `apps` belongs to the end-to-end suite, which
+a mutation run over the unit tests cannot stand in for.
+
+The run is scheduled rather than attached to pull requests, and is deliberately not a
+required check. It re-judges all of the code against all of the tests every time, so it
+costs more than a pull request should carry and it never inherits a verdict from an
+earlier run.
+
+Run it locally with `pnpm test:mutation`. Two of its settings are less redundant than they
+look. The vitest runner is named in `plugins` because Stryker resolves its own plugin
+search against its package directory, which under pnpm holds no siblings to find. And
+`inPlace` mutates the working tree for the length of the run rather than a copy of it,
+because the copy is prepared by rewriting `tsconfig.json` through a TypeScript API that
+TypeScript 7 no longer exposes. A run killed part way leaves the mutated files behind;
+`git restore .` puts them back.
+
 ## The Core import ban
 
 `packages/core` must stay portable to any runtime, so it may not reach for the DOM,
@@ -66,3 +92,9 @@ The workflow falls back to its own token, which cannot update files under
 `.github/workflows` and whose pull requests do not start a CI run. Set a `RENOVATE_TOKEN`
 repository secret to a personal access token with the `repo` and `workflow` scopes to
 lift both limits.
+
+`overrides` in `pnpm-workspace.yaml` lifts a transitive dependency past an advisory its
+own package pins below. It holds `qs` above
+[GHSA-q8mj-m7cp-5q26](https://github.com/advisories/GHSA-q8mj-m7cp-5q26), which reaches
+the workspace through Stryker. An entry is removable once the package that pins it
+releases a version that does not.

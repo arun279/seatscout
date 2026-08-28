@@ -5,3 +5,6 @@ packages:
 
 allowBuilds:
   lefthook: true
+
+overrides:
+  qs: 6.15.3
