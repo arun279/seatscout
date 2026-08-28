@@ -1,29 +1,10 @@
+import type { UpstreamSeat } from "../source/seat-map.js";
+
 export interface Capture<Body> {
   readonly capturedAt: string;
   readonly request: { readonly method: string; readonly path: string };
   readonly status: number;
   readonly body: Body;
-}
-
-interface CapturedSeat {
-  readonly id: string;
-  readonly row: number;
-  readonly column: number;
-  readonly type: string;
-  readonly leftNeighbor: string;
-  readonly rightNeighbor: string;
-  readonly x: number;
-  readonly y: number;
-  readonly width: number;
-  readonly height: number;
-  readonly sellIndividuallyWithinSeatBlock: boolean;
-  readonly attributes: {
-    readonly messageHeader?: string;
-    readonly messageBody?: string;
-  };
-  readonly status: string;
-  readonly areaCode: string;
-  readonly areaId: string;
 }
 
 export interface CapturedSeatMap {
@@ -32,7 +13,7 @@ export interface CapturedSeatMap {
   readonly theaterName: string;
   readonly auditoriumId: number;
   readonly showtimeId: string;
-  readonly seats: readonly CapturedSeat[];
+  readonly seats: readonly UpstreamSeat[];
   readonly backgroundSvg: string;
   readonly backgroundWidth: number;
   readonly backgroundHeight: number;
