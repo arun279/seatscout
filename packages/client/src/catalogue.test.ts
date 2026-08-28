@@ -208,6 +208,10 @@ describe("the catalogue phase", () => {
       "a catalogue, honestly",
       {},
       { fetchedAt: "recently", catalogue: { bookable: [], unbookable: [] } },
+      {
+        fetchedAt: `${FETCHED_AT}`,
+        catalogue: { bookable: [], unbookable: [] },
+      },
       { fetchedAt: FETCHED_AT },
       { fetchedAt: FETCHED_AT, catalogue: null },
       { fetchedAt: FETCHED_AT, catalogue: { bookable: [] } },

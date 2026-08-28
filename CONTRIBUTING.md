@@ -645,8 +645,9 @@ The in-memory store runs it under vitest. The browser adapter runs the same clau
 real browser: `tests/e2e/store-contract.spec.ts` serves the built
 `packages/client/dist/store-contract.js` and `apps/web/dist/store.js` from one origin and
 renders each clause's verdict onto a page, which is also what makes a headed run readable by
-a person. Neither module imports anything at run time, which is why they load straight out
-of `dist` with no bundler and no import map. A contract that passes only in Node proves
+a person. Both load straight out of `dist` with no bundler: the client's modules import
+nothing outside themselves, and the one bare specifier the web adapter emits is resolved by
+an import map on the page. A contract that passes only in Node proves
 nothing about the adapter that ships, which is why the browser run exists; and because the
 mutation gate runs vitest and not Playwright, the adapter is judged by unit tests of its own
 as well.
@@ -664,8 +665,8 @@ Storage. Per-platform adapters belong to the per-platform unit, which is what AD
 says about view layers.
 
 Web Storage can be absent or refuse outright: a private window, cleared site data, storage
-disabled by policy. **Reaching it is attempted once, and where it refuses the cache falls
-back to a store that lives as long as the page.** That is the honest answer rather than a
+disabled by policy. **Reaching it is attempted once, and where it refuses the adapter hands
+back the in-memory store, which lives as long as the page.** That is the honest answer rather than a
 failure, because the port never promised durability, memory is still on the device, and a
 search that cannot cache is one that reads the Source again rather than one that breaks. A write the
 storage refuses, which is what an exhausted quota looks like, is dropped rather than raised,
