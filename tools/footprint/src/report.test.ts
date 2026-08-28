@@ -115,6 +115,147 @@ describe("the footprint report", () => {
     );
   });
 
+  it("renders exactly this, so one measurement is always the same bytes", () => {
+    const { markdown } = reportOn({
+      base: side("0123456789abcdef0123456789abcdef01234567", {
+        tree: { "packages/core/src/seat.ts": counts(100, 2) },
+        complexity: { "packages/core/src/seat.ts": 4 },
+      }),
+      head: side("fedcba9876543210fedcba9876543210fedcba98", {
+        tree: {
+          "packages/core/src/seat.ts": counts(120, 2),
+          "packages/core/src/seat.test.ts": counts(30, 0),
+        },
+        complexity: {
+          "packages/core/src/seat.ts": 6,
+          "packages/core/src/seat.test.ts": 1,
+        },
+      }),
+      diff: {
+        added: {
+          "packages/core/src/seat.ts": counts(20, 0),
+          "packages/core/src/seat.test.ts": counts(30, 0),
+          "pnpm-lock.yaml": counts(40, 0),
+        },
+        removed: { "packages/core/src/label.ts": counts(5, 1) },
+        modified: { "vitest.config.ts": counts(2, 0) },
+      },
+    });
+
+    expect(markdown).toBe(`### Code footprint
+
+\`0123456\` to \`fedcba9\`, blank lines excluded.
+
+| Lines | Added | Removed | Changed |
+| --- | ---: | ---: | ---: |
+| Product code | 20 | 5 | 0 |
+| Product comments | 0 | 1 | 0 |
+| Test code | 30 | 0 | 0 |
+| Test comments | 0 | 0 | 0 |
+| Tooling code | 0 | 0 | 2 |
+| Tooling comments | 0 | 0 | 0 |
+| Authored total | 50 | 6 | 2 |
+| Other code | 40 | 0 | 0 |
+| Other comments | 0 | 0 | 0 |
+
+### Comment load
+
+| Source | Code | Comments | Per 100 lines |
+| --- | ---: | ---: | ---: |
+| Merge base | 100 | 2 | 2.00 |
+| This branch | 150 | 2 | 1.33 |
+
+Comment load may not exceed the merge base. Within it.
+
+### Cyclomatic complexity
+
+scc's estimate: branch and loop keywords counted per file rather than
+measured from a syntax tree. Reported, never gated. What fails a build is
+Biome's cognitive complexity rule at its documented limit of 15.
+
+| Source | Merge base | This branch | Change |
+| --- | ---: | ---: | ---: |
+| Product | 4 | 6 | +2 |
+| Test | 0 | 1 | +1 |
+| Tooling | 0 | 0 | 0 |
+| Authored total | 4 | 7 | +3 |
+
+### Bundle size
+
+| Bundle | Brotli | Ratchet | Headroom |
+| --- | ---: | ---: | ---: |
+| web app | 15 B | 15 B | 0 B |
+
+Bundle size may not exceed the ratchet in \`.size-limit.json\`. Within it.
+`);
+  });
+
+  it("counts every extension the workspace can hold as source", () => {
+    const { markdown } = reportOn({
+      diff: {
+        added: {
+          "packages/core/src/seat.mts": counts(7, 0),
+          "packages/core/src/label.cts": counts(3, 0),
+          "apps/web/src/view.tsx": counts(5, 0),
+        },
+        removed: {},
+        modified: {},
+      },
+    });
+
+    expect(markdown).toContain("| Product code | 15 | 0 | 0 |");
+  });
+
+  it("counts a top level tests directory as tests without a suffix to go on", () => {
+    const { markdown } = reportOn({
+      diff: {
+        added: { "tests/e2e/helpers.ts": counts(9, 0) },
+        removed: {},
+        modified: {},
+      },
+    });
+
+    expect(markdown).toContain("| Test code | 9 | 0 | 0 |");
+  });
+
+  it("counts a singular test directory as tests as well", () => {
+    const { markdown } = reportOn({
+      diff: {
+        added: { "packages/core/test/helpers.ts": counts(4, 0) },
+        removed: {},
+        modified: {},
+      },
+    });
+
+    expect(markdown).toContain("| Test code | 4 | 0 | 0 |");
+  });
+
+  it("decides product from the top of the path, not a directory further down", () => {
+    const { markdown } = reportOn({
+      diff: {
+        added: { "tools/footprint/src/packages/registry.ts": counts(6, 0) },
+        removed: {},
+        modified: {},
+      },
+    });
+
+    expect(markdown).toContain("| Tooling code | 6 | 0 | 0 |");
+    expect(markdown).toContain("| Product code | 0 | 0 | 0 |");
+  });
+
+  it("keeps a file with no source extension out of the authored total", () => {
+    const { markdown } = reportOn({
+      diff: {
+        added: { "docs/adr/0006-gates.md": counts(50, 0) },
+        removed: {},
+        modified: {},
+      },
+    });
+
+    expect(markdown).toContain("| Other code | 50 | 0 | 0 |");
+    expect(markdown).toContain("| Authored total | 0 | 0 | 0 |");
+  });
+
   it("fails when comments grow faster than the code they explain", () => {
     const report = reportOn({
       base: side("b", {
@@ -224,6 +365,17 @@ describe("the footprint report", () => {
     expect(markdown).toContain(
       "Above it. Either make the bundle smaller, or raise the ratchet in this diff, where a reviewer sees it.",
     );
+  });
+
+  it("fails when any one bundle breaks its ratchet, not only when all do", () => {
+    const report = reportOn({
+      bundles: [
+        { name: "web app", size: 15, sizeLimit: 15, passed: true },
+        { name: "proxy", size: 90, sizeLimit: 15, passed: false },
+      ],
+    });
+
+    expect(report.passed).toBe(false);
   });
 
   it("fails when a bundle breaks its ratchet", () => {

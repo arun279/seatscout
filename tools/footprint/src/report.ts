@@ -46,7 +46,7 @@ export interface Report {
 }
 
 const SOURCE = /\.[cm]?[jt]sx?$/;
-const TEST = /(^|\/)tests?\/|\.(test|spec)\.[cm]?[jt]sx?$/;
+const TEST = /(^|\/)tests?\/|\.(test|spec)\./;
 const APPLICATION = /^(apps|packages)\//;
 const NOT_A_FILE = new Set(["header", "SUM"]);
 

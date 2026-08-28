@@ -1,0 +1,72 @@
+import { join } from "node:path";
+import {
+  branchesOf,
+  type Bundle,
+  type Complexity,
+  type Diff,
+  filesOf,
+  type Measurement,
+  type Side,
+  type Tree,
+} from "./report.js";
+import type { Shell } from "./shell.js";
+
+export const measureWith = (shell: Shell) => {
+  const output = (
+    command: string,
+    args: readonly string[],
+    cwd?: string,
+  ): string => {
+    const completed = shell.run(command, args, cwd);
+    if (!completed.ok) {
+      throw new Error(`${command} ${args.join(" ")}\n${completed.stderr}`);
+    }
+    return completed.stdout;
+  };
+
+  const git = (...args: readonly string[]): string =>
+    output("git", args).trim();
+
+  const cloc = (...args: readonly string[]): string =>
+    output("cloc", [...args, "--by-file", "--json", "--hide-rate", "--quiet"]);
+
+  const treeOf = (ref: string): Tree => filesOf(JSON.parse(cloc("--git", ref)));
+
+  const diffOf = (base: string, head: string): Diff =>
+    JSON.parse(cloc("--git", "--diff", base, head));
+
+  const complexityOf = (ref: string): Complexity => {
+    const directory = shell.temporary();
+    const archive = join(directory, "tree.tar");
+    git("archive", "--output", archive, ref);
+    output("tar", ["-x", "-f", archive, "-C", directory]);
+    shell.discard(archive);
+    const counted = output(
+      "scc",
+      ["--format", "json", "--by-file", "."],
+      directory,
+    );
+    shell.discard(directory);
+    return branchesOf(JSON.parse(counted));
+  };
+
+  const sideOf = (ref: string): Side => ({
+    ref,
+    tree: treeOf(ref),
+    complexity: complexityOf(ref),
+  });
+
+  const bundles = (): readonly Bundle[] =>
+    JSON.parse(shell.run("pnpm", ["exec", "size-limit", "--json"]).stdout);
+
+  return (baseRef: string, headRef: string): Measurement => {
+    const head = git("rev-parse", headRef);
+    const base = git("merge-base", baseRef, head);
+    return {
+      base: sideOf(base),
+      head: sideOf(head),
+      diff: diffOf(base, head),
+      bundles: bundles(),
+    };
+  };
+};
