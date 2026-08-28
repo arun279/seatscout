@@ -1,0 +1,14 @@
+{
+  "capturedAt": "2026-08-28T07:40:37.130Z",
+  "request": {
+    "method": "GET",
+    "path": "/napi/seatMap/561549583"
+  },
+  "status": 410,
+  "body": [
+    {
+      "id": "PerformanceSoldOut",
+      "message": "This showtime is sold out, please choose another."
+    }
+  ]
+}

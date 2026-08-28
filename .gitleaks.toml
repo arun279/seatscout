@@ -1,0 +1,12 @@
+[extend]
+useDefault = true
+
+[[rules]]
+id = "captured-session-material"
+description = "A response header or bootstrap cookie name inside the fixture corpus, which redaction removes and no capture may commit."
+path = '''^packages/core/src/corpus/'''
+regex = '''(?i)set-?cookie|akamai_location|akamai_generated_location|akamai_set_zip|userlocation|usercountry|color-palette|theme-options'''
+
+[allowlist]
+description = "The showtimehashcode in every captured ticketing URL, which ADR 4 requires verbatim and which is a public identifier rather than a credential."
+regexes = ['''^v2-[0-9a-f]{64}$''']
