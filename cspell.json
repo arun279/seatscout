@@ -14,6 +14,7 @@
     "cloc",
     "Drafthouse",
     "ecommerce",
+    "esbuild",
     "GHSA",
     "isdesktop",
     "KHTML",
@@ -32,6 +33,8 @@
     "usercountry",
     "userlocation",
     "TestFlight",
-    "tokei"
+    "tokei",
+    "unstub",
+    "workerd"
   ]
 }

@@ -1,0 +1,6 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "seatscout-proxy",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-28"
+}

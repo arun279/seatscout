@@ -4,6 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc --build --pretty false"
+    "build": "tsc --build --pretty false",
+    "dev": "wrangler dev"
+  },
+  "dependencies": {
+    "jose": "6.2.10"
+  },
+  "devDependencies": {
+    "wrangler": "4.127.0"
   }
 }
