@@ -481,6 +481,50 @@ Backoff needs a timer and the import ban leaves Core none, so `wait` is injected
 `fetch`. `now` and `random` are injected too rather than defaulted from the language, because
 a default no test exercises is a mutant no test kills.
 
+## The normalised Auditorium
+
+`packages/core/src/domain/auditorium.ts` puts every Seat of one Auditorium into the
+coordinate system the rest of the application compares Seats in: a depth from 0.0 at the
+front row to 1.0 at the back row, and a lateral from -1.0 at the far left through 0.0 on the
+centreline to +1.0 at the far right. It reads `x`, `y` and `width` off a Seat and nothing
+else.
+
+**A row is a distinct `y`, and depth is that row's place in the order.** Every Seat of a row
+carries one `y` in all 42 captured Auditoriums, and the count of distinct `y` values equals
+the count of rows in all 42, so rows need no clustering tolerance and no invented threshold.
+Depth is the row's rank over the last row's rank rather than its distance down the room,
+because rows are not evenly spaced: 41 of the 42 rooms draw at least two different row gaps,
+14 of them draw their widest gap at least half again as wide as their narrowest, and one
+twelve row house draws one gap 2.11 times another. Under a depth measured in map units an
+aisle would push the row behind it further back than a row deserves, and "eighth row of
+fourteen" would stop meaning eight fourteenths. A property test draws each generated room
+twice, once as generated and once with every row gap set to one, and holds the two sets of
+depths identical.
+
+**Depth starts at the front row because nothing in a seat map locates the screen.** The
+vertical offset that reads like a throw distance is the whitespace the background reserves
+for the screen glyph, and it ranges from 1.9 to 11.4 seat widths across the corpus.
+
+**The centreline and the span belong to the room, never to a row.** A Seat's lateral is its
+own centre placed on the extent of every Seat centre in the Auditorium. Rows are neither
+alike nor concentric: 25 of the 42 maps widen toward the back, 15 narrow, 2 are equal, and
+one room spreads its row midpoints across 4.6 seat widths. Normalising a row against its own
+extent would put the outermost Seat of a row of four exactly where it puts the outermost Seat
+of a row of thirty two, which is the opposite of what a normalised position is for.
+
+**No label is read, and none can be.** `normalised` is generic over anything carrying `x`,
+`y` and `width`, so a Seat's printed label is not nameable inside it and ordering by one is a
+compile error rather than a convention. The corpus is the reason: 14 of the 42 rooms skip a
+row index, one chain's four rooms label their Seats `101` to `919` with no letter anywhere, 6
+of the 376 rows carry no agreed label prefix, and 33 of the 42 rooms number the Seats of a
+row against the direction they are drawn in. A property test relabels every generated room
+with a generated function and holds every position unchanged.
+
+The generated rooms are adversarial rather than tidy: uneven row gaps, rows of differing
+widths and origins, Seats of differing widths, coincident Seats, rooms of one row, rooms of
+one Seat, Seats delivered in shuffled order, and labels whose letters and numbers both run
+against the geometry.
+
 ## The native application
 
 `apps/native` is an Expo application that launches and renders its own name. It carries no
