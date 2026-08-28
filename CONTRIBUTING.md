@@ -246,6 +246,23 @@ hundredth are unreachable and the later fault would fire at a rate nobody asked 
 faulted response carries the scripted status and an empty body, because no body was ever
 recorded for one.
 
+A route the script names is answered from the script rather than from the corpus, with a
+status, response headers and a body of its own, whether or not the corpus recorded that
+route. That is where a session bootstrap answers: no capture holds one and none may, because
+`.gitleaks.toml` treats `Set-Cookie` material under the corpus as a leak.
+
+A rate cannot express "fail once and then succeed", so a route may also be given a sequence
+of statuses, consumed in request order and then exhausted, after which that route answers
+normally again. A sequence wins over a fault drawn for the same request, and both draws are
+made either way, so scripting a sequence does not move the arrival order a test was written
+against.
+
+The returned `Fetch` carries a `requests` log: the path each request went to, query string
+included, its method, its headers lowercased, and its body. That is what lets a test assert
+which headers were sent rather than only that a request happened, and it is also what puts
+a query string under the gate at all, since replays are keyed on pathname alone. It observes the
+substitution point rather than adding one: tests still substitute at `fetch`.
+
 Arrival order is where the seed earns its place. Every request draws a latency, and
 requests issued in the same turn are delivered in latency order rather than request order,
 so code that accidentally depends on completion order fails rather than passes. Nothing
@@ -268,6 +285,83 @@ beside `src/corpus` and `tsconfig.test.json` takes it, so nothing that imports t
 reaches `dist`. The import ban is untouched either way: the Biome override still covers
 all of `packages/core/**`, and the harness imports nothing but the corpus and a generator
 that is pure TypeScript.
+
+## The Source port
+
+`packages/core/src/source` is the port every read of the upstream aggregator goes through,
+and the adapter behind it. It is internal on purpose: no caller varies across it, and
+publishing it would oblige every caller to learn session handling and retry semantics to use
+it. See [ADR 1](docs/adr/0001-single-aggregating-source.md).
+
+Its three operations are domain questions rather than upstream routes: theaters near an area,
+showtimes for a movie on a date in an area, and seats for a showtime. What comes back is a
+reading: either the payload, or one of four reasons there is none. Three are the aggregator's
+own refusals translated into something a moviegoer can act on, and the fourth is everything a
+retry could not fix.
+
+| upstream | reading | remedy |
+|---|---|---|
+| 400, general admission | `noSeatMap` | the operator's own page; retrying can never work |
+| 404, the screening has begun | `started` | the next screening |
+| 410 | `soldOut` | another time at that theater |
+| retries exhausted, the transport refused, or the circuit is open | `unreachable` | retry |
+
+No status code, route or upstream field name exists above this boundary. Every reading also
+carries when it was fetched and how many attempts it took, for one that failed as much as one
+that read.
+
+A reading's payload is still the response text. The parsers that turn it into domain objects
+land inside this adapter, not above it, so the boundary does not move when they do.
+
+### The session
+
+The adapter opens a session once and holds it, and a fan-out of any width opens one rather
+than one each, because concurrent callers join the bootstrap already in flight. A request the
+aggregator rejects drops the session and re-opens it once per reading; a second rejection is
+a failure like any other rather than a second bootstrap.
+
+The session travels as `X-Upstream-Cookie` and arrives as `X-Upstream-Set-Cookie`, which is
+what the proxy translates to and from the real headers, and never as `Cookie` or
+`Set-Cookie`, which no browser exposes to script. A native transport renames the pair.
+
+What the session is not is the thing the aggregator admits a request on. That is the
+`Referer` the transport sets, and a request carrying no session but a `Referer` is answered
+while one carrying a fresh session and no `Referer` is refused. The session is kept because
+it carries the caller's location context, because the aggregator's own refusal text asserts a
+session, and because re-opening it is the only recovery a client has.
+
+### Retry and the circuit breaker
+
+Retry is the "Full Jitter" of the AWS Architecture Blog's [Exponential Backoff And
+Jitter](https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/): each
+delay is drawn uniformly from zero up to a window that doubles after every failed attempt.
+Full rather than Equal Jitter, because that post's own simulation puts it ahead on both
+client work and completion time, and a test asserts the delay can reach zero, which is the
+difference between the two. The cap in the published formula is not implemented, because at
+three attempts the window never reaches one.
+
+The breaker is the three states of Nygard's *Release It!*, held as a consecutive-failure
+count and the moment a break ends: closed while readings answer, open for a fixed break once
+enough consecutive readings have failed, and half open for one trial when that break expires.
+A refusal counts as an answer, because the aggregator answered. A ratio over a sampling
+window, which is what current circuit-breaker libraries default to, does not fit: their
+minimum throughput is a hundred calls and a whole search is forty eight.
+
+Both are one policy, replaceable in full. Every default cites a published figure or a
+measurement of the aggregator:
+
+| default | value | what it rests on |
+|---|---|---|
+| attempts | 3 | what `tools/capture-corpus.mjs` already does against this aggregator; at the 7% error rate measured under fan-out a third attempt leaves about one in 2,800 |
+| first delay | 500 ms | one measured round trip, bracketed by a 335 ms mean at concurrency 24 and a 510 ms median over five sequential reads |
+| failures before opening | 3 | a failed reading is already three attempts, so a trip is nine consecutive upstream failures, and it costs three readings of a fan-out measured at forty eight |
+| break | 5 s | the published default of Polly's circuit-breaker strategy, and longer than a whole measured search |
+
+### What Core cannot do for itself
+
+Backoff needs a timer and the import ban leaves Core none, so `wait` is injected beside
+`fetch`. `now` and `random` are injected too rather than defaulted from the language, because
+a default no test exercises is a mutant no test kills.
 
 ## The native application
 
@@ -341,6 +435,13 @@ Only `accept`, `content-type` and `user-agent` cross to the upstream alongside t
 The caller's own cookies, the access assertion and the platform's `cf-` headers belong to
 this hop and stay here. An upstream redirect is handed back rather than followed, because
 one call to the proxy is one upstream request.
+
+One header is added rather than forwarded. The aggregator admits a request on its `Referer`
+and refuses one without it whatever cookies it carries, so the proxy sets `Referer` to the
+origin of `UPSTREAM_ORIGIN`. The Fetch standard makes `Referer` a forbidden request-header
+name that page script cannot set, so this hop is the only place it can come from, and
+synthesising it here rather than passing the caller's through leaves the forwarding list an
+allowlist. Without it every request through the proxy is refused.
 
 See [ADR 2](docs/adr/0002-computation-on-the-client.md) for why.
 
