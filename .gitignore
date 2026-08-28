@@ -1,0 +1,18 @@
+node_modules/
+dist/
+build/
+.wrangler/
+.expo/
+coverage/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
+
+
+# Agent tooling config. Local only: this is planning-adjacent and the repo is public.
+AGENTS.md
+docs/agents/
+.claude/
