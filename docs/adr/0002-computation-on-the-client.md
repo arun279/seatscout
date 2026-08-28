@@ -48,6 +48,11 @@ The server verifies the caller's access token, forwards the request upstream wit
 caller's own session cookies, and streams the response back without parsing it. It holds
 no database, no cache, and no user state.
 
+It supplies one header of its own, which measurement established after this decision was
+accepted. The upstream admits a request on its `Referer` and refuses one without it, whatever
+session it carries, and `Referer` is a forbidden request-header name that page script cannot
+set. The proxy therefore names the upstream as the referer itself.
+
 Everything else happens on the device: parsing, seat normalisation, scoring, filtering,
 ranking, and caching.
 
@@ -88,9 +93,14 @@ no server involved, which removes an entire class of availability failure for th
 The client is heavy. Seat map parsing and scoring for a wide search is real work on a
 phone, and it has to be scheduled so it does not block interaction.
 
-Because each user holds their own upstream session, sessions carry that user's own
-location context. This produces more accurate regional results than a single shared
-session pinned to wherever the server happened to bootstrap.
+Because each user holds their own upstream session, no shared session is rate limited on
+everyone's behalf. What it does not buy is better regional results, which an earlier
+version of this decision claimed: measured against the upstream, the location in those
+cookies is derived from the caller's address rather than from any parameter, and the search
+area travels as a query parameter that is honoured independently of them. Measured again
+later, the session is not what the upstream admits a request on either. It is kept because
+it is the only recovery a client has when a request is refused, and because the upstream
+states a session in the refusal.
 
 Any capability that must run while the device is asleep falls outside this design and
 requires a separate, explicitly stateful component.

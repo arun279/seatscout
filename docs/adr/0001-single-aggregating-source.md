@@ -33,7 +33,7 @@ carries no stability guarantee.
 
 ## Decision
 
-Define one `ShowtimeSource` port covering discovery, showtimes, and seat maps. Ship a
+Define one `Source` port covering discovery, showtimes, and seat maps. Ship a
 single implementation of it: the aggregator.
 
 Add a second implementation only where an independent source genuinely exists, and add it
