@@ -1,1 +1,1 @@
-export {};
+export const unusedThing = 1;
