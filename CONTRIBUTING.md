@@ -5,7 +5,8 @@
 - Node.js 24 or newer
 - pnpm 11.24.0, pinned by `packageManager`
 - [gitleaks](https://github.com/gitleaks/gitleaks), for the pre-commit secret scan
-- [cloc](https://github.com/AlDanial/cloc), for the footprint report
+- [cloc](https://github.com/AlDanial/cloc) and [scc](https://github.com/boyter/scc), for
+  the footprint report
 
 Run `pnpm install` after cloning. The install registers the lefthook Git hooks.
 
@@ -44,9 +45,9 @@ The `footprint` job reports lines added, removed and changed in four buckets, ea
 into code and comments: product code from `apps/` and `packages/`, test code, build
 tooling, and everything else, which is where configuration, documentation and the lock
 file land. The total covers the first three, so a lock file rewrite is reported without
-drowning the lines somebody wrote. The same report carries the comment-to-code ratio
-against the merge base and the absolute bundle size against the ratchet in
-`.size-limit.json`.
+drowning the lines somebody wrote. The same report carries the cyclomatic complexity of
+each bucket on both sides of the comparison, the comment-to-code ratio against the merge
+base, and the absolute bundle size against the ratchet in `.size-limit.json`.
 
 It goes to the run summary of every pull request, and to one pull request comment that is
 updated in place as commits land. A pull request from a fork gets the run summary only,
@@ -54,7 +55,15 @@ because its token cannot write comments.
 
 Two of the figures gate the merge. Comment load may not exceed the merge base, and no
 bundle may exceed its ratchet. Raising a ratchet means editing `.size-limit.json`, which
-is a reviewed line in the diff. No figure here is an absolute this project invented. See
+is a reviewed line in the diff. When either fails, the report names both ways through
+rather than only the verdict.
+
+The cyclomatic figure gates nothing. It is scc's estimate, counted from branch and loop
+keywords rather than from a syntax tree, and it is there so that complexity growth is as
+visible as line growth. Complexity that fails a build is cognitive complexity, caught by
+Biome above.
+
+No figure here is an absolute this project invented. See
 [ADR 6](docs/adr/0006-gates-cite-a-standard-or-measure-a-regression.md) for why each is
 shaped the way it is, why the counter is cloc rather than scc or tokei, and what the
 comment-load gate means while the merge base still carries no comments.

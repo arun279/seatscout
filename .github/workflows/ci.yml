@@ -53,11 +53,15 @@ jobs:
           install: false
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - name: Install the line counter
+      - name: Install the counters
         run: |
           curl -fsSL -o "$RUNNER_TEMP/cloc" https://github.com/AlDanial/cloc/releases/download/v2.10/cloc-2.10.pl
           echo "bf59272455172108072a0a106379f7509fd4349bdcfd85203bac038ccd286d83  $RUNNER_TEMP/cloc" | sha256sum --check
           sudo install -m 0755 "$RUNNER_TEMP/cloc" /usr/local/bin/cloc
+          curl -fsSL -o "$RUNNER_TEMP/scc.tar.gz" https://github.com/boyter/scc/releases/download/v4.0.0/scc_Linux_x86_64.tar.gz
+          echo "b8535fb0714dd33c5434c24de181e4d1a632e6a1f869e1985bbd10ad8b838545  $RUNNER_TEMP/scc.tar.gz" | sha256sum --check
+          tar -x -f "$RUNNER_TEMP/scc.tar.gz" -C "$RUNNER_TEMP" scc
+          sudo install -m 0755 "$RUNNER_TEMP/scc" /usr/local/bin/scc
       - name: Measure the footprint
         run: pnpm footprint --base "$BASE" --head "$HEAD" --out footprint.md
       - name: Check the report reproduces
