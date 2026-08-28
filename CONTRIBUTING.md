@@ -84,8 +84,17 @@ A test that cannot fail is worse than no test, because it reports safety it does
 provide, and nothing static tells one apart from a test that works. Mutation testing does:
 it changes the code and asks whether the suite notices. `stryker.config.json` mutates the
 `src` of every workspace package, and `.github/workflows/nightly.yml` fails on any mutant
-no test kills. Nothing is carved out of that: a file the unit suite does not judge shows
-up as an uncovered mutant and fails the run just as a survivor does.
+no test kills. A file the unit suite does not judge shows up as an uncovered mutant and
+fails the run just as a survivor does.
+
+One thing is carved out: the two view layers, `apps/web` and `apps/native`. ADR 3 puts
+everything correctness critical in `packages`, so what is left in a view layer is screens,
+and the only test that kills a mutated screen is one that restates the screen. That is the
+tautology this gate exists to detect, so the view layers are excluded rather than given
+tests written to satisfy them. What they are for is the end-to-end suite, which a mutation
+run over the unit tests cannot stand in for. The stateless proxy is not part of the
+carve-out: it has its own assertions, including that an unauthenticated request is
+rejected, and a fail-closed check is exactly the kind most worth proving can fail.
 
 The run is scheduled rather than attached to pull requests, and is deliberately not a
 required check. It re-judges all of the code against all of the tests every time, so it
@@ -195,6 +204,51 @@ exists to be under. And it is written as `[allowlist]` rather than `[[allowlists
 because the version the scan job installs predates the array form and ignores it without
 saying so, which would leave the entry silently inert.
 
+## The native application
+
+`apps/native` is an Expo application that launches and renders its own name. It carries no
+product behaviour and nothing else in the workspace depends on it. It exists so the release
+pipeline has something to sign and submit before there is a native application worth
+shipping.
+
+Its versions are not chosen here. Expo publishes the React and React Native version each
+SDK pins, and this application matches SDK 57 exactly: React 19.2.3 and React Native
+0.86.3.
+
+One React version across the workspace is a correctness requirement rather than a
+preference, because a duplicate surfaces as a runtime hook error rather than a build
+failure. That is the one hazard here no gate would otherwise catch, so `react` is an
+`overrides` entry in `pnpm-workspace.yaml` and a second version cannot be installed
+whatever a package asks for. Raising it is one reviewed line, and it moves with the SDK
+rather than with React's own releases. `pnpm why --depth=10 react` reports what is
+installed rather than what was asked for.
+
+Metro needs no configuration for the workspace. Expo has configured it for monorepos since
+SDK 52 and resolves autolinked modules against the workspace since SDK 55, so there is no
+`metro.config.js` to keep in step. `packages/core` and `packages/client` import into this
+application with no configuration of any kind: no project reference, no Metro resolver
+entry, and nothing relaxed in the Core ban. It does not depend on either yet, because both
+still export nothing and knip removes a dependency nothing imports.
+
+Two compiler options belong to this project alone. `lib` is `["ES2024"]` because React
+Native is not a DOM host and declares its own `fetch`, `URL`, `Blob` and `FormData`;
+leaving the default in place puts `lib.dom.d.ts` beside those declarations and produces 69
+collisions between the two, across duplicate identifiers, mismatched property and variable
+declarations, and differing modifiers. `skipLibCheck` is on because `expo-asset` ships a
+declaration file importing a type from `@react-native/assets-registry`, which publishes no
+types before 0.87 and cannot be raised past what React Native 0.86 pins. Neither option
+covers for TypeScript 7: with the DOM library removed it checks React Native's own
+declarations with no errors, and the same tree run through TypeScript 6.0.3, which is what
+Expo's own SDK 57 template pins, reported the `expo-asset` error identically.
+
+`updates.enabled` is `false` in `app.json` because over-the-air updates are deferred and
+`expo-updates` is not installed. Expo's updates system is on by default, so leaving the key
+out would state that the application updates itself through a library it does not have,
+which is the disagreement knip's Expo plugin reports.
+
+Run it with `pnpm --filter @seatscout/native start` and open the printed URL in Expo Go.
+`/ios` and `/android` are ignored because `expo prebuild` generates them.
+
 ## Dependency updates
 
 Renovate runs self-hosted from `.github/workflows/renovate.yml`, so no GitHub App has to
@@ -206,8 +260,13 @@ The workflow falls back to its own token, which cannot update files under
 repository secret to a personal access token with the `repo` and `workflow` scopes to
 lift both limits.
 
-`overrides` in `pnpm-workspace.yaml` lifts a transitive dependency past an advisory its
-own package pins below. It holds `qs` above
+`overrides` in `pnpm-workspace.yaml` does two jobs. It holds `react` at one version for the
+reason above, and it lifts a transitive dependency past an advisory its own package pins
+below. It holds `qs` above
 [GHSA-q8mj-m7cp-5q26](https://github.com/advisories/GHSA-q8mj-m7cp-5q26), which reaches
-the workspace through Stryker. An entry is removable once the package that pins it
-releases a version that does not.
+the workspace through Stryker, and `uuid` above
+[GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq), which reaches it
+through the Xcode project parser inside Expo's config plugins. `uuid` is held at 11.1.1
+rather than at the newest patched release because that parser loads it with `require` and
+uuid dropped its CommonJS entry point after 11. An entry is removable once the package
+that pins it releases a version that does not.
