@@ -1178,6 +1178,14 @@ it reads now, through the same `resultOf` a search builds a result with. Its key
 score are the same, because a key is the Showtime and the Seats and a score is a pure
 function of the Group's geometry and the Profile, and both operands are unchanged.
 
+The one value carried across rather than re-read is how many consoles the Group crosses, and
+it is carried because it is part of what the caller is asking about rather than part of what
+the answer says: a Seat Group is its Seats and the consoles between them, and both are how
+the room is drawn rather than what is on sale in it. That it is load-bearing is checked in a
+room where the best Group at a party of three does cross one, because in the 42 captured
+Auditoriums a party of two never does and a suite that only asked about pairs could not tell
+a carried count from a zero.
+
 **Everything else fails closed.** A Group whose Seats have gone answers `taken`, and so does
 a Showtime the listing no longer offers and an Auditorium the Source refuses as sold out,
 begun, or general admission. Only a Source that could not be reached, in the listing or in

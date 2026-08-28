@@ -31,6 +31,7 @@ const WIDE_RELEASE = "245569";
 const STONEBRIAR = "AMC Stonebriar 24";
 const ROOM = "561562311";
 const ACCESSIBLE_ROOM = "561898261";
+const POD_ROOM = "561748075";
 const SEARCHED_AT = 1000;
 const VERIFIED_AT = 61000;
 const AN_HOUR = 60 * 60 * 1000;
@@ -45,6 +46,7 @@ type Script = Omit<UpstreamScript, "seed" | "routes">;
 
 interface Options {
   readonly accessibleSeating?: boolean;
+  readonly partySize?: number;
   readonly profile?: SeatProfile;
   readonly room?: string;
   readonly answer?: (result: SeatGroupResult, room: string) => Answer;
@@ -162,7 +164,7 @@ const verifying = async (options: Options = {}) => {
     movie: WIDE_RELEASE,
     date: TODAY,
     area: AREA,
-    partySize: 2,
+    partySize: options.partySize ?? 2,
     accessibleSeating: options.accessibleSeating ?? false,
     profile: options.profile,
     theaters: [theaterIn(listed, STONEBRIAR)],
@@ -404,6 +406,16 @@ describe("re-verifying a Seat Group", () => {
         verified.result.seats.map((seat) => seat.provenance.fetchedAt),
     ).toEqual([VERIFIED_AT, VERIFIED_AT]);
     expect(verified.ok && verified.result.key).toBe(run.result.key);
+    expect(verified.ok && verified.result.score).toBe(run.result.score);
+  });
+
+  it("carries the consoles the Seat Group crosses into the reading it answers with", async () => {
+    const run = await verifying({ partySize: 3, room: POD_ROOM });
+    const verified = await run.verify();
+
+    expect(seatsIn(run.result)).toEqual(["E7", "E6", "E5"]);
+    expect(run.result.podDividers).toBe(1);
+    expect(verified.ok && verified.result.podDividers).toBe(1);
     expect(verified.ok && verified.result.score).toBe(run.result.score);
   });
 
