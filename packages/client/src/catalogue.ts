@@ -30,7 +30,8 @@ const isCached = (value: unknown): value is CachedCatalogue =>
   typeof value.fetchedAt === "number" &&
   isRecord(value.catalogue) &&
   Array.isArray(value.catalogue.bookable) &&
-  Array.isArray(value.catalogue.unbookable);
+  Array.isArray(value.catalogue.unbookable) &&
+  Array.isArray(value.catalogue.unidentified);
 
 const keyOf = (terms: CatalogueTerms) =>
   `seatscout.catalogue.${JSON.stringify([terms.movie, terms.date, terms.area])}`;

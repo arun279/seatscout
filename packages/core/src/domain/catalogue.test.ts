@@ -36,6 +36,18 @@ const theaterNamed = (catalogue: Catalogue, name: string): TheaterId => {
   return theater.presentation.theater.id;
 };
 
+const asUnidentified = (catalogue: Catalogue): Catalogue => ({
+  bookable: [],
+  unbookable: [],
+  unidentified: everyShowtime(catalogue).map(
+    ({ startsAt, presentation, ticketing }) => ({
+      startsAt,
+      presentation,
+      ticketing,
+    }),
+  ),
+});
+
 const startsAt = (catalogue: Catalogue): readonly number[] =>
   everyShowtime(catalogue)
     .map((showtime) => Date.parse(showtime.startsAt))
@@ -46,7 +58,29 @@ describe("narrowing a catalogue", () => {
     const catalogue = captured();
 
     expect(counted(catalogue)).toEqual({ bookable: 172, unbookable: 4 });
+    expect(catalogue.unidentified).toEqual([]);
     expect(narrowed(catalogue, {})).toEqual(catalogue);
+  });
+
+  it("narrows the Showtimes it has no identity for by the terms it narrows the rest by", () => {
+    const identified = captured();
+    const catalogue = asUnidentified(identified);
+    const theaters = [
+      theaterNamed(identified, "Cinemark Dallas XD and IMAX"),
+      theaterNamed(identified, "Landmark Inwood Theatre"),
+    ];
+
+    expect(narrowed(catalogue, {}).unidentified).toHaveLength(176);
+    expect(narrowed(catalogue, { theaters }).unidentified).toHaveLength(17);
+    expect(
+      narrowed(catalogue, { formats: ["IMAX"] }).unidentified,
+    ).toHaveLength(1);
+    expect(
+      narrowed(catalogue, {
+        from: Date.parse("2026-08-28T19:00:00-05:00"),
+        until: Date.parse("2026-08-28T22:00:00-05:00"),
+      }).unidentified,
+    ).toHaveLength(46);
   });
 
   it("narrows both halves of the catalogue to the Theaters asked for", () => {

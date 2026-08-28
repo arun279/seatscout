@@ -228,6 +228,7 @@ describe("the catalogue phase", () => {
         fetchedAt: FETCHED_AT,
         catalogue: { bookable: [], unbookable: "none" },
       },
+      { fetchedAt: FETCHED_AT, catalogue: { bookable: [], unbookable: [] } },
     ];
     const reread: number[] = [];
     for (const value of unreadable) {

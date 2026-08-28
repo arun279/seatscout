@@ -18,8 +18,11 @@ interface Clause {
 const AWKWARD_KEY = 'a "quoted" \\ key with a ☃ in it';
 
 const sample = (fetchedAt: number): Sample => ({
-  value: { fetchedAt, catalogue: { bookable: [], unbookable: [] } },
-  text: `{"fetchedAt":${fetchedAt},"catalogue":{"bookable":[],"unbookable":[]}}`,
+  value: {
+    fetchedAt,
+    catalogue: { bookable: [], unbookable: [], unidentified: [] },
+  },
+  text: `{"fetchedAt":${fetchedAt},"catalogue":{"bookable":[],"unbookable":[],"unidentified":[]}}`,
 });
 
 const reads = async (store: KeyValueStore, key: string, expected: string) => {

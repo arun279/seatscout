@@ -729,9 +729,11 @@ packages along the seam ADR 3 draws.
 part of a Query a Showtime can answer by itself: the Theaters it may be at, the Formats it
 must carry one of, and the window its start time falls in. The client's `CatalogueTerms`
 extends it with the three that name a listing rather than narrow it, which is the whole of
-the difference between the two. Narrowing a Catalogue yields a Catalogue, so both halves are
-narrowed by one predicate and a Showtime the listing already knows to be unbookable is still
-reported against the terms it satisfies. Absence of a term is what means "no constraint"; an empty list
+the difference between the two. Narrowing a Catalogue yields a Catalogue, so all three of
+its lists are narrowed by one predicate and a Showtime the listing already knows to be
+unbookable, or could not give an identity, is still reported against the terms it satisfies.
+The predicate reads a Showtime's Presentation and start time and never its identity, which
+is what lets the third list exist at all. Absence of a term is what means "no constraint"; an empty list
 of Theaters or of Formats admits nothing, because a filter that accepts none accepts none.
 Chain and Amenity are deliberately not among the terms: the listing carries a chain code and
 no chain name, and the adapter drops the amenities that do not name a Format, so neither
@@ -784,7 +786,9 @@ strings would have left open. It is the technique `corpus/types.ts` and the cata
 adapter already use for what may be *read*, pointed at what may be written.
 
 What comes back is checked before it is used: a numeric fetch moment, and a catalogue
-carrying its two arrays. Anything else is a miss and the Source is read again. It is not
+carrying its three arrays. All three are checked rather than the two the reader will
+obviously touch, because an entry written by an older build is a real thing a device holds
+and a missing array would reach a search as an absent Coverage outcome. Anything else is a miss and the Source is read again. It is not
 checked deeper than that, because deeper is the adapter's own parse restated against data
 the adapter wrote, and because the store it came from is the reader's own device rather than
 a third party's answer.
