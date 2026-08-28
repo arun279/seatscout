@@ -10,12 +10,14 @@
     "packages/core/src/corpus/captures.ts"
   ],
   "words": [
+    "Barco",
     "Cinepolis",
     "cloc",
     "Drafthouse",
     "ecommerce",
     "esbuild",
     "GHSA",
+    "Inwood",
     "isdesktop",
     "KHTML",
     "lefthook",
@@ -36,6 +38,7 @@
     "userlocation",
     "TestFlight",
     "tokei",
+    "unbookable",
     "unstub",
     "workerd",
     "xoroshiro"

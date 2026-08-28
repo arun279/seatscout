@@ -1,6 +1,7 @@
 import type { Fetch } from "../transport.js";
 import { type RetryPolicy, delayAfter } from "./backoff.js";
 import { type BreakerPolicy, circuitBreaker } from "./breaker.js";
+import { catalogueFrom, theatersFrom } from "./catalogue.js";
 import type { Reading, Source, Unreadable } from "./port.js";
 import { seatsFrom } from "./seat-map.js";
 
@@ -44,8 +45,6 @@ interface Answer {
 
 const rejected = (answer: Answer | null) =>
   answer !== null && answer.status === 403;
-
-const verbatim = (body: string) => body;
 
 export const openSource = (deps: SourceDependencies): Source => {
   const policy = deps.policy ?? defaultPolicy;
@@ -153,12 +152,12 @@ export const openSource = (deps: SourceDependencies): Source => {
     theatersNear: (area) =>
       read(
         `/napi/nearbyTheaters?zipCode=${encodeURIComponent(area)}&limit=${THEATERS_ASKED_FOR}`,
-        verbatim,
+        theatersFrom,
       ),
     showtimesFor: (movie, date, area) =>
       read(
         `/napi/theaterShowtimeGroupings/${encodeURIComponent(movie)}/${encodeURIComponent(date)}?isdesktop=true&isDesktopMOP=true&zip=${encodeURIComponent(area)}&partnerRestrictedTicketing=`,
-        verbatim,
+        catalogueFrom,
       ),
     seatsFor: (showtime) =>
       read(

@@ -326,9 +326,10 @@ No status code, route or upstream field name exists above this boundary. Every r
 carries when it was fetched and how many attempts it took, for one that failed as much as one
 that read.
 
-A seat map reading's payload is Seats. Discovery and showtimes still hand back the response
-text, and their parsers land inside this adapter when they are written, not above it, so the
-boundary does not move when they do.
+A reading's payload is the domain object the answer became: Theaters, a catalogue of
+Showtimes, or Seats. The parsers that produce them live inside this adapter, so the boundary
+does not move when one is added, and a reading is generic over what it carries rather than
+over a response body every caller would parse again.
 
 ### Seats and Availability
 
@@ -364,6 +365,61 @@ Auditorium with holes in it. An Auditorium short of Seats is worse than one that
 read, because only one of the two says so. `UpstreamSeat` declares exactly the nine fields the
 translation reads and `SEAT_FIELDS` gives each of them a type, keyed by `keyof UpstreamSeat`, so
 a field added to the one and not the other does not compile.
+
+### The catalogue
+
+`packages/core/src/source/catalogue.ts` turns two of those readings into the vocabulary
+`CONTEXT.md` defines: an area into Theaters, and a Movie on a date in an area into
+Showtimes, each carrying the Presentation it belongs to. One request answers a whole area,
+so nothing is indexed and nothing is assembled from several.
+
+`packages/core/src/domain/catalogue.ts` holds what comes out, and holds no upstream shape at
+all. Four things keep the boundary enforced rather than observed, two of them at compile
+time.
+
+The aggregator's own response shapes are declared inside the adapter and exported from
+nowhere, so no module above it can name one even deliberately. Those declarations are a deny
+list as much as a description, in the way `src/corpus/types.ts` is: a field the adapter omits
+cannot be read anywhere.
+
+Identity is branded. A `ShowtimeId`, a `TheaterId`, a `MovieId` and a `TicketingUrl` are
+declared as the types of the payload's own fields, so parsing a response is the only way to
+obtain one. **This is what makes a constructed ticketing URL fail to compile** rather than
+merely violate [ADR 4](docs/adr/0004-booking-ends-at-a-deep-link.md): a URL built from parts
+is a `string`, and a `string` is not a `TicketingUrl`.
+
+`Format` is a closed set. The aggregator names a premium presentation in free text among a
+screening's amenities, several names to a screening, and there is a structured format field
+beside them that carries four values across the whole corpus against the labels' forty five,
+so the labels are what the adapter reads. It maps the ones it recognises onto Formats and
+drops the rest, which leaves a screening standard rather than inventing a Format from a name
+nobody has classified. That is the fail-closed rule Availability follows, applied where the
+vocabulary is open. The table covers the labels the catalogue's own two answers carry.
+
+The boundary is then measured rather than asserted. One test walks every key name in the
+captured responses and every key name the domain emits, and holds their overlap to `id`,
+`name` and `formats` exactly; another holds that no value the domain carries is one of the
+aggregator's chain codes or its words for whether a screening is on sale. Widening either is
+a line in a diff.
+
+### What bookable means
+
+Not what the aggregator says. Its own word for a screening on sale reads `available` for
+screenings at a theater whose every captured seat map request is a 400, because those rooms
+are general admission and have no seat map to fetch. The predicate that decides it is
+reserved seating on the enclosing group of amenities, and it is asked first, because a room
+that never has a seat map is a more durable fact about a Showtime than the time of day.
+
+A Showtime is bookable when its Presentation has reserved seating, has not begun, and is not
+sold out. Anything else is carried with the reason it is not, in the same words a seat map
+refusal would come back with, so a Showtime the catalogue already knows to be unbookable
+costs no request to find out. Those flags are read rather than the word itself: they agreed
+with it in all 928 captured rows, they are total where a word is open, and reading them keeps
+one more piece of upstream vocabulary out of the program.
+
+An answer missing anything a Showtime or a Theater is built from is refused whole rather than
+read into a listing with holes in it, for the reason a partial seat map is refused: a listing
+short of a theater cannot be told from an area that is genuinely that empty.
 
 ### The session
 

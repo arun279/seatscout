@@ -67,7 +67,10 @@ describe("the aggregating source", () => {
 
     expect(reading).toEqual({
       ok: true,
-      payload: JSON.stringify(capture?.body),
+      payload: capture?.body.theaters.map((theater) => ({
+        id: theater.formattedID,
+        name: theater.name,
+      })),
       fetchedAt: 1000,
       attempts: 1,
     });
@@ -265,7 +268,7 @@ describe("the aggregating source", () => {
         "/napi/nearbyTheaters": {
           status: 200,
           headers: { "x-upstream-set-cookie": "userlocation=moved" },
-          body: "{}",
+          body: '{"theaters":[]}',
         },
       },
     });
