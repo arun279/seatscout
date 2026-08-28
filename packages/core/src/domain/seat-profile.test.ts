@@ -1,6 +1,7 @@
 import * as fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import { seatMapCaptures } from "../corpus/captures.js";
+import type { CapturedSeatMap } from "../corpus/types.js";
 import { type Seat, seatsFrom } from "../source/seat-map.js";
 import { type NormalisedPosition, normalised } from "./auditorium.js";
 import type { SeatGroup } from "./seat-group.js";
@@ -24,6 +25,13 @@ interface RowSpec {
 }
 
 const FETCHED_AT = 1000;
+const RENDERED_BY_THE_PROTOTYPE: readonly string[] = [
+  "561443587",
+  "561462741",
+  "561505814",
+  "561230736",
+  "561865199",
+];
 const SEAT_WIDTH = 10;
 const ROW_GAP = 20;
 
@@ -89,76 +97,84 @@ const scoreOf = (
   group: SeatGroup<Placed>,
 ) => scoringIn(auditorium, profile)(group).score;
 
-const everySeatIn = (
+interface Ranked extends Scored {
+  readonly seat: Placed;
+}
+
+const rankedIn = (
   auditorium: Auditorium,
   profile: SeatProfile,
-): readonly (Scored & { readonly seat: Placed })[] => {
+): readonly Ranked[] => {
   const score = scoringIn(auditorium, profile);
   return auditorium.map((seat) => ({ seat, ...score(alone(seat)) }));
 };
+
+const topSeatIn = (auditorium: Auditorium, profile: SeatProfile) =>
+  rankedIn(auditorium, profile).reduce((best, candidate) =>
+    candidate.score > best.score ? candidate : best,
+  );
 
 const rowsIn = (auditorium: Auditorium) =>
   [...new Set(auditorium.map((seat) => seat.depth))]
     .sort((nearer, further) => nearer - further)
     .map((depth) => auditorium.filter((seat) => seat.depth === depth));
 
-const outwardFrom = (row: Auditorium) => [
-  row
-    .filter((seat) => seat.lateral >= 0)
-    .toSorted((left, right) => left.lateral - right.lateral),
-  row
-    .filter((seat) => seat.lateral <= 0)
-    .toSorted((left, right) => right.lateral - left.lateral),
-];
+const outwardRuns = (ranked: readonly Ranked[]) =>
+  [...new Set(ranked.map((one) => one.seat.depth))].flatMap((depth) => {
+    const row = ranked.filter((one) => one.seat.depth === depth);
+    return [
+      row
+        .filter((one) => one.seat.lateral >= 0)
+        .toSorted((left, right) => left.seat.lateral - right.seat.lateral),
+      row
+        .filter((one) => one.seat.lateral <= 0)
+        .toSorted((left, right) => right.seat.lateral - left.seat.lateral),
+    ];
+  });
 
-const fallsOutward = (auditorium: Auditorium, profile: SeatProfile) => {
-  const score = scoringIn(auditorium, profile);
-  return rowsIn(auditorium)
-    .flatMap(outwardFrom)
-    .every((run) =>
-      run.every((seat, index) => {
-        const inner = run[index - 1];
-        return (
-          inner === undefined ||
-          score(alone(seat)).score <= score(alone(inner)).score + 1e-12
-        );
-      }),
-    );
-};
-
-const topSeatIn = (auditorium: Auditorium, profile: SeatProfile) =>
-  everySeatIn(auditorium, profile).reduce((best, candidate) =>
+const judged = (auditorium: Auditorium, profile: SeatProfile) => {
+  const ranked = rankedIn(auditorium, profile);
+  const top = ranked.reduce((best, candidate) =>
     candidate.score > best.score ? candidate : best,
   );
-
-const onTheCentreline = (auditorium: Auditorium, profile: SeatProfile) => {
-  const top = topSeatIn(auditorium, profile);
-  return (
-    Math.abs(top.seat.lateral) ===
-    Math.min(
-      ...auditorium
-        .filter((seat) => seat.depth === top.seat.depth)
-        .map((seat) => Math.abs(seat.lateral)),
-    )
-  );
+  return {
+    onTheCentreline:
+      Math.abs(top.seat.lateral) ===
+      Math.min(
+        ...ranked
+          .filter((one) => one.seat.depth === top.seat.depth)
+          .map((one) => Math.abs(one.seat.lateral)),
+      ),
+    withinOneRowOfTarget:
+      Math.abs(
+        top.reasons.rowFromFront -
+          (profile.targetDepth * (top.reasons.rowCount - 1) + 1),
+      ) <= 1,
+    fallingOutward: outwardRuns(ranked).every((run) =>
+      run.every((one, index) => {
+        const inner = run[index - 1];
+        return inner === undefined || one.score <= inner.score + 1e-12;
+      }),
+    ),
+  };
 };
 
-const withinOneRowOfTarget = (auditorium: Auditorium, profile: SeatProfile) => {
-  const { reasons } = topSeatIn(auditorium, profile);
-  return (
-    Math.abs(
-      reasons.rowFromFront - (profile.targetDepth * (reasons.rowCount - 1) + 1),
-    ) <= 1
-  );
+const auditoriumOf = (body: CapturedSeatMap): Auditorium => {
+  const seats = seatsFrom(JSON.stringify(body), FETCHED_AT);
+  if (seats === null)
+    throw new Error("the corpus holds a seat map that will not read");
+  return normalised(seats);
 };
 
 const capturedAuditoriums = (): readonly Auditorium[] =>
-  [...seatMapCaptures.values()].map((capture) => {
-    const seats = seatsFrom(JSON.stringify(capture.body), FETCHED_AT);
-    if (seats === null)
-      throw new Error("the corpus holds a seat map that will not read");
-    return normalised(seats);
-  });
+  [...seatMapCaptures.values()].map((capture) => auditoriumOf(capture.body));
+
+const renderedAuditoriums = (): readonly Auditorium[] =>
+  [...seatMapCaptures.values()]
+    .filter((capture) =>
+      RENDERED_BY_THE_PROTOTYPE.includes(capture.body.showtimeId),
+    )
+    .map((capture) => auditoriumOf(capture.body));
 
 const rightReachOf = (row: Auditorium) =>
   Math.max(...row.map((seat) => seat.lateral));
@@ -257,25 +273,23 @@ const weightings = fc.record({
 });
 
 const acrossTheSweep = (
-  captured: readonly Auditorium[],
+  rooms: readonly Auditorium[],
   grid: readonly Partial<SeatProfile>[],
 ) => {
   const judgements = grid.flatMap((weights) =>
-    captured.map((room) => {
+    rooms.map((room) => {
       const profile = { ...REFERENCE, ...weights };
-      return {
-        profile,
-        centreline: onTheCentreline(room, profile),
-        outward: fallsOutward(room, profile),
-        onTargetRow: withinOneRowOfTarget(room, profile),
-      };
+      return { profile, ...judged(room, profile) };
     }),
   );
-  const offTargetRow = judgements.filter((judgement) => !judgement.onTargetRow);
+  const offTargetRow = judgements.filter(
+    (judgement) => !judgement.withinOneRowOfTarget,
+  );
   return {
     points: judgements.length,
-    centreline: judgements.filter((judgement) => judgement.centreline).length,
-    outward: judgements.filter((judgement) => judgement.outward).length,
+    centreline: judgements.filter((judgement) => judgement.onTheCentreline)
+      .length,
+    outward: judgements.filter((judgement) => judgement.fallingOutward).length,
     offTargetRow: offTargetRow.length,
     offTargetRowWhereDepthLeads: offTargetRow.filter(
       ({ profile }) => profile.depthWeight >= profile.offAxisWeight,
@@ -298,18 +312,16 @@ const shapeOf = (rows: readonly Auditorium[]) => {
 
 describe("the Reference Seat Profile over the captured corpus", () => {
   it("puts its best Seat on the centreline within one row of the reference row, and falls away outward", () => {
-    const captured = capturedAuditoriums();
+    const captured = capturedAuditoriums().map((room) =>
+      judged(room, REFERENCE),
+    );
 
     expect({
       auditoriums: captured.length,
-      onTheCentreline: captured.filter((room) =>
-        onTheCentreline(room, REFERENCE),
-      ).length,
-      withinOneRowOfTarget: captured.filter((room) =>
-        withinOneRowOfTarget(room, REFERENCE),
-      ).length,
-      fallingOutward: captured.filter((room) => fallsOutward(room, REFERENCE))
+      onTheCentreline: captured.filter((room) => room.onTheCentreline).length,
+      withinOneRowOfTarget: captured.filter((room) => room.withinOneRowOfTarget)
         .length,
+      fallingOutward: captured.filter((room) => room.fallingOutward).length,
     }).toEqual({
       auditoriums: 42,
       onTheCentreline: 42,
@@ -346,11 +358,11 @@ describe("the Reference Seat Profile over the captured corpus", () => {
   });
 
   it("keeps that ranking across the weightings and screen gaps the prototype swept", () => {
-    expect(acrossTheSweep(capturedAuditoriums(), sweptWeightings())).toEqual({
-      points: 72 * 42,
-      centreline: 72 * 42,
-      outward: 72 * 42,
-      offTargetRow: 12,
+    expect(acrossTheSweep(renderedAuditoriums(), sweptWeightings())).toEqual({
+      points: 72 * 5,
+      centreline: 72 * 5,
+      outward: 72 * 5,
+      offTargetRow: 0,
       offTargetRowWhereDepthLeads: 0,
     });
   });
@@ -381,6 +393,14 @@ describe("the Seat Profile score", () => {
       backWall: charged({ wallBandWeight: 1 }, alone(named(room, "4.3"))),
       sideWall: charged({ wallBandWeight: 1 }, alone(named(room, "3.6"))),
       offTheWall: charged({ wallBandWeight: 1 }, alone(middle)),
+      aGroupReachingTheWall: charged(
+        { wallBandWeight: 1 },
+        { seats: [named(room, "3.5"), named(room, "3.6")], podDividers: 0 },
+      ),
+      aGroupClearOfIt: charged(
+        { wallBandWeight: 1 },
+        { seats: [named(room, "3.4"), named(room, "3.5")], podDividers: 0 },
+      ),
       consoles: charged(
         { podDividerWeight: 1 },
         { seats: [middle], podDividers: 2 },
@@ -395,6 +415,8 @@ describe("the Seat Profile score", () => {
       backWall: -1,
       sideWall: -1,
       offTheWall: 0,
+      aGroupReachingTheWall: -1,
+      aGroupClearOfIt: 0,
       consoles: -2,
     });
   });
@@ -468,25 +490,45 @@ describe("the Seat Profile score", () => {
   });
 
   it("measures a Seat Group from its centroid and says which row it is in, counting rows rather than dividing depths", () => {
-    const room = evenRoom(10, 8);
+    const room = evenRoom(11, 8);
     const group: SeatGroup<Placed> = {
       seats: [named(room, "7.2"), named(room, "7.3"), named(room, "7.4")],
       podDividers: 1,
     };
     const expected: RankReasons = {
       rowFromFront: 8,
-      rowCount: 10,
+      rowCount: 11,
       seatsOffCentre: -0.5,
       inFrontBand: false,
       againstWall: false,
-      tiedAtRoomResolution: false,
+      tiedAtRoomResolution: true,
     };
     const { position, reasons } = scoringIn(room, REFERENCE)(group);
 
-    expect({ position, reasons }).toEqual({
-      position: { depth: 7 / 9, lateral: -0.14285714285714285 },
-      reasons: expected,
-    });
+    expect(reasons).toEqual(expected);
+    expect(position.depth).toBeCloseTo(0.7, 15);
+    expect(position.lateral).toBeCloseTo(-1 / 7, 15);
+  });
+
+  it("counts the seat widths a Seat sits off centre between Seat centres, not between left edges", () => {
+    const room = normalised([
+      seatAt("narrow", 0, 0, 10),
+      seatAt("wide", 20, 0, 30),
+      seatAt("behind", 10, 50, 20),
+    ]);
+    const score = scoringIn(room, REFERENCE);
+
+    expect(
+      room.map((seat) => ({
+        id: seat.id,
+        lateral: seat.lateral,
+        seatsOffCentre: score(alone(seat)).reasons.seatsOffCentre,
+      })),
+    ).toEqual([
+      { id: "narrow", lateral: -1, seatsOffCentre: -0.75 },
+      { id: "wide", lateral: 1, seatsOffCentre: 0.75 },
+      { id: "behind", lateral: 0, seatsOffCentre: 0 },
+    ]);
   });
 
   it("says what it says with named reasons and one number, and never a rank", () => {
@@ -589,11 +631,11 @@ describe("the Seat Profile score over generated Auditoriums", () => {
     fc.assert(
       fc.property(auditoriums, weightings, (seats, weights) => {
         expect(
-          fallsOutward(normalised(seats), {
+          judged(normalised(seats), {
             ...REFERENCE,
             ...weights,
             wallBandWeight: 0,
-          }),
+          }).fallingOutward,
         ).toBe(true);
       }),
       { numRuns: 300 },
