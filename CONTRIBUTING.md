@@ -211,6 +211,61 @@ exists to be under. And it is written as `[allowlist]` rather than `[[allowlists
 because the version the scan job installs predates the array form and ignores it without
 saying so, which would leave the entry silently inert.
 
+## The fake upstream
+
+Tests substitute at `fetch`, never at the Source port. The port exists, but no caller
+varies across it, and substituting there would mock away the session handling, retry and
+parsing the adapter is judged on. `packages/core/src/testing/fake-upstream.ts` is
+therefore the seam the unit suite runs on. `fakeUpstream({ seed })` returns a `Fetch`, and
+`Fetch` is declared in `packages/core/src/transport.ts` rather than borrowed from a host,
+because the import ban leaves Core no host type to borrow. `FetchResponse` carries the
+response headers as well as its status, because the session travels in a header and the
+client owns it.
+
+It replays the corpus by route. Every capture is indexed under the path it was recorded
+at, query string dropped, because the capture redacts the location parameters and no
+adapter would reproduce them. Pathname alone is a distinct key for every capture, which
+`fake-upstream.test.ts` asserts rather than assumes, because two captures of one route
+would otherwise leave the map holding whichever was indexed last. A route the corpus never
+recorded rejects rather than answering, which is what a real `fetch` does with a request it
+cannot satisfy, so nothing under test behaves differently for being under test. The three
+refusals the capture met arrive as themselves rather than as an invented failure payload.
+
+The capture writes no response header, so a replayed response reports none. That is what
+the corpus holds rather than a simplification, and it is the piece a session lifecycle test
+has to supply for itself.
+
+Faults are scripted as a status and a share of requests in percent, drawn against a
+hundred-slot table. `[{ status: 500, percent: 20 }, { status: 403, percent: 5 }]` is a
+fifth of requests failing and a twentieth needing a session refresh. A script totalling
+more than a hundred is refused rather than quietly truncated, because the slots past the
+hundredth are unreachable and the later fault would fire at a rate nobody asked for. A
+faulted response carries the scripted status and an empty body, because no body was ever
+recorded for one.
+
+Arrival order is where the seed earns its place. Every request draws a latency, and
+requests issued in the same turn are delivered in latency order rather than request order,
+so code that accidentally depends on completion order fails rather than passes. Nothing
+sleeps: a batch is released on the next microtask and its promises are resolved in the
+order the seed decided, so out-of-order arrival costs no wall clock at all. The generator
+is `pure-rand`'s xoroshiro128+, and `fake-upstream.test.ts` asserts both directions of what
+determinism means: one seed reproduces its order exactly, and another seed produces a
+different one. Each request draws its latency and then its fault percentile, in that order
+and always, so scripting faults into an existing test does not reshuffle the arrival order
+it was written against.
+
+What the seed produces is a permutation, so a wide fan-out is reordered and a narrow one
+may not be: two concurrent requests arrive in the order they were made about half the time.
+A test that turns on ordering at two or three requests therefore has to pin a seed that was
+watched reordering them, the way the four-request test does, rather than assume any seed
+will do.
+
+The harness is not part of Core's compiled product. `tsconfig.json` excludes `src/testing`
+beside `src/corpus` and `tsconfig.test.json` takes it, so nothing that imports the corpus
+reaches `dist`. The import ban is untouched either way: the Biome override still covers
+all of `packages/core/**`, and the harness imports nothing but the corpus and a generator
+that is pure TypeScript.
+
 ## The native application
 
 `apps/native` is an Expo application that launches and renders its own name. It carries no

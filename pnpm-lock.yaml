@@ -80,7 +80,11 @@ importers:
 
   packages/client: {}
 
-  packages/core: {}
+  packages/core:
+    devDependencies:
+      pure-rand:
+        specifier: 8.4.2
+        version: 8.4.2
 
   tools/footprint:
     devDependencies:
