@@ -1,1 +1,3 @@
-export const cache = caches.open("seatmaps");
+import { readFileSync } from "fs";
+
+export const read = readFileSync;
