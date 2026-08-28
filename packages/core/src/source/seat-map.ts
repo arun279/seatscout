@@ -78,7 +78,7 @@ const decoded = (body: string): { readonly value: unknown } | null => {
 
 const linked = (neighbour: string) => (neighbour === "" ? null : neighbour);
 
-const seatFrom = (seat: UpstreamSeat, fetchedAt: number): Seat => ({
+export const seatFrom = (seat: UpstreamSeat, fetchedAt: number): Seat => ({
   id: seat.id,
   designation: ACCESSIBLE_DESIGNATIONS[seat.type] ?? "standard",
   bookable: BOOKABLE_STATUSES.includes(seat.status),

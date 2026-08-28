@@ -4,7 +4,7 @@ import {
   fieldsMissingFrom,
   isUpstreamSeat,
   type Seat,
-  seatsFrom,
+  seatFrom,
   type UpstreamSeat,
 } from "../source/seat-map.js";
 
@@ -25,25 +25,23 @@ export interface Divergence {
   readonly name: string;
 }
 
+interface SeatMap {
+  readonly keys: readonly string[];
+  readonly seats: readonly unknown[];
+}
+
+interface Recorded {
+  readonly mapKeys: ReadonlySet<string>;
+  readonly seatKeys: ReadonlySet<string>;
+  readonly statuses: ReadonlySet<string>;
+  readonly types: ReadonlySet<string>;
+}
+
 interface Side {
   readonly link: (seat: Seat) => string | null;
   readonly neighbour: (row: readonly Seat[], at: number) => Seat | undefined;
   readonly pair: (seat: Seat, neighbour: Seat) => readonly [Seat, Seat];
 }
-
-const recordedMaps = [...seatMapCaptures.values()].map(
-  (capture) => capture.body,
-);
-const recordedSeats = recordedMaps.flatMap((body) => body.seats);
-
-const RECORDED_MAP_KEYS = new Set(
-  recordedMaps.flatMap((body) => Object.keys(body)),
-);
-const RECORDED_SEAT_KEYS = new Set(
-  recordedSeats.flatMap((seat) => Object.keys(seat)),
-);
-const RECORDED_STATUSES = new Set(recordedSeats.map((seat) => seat.status));
-const RECORDED_TYPES = new Set(recordedSeats.map((seat) => seat.type));
 
 const SIDES: readonly Side[] = [
   {
@@ -58,6 +56,17 @@ const SIDES: readonly Side[] = [
   },
 ];
 
+const recorded = (): Recorded => {
+  const maps = [...seatMapCaptures.values()].map((capture) => capture.body);
+  const seats = maps.flatMap((body) => body.seats);
+  return {
+    mapKeys: new Set(maps.flatMap((body) => Object.keys(body))),
+    seatKeys: new Set(seats.flatMap((seat) => Object.keys(seat))),
+    statuses: new Set(seats.map((seat) => seat.status)),
+    types: new Set(seats.map((seat) => seat.type)),
+  };
+};
+
 const decoded = (body: string): { readonly value: unknown } | null => {
   try {
     return { value: JSON.parse(body) };
@@ -66,45 +75,32 @@ const decoded = (body: string): { readonly value: unknown } | null => {
   }
 };
 
+const seatMapIn = (value: unknown): SeatMap | null =>
+  value instanceof Object && "seats" in value && Array.isArray(value.seats)
+    ? { keys: Object.keys(value), seats: value.seats }
+    : null;
+
 const diverging = (
   kind: Divergence["kind"],
   names: readonly string[],
 ): readonly Divergence[] => [...new Set(names)].map((name) => ({ kind, name }));
 
-const keysOf = (value: unknown): readonly string[] =>
-  value instanceof Object ? Object.keys(value) : [];
-
-const seatsArrayIn = (value: unknown): readonly unknown[] | null =>
-  value instanceof Object && "seats" in value && Array.isArray(value.seats)
-    ? value.seats
-    : null;
-
-const upstreamSeatsIn = (value: unknown): readonly UpstreamSeat[] =>
-  (seatsArrayIn(value) ?? []).filter(isUpstreamSeat);
-
-const missing = (value: unknown): readonly Divergence[] => {
-  const seats = seatsArrayIn(value);
-  return diverging(
-    "missing",
-    seats === null ? ["seats"] : seats.flatMap(fieldsMissingFrom),
-  );
-};
-
-const unexpectedKeys = (value: unknown): readonly string[] => [
-  ...keysOf(value).filter((key) => !RECORDED_MAP_KEYS.has(key)),
-  ...upstreamSeatsIn(value).flatMap((seat) =>
-    Object.keys(seat).filter((key) => !RECORDED_SEAT_KEYS.has(key)),
+const unexpectedKeys = (
+  map: SeatMap,
+  seats: readonly UpstreamSeat[],
+  known: Recorded,
+): readonly string[] => [
+  ...map.keys.filter((key) => !known.mapKeys.has(key)),
+  ...seats.flatMap((seat) =>
+    Object.keys(seat).filter((key) => !known.seatKeys.has(key)),
   ),
 ];
 
 const unrecorded = (
-  value: unknown,
+  seats: readonly UpstreamSeat[],
   read: (seat: UpstreamSeat) => string,
-  recorded: ReadonlySet<string>,
-): readonly string[] =>
-  upstreamSeatsIn(value)
-    .map(read)
-    .filter((word) => !recorded.has(word));
+  known: ReadonlySet<string>,
+): readonly string[] => seats.map(read).filter((word) => !known.has(word));
 
 const holds = (
   side: Side,
@@ -133,18 +129,26 @@ export const divergencesIn = (answer: Answer): readonly Divergence[] => {
   if (answer.status !== 200) return [];
   const answered = decoded(answer.body);
   if (answered === null) return diverging("unreadable", ["json"]);
-  const seats = seatsFrom(answer.body, answer.fetchedAt);
-  if (seats === null) return missing(answered.value);
+  const map = seatMapIn(answered.value);
+  if (map === null) return diverging("missing", ["seats"]);
+  const seats = map.seats.filter(isUpstreamSeat);
+  if (seats.length !== map.seats.length)
+    return diverging("missing", map.seats.flatMap(fieldsMissingFrom));
+
+  const known = recorded();
   return [
-    ...diverging("unexpected", unexpectedKeys(answered.value)),
+    ...diverging("unexpected", unexpectedKeys(map, seats, known)),
     ...diverging(
       "status",
-      unrecorded(answered.value, (seat) => seat.status, RECORDED_STATUSES),
+      unrecorded(seats, (seat) => seat.status, known.statuses),
     ),
     ...diverging(
       "type",
-      unrecorded(answered.value, (seat) => seat.type, RECORDED_TYPES),
+      unrecorded(seats, (seat) => seat.type, known.types),
     ),
-    ...diverging("link", strayLinks(seats)),
+    ...diverging(
+      "link",
+      strayLinks(seats.map((seat) => seatFrom(seat, answer.fetchedAt))),
+    ),
   ];
 };

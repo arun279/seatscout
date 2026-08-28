@@ -101,6 +101,10 @@ describe("the contract the corpus recorded", () => {
       "a map without its seats": divergencesIn(
         answerOf({ ...roomIn(ROOM), seats: undefined }, 200),
       ),
+      "a map whose seats are not a list": divergencesIn(
+        answerOf({ ...roomIn(ROOM), seats: 25 }, 200),
+      ),
+      "a body that is not a map at all": divergencesIn(answerOf(null, 200)),
       "a body that is not JSON": divergencesIn({
         status: 200,
         body: "<html>",
@@ -109,6 +113,8 @@ describe("the contract the corpus recorded", () => {
     }).toEqual({
       "a seat without its width": [{ kind: "missing", name: "width" }],
       "a map without its seats": [{ kind: "missing", name: "seats" }],
+      "a map whose seats are not a list": [{ kind: "missing", name: "seats" }],
+      "a body that is not a map at all": [{ kind: "missing", name: "seats" }],
       "a body that is not JSON": [{ kind: "unreadable", name: "json" }],
     });
   });
