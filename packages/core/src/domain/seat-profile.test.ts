@@ -373,22 +373,42 @@ describe("the Reference Seat Profile over the captured corpus", () => {
         (room) => punishesTheFrontRowHarder(room, profile) === true,
       ).length;
 
-    expect(
+    const swept = (
+      name: string,
+      values: readonly number[],
+      profileFor: (value: number) => SeatProfile,
+    ) =>
       Object.fromEntries(
-        [6, 9, 12, 16, 20, 24, 32, 48].map((screenGap) => [
-          `angular, screen gap ${screenGap}`,
-          holding({ ...REFERENCE, screenGap }),
-        ]),
-      ),
+        values.map((value) => [`${name} ${value}`, holding(profileFor(value))]),
+      );
+
+    expect(
+      swept("screen gap", [6, 9, 12, 16, 20, 24, 32, 48], (screenGap) => ({
+        ...REFERENCE,
+        screenGap,
+      })),
     ).toEqual({
-      "angular, screen gap 6": 42,
-      "angular, screen gap 9": 42,
-      "angular, screen gap 12": 42,
-      "angular, screen gap 16": 42,
-      "angular, screen gap 20": 42,
-      "angular, screen gap 24": 42,
-      "angular, screen gap 32": 42,
-      "angular, screen gap 48": 42,
+      "screen gap 6": 42,
+      "screen gap 9": 42,
+      "screen gap 12": 42,
+      "screen gap 16": 42,
+      "screen gap 20": 42,
+      "screen gap 24": 42,
+      "screen gap 32": 42,
+      "screen gap 48": 42,
+    });
+    expect(
+      swept("row pitch", [1, 1.5, 1.71, 2, 2.3, 3], (rowPitch) => ({
+        ...REFERENCE,
+        rowPitch,
+      })),
+    ).toEqual({
+      "row pitch 1": 42,
+      "row pitch 1.5": 42,
+      "row pitch 1.71": 42,
+      "row pitch 2": 42,
+      "row pitch 2.3": 42,
+      "row pitch 3": 42,
     });
     expect(holding(SEPARABLE)).toBe(0);
   });
