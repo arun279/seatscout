@@ -39,10 +39,10 @@ export const REFERENCE: SeatProfile = {
   podDividerWeight: 0.25,
   screenGap: 6,
   rowPitch: 1.71,
-  frontBand: 9.6,
+  frontBand: 6.97,
 };
 
-type Placed = Placement & NormalisedPosition;
+type Positioned = Placement & NormalisedPosition;
 
 const mean = (values: readonly number[]) =>
   values
@@ -56,10 +56,10 @@ const centroidOf = (
   lateral: mean(seats.map((seat) => seat.lateral)),
 });
 
-export const scoringIn = <T extends Placed>(
-  auditorium: readonly T[],
+export const scoringIn = (
+  auditorium: readonly Positioned[],
   profile: SeatProfile,
-): ((group: SeatGroup<T>) => Scored) => {
+): ((group: SeatGroup<Positioned>) => Scored) => {
   const centres = auditorium.map((seat) => seat.x + seat.width / 2);
   const halfSpanInSeats =
     (Math.max(...centres) - Math.min(...centres)) /
@@ -70,15 +70,15 @@ export const scoringIn = <T extends Placed>(
   const backRow = Math.max(...depths);
   const targetOffCentre = profile.targetLateral * halfSpanInSeats;
 
-  const againstWall = (seat: Placed) =>
+  const againstWall = (seat: Positioned) =>
     seat.depth === backRow ||
-    !auditorium.some(
-      (other) =>
-        other.depth === seat.depth &&
-        (seat.lateral < 0
-          ? other.lateral < seat.lateral
-          : other.lateral > seat.lateral),
-    );
+    (seat.lateral !== 0 &&
+      !auditorium.some(
+        (other) =>
+          other.depth === seat.depth &&
+          Math.sign(other.lateral) === Math.sign(seat.lateral) &&
+          Math.abs(other.lateral) > Math.abs(seat.lateral),
+      ));
 
   return (group) => {
     const position = centroidOf(group.seats);
