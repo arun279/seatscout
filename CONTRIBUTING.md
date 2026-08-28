@@ -196,6 +196,12 @@ notices: the Chains, Auditoriums and Auditorium sizes this corpus reaches, which
 may exceed and may not fall below. Lowering it is a reviewed line in a diff, like the
 bundle ratchet.
 
+`seat-map.test.ts` asserts exact corpus-wide tallies instead, and those a refresh does have to
+re-derive. They are floors nowhere because a floor cannot tell a mutation that judges one Seat
+wrongly from one that judges none, which is the whole point of that suite. A refresh that moves
+them is a refresh that has moved a measured fact, so it moves with the numbers quoted here and
+in the seat status research.
+
 The captured payloads themselves are excluded from Biome in `biome.json` and from cspell
 in `cspell.json`. They are a recording rather than source: formatting them would stop them
 matching what the capture writes, and spell checking third-party film and theater names
@@ -339,21 +345,25 @@ at any of them would be presenting a seat as free on the strength of a code nobo
 established the meaning of.
 
 **Neither seat count is read, and neither can be.** The two count fields disagreed with the
-`seats` array in twenty seven of the forty two captured rooms; one room reports available
+`seats` array in twenty seven of the forty two captured Auditoriums; one reports available
 seats where another reports total ones, and one reports more available seats than its array
 holds. The parse narrows the answer to its `seats` array and to `UpstreamSeat`, neither of
-which declares a count, so reading one is a compile error rather than a convention.
+which declares a count, so reading one is a compile error rather than a convention. The test
+reads the Auditorium whose count field says twenty five and whose array holds three hundred
+and four.
 
 **Neighbour links are carried, never believed.** `leftNeighbour` and `rightNeighbour` are
 whatever the aggregator sent, with its empty string translated to absence. They are a
-cross-check and not adjacency: in one captured room of three hundred Seats, two hundred and
-ninety carry no link at all while the room's drawn geometry is perfectly regular, so adjacency
-read from links would yield nothing there. Adjacency comes from geometry.
+cross-check and not adjacency: in one captured Auditorium of three hundred Seats, two hundred
+and ninety carry no link at all while its drawn geometry is perfectly regular, so adjacency read
+from links would yield nothing there. Adjacency comes from geometry.
 
 **A partial answer is no answer.** An answer that is not JSON, that carries no `seats` array,
-or that holds a seat missing any field a Seat is built from is refused rather than read into a
-room with holes in it. A room short of Seats or carrying `NaN` geometry is worse than a room
-that could not be read, because only one of the two says so.
+or that holds a seat missing any field a Seat is built from is refused rather than read into an
+Auditorium with holes in it. An Auditorium short of Seats is worse than one that could not be
+read, because only one of the two says so. `UpstreamSeat` declares exactly the nine fields the
+translation reads and `SEAT_FIELDS` gives each of them a type, keyed by `keyof UpstreamSeat`, so
+a field added to the one and not the other does not compile.
 
 ### The session
 

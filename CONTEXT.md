@@ -84,6 +84,17 @@ seat map locates the screen itself. Normalised position is derived from seat geo
 never from the seat's printed label, because labels are not ordered, not contiguous, and
 sometimes not letters at all.
 
+## Designation
+
+What a Seat is for: an ordinary seat, a wheelchair space, or the companion seat beside one.
+
+It is translated from the Source's own normalised seat type, never from its chain-specific
+seat label, which spells the same distinction four different ways.
+
+**Not an Amenity.** An Amenity is something a Showtime or an Auditorium offers; a Designation
+belongs to one Seat. Wheelchair and companion Seats are kept out of ordinary results and
+appear only for a Query that asks for them.
+
 ## Seat Group
 
 A run of adjacent Seats at one Showtime, uninterrupted by an aisle, large enough for the

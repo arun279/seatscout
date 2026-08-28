@@ -7,13 +7,25 @@ export interface Capture<Body> {
   readonly body: Body;
 }
 
+interface CapturedSeat extends UpstreamSeat {
+  readonly row: number;
+  readonly column: number;
+  readonly sellIndividuallyWithinSeatBlock: boolean;
+  readonly attributes: {
+    readonly messageHeader?: string;
+    readonly messageBody?: string;
+  };
+  readonly areaCode: string;
+  readonly areaId: string;
+}
+
 export interface CapturedSeatMap {
   readonly chainCode: string;
   readonly tmsId: string;
   readonly theaterName: string;
   readonly auditoriumId: number;
   readonly showtimeId: string;
-  readonly seats: readonly UpstreamSeat[];
+  readonly seats: readonly CapturedSeat[];
   readonly backgroundSvg: string;
   readonly backgroundWidth: number;
   readonly backgroundHeight: number;

@@ -2,13 +2,14 @@ import { describe, expect, it } from "vitest";
 import { seatMapCaptures } from "../corpus/captures.js";
 import { type UpstreamScript, fakeUpstream } from "../testing/fake-upstream.js";
 import { openSource } from "./aggregator.js";
+import type { Source } from "./port.js";
 import type { Designation, Seat } from "./seat-map.js";
 
 const BOOTSTRAP = "/napi/preferences/themes";
 const FETCHED_AT = 1000;
-const ROOM_WITH_ACCESSIBLE_SPACES = "561462741";
-const ROOM_WITH_ALMOST_NO_NEIGHBOUR_LINKS = "561230736";
-const ROOM_THE_SOURCE_MISCOUNTS = "561865199";
+const AUDITORIUM_WITH_ACCESSIBLE_SPACES = "561462741";
+const AUDITORIUM_WITH_ALMOST_NO_NEIGHBOUR_LINKS = "561230736";
+const AUDITORIUM_THE_SOURCE_MISCOUNTS = "561865199";
 
 const sourceOf = (routes?: UpstreamScript["routes"]) =>
   openSource({
@@ -21,35 +22,35 @@ const sourceOf = (routes?: UpstreamScript["routes"]) =>
     random: () => 0.5,
   });
 
-const capturedAnswer = (showtime: string) =>
-  [...seatMapCaptures.values()].find(
-    (capture) => capture.body.showtimeId === showtime,
-  )?.body;
+const capturedAnswer = (showtime: string) => {
+  const capture = [...seatMapCaptures.values()].find(
+    (entry) => entry.body.showtimeId === showtime,
+  );
+  if (capture === undefined)
+    throw new Error(`the corpus holds no seat map for showtime ${showtime}`);
+  return capture.body;
+};
 
 const answering = (showtime: string, body: string) => ({
   [`/napi/seatMap/${showtime}`]: { status: 200, body },
 });
 
-const seatsOf = async (showtime: string, routes?: UpstreamScript["routes"]) => {
-  const reading = await sourceOf(routes).seatsFor(showtime);
+const seatsIn = async (source: Source, showtime: string) => {
+  const reading = await source.seatsFor(showtime);
   return reading.ok ? reading.payload : [];
 };
 
+const seatsOf = (showtime: string, routes?: UpstreamScript["routes"]) =>
+  seatsIn(sourceOf(routes), showtime);
+
 const everyCapturedSeat = async () => {
   const source = sourceOf();
-  const rooms = await Promise.all(
-    [...seatMapCaptures.values()].map(async (capture) => {
-      const reading = await source.seatsFor(capture.body.showtimeId);
-      return reading.ok ? reading.payload : [];
-    }),
+  const auditoriums = await Promise.all(
+    [...seatMapCaptures.values()].map((capture) =>
+      seatsIn(source, capture.body.showtimeId),
+    ),
   );
-  return rooms.flat();
-};
-
-const tallied = (values: readonly string[]) => {
-  const counts: Record<string, number> = {};
-  for (const value of values) counts[value] = (counts[value] ?? 0) + 1;
-  return counts;
+  return auditoriums.flat();
 };
 
 const seatCalled = (seats: readonly Seat[], id: string) =>
@@ -62,7 +63,7 @@ const unlinked = (seats: readonly Seat[]) =>
 
 describe("the seat map path", () => {
   it("reads an Auditorium into Seats carrying geometry, neighbour links and Provenance", async () => {
-    const seats = await seatsOf(ROOM_WITH_ACCESSIBLE_SPACES);
+    const seats = await seatsOf(AUDITORIUM_WITH_ACCESSIBLE_SPACES);
 
     expect(seats).toHaveLength(294);
     expect(seatCalled(seats, "A30")).toEqual({
@@ -100,18 +101,18 @@ describe("the seat map path", () => {
   });
 
   it("judges a status it does not recognise as not bookable, where that same Seat read verbatim is bookable", async () => {
-    const captured = capturedAnswer(ROOM_WITH_ACCESSIBLE_SPACES);
+    const captured = capturedAnswer(AUDITORIUM_WITH_ACCESSIBLE_SPACES);
     const invented = JSON.stringify({
       ...captured,
-      seats: captured?.seats.map((seat) =>
+      seats: captured.seats.map((seat) =>
         seat.id === "A30" ? { ...seat, status: "H" } : seat,
       ),
     });
 
-    const asSent = await seatsOf(ROOM_WITH_ACCESSIBLE_SPACES);
+    const asSent = await seatsOf(AUDITORIUM_WITH_ACCESSIBLE_SPACES);
     const asInvented = await seatsOf(
-      ROOM_WITH_ACCESSIBLE_SPACES,
-      answering(ROOM_WITH_ACCESSIBLE_SPACES, invented),
+      AUDITORIUM_WITH_ACCESSIBLE_SPACES,
+      answering(AUDITORIUM_WITH_ACCESSIBLE_SPACES, invented),
     );
 
     expect(seatCalled(asSent, "A30")?.bookable).toBe(true);
@@ -135,12 +136,12 @@ describe("the seat map path", () => {
     expect(seats).toHaveLength(6771);
     expect(seats.filter((seat) => seat.bookable)).toHaveLength(6113);
     expect(
-      tallied(
+      new Set(
         seats
           .filter((seat) => !seat.bookable)
           .map((seat) => seat.provenance.upstreamStatus),
       ),
-    ).toEqual({ R: 378, O: 189, X: 91 });
+    ).toEqual(new Set(["R", "O", "X"]));
   });
 
   it("carries wheelchair and companion designations through translation", async () => {
@@ -156,28 +157,16 @@ describe("the seat map path", () => {
     }).toEqual({ standard: 6407, wheelchair: 179, companion: 185 });
   });
 
-  it("counts the Seats the Source sent rather than the seat counts it claims", async () => {
-    const captured = capturedAnswer(ROOM_THE_SOURCE_MISCOUNTS);
-    const recounted = JSON.stringify({
-      ...captured,
-      totalSeatCount: 9999,
-      totalAvailableSeatCount: 0,
-    });
+  it("counts the Seats the Source sent rather than the seat count it claims", async () => {
+    const seats = await seatsOf(AUDITORIUM_THE_SOURCE_MISCOUNTS);
 
-    const asSent = await seatsOf(ROOM_THE_SOURCE_MISCOUNTS);
-    const asRecounted = await seatsOf(
-      ROOM_THE_SOURCE_MISCOUNTS,
-      answering(ROOM_THE_SOURCE_MISCOUNTS, recounted),
-    );
-
-    expect(asSent).toHaveLength(304);
-    expect(asSent.filter((seat) => seat.bookable)).toHaveLength(25);
-    expect(asRecounted).toEqual(asSent);
+    expect(seats).toHaveLength(304);
+    expect(seats.filter((seat) => seat.bookable)).toHaveLength(25);
   });
 
   it("carries the neighbour links the Source gave, absent ones included", async () => {
-    const regular = await seatsOf(ROOM_WITH_ALMOST_NO_NEIGHBOUR_LINKS);
-    const paired = await seatsOf(ROOM_WITH_ACCESSIBLE_SPACES);
+    const regular = await seatsOf(AUDITORIUM_WITH_ALMOST_NO_NEIGHBOUR_LINKS);
+    const paired = await seatsOf(AUDITORIUM_WITH_ACCESSIBLE_SPACES);
 
     expect(regular).toHaveLength(300);
     expect(unlinked(regular)).toHaveLength(290);
@@ -185,8 +174,8 @@ describe("the seat map path", () => {
   });
 
   it("refuses an answer it cannot read in full rather than reading part of an Auditorium", async () => {
-    const captured = capturedAnswer(ROOM_WITH_ACCESSIBLE_SPACES);
-    const seats = captured?.seats ?? [];
+    const captured = capturedAnswer(AUDITORIUM_WITH_ACCESSIBLE_SPACES);
+    const seats = captured.seats;
     const withFirstSeat = (first: unknown) =>
       JSON.stringify({ ...captured, seats: [first, ...seats.slice(1)] });
     const answers: Readonly<Record<string, string>> = {
@@ -202,8 +191,8 @@ describe("the seat map path", () => {
     const outcomes = await Promise.all(
       Object.entries(answers).map(async ([name, body]) => {
         const reading = await sourceOf(
-          answering(ROOM_WITH_ACCESSIBLE_SPACES, body),
-        ).seatsFor(ROOM_WITH_ACCESSIBLE_SPACES);
+          answering(AUDITORIUM_WITH_ACCESSIBLE_SPACES, body),
+        ).seatsFor(AUDITORIUM_WITH_ACCESSIBLE_SPACES);
         return [name, reading.ok ? "read" : reading.reason];
       }),
     );

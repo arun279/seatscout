@@ -1,22 +1,13 @@
 export interface UpstreamSeat {
   readonly id: string;
-  readonly row: number;
-  readonly column: number;
   readonly type: string;
+  readonly status: string;
   readonly leftNeighbor: string;
   readonly rightNeighbor: string;
   readonly x: number;
   readonly y: number;
   readonly width: number;
   readonly height: number;
-  readonly sellIndividuallyWithinSeatBlock: boolean;
-  readonly attributes: {
-    readonly messageHeader?: string;
-    readonly messageBody?: string;
-  };
-  readonly status: string;
-  readonly areaCode: string;
-  readonly areaId: string;
 }
 
 export type Designation = "standard" | "wheelchair" | "companion";
@@ -40,30 +31,33 @@ export interface Seat {
   readonly provenance: Provenance;
 }
 
-const BOOKABLE_STATUSES = ["A"];
+const BOOKABLE_STATUSES: readonly string[] = ["A"];
 
 const ACCESSIBLE_DESIGNATIONS: Readonly<Record<string, Designation>> = {
   companion: "companion",
   wheelchair: "wheelchair",
 };
 
-const SEAT_TEXT_FIELDS = [
-  "id",
-  "type",
-  "status",
-  "leftNeighbor",
-  "rightNeighbor",
-];
-
-const SEAT_GEOMETRY_FIELDS = ["x", "y", "width", "height"];
+const SEAT_FIELDS: Readonly<Record<keyof UpstreamSeat, "string" | "number">> = {
+  id: "string",
+  type: "string",
+  status: "string",
+  leftNeighbor: "string",
+  rightNeighbor: "string",
+  x: "number",
+  y: "number",
+  width: "number",
+  height: "number",
+};
 
 const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
   value instanceof Object;
 
 const isSeat = (value: unknown): value is UpstreamSeat =>
   isRecord(value) &&
-  SEAT_TEXT_FIELDS.every((field) => typeof value[field] === "string") &&
-  SEAT_GEOMETRY_FIELDS.every((field) => typeof value[field] === "number");
+  Object.entries(SEAT_FIELDS).every(
+    ([field, kind]) => typeof value[field] === kind,
+  );
 
 const carriesSeats = (
   value: unknown,
