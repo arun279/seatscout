@@ -5,6 +5,9 @@
     "path": "/napi/nearbyTheaters?zipCode=[REDACTED]&limit=25"
   },
   "status": 200,
+  "responseHeaders": {
+    "set-cookie": "akamai_location=eyJjaXR5IjoiQ0FSUk9MTFRPTiIsInN0YXRlIjoiVFgifQ; Path=/; Domain=.example.com"
+  },
   "body": {
     "chainInfo": "",
     "concessionsEnabled": true,
