@@ -1,0 +1,19 @@
+{
+  "$schema": "https://unpkg.com/@cspell/cspell-types@10.1.1/cspell.schema.json",
+  "version": "0.2",
+  "language": "en,en-GB",
+  "useGitignore": true,
+  "ignorePaths": [".git", "pnpm-lock.yaml"],
+  "words": [
+    "Cinepolis",
+    "Drafthouse",
+    "ecommerce",
+    "lefthook",
+    "renovatebot",
+    "seatscout",
+    "showtimes",
+    "SMPTE",
+    "subrequest",
+    "TestFlight"
+  ]
+}

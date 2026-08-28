@@ -8,6 +8,11 @@ pre-commit:
     lint:
       glob: "*.{css,js,json,jsonc,jsx,ts,tsx,yaml,yml}"
       run: pnpm exec biome lint --no-errors-on-unmatched {staged_files}
+    spell:
+      run: pnpm exec cspell lint --no-must-find-files {staged_files}
+    secrets:
+      run: gitleaks git --pre-commit --staged --no-banner --redact --verbose
+      fail_text: Install gitleaks, or run git commit --no-verify to skip the scan
 
 pre-push:
   parallel: true
@@ -16,3 +21,5 @@ pre-push:
       run: pnpm typecheck
     unit:
       run: pnpm test:unit
+    dead-code:
+      run: pnpm dead-code
