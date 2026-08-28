@@ -61,14 +61,15 @@ describe("the circuit breaker", () => {
     expect(breaker.isOpen()).toBe(false);
   });
 
-  it("closes when the trial succeeds, so the next failure starts a fresh count", () => {
+  it("closes at once on a success, because an answer is evidence the break is over", () => {
     const { breaker, at } = rig();
 
     for (let failure = 0; failure < 3; failure += 1) breaker.failed();
-    at(5000);
+    at(3000);
     breaker.succeeded();
-    breaker.failed();
 
+    expect(breaker.isOpen()).toBe(false);
+    breaker.failed();
     expect(breaker.isOpen()).toBe(false);
   });
 });

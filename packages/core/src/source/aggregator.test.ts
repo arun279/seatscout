@@ -214,6 +214,27 @@ describe("the aggregating source", () => {
     expect(fetch.requests).toHaveLength(issued + 1);
   });
 
+  it("counts an answered read, refusal included, as evidence the upstream is up", async () => {
+    const other = "/napi/seatMap/561882799";
+    const { fetch, source } = rig(
+      { sequences: { [SEAT_MAP]: [500], [other]: [500] } },
+      {
+        attempts: 1,
+        firstDelayMs: 500,
+        failuresBeforeOpening: 2,
+        openForMs: 5000,
+      },
+    );
+
+    expect((await source.seatsFor("561748075")).ok).toBe(false);
+    expect((await source.seatsFor("561549583")).ok).toBe(false);
+    expect((await source.seatsFor("561882799")).ok).toBe(false);
+    const issued = fetch.requests.length;
+
+    expect((await source.seatsFor("561748075")).ok).toBe(true);
+    expect(fetch.requests).toHaveLength(issued + 1);
+  });
+
   it("takes a supplied policy in place of the default", async () => {
     const { source, waits } = rig(
       { sequences: { [SEAT_MAP]: [500, 500] } },

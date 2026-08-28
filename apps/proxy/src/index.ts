@@ -55,7 +55,7 @@ const refusal = async (
 };
 
 const upstreamHeaders = (from: Headers, upstream: string) => {
-  const headers = new Headers({ referer: new URL("/", upstream).toString() });
+  const headers = new Headers({ referer: `${new URL(upstream).origin}/` });
   for (const name of FORWARDED) {
     const value = from.get(name);
     if (value !== null) headers.set(name, value);

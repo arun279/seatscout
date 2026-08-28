@@ -34,7 +34,6 @@ export interface SourceDependencies {
 interface Answer {
   readonly status: number;
   readonly body: string;
-  readonly carried: string | null;
 }
 
 const rejected = (answer: Answer | null): answer is Answer =>
@@ -73,14 +72,10 @@ export const openSource = (deps: SourceDependencies): Source => {
         path,
         carried === null ? undefined : { headers: { [SESSION]: carried } },
       );
-      return { status: response.status, body: await response.text(), carried };
+      return { status: response.status, body: await response.text() };
     } catch {
       return null;
     }
-  };
-
-  const dropIfCurrent = (carried: string | null) => {
-    if (session === carried) session = null;
   };
 
   const unreachable = (attempts: number): Reading => ({
@@ -111,7 +106,7 @@ export const openSource = (deps: SourceDependencies): Source => {
     refreshable: boolean,
   ): Promise<boolean> => {
     if (refreshable && rejected(answer)) {
-      dropIfCurrent(answer.carried);
+      session = null;
       return false;
     }
     if (attempt < policy.attempts)

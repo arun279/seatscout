@@ -3,7 +3,7 @@ export interface BreakerPolicy {
   readonly openForMs: number;
 }
 
-export interface Breaker {
+interface Breaker {
   readonly isOpen: () => boolean;
   readonly succeeded: () => void;
   readonly failed: () => void;
@@ -17,9 +17,10 @@ export const circuitBreaker = (
   let openUntil = 0;
 
   return {
-    isOpen: () => failures >= policy.failuresBeforeOpening && now() < openUntil,
+    isOpen: () => now() < openUntil,
     succeeded: () => {
       failures = 0;
+      openUntil = 0;
     },
     failed: () => {
       failures += 1;
