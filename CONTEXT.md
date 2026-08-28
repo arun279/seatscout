@@ -45,11 +45,15 @@ The film itself, independent of where or how it is shown.
 
 ## Presentation
 
-A Movie shown in a particular Format at a particular Theater.
+A Movie shown in a particular set of Formats at a particular Theater.
 
 The same Movie at the same Theater in standard and in a premium Format is two
 Presentations. Some providers call this a "variant"; that word is avoided here because it
 reads as a code artifact rather than something a moviegoer would recognise.
+
+A Presentation carries every Format that applies to it rather than one, because a premium
+projection and motion seating are both Formats and apply to the same screening at once. A
+Presentation with no Format is a standard screening.
 
 ## Showtime
 
@@ -61,8 +65,12 @@ This is the thing a ticket is for. Some providers call it a "performance".
 
 ## Format
 
-The premium presentation type: IMAX, Dolby Cinema, D-BOX, ScreenX, 4DX. Absent for a
+The premium presentation type: IMAX, Dolby Cinema, D-BOX, ScreenX, XD. Absent for a
 standard screening.
+
+The set of them is closed, and a premium name outside it is not a Format. A screening
+labelled with one the application does not know reads as standard rather than as a Format
+invented from the label, which is the rule Availability follows for the same reason.
 
 **Not an Amenity.** Format describes how the film is projected and mixed.
 

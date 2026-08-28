@@ -66,6 +66,7 @@ export interface CapturedShowtimeGrouping {
     readonly date: string;
     readonly theaters: readonly {
       readonly id: string;
+      readonly formattedID: string;
       readonly name: string;
       readonly chainCode: string;
       readonly variants: readonly CapturedVariant[];

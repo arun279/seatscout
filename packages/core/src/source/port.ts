@@ -1,6 +1,11 @@
+import type {
+  Catalogue,
+  Theater,
+  UnbookableReason,
+} from "../domain/catalogue.js";
 import type { Seat } from "./seat-map.js";
 
-export type Unreadable = "noSeatMap" | "started" | "soldOut" | "unreachable";
+export type Unreadable = UnbookableReason | "unreachable";
 
 export type Reading<Payload> =
   | {
@@ -17,11 +22,11 @@ export type Reading<Payload> =
     };
 
 export interface Source {
-  readonly theatersNear: (area: string) => Promise<Reading<string>>;
+  readonly theatersNear: (area: string) => Promise<Reading<readonly Theater[]>>;
   readonly showtimesFor: (
     movie: string,
     date: string,
     area: string,
-  ) => Promise<Reading<string>>;
+  ) => Promise<Reading<Catalogue>>;
   readonly seatsFor: (showtime: string) => Promise<Reading<readonly Seat[]>>;
 }
