@@ -6,6 +6,7 @@ export {
   type Showtime,
   type ShowtimeId,
   type ShowtimeTerms,
+  type TicketingUrl,
   type UnbookableReason,
   type Unidentified,
 } from "./domain/catalogue.js";

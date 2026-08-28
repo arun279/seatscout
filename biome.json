@@ -19,6 +19,9 @@
       "complexity": {
         "noExcessiveCognitiveComplexity": "error"
       },
+      "nursery": {
+        "noUnsafeTypeAssertion": "error"
+      },
       "style": {
         "useNodejsImportProtocol": "error"
       }

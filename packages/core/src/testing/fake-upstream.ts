@@ -10,6 +10,8 @@ import {
 import type { Capture } from "../corpus/types.js";
 import type { Fetch, FetchResponse } from "../transport.js";
 
+export { seatMapCaptures };
+
 interface ScriptedRoute {
   readonly status: number;
   readonly headers?: Readonly<Record<string, string>>;

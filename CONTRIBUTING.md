@@ -36,10 +36,12 @@ The pre-commit hook formats, lints, spell checks, and secret scans staged files.
 pre-push hook type checks the workspace, runs unit tests, and checks for dead code.
 
 TypeScript uses strict checking, unchecked indexed access checks, and erasable syntax.
-Biome uses its recommended rules plus the published
+Biome uses its recommended rules plus two published ones. The standard limit of
 [`noExcessiveCognitiveComplexity`](https://biomejs.dev/linter/rules/no-excessive-cognitive-complexity/)
-rule and its standard limit, which is the complexity gate. Unknown words go in the `words`
-list in `cspell.json`.
+is the complexity gate, and
+[`noUnsafeTypeAssertion`](https://biomejs.dev/linter/rules/no-unsafe-type-assertion/) refuses
+a type assertion, which is the widest way past the compile-time guarantees below. Unknown
+words go in the `words` list in `cspell.json`.
 
 ## Footprint, comment load and bundle size
 
@@ -490,7 +492,8 @@ Identity is branded. A `ShowtimeId`, a `TheaterId`, a `MovieId` and a `Ticketing
 declared as the types of the payload's own fields, so parsing a response is the only way to
 obtain one. **This is what makes a constructed ticketing URL fail to compile** rather than
 merely violate [ADR 4](docs/adr/0004-booking-ends-at-a-deep-link.md): a URL built from parts
-is a `string`, and a `string` is not a `TicketingUrl`.
+is a `string`, and a `string` is not a `TicketingUrl`. An assertion is what would get past
+that, and `noUnsafeTypeAssertion` refuses one, so the workspace holds none.
 
 `Format` is a closed set. The aggregator names a premium presentation in free text among a
 screening's amenities, several names to a screening, and there is a structured format field
@@ -976,6 +979,12 @@ starts when it is made rather than when something is awaited. `done` settles wit
 terminal snapshot for every answer a port can give; it is not wrapped in a catch, so a port
 that breaks its own contract and rejects surfaces rather than being swallowed.
 
+`packages/client/src/ranking.ts` is what turns one Auditorium into results, and it is shared
+rather than owned by the search: a `SeatGroupResult`, the ordering of the Groups a room
+offers, and the question of whether one particular Group is still in it. Re-verification asks
+the second and third of those about the same room, so the two operations cannot grow separate
+ideas of what a result is or which of two Groups is better.
+
 A Query is the catalogue terms plus the party size, whether accessible seating was asked
 for, and a Seat Profile that defaults to Reference. The catalogue terms resolve from the
 on-device cache; everything else needs a seat map, so it fans out.
@@ -1129,6 +1138,113 @@ to be comparable.
 
 It needs `SEATSCOUT_UPSTREAM_ORIGIN` and `SEATSCOUT_AREA` like everything else in that
 lane, and it spends roughly two searches' worth of requests: one raw pass and one real one.
+
+## Re-verifying before hand-off
+
+`packages/client/src/verify.ts` is the only place a **result's** ticketing URL comes from. A
+search result carries none, so the interface refuses a hand-off that skipped this step rather
+than a comment asking for one ([ADR 4](docs/adr/0004-booking-ends-at-a-deep-link.md), and the
+reason is that a Seat can go between being shown and being bought). `CONTEXT.md` defines
+Re-verification and its two ways of answering no.
+
+**It takes the result and the Query the result came from.** The result cannot name its own
+listing, and the listing is the only thing that carries a ticketing URL: a seat map answer
+holds an Auditorium's Seats and nothing else, so nothing about the Showtime a Seat belongs
+to is recoverable from it. The Query's three listing terms are what find the Showtime again,
+and its party size, accessible seating and Seat Profile are what rank the alternatives on
+the same yardstick the search ranked on. Passing them is what makes a verification answer
+about the search it belongs to instead of about a default.
+
+**It asks the Source for the Auditorium and nothing else.** The listing is read through the
+same on-device cache a search reads, so a hand-off moments after a search spends no request
+on one. The catalogue's own two-hour lifetime applies: what a hand-off must not reuse is an
+Availability judgement, and a ticketing URL is not one.
+
+**It re-reads the Auditorium every time, whatever the result's age.** There is no threshold
+and adding one would be a number that changed nothing: this is the only source of a
+ticketing URL, so a stale reading can never reach a hand-off and there is nothing for a
+threshold to decide.
+
+**A Seat Group is still there when every Seat in it is still there and still bookable.**
+That is the predicate, and it is deliberately not "the room still offers this Group".
+`seatGroupsIn` yields one Group per uninterrupted run, the window of that run crossing the
+fewest consoles and then nearest its middle, so a Seat coming free *beside* a Group moves the
+window the run offers: in the
+captured Auditorium the suite uses, freeing one Seat shifts the offered pair from `F9+F8`
+to `F8+F7` while both of the Seats someone is holding are free. Looking the Group up among
+the offered ones would call that taken and send someone to alternatives they did not need.
+
+**What comes back is a fresh reading of that Group, not the one it was handed.** The Seats,
+the moment, the attempt count and what the filters removed all come from the Auditorium as
+it reads now, through the same `resultOf` a search builds a result with. Its key and its
+score are the same, because a key is the Showtime and the Seats and a score is a pure function
+of the Group, the Auditorium it sits in and the Profile. The third of those is easy to miss:
+`scoringIn` derives the row count, the half span and which Seats stand against a wall from
+every Seat in the room, so a room that reads back a Seat short moves the score without the
+Group changing.
+
+The one value carried across rather than re-read is how many consoles the Group crosses, and
+it is carried because it is part of what the caller is asking about rather than part of what
+the answer says: a Seat Group is its Seats and the consoles between them, and both are how
+the room is drawn rather than what is on sale in it. That it is load-bearing is checked in a
+room where the best Group at a party of three does cross one, because in the 42 captured
+Auditoriums a party of two never does and a suite that only asked about pairs could not tell
+a carried count from a zero.
+
+**Everything else fails closed.** A Group whose Seats have gone answers `taken`, and so does
+a Showtime the listing no longer offers and an Auditorium the Source refuses as sold out,
+begun, or general admission. Only a Source that could not be reached, in the listing or in
+the Auditorium, answers `unreachable`. Two reasons is the whole set, and neither carries a
+URL, so an answer that cannot judge cannot hand off.
+
+**A Group that has gone is answered with the Auditorium's other Seat Groups, ranked.** Not
+one of them, which is the search's rule and is right there, because adjacent Groups in one
+room differ by a Seat and by less than the model can resolve while adjacent Groups in
+different rooms do not. Here they are the alternatives to one Group in one room, which is
+exactly what a search declines to flatten into its list. They are built by `seatGroupsIn` and
+ordered by `scoringIn`, the same two the search uses, so no second notion of "better" exists
+to drift from the first.
+
+**A Showtime the listing could not identify has no result to verify.** No result is built for
+one, so for as long as a verification reads the same cached listing the search did, there is
+nothing of the right type to hand over. A verification that outlives that cache entry can meet
+a fresh listing that has since lost the identity, and it answers `taken` with no alternative:
+there is nothing to ask a seat map with, and an answer it cannot judge must not offer a way to
+buy. What that costs is the operator's-own-page remedy the Coverage entry would have offered,
+which is the price of having two ways to answer no; a fresh search restores it, and a result
+older than the cache entry it was built from has earned one.
+
+### Why an unverified hand-off does not compile
+
+`TicketingUrl` is branded, and the only declaration of that brand is the field of the
+aggregator's own response the parser reads. A `string` is not one, nothing mints one, and a
+search result's Showtime is `Omit<Showtime, "ticketing">`, built field by field so the URL is
+absent at runtime rather than merely erased from the type. So the only value of that type a
+caller can reach *from a result* is the one a successful verification returns.
+
+A Catalogue still carries Showtimes and a Showtime still carries its URL, which is deliberate
+rather than an oversight: the remedy for a Showtime nobody can check is the operator's own
+page, and the named Coverage outcomes depend on it. What has no path to one is a result, which
+is the hand-off ADR 4 is about.
+
+Two things get past a brand. One is a type assertion, and that is why
+`noUnsafeTypeAssertion` is on: both spellings are refused, `as` and the angle-bracket form,
+while `as const` is not an assertion in that sense and stays allowed. The rule is Biome's own
+rather than a plugin because Biome has one, which is the order to try them in; a plugin was
+written first and deleted on finding it. It sits in `nursery`, and if a version bump ever
+renames it, Biome refuses an unknown rule key and exits non-zero, so the gate cannot quietly
+stop gating.
+
+The other is a type predicate that claims one, and it cannot be refused, because it is how a
+brand is minted in the first place: the catalogue parser's `carries` narrows a response to a
+declaration whose field is already a `TicketingUrl`. A rule against it would be a rule against
+parsing.
+
+So what remains is a reviewed line in a diff. A predicate that claims a brand it did not
+parse, a suppression of the lint rule, a widening of the brand, or a `declare` that conjures a
+`TicketingUrl` would each work, and each is visible. The property is that no ordinary code
+path reaches a URL, not that a determined author cannot; the same is true of every
+compile-time guarantee in this workspace.
 
 ## The native application
 
