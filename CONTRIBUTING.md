@@ -91,6 +91,11 @@ because the copy is prepared by rewriting `tsconfig.json` through a TypeScript A
 TypeScript 7 no longer exposes. A run killed part way leaves the mutated files behind;
 `git restore .` puts them back.
 
+Do the work of a test inside the test. A mutant that stops a test file loading at all
+produces no failing test, and the runner scores that as a survivor rather than a kill, so
+a suite that derives its fixtures at module scope reports mutants as surviving that its
+assertions would otherwise have caught.
+
 ## The Core import ban
 
 `packages/core` must stay portable to any runtime, so it may not reach for the DOM,
@@ -109,7 +114,58 @@ workspace packages. `noRestrictedGlobals` rejects the host globals by name, whic
 because a single `/// <reference lib="dom" />` re-declares the whole DOM to the compiler
 and the type error disappears.
 
+Core's tests are compiled by a project of their own. `tsconfig.json` excludes
+`src/**/*.test.ts` and `tsconfig.test.json` takes them, with the language's default
+libraries and no emit, because the test runner's declaration files reference `setTimeout`,
+`AbortSignal` and other host globals that core does not have and cannot be checked under
+core's `lib`. Both projects are referenced from the root, so test code is type checked
+rather than skipped, and the Biome override still covers all of `packages/core`: a
+`document` in a core test is a lint error where it is no longer a type error.
+
 See [ADR 3](docs/adr/0003-separate-view-layers-shared-core.md) for why.
+
+## The fixture corpus
+
+`packages/core/src/corpus` holds real responses from the upstream aggregator, captured
+once and committed: nearby theaters, showtime listings, and forty two seat maps across
+eleven chains, forty one auditoriums and rooms of forty six to three hundred and four
+seats. A twelfth chain sells only general admission and appears as the refusal its seat
+map request returns, alongside the two other refusals such a request can meet.
+Everything that parses, normalises, scores or ranks is written against this, so it holds a
+seat map capture for every chain the captured listings mention.
+
+Tests reach it through `captures.ts`, which imports each capture as a JSON module. Nothing
+reads the filesystem, because reading files is a host API and core may not have one; JSON
+modules resolve the same way under Node, Vite and Metro, so the corpus loads wherever core
+runs. `types.ts` states what may be read from a capture, and deliberately omits fields
+that must not be: the chain-specific seat label, which `type` already carries normalised,
+and the two upstream seat counts, which disagree with the `seats` array in most captured
+maps and with each other.
+
+`pnpm corpus:refresh` replaces the corpus and rewrites the index. It needs
+`SEATSCOUT_UPSTREAM_ORIGIN` set to the aggregator's origin and `--zip` for the area to
+capture, it makes about fifty requests half a second apart, and so it never runs in CI or
+in a test. It writes no response header, replaces every location query parameter and every
+bootstrap cookie value, nulls the `distance` a result was measured at, and exits non-zero
+if any of that material survives into a written file. Run `pnpm format` afterwards, or let
+the pre-commit hook do it, because the generated index is written unformatted. A refresh
+that loses a capture fails the corpus tests rather than passing quietly.
+
+The captured payloads themselves are excluded from Biome in `biome.json` and from cspell
+in `cspell.json`. They are a recording rather than source: formatting them would stop them
+matching what the capture writes, and spell checking third-party film and theater names
+means adding a hundred and thirty six words to the dictionary to say nothing. This is not
+a lint gap to close. The hand-written parts of the corpus are checked like any other code.
+
+Captured ticketing URLs are committed verbatim, hash included, because
+[ADR 4](docs/adr/0004-booking-ends-at-a-deep-link.md) forbids reconstructing one. That hash
+is high-entropy and a generic secret rule may one day fire on it, so `.gitleaks.toml`
+allows exactly its shape. Two things about that entry were established by running it rather
+than by reading the schema. It matches the finding rather than the corpus path, because a
+path allowlist stops gitleaks reading those files at all and would exempt the corpus from
+the scan it exists to be under. And it is written as `[allowlist]` rather than
+`[[allowlists]]`, because the version the scan job installs predates the array form and
+ignores it without saying so, which would leave the entry silently inert.
 
 ## Dependency updates
 

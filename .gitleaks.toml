@@ -1,0 +1,6 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Every captured Showtime carries a ticketing URL whose showtimehashcode is the literal v2- followed by 64 hexadecimal characters. It is a public identifier, not a credential, and ADR 4 requires it verbatim because a hand-off cannot be reconstructed without it, so generic high-entropy rules must not fire on it. Matched against the finding rather than the path: a path allowlist would exempt the whole corpus from scanning. Written as a single table rather than an array of tables, which the version of gitleaks the scan job installs ignores without saying so."
+regexes = ['''^v2-[0-9a-f]{64}$''']

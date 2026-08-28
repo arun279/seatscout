@@ -3,9 +3,11 @@
   "compilerOptions": {
     "lib": ["ES2024"],
     "outDir": "dist",
+    "resolveJsonModule": true,
     "rootDir": "src",
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
     "types": []
   },
-  "include": ["src"]
+  "include": ["src", "src/corpus/**/*.json"],
+  "exclude": ["src/**/*.test.ts"]
 }

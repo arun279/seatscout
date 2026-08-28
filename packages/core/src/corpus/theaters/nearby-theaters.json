@@ -1,0 +1,2787 @@
+{
+  "capturedAt": "2026-08-28T07:40:04.002Z",
+  "request": {
+    "method": "GET",
+    "path": "/napi/nearbyTheaters?zipCode=[REDACTED]&limit=25"
+  },
+  "status": 200,
+  "body": {
+    "chainInfo": "",
+    "concessionsEnabled": true,
+    "expandedSearch": false,
+    "filteredTheaters": [],
+    "theaters": [
+      {
+        "address1": "11819 Webb Chapel",
+        "address2": "",
+        "agePolicy": "No Children Under Age 6 Will Be Admitted To Any R-Rated Feature After 6:00 PM. Valid IDs will be required to attend Rated \"R\" movies. You must be at least 17 years of age or have your parent accompany you to view the movie. IDs will be checked at the theatre.",
+        "amenities": [
+          {
+            "code": "IMAX",
+            "name": "IMAX",
+            "id": "zP58kEvY",
+            "shortDescription": "Indicates whether a theater has IMAX auditoriums."
+          },
+          {
+            "code": "Kiosk",
+            "name": "Ticket Kiosk",
+            "id": "NJEX4EX1",
+            "shortDescription": "Indicates whether a theater has a kiosk on site."
+          },
+          {
+            "code": "Wheelchair",
+            "name": "Wheelchair Accessible",
+            "id": "6NExo7mG",
+            "shortDescription": "Indicates whether a theater has wheel chair seating."
+          },
+          {
+            "code": "MobileTicket",
+            "name": "Mobile Tickets",
+            "id": "Gk5jd7Xl",
+            "shortDescription": "Indicates whether a theater support Mobile Tickets."
+          },
+          {
+            "code": "PrintAtHome",
+            "name": "Print at Home Tickets",
+            "id": "RV54A31M",
+            "shortDescription": "Indicates whether a theater has Print at Home enabled."
+          },
+          {
+            "code": "ReservedSeating",
+            "name": "Reserved Seating",
+            "id": "RnElk7PO",
+            "shortDescription": "Indicates whether a theater has Reserved Seating enabled."
+          },
+          {
+            "code": "AllStadium",
+            "name": "Stadium Seating",
+            "id": "zq5Rk3ex",
+            "shortDescription": "Indicates whether the theater has all stadium seating."
+          },
+          {
+            "code": "Cafe",
+            "name": "Café",
+            "id": "BKE0N3xn",
+            "shortDescription": "Indicates whether a theater has a cafe."
+          },
+          {
+            "code": "GameRoom",
+            "name": "Game Room",
+            "id": "wa3Bg7WO",
+            "shortDescription": "Indicates whether a theater has a game room on site."
+          }
+        ],
+        "chainCode": "CNMK",
+        "chainName": "Cinemark Theatres",
+        "city": "Dallas",
+        "distance": null,
+        "geo": {
+          "latitude": 32.9099,
+          "longitude": -96.8726
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "Cinemark Dallas XD and IMAX",
+        "phone": "972-247-8172",
+        "state": "TX",
+        "theaterMessage": null,
+        "tqpMessageHeader": "",
+        "tqpMessageBody": "",
+        "country": "US",
+        "amenitiesString": "IMAX,Ticket Kiosk,Wheelchair Accessible,Mobile Tickets,Print at Home Tickets,Reserved Seating,Stadium Seating,Café,Game Room",
+        "concessionAmenity": [],
+        "formattedID": "aacbt",
+        "fullAddress": "11819 Webb Chapel, Dallas, TX 75234",
+        "hasConcessions": false,
+        "hasReservedSeating": true,
+        "id": "AACBT",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=11819%20Webb%20Chapel%2C%20Dallas%2C%20TX%2075234",
+        "promotedAmenities": [
+          {
+            "name": "Ticket Kiosk",
+            "shortName": "Kiosk",
+            "overlayName": "Ticket Kiosk",
+            "overlayDescription": "Pick up tickets at a self-service kiosk.",
+            "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--ticket-kiosk",
+            "iconWhite": "icon icon-theater-amenity--ticket-kiosk--white"
+          },
+          {
+            "name": "Mobile Tickets",
+            "shortName": "Mobile",
+            "overlayName": "Mobile Tickets",
+            "overlayDescription": "Scan mobile tickets on the app or email.",
+            "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--mobile-ticketing",
+            "iconWhite": "icon icon-theater-amenity--mobile-ticketing--white"
+          },
+          {
+            "name": "Print at Home Tickets",
+            "shortName": "Print",
+            "overlayName": "Print Tickets",
+            "overlayDescription": "Print your tickets, scan at the theater.",
+            "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--print-at-home",
+            "iconWhite": "icon icon-theater-amenity--print-at-home--white"
+          }
+        ],
+        "sluggedName": "cinemark-dallas-xd-and-imax",
+        "theaterPageUrl": "/cinemark-dallas-xd-and-imax-aacbt/theater-page",
+        "zip": "75234",
+        "cityStateZip": "Dallas, TX 75234",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AACBT"
+      },
+      {
+        "address1": "5100 Belt Line Road",
+        "address2": "",
+        "agePolicy": "<p>Senior tickets are valid for adults 60+.<br />Child tickets for 2 - 12 years.<br />Student: Age 13+ with valid student ID.<br />Not all ticket types are available for all performances.<br />Rated-R Films: Under 17 requires accompanying parent or adult guardian (age 21 or older).&nbsp; 25 years and under must show ID for rated R movies.<br /><br /></p><h><b>Distraction-Free Entertainment</b></h><p>In an effort to provide the most enjoyable experience for adults attending R-rated features in the evenings, no children younger than 6 will be admitted to these features after 6 p.m</p>",
+        "amenities": [
+          {
+            "code": "ReservedSeating",
+            "name": "Reserved Seating",
+            "id": "RnElk7PO",
+            "shortDescription": "Indicates whether a theater has Reserved Seating enabled."
+          },
+          {
+            "code": "ExpressPickup",
+            "name": "Concession Pickup",
+            "id": "MYEel7DL",
+            "shortDescription": "Buy your movie ticket, then order popcorn, candy, soda, and more for pickup at the concession area."
+          },
+          {
+            "code": "DigitalProjection",
+            "name": "Digital Projection",
+            "id": "Z65OQ7lJ",
+            "shortDescription": "Indicates whether a theater has Digital Projection auditoriums."
+          },
+          {
+            "code": "MobileTicket",
+            "name": "Mobile Tickets",
+            "id": "Gk5jd7Xl",
+            "shortDescription": "Indicates whether a theater support Mobile Tickets."
+          },
+          {
+            "code": "PrintAtHome",
+            "name": "Print at Home Tickets",
+            "id": "RV54A31M",
+            "shortDescription": "Indicates whether a theater has Print at Home enabled."
+          },
+          {
+            "code": "Kiosk",
+            "name": "Ticket Kiosk",
+            "id": "NJEX4EX1",
+            "shortDescription": "Indicates whether a theater has a kiosk on site."
+          }
+        ],
+        "chainCode": "AMC",
+        "chainName": "AMC",
+        "city": "Addison",
+        "distance": null,
+        "geo": {
+          "latitude": 32.9539,
+          "longitude": -96.8206
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "AMC Village on the Parkway 9",
+        "phone": null,
+        "state": "TX",
+        "theaterMessage": null,
+        "tqpMessageHeader": "",
+        "tqpMessageBody": "<b>R-Rated Age Policy:</b> For R-rated movies only, guests under 17 must be accompanied by a guardian who is 21 or older. Please be prepared to show ID at the theatre.",
+        "country": "US",
+        "amenitiesString": "Reserved Seating,Concession Pickup,Digital Projection,Mobile Tickets,Print at Home Tickets,Ticket Kiosk",
+        "concessionAmenity": [
+          {
+            "name": "Concession Pickup",
+            "overlayDescription": "Buy your movie ticket, then order popcorn, candy, soda, and more for pickup at the concession area."
+          }
+        ],
+        "formattedID": "aaxju",
+        "fullAddress": "5100 Belt Line Road, Addison, TX 75254",
+        "hasConcessions": true,
+        "hasReservedSeating": true,
+        "id": "AAXJU",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=5100%20Belt%20Line%20Road%2C%20Addison%2C%20TX%2075254",
+        "promotedAmenities": [
+          {
+            "name": "Mobile Tickets",
+            "shortName": "Mobile",
+            "overlayName": "Mobile Tickets",
+            "overlayDescription": "Scan mobile tickets on the app or email.",
+            "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--mobile-ticketing",
+            "iconWhite": "icon icon-theater-amenity--mobile-ticketing--white"
+          },
+          {
+            "name": "Print at Home Tickets",
+            "shortName": "Print",
+            "overlayName": "Print Tickets",
+            "overlayDescription": "Print your tickets, scan at the theater.",
+            "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--print-at-home",
+            "iconWhite": "icon icon-theater-amenity--print-at-home--white"
+          },
+          {
+            "name": "Ticket Kiosk",
+            "shortName": "Kiosk",
+            "overlayName": "Ticket Kiosk",
+            "overlayDescription": "Pick up tickets at a self-service kiosk.",
+            "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--ticket-kiosk",
+            "iconWhite": "icon icon-theater-amenity--ticket-kiosk--white"
+          }
+        ],
+        "sluggedName": "amc-village-on-the-parkway-9",
+        "theaterPageUrl": "/amc-village-on-the-parkway-9-aaxju/theater-page",
+        "zip": "75254",
+        "cityStateZip": "Addison, TX 75254",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AAXJU"
+      },
+      {
+        "address1": "5409 Beltline Road",
+        "address2": "",
+        "agePolicy": null,
+        "amenities": [
+          {
+            "code": "Cafe",
+            "name": "Café",
+            "id": "BKE0N3xn",
+            "shortDescription": "Indicates whether a theater has a cafe."
+          },
+          {
+            "code": "BeerAndWine",
+            "name": "Beer and Wine",
+            "id": "Lb3Am3qG",
+            "shortDescription": "Indicates whether the theater offers beer and wine."
+          },
+          {
+            "code": "DigitalProjection",
+            "name": "Digital Projection",
+            "id": "Z65OQ7lJ",
+            "shortDescription": "Indicates whether a theater has Digital Projection auditoriums."
+          },
+          {
+            "code": "DineIn",
+            "name": "Dine In",
+            "id": "yVEJm7G0",
+            "shortDescription": "Indicates whether the theater offers dine in."
+          },
+          {
+            "code": "FullBar",
+            "name": "Full Bar",
+            "id": "DA5mj3y4",
+            "shortDescription": "Indicates whether the theater offers a full bar."
+          },
+          {
+            "code": "GameRoom",
+            "name": "Game Room",
+            "id": "wa3Bg7WO",
+            "shortDescription": "Indicates whether a theater has a game room on site."
+          },
+          {
+            "code": "ListeningDevices",
+            "name": "Listening Devices",
+            "id": "oO7N27wM",
+            "shortDescription": "Indicates whether a theater has listening devices available."
+          },
+          {
+            "code": "MobileTicket",
+            "name": "Mobile Tickets",
+            "id": "Gk5jd7Xl",
+            "shortDescription": "Indicates whether a theater support Mobile Tickets."
+          },
+          {
+            "code": "PartyRoom",
+            "name": "Party Room",
+            "id": "zB7VN7L8",
+            "shortDescription": "Indicates whether a theater has a party room."
+          },
+          {
+            "code": "PrintAtHome",
+            "name": "Print at Home Tickets",
+            "id": "RV54A31M",
+            "shortDescription": "Indicates whether a theater has Print at Home enabled."
+          },
+          {
+            "code": "ReservedSeating",
+            "name": "Reserved Seating",
+            "id": "RnElk7PO",
+            "shortDescription": "Indicates whether a theater has Reserved Seating enabled."
+          },
+          {
+            "code": "Kiosk",
+            "name": "Ticket Kiosk",
+            "id": "NJEX4EX1",
+            "shortDescription": "Indicates whether a theater has a kiosk on site."
+          },
+          {
+            "code": "Wheelchair",
+            "name": "Wheelchair Accessible",
+            "id": "6NExo7mG",
+            "shortDescription": "Indicates whether a theater has wheel chair seating."
+          }
+        ],
+        "chainCode": "HOOK",
+        "chainName": "Hooky Entertainment",
+        "city": "Dallas",
+        "distance": null,
+        "geo": {
+          "latitude": 32.9546,
+          "longitude": -96.81288
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "Hooky Entertainment Addison + SDX",
+        "phone": "214-306-7446",
+        "state": "TX",
+        "theaterMessage": null,
+        "tqpMessageHeader": "",
+        "tqpMessageBody": "",
+        "country": "US",
+        "amenitiesString": "Café,Beer and Wine,Digital Projection,Dine In,Full Bar,Game Room,Listening Devices,Mobile Tickets,Party Room,Print at Home Tickets,Reserved Seating,Ticket Kiosk,Wheelchair Accessible",
+        "concessionAmenity": [],
+        "formattedID": "aawza",
+        "fullAddress": "5409 Beltline Road, Dallas, TX 75254",
+        "hasConcessions": false,
+        "hasReservedSeating": true,
+        "id": "AAWZA",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=5409%20Beltline%20Road%2C%20Dallas%2C%20TX%2075254",
+        "promotedAmenities": [
+          {
+            "name": "Mobile Tickets",
+            "shortName": "Mobile",
+            "overlayName": "Mobile Tickets",
+            "overlayDescription": "Scan mobile tickets on the app or email.",
+            "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--mobile-ticketing",
+            "iconWhite": "icon icon-theater-amenity--mobile-ticketing--white"
+          },
+          {
+            "name": "Print at Home Tickets",
+            "shortName": "Print",
+            "overlayName": "Print Tickets",
+            "overlayDescription": "Print your tickets, scan at the theater.",
+            "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--print-at-home",
+            "iconWhite": "icon icon-theater-amenity--print-at-home--white"
+          },
+          {
+            "name": "Ticket Kiosk",
+            "shortName": "Kiosk",
+            "overlayName": "Ticket Kiosk",
+            "overlayDescription": "Pick up tickets at a self-service kiosk.",
+            "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--ticket-kiosk",
+            "iconWhite": "icon icon-theater-amenity--ticket-kiosk--white"
+          }
+        ],
+        "sluggedName": "hooky-entertainment-addison-sdx",
+        "theaterPageUrl": "/hooky-entertainment-addison-sdx-aawza/theater-page",
+        "zip": "75254",
+        "cityStateZip": "Dallas, TX 75254",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AAWZA"
+      },
+      {
+        "address1": "2401 S. Stemmons Freeway",
+        "address2": "",
+        "agePolicy": "No Children Under Age 6 Will Be Admitted To Any R-Rated Feature After 6:00 PM. Valid IDs will be required to attend Rated \"R\" movies. You must be at least 17 years of age or have your parent accompany you to view the movie. IDs will be checked at the theatre.",
+        "amenities": [
+          {
+            "code": "DigitalProjection",
+            "name": "Digital Projection",
+            "id": "Z65OQ7lJ",
+            "shortDescription": "Indicates whether a theater has Digital Projection auditoriums."
+          },
+          {
+            "code": "MobileTicket",
+            "name": "Mobile Tickets",
+            "id": "Gk5jd7Xl",
+            "shortDescription": "Indicates whether a theater support Mobile Tickets."
+          },
+          {
+            "code": "PrintAtHome",
+            "name": "Print at Home Tickets",
+            "id": "RV54A31M",
+            "shortDescription": "Indicates whether a theater has Print at Home enabled."
+          },
+          {
+            "code": "ReservedSeating",
+            "name": "Reserved Seating",
+            "id": "RnElk7PO",
+            "shortDescription": "Indicates whether a theater has Reserved Seating enabled."
+          },
+          {
+            "code": "AllStadium",
+            "name": "Stadium Seating",
+            "id": "zq5Rk3ex",
+            "shortDescription": "Indicates whether the theater has all stadium seating."
+          },
+          {
+            "code": "Kiosk",
+            "name": "Ticket Kiosk",
+            "id": "NJEX4EX1",
+            "shortDescription": "Indicates whether a theater has a kiosk on site."
+          },
+          {
+            "code": "Wheelchair",
+            "name": "Wheelchair Accessible",
+            "id": "6NExo7mG",
+            "shortDescription": "Indicates whether a theater has wheel chair seating."
+          }
+        ],
+        "chainCode": "CNMK",
+        "chainName": "Cinemark Theatres",
+        "city": "Lewisville",
+        "distance": null,
+        "geo": {
+          "latitude": 33.0066,
+          "longitude": -96.9712
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "Cinemark Lewisville and XD",
+        "phone": "972-315-6152",
+        "state": "TX",
+        "theaterMessage": null,
+        "tqpMessageHeader": "",
+        "tqpMessageBody": "",
+        "country": "US",
+        "amenitiesString": "Digital Projection,Mobile Tickets,Print at Home Tickets,Reserved Seating,Stadium Seating,Ticket Kiosk,Wheelchair Accessible",
+        "concessionAmenity": [],
+        "formattedID": "aaudu",
+        "fullAddress": "2401 S. Stemmons Freeway, Lewisville, TX 75067",
+        "hasConcessions": false,
+        "hasReservedSeating": true,
+        "id": "AAUDU",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=2401%20S.%20Stemmons%20Freeway%2C%20Lewisville%2C%20TX%2075067",
+        "promotedAmenities": [
+          {
+            "name": "Mobile Tickets",
+            "shortName": "Mobile",
+            "overlayName": "Mobile Tickets",
+            "overlayDescription": "Scan mobile tickets on the app or email.",
+            "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--mobile-ticketing",
+            "iconWhite": "icon icon-theater-amenity--mobile-ticketing--white"
+          },
+          {
+            "name": "Print at Home Tickets",
+            "shortName": "Print",
+            "overlayName": "Print Tickets",
+            "overlayDescription": "Print your tickets, scan at the theater.",
+            "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--print-at-home",
+            "iconWhite": "icon icon-theater-amenity--print-at-home--white"
+          },
+          {
+            "name": "Ticket Kiosk",
+            "shortName": "Kiosk",
+            "overlayName": "Ticket Kiosk",
+            "overlayDescription": "Pick up tickets at a self-service kiosk.",
+            "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--ticket-kiosk",
+            "iconWhite": "icon icon-theater-amenity--ticket-kiosk--white"
+          }
+        ],
+        "sluggedName": "cinemark-lewisville-and-xd",
+        "theaterPageUrl": "/cinemark-lewisville-and-xd-aaudu/theater-page",
+        "zip": "75067",
+        "cityStateZip": "Lewisville, TX 75067",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AAUDU"
+      },
+      {
+        "address1": "320 Las Colinas Blvd",
+        "address2": "",
+        "agePolicy": "Children ages 3+ admitted before 6pm, children 6+ admitted after 6pm. All minors under the age of 18 must be accompanied by an adult.",
+        "amenities": [
+          {
+            "code": "Cafe",
+            "name": "Café",
+            "id": "BKE0N3xn",
+            "shortDescription": "Indicates whether a theater has a cafe."
+          },
+          {
+            "code": "DigitalProjection",
+            "name": "Digital Projection",
+            "id": "Z65OQ7lJ",
+            "shortDescription": "Indicates whether a theater has Digital Projection auditoriums."
+          },
+          {
+            "code": "ListeningDevices",
+            "name": "Listening Devices",
+            "id": "oO7N27wM",
+            "shortDescription": "Indicates whether a theater has listening devices available."
+          },
+          {
+            "code": "MobileTicket",
+            "name": "Mobile Tickets",
+            "id": "Gk5jd7Xl",
+            "shortDescription": "Indicates whether a theater support Mobile Tickets."
+          },
+          {
+            "code": "PartyRoom",
+            "name": "Party Room",
+            "id": "zB7VN7L8",
+            "shortDescription": "Indicates whether a theater has a party room."
+          },
+          {
+            "code": "PrintAtHome",
+            "name": "Print at Home Tickets",
+            "id": "RV54A31M",
+            "shortDescription": "Indicates whether a theater has Print at Home enabled."
+          },
+          {
+            "code": "ReservedSeating",
+            "name": "Reserved Seating",
+            "id": "RnElk7PO",
+            "shortDescription": "Indicates whether a theater has Reserved Seating enabled."
+          },
+          {
+            "code": "AllStadium",
+            "name": "Stadium Seating",
+            "id": "zq5Rk3ex",
+            "shortDescription": "Indicates whether the theater has all stadium seating."
+          },
+          {
+            "code": "Kiosk",
+            "name": "Ticket Kiosk",
+            "id": "NJEX4EX1",
+            "shortDescription": "Indicates whether a theater has a kiosk on site."
+          },
+          {
+            "code": "Wheelchair",
+            "name": "Wheelchair Accessible",
+            "id": "6NExo7mG",
+            "shortDescription": "Indicates whether a theater has wheel chair seating."
+          }
+        ],
+        "chainCode": "ALAM",
+        "chainName": "Alamo Drafthouse Cinemas",
+        "city": "Irving",
+        "distance": null,
+        "geo": {
+          "latitude": 32.8748,
+          "longitude": -96.9442
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "Alamo Drafthouse Las Colinas",
+        "phone": null,
+        "state": "TX",
+        "theaterMessage": "No Latecomers Policy<br>\r\nGuests cannot enter the theater after the movie has begun. This means when the feature begins, so you can still come in while our ad tape and trailers are playing. The reason for this policy is to preserve the movie watching experience with minimal interruptions, much like our no talking and texting policy. If you show up to your desired screening late, we will happily exchange your ticket for a different showtime or for a raincheck to a future show.",
+        "tqpMessageHeader": "No Latecomers Policy",
+        "tqpMessageBody": "Guests cannot enter the theater after the movie has begun. This means when the feature begins, so you can still come in while our ad tape and trailers are playing. The reason for this policy is to preserve the movie watching experience with minimal interruptions, much like our no talking and texting policy. If you show up to your desired screening late, we will happily exchange your ticket for a different showtime or for a raincheck to a future show.",
+        "country": "US",
+        "amenitiesString": "Café,Digital Projection,Listening Devices,Mobile Tickets,Party Room,Print at Home Tickets,Reserved Seating,Stadium Seating,Ticket Kiosk,Wheelchair Accessible",
+        "concessionAmenity": [],
+        "formattedID": "aaygw",
+        "fullAddress": "320 Las Colinas Blvd, Irving, TX 75039",
+        "hasConcessions": false,
+        "hasReservedSeating": true,
+        "id": "AAYGW",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=320%20Las%20Colinas%20Blvd%2C%20Irving%2C%20TX%2075039",
+        "promotedAmenities": [
+          {
+            "name": "Mobile Tickets",
+            "shortName": "Mobile",
+            "overlayName": "Mobile Tickets",
+            "overlayDescription": "Scan mobile tickets on the app or email.",
+            "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--mobile-ticketing",
+            "iconWhite": "icon icon-theater-amenity--mobile-ticketing--white"
+          },
+          {
+            "name": "Print at Home Tickets",
+            "shortName": "Print",
+            "overlayName": "Print Tickets",
+            "overlayDescription": "Print your tickets, scan at the theater.",
+            "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--print-at-home",
+            "iconWhite": "icon icon-theater-amenity--print-at-home--white"
+          },
+          {
+            "name": "Ticket Kiosk",
+            "shortName": "Kiosk",
+            "overlayName": "Ticket Kiosk",
+            "overlayDescription": "Pick up tickets at a self-service kiosk.",
+            "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--ticket-kiosk",
+            "iconWhite": "icon icon-theater-amenity--ticket-kiosk--white"
+          }
+        ],
+        "sluggedName": "alamo-drafthouse-las-colinas",
+        "theaterPageUrl": "/alamo-drafthouse-las-colinas-aaygw/theater-page",
+        "zip": "75039",
+        "cityStateZip": "Irving, TX 75039",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AAYGW"
+      },
+      {
+        "address1": "3800 Dallas Parkway",
+        "address2": "",
+        "agePolicy": "No Children Under Age 6 Will Be Admitted To Any R-Rated Feature After 6:00 PM. Valid IDs will be required to attend Rated \"R\" movies. You must be at least 17 years of age or have your parent accompany you to view the movie. IDs will be checked at the theatre.",
+        "amenities": [
+          {
+            "code": "AllStadium",
+            "name": "Stadium Seating",
+            "id": "zq5Rk3ex",
+            "shortDescription": "Indicates whether the theater has all stadium seating."
+          },
+          {
+            "code": "Cafe",
+            "name": "Café",
+            "id": "BKE0N3xn",
+            "shortDescription": "Indicates whether a theater has a cafe."
+          },
+          {
+            "code": "ListeningDevices",
+            "name": "Listening Devices",
+            "id": "oO7N27wM",
+            "shortDescription": "Indicates whether a theater has listening devices available."
+          },
+          {
+            "code": "MobileTicket",
+            "name": "Mobile Tickets",
+            "id": "Gk5jd7Xl",
+            "shortDescription": "Indicates whether a theater support Mobile Tickets."
+          },
+          {
+            "code": "PartyRoom",
+            "name": "Party Room",
+            "id": "zB7VN7L8",
+            "shortDescription": "Indicates whether a theater has a party room."
+          },
+          {
+            "code": "PrintAtHome",
+            "name": "Print at Home Tickets",
+            "id": "RV54A31M",
+            "shortDescription": "Indicates whether a theater has Print at Home enabled."
+          },
+          {
+            "code": "ReservedSeating",
+            "name": "Reserved Seating",
+            "id": "RnElk7PO",
+            "shortDescription": "Indicates whether a theater has Reserved Seating enabled."
+          },
+          {
+            "code": "Kiosk",
+            "name": "Ticket Kiosk",
+            "id": "NJEX4EX1",
+            "shortDescription": "Indicates whether a theater has a kiosk on site."
+          },
+          {
+            "code": "Wheelchair",
+            "name": "Wheelchair Accessible",
+            "id": "6NExo7mG",
+            "shortDescription": "Indicates whether a theater has wheel chair seating."
+          }
+        ],
+        "chainCode": "CNMK",
+        "chainName": "Cinemark Theatres",
+        "city": "Plano",
+        "distance": null,
+        "geo": {
+          "latitude": 33.0489,
+          "longitude": -96.829
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "Cinemark West Plano and XD",
+        "phone": "972-473-2289",
+        "state": "TX",
+        "theaterMessage": null,
+        "tqpMessageHeader": null,
+        "tqpMessageBody": null,
+        "country": "US",
+        "amenitiesString": "Stadium Seating,Café,Listening Devices,Mobile Tickets,Party Room,Print at Home Tickets,Reserved Seating,Ticket Kiosk,Wheelchair Accessible",
+        "concessionAmenity": [],
+        "formattedID": "aacut",
+        "fullAddress": "3800 Dallas Parkway, Plano, TX 75093",
+        "hasConcessions": false,
+        "hasReservedSeating": true,
+        "id": "AACUT",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=3800%20Dallas%20Parkway%2C%20Plano%2C%20TX%2075093",
+        "promotedAmenities": [
+          {
+            "name": "Mobile Tickets",
+            "shortName": "Mobile",
+            "overlayName": "Mobile Tickets",
+            "overlayDescription": "Scan mobile tickets on the app or email.",
+            "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--mobile-ticketing",
+            "iconWhite": "icon icon-theater-amenity--mobile-ticketing--white"
+          },
+          {
+            "name": "Print at Home Tickets",
+            "shortName": "Print",
+            "overlayName": "Print Tickets",
+            "overlayDescription": "Print your tickets, scan at the theater.",
+            "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--print-at-home",
+            "iconWhite": "icon icon-theater-amenity--print-at-home--white"
+          },
+          {
+            "name": "Ticket Kiosk",
+            "shortName": "Kiosk",
+            "overlayName": "Ticket Kiosk",
+            "overlayDescription": "Pick up tickets at a self-service kiosk.",
+            "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--ticket-kiosk",
+            "iconWhite": "icon icon-theater-amenity--ticket-kiosk--white"
+          }
+        ],
+        "sluggedName": "cinemark-west-plano-and-xd",
+        "theaterPageUrl": "/cinemark-west-plano-and-xd-aacut/theater-page",
+        "zip": "75093",
+        "cityStateZip": "Plano, TX 75093",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AACUT"
+      },
+      {
+        "address1": "4800 State Hwy. 121",
+        "address2": "",
+        "agePolicy": "<p>No children 2 and under in any PG-13 rated movies after 6<br><br>No children age five or under will be admitted to any R-rated feature.</p>",
+        "amenities": [
+          {
+            "code": "DigitalProjection",
+            "name": "Digital Projection",
+            "id": "Z65OQ7lJ",
+            "shortDescription": "Indicates whether a theater has Digital Projection auditoriums."
+          },
+          {
+            "code": "MobileTicket",
+            "name": "Mobile Tickets",
+            "id": "Gk5jd7Xl",
+            "shortDescription": "Indicates whether a theater support Mobile Tickets."
+          },
+          {
+            "code": "PrintAtHome",
+            "name": "Print at Home Tickets",
+            "id": "RV54A31M",
+            "shortDescription": "Indicates whether a theater has Print at Home enabled."
+          },
+          {
+            "code": "ReservedSeating",
+            "name": "Reserved Seating",
+            "id": "RnElk7PO",
+            "shortDescription": "Indicates whether a theater has Reserved Seating enabled."
+          },
+          {
+            "code": "Kiosk",
+            "name": "Ticket Kiosk",
+            "id": "NJEX4EX1",
+            "shortDescription": "Indicates whether a theater has a kiosk on site."
+          }
+        ],
+        "chainCode": "SMG",
+        "chainName": "Studio Movie Grill",
+        "city": "The Colony",
+        "distance": null,
+        "geo": {
+          "latitude": 33.06694,
+          "longitude": -96.88357
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "Studio Movie Grill The Colony",
+        "phone": "972-987-1899",
+        "state": "TX",
+        "theaterMessage": null,
+        "tqpMessageHeader": "",
+        "tqpMessageBody": "",
+        "country": "US",
+        "amenitiesString": "Digital Projection,Mobile Tickets,Print at Home Tickets,Reserved Seating,Ticket Kiosk",
+        "concessionAmenity": [],
+        "formattedID": "aaxps",
+        "fullAddress": "4800 State Hwy. 121, The Colony, TX 75056",
+        "hasConcessions": false,
+        "hasReservedSeating": true,
+        "id": "AAXPS",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=4800%20State%20Hwy.%20121%2C%20The%20Colony%2C%20TX%2075056",
+        "promotedAmenities": [
+          {
+            "name": "Mobile Tickets",
+            "shortName": "Mobile",
+            "overlayName": "Mobile Tickets",
+            "overlayDescription": "Scan mobile tickets on the app or email.",
+            "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--mobile-ticketing",
+            "iconWhite": "icon icon-theater-amenity--mobile-ticketing--white"
+          },
+          {
+            "name": "Print at Home Tickets",
+            "shortName": "Print",
+            "overlayName": "Print Tickets",
+            "overlayDescription": "Print your tickets, scan at the theater.",
+            "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--print-at-home",
+            "iconWhite": "icon icon-theater-amenity--print-at-home--white"
+          },
+          {
+            "name": "Ticket Kiosk",
+            "shortName": "Kiosk",
+            "overlayName": "Ticket Kiosk",
+            "overlayDescription": "Pick up tickets at a self-service kiosk.",
+            "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--ticket-kiosk",
+            "iconWhite": "icon icon-theater-amenity--ticket-kiosk--white"
+          }
+        ],
+        "sluggedName": "studio-movie-grill-the-colony",
+        "theaterPageUrl": "/studio-movie-grill-the-colony-aaxps/theater-page",
+        "zip": "75056",
+        "cityStateZip": "The Colony, TX 75056",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AAXPS"
+      },
+      {
+        "address1": "4721 W. Park Blvd",
+        "address2": "",
+        "agePolicy": "<p>No children 2 and under in any PG-13 rated movies after 6<br><br>No children age five or under will be admitted to any R-rated feature.</p>",
+        "amenities": [
+          {
+            "code": "AllStadium",
+            "name": "Stadium Seating",
+            "id": "zq5Rk3ex",
+            "shortDescription": "Indicates whether the theater has all stadium seating."
+          },
+          {
+            "code": "Cafe",
+            "name": "Café",
+            "id": "BKE0N3xn",
+            "shortDescription": "Indicates whether a theater has a cafe."
+          },
+          {
+            "code": "DigitalProjection",
+            "name": "Digital Projection",
+            "id": "Z65OQ7lJ",
+            "shortDescription": "Indicates whether a theater has Digital Projection auditoriums."
+          },
+          {
+            "code": "MobileTicket",
+            "name": "Mobile Tickets",
+            "id": "Gk5jd7Xl",
+            "shortDescription": "Indicates whether a theater support Mobile Tickets."
+          },
+          {
+            "code": "PrintAtHome",
+            "name": "Print at Home Tickets",
+            "id": "RV54A31M",
+            "shortDescription": "Indicates whether a theater has Print at Home enabled."
+          },
+          {
+            "code": "ReservedSeating",
+            "name": "Reserved Seating",
+            "id": "RnElk7PO",
+            "shortDescription": "Indicates whether a theater has Reserved Seating enabled."
+          },
+          {
+            "code": "Kiosk",
+            "name": "Ticket Kiosk",
+            "id": "NJEX4EX1",
+            "shortDescription": "Indicates whether a theater has a kiosk on site."
+          },
+          {
+            "code": "Wheelchair",
+            "name": "Wheelchair Accessible",
+            "id": "6NExo7mG",
+            "shortDescription": "Indicates whether a theater has wheel chair seating."
+          }
+        ],
+        "chainCode": "SMG",
+        "chainName": "Studio Movie Grill",
+        "city": "Plano",
+        "distance": null,
+        "geo": {
+          "latitude": 33.0268,
+          "longitude": -96.7887
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "Studio Movie Grill Plano",
+        "phone": "972-596-4627",
+        "state": "TX",
+        "theaterMessage": null,
+        "tqpMessageHeader": "",
+        "tqpMessageBody": "",
+        "country": "US",
+        "amenitiesString": "Stadium Seating,Café,Digital Projection,Mobile Tickets,Print at Home Tickets,Reserved Seating,Ticket Kiosk,Wheelchair Accessible",
+        "concessionAmenity": [],
+        "formattedID": "aabed",
+        "fullAddress": "4721 W. Park Blvd, Plano, TX 75093",
+        "hasConcessions": false,
+        "hasReservedSeating": true,
+        "id": "AABED",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=4721%20W.%20Park%20Blvd%2C%20Plano%2C%20TX%2075093",
+        "promotedAmenities": [
+          {
+            "name": "Mobile Tickets",
+            "shortName": "Mobile",
+            "overlayName": "Mobile Tickets",
+            "overlayDescription": "Scan mobile tickets on the app or email.",
+            "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--mobile-ticketing",
+            "iconWhite": "icon icon-theater-amenity--mobile-ticketing--white"
+          },
+          {
+            "name": "Print at Home Tickets",
+            "shortName": "Print",
+            "overlayName": "Print Tickets",
+            "overlayDescription": "Print your tickets, scan at the theater.",
+            "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--print-at-home",
+            "iconWhite": "icon icon-theater-amenity--print-at-home--white"
+          },
+          {
+            "name": "Ticket Kiosk",
+            "shortName": "Kiosk",
+            "overlayName": "Ticket Kiosk",
+            "overlayDescription": "Pick up tickets at a self-service kiosk.",
+            "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--ticket-kiosk",
+            "iconWhite": "icon icon-theater-amenity--ticket-kiosk--white"
+          }
+        ],
+        "sluggedName": "studio-movie-grill-plano",
+        "theaterPageUrl": "/studio-movie-grill-plano-aabed/theater-page",
+        "zip": "75093",
+        "cityStateZip": "Plano, TX 75093",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AABED"
+      },
+      {
+        "address1": "5740 Grandscape Blvd Ste. 100",
+        "address2": "",
+        "agePolicy": "Rated R Policy - All children ages 11 and under will be charged a full price ticket with no exceptions. This includes children sitting on your lap.\r\n\r\nA person must be 18 years old in order to purchase multiple tickets without providing additional photo IDs for the additional tickets.\r\n\r\nChildren under 17 require accompanying parent or adult guardian over the age of 18.",
+        "amenities": [
+          {
+            "code": "AllStadium",
+            "name": "Stadium Seating",
+            "id": "zq5Rk3ex",
+            "shortDescription": "Indicates whether the theater has all stadium seating."
+          },
+          {
+            "code": "BeerAndWine",
+            "name": "Beer and Wine",
+            "id": "Lb3Am3qG",
+            "shortDescription": "Indicates whether the theater offers beer and wine."
+          },
+          {
+            "code": "Cafe",
+            "name": "Café",
+            "id": "BKE0N3xn",
+            "shortDescription": "Indicates whether a theater has a cafe."
+          },
+          {
+            "code": "DigitalProjection",
+            "name": "Digital Projection",
+            "id": "Z65OQ7lJ",
+            "shortDescription": "Indicates whether a theater has Digital Projection auditoriums."
+          },
+          {
+            "code": "FullBar",
+            "name": "Full Bar",
+            "id": "DA5mj3y4",
+            "shortDescription": "Indicates whether the theater offers a full bar."
+          },
+          {
+            "code": "ListeningDevices",
+            "name": "Listening Devices",
+            "id": "oO7N27wM",
+            "shortDescription": "Indicates whether a theater has listening devices available."
+          },
+          {
+            "code": "MobileTicket",
+            "name": "Mobile Tickets",
+            "id": "Gk5jd7Xl",
+            "shortDescription": "Indicates whether a theater support Mobile Tickets."
+          },
+          {
+            "code": "PrintAtHome",
+            "name": "Print at Home Tickets",
+            "id": "RV54A31M",
+            "shortDescription": "Indicates whether a theater has Print at Home enabled."
+          },
+          {
+            "code": "ReservedSeating",
+            "name": "Reserved Seating",
+            "id": "RnElk7PO",
+            "shortDescription": "Indicates whether a theater has Reserved Seating enabled."
+          },
+          {
+            "code": "Wheelchair",
+            "name": "Wheelchair Accessible",
+            "id": "6NExo7mG",
+            "shortDescription": "Indicates whether a theater has wheel chair seating."
+          }
+        ],
+        "chainCode": "GLXY",
+        "chainName": "Galaxy Theatres",
+        "city": "The Colony",
+        "distance": null,
+        "geo": {
+          "latitude": 33.07424,
+          "longitude": -96.86663
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "Galaxy Grandscape",
+        "phone": "214-396-8005",
+        "state": "TX",
+        "theaterMessage": null,
+        "tqpMessageHeader": "",
+        "tqpMessageBody": "",
+        "country": "US",
+        "amenitiesString": "Stadium Seating,Beer and Wine,Café,Digital Projection,Full Bar,Listening Devices,Mobile Tickets,Print at Home Tickets,Reserved Seating,Wheelchair Accessible",
+        "concessionAmenity": [],
+        "formattedID": "aayyj",
+        "fullAddress": "5740 Grandscape Blvd Ste. 100, The Colony, TX 75056",
+        "hasConcessions": false,
+        "hasReservedSeating": true,
+        "id": "AAYYJ",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=5740%20Grandscape%20Blvd%20Ste.%20100%2C%20The%20Colony%2C%20TX%2075056",
+        "promotedAmenities": [
+          {
+            "name": "Mobile Tickets",
+            "shortName": "Mobile",
+            "overlayName": "Mobile Tickets",
+            "overlayDescription": "Scan mobile tickets on the app or email.",
+            "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--mobile-ticketing",
+            "iconWhite": "icon icon-theater-amenity--mobile-ticketing--white"
+          },
+          {
+            "name": "Print at Home Tickets",
+            "shortName": "Print",
+            "overlayName": "Print Tickets",
+            "overlayDescription": "Print your tickets, scan at the theater.",
+            "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--print-at-home",
+            "iconWhite": "icon icon-theater-amenity--print-at-home--white"
+          }
+        ],
+        "sluggedName": "galaxy-grandscape",
+        "theaterPageUrl": "/galaxy-grandscape-aayyj/theater-page",
+        "zip": "75056",
+        "cityStateZip": "The Colony, TX 75056",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AAYYJ"
+      },
+      {
+        "address1": "3150 Grapevine Mills Parkway",
+        "address2": "",
+        "agePolicy": "<p>Senior tickets are valid for adults 60+.<br />Child tickets for 2 - 12 years.<br />Student: Age 13+ with valid student ID.<br />Not all ticket types are available for all performances.<br />Rated-R Films: Under 17 requires accompanying parent or adult guardian (age 21 or older).&nbsp; 25 years and under must show ID for rated R movies.<br /><br /></p><h><b>Distraction-Free Entertainment</b></h><p>In an effort to provide the most enjoyable experience for adults attending R-rated features in the evenings, no children younger than 6 will be admitted to these features after 6 p.m</p>",
+        "amenities": [
+          {
+            "code": "ExpressPickup",
+            "name": "Concession Pickup",
+            "id": "MYEel7DL",
+            "shortDescription": "Buy your movie ticket, then order popcorn, candy, soda, and more for pickup at the concession area."
+          },
+          {
+            "code": "Kiosk",
+            "name": "Ticket Kiosk",
+            "id": "NJEX4EX1",
+            "shortDescription": "Indicates whether a theater has a kiosk on site."
+          },
+          {
+            "code": "ReservedSeating",
+            "name": "Reserved Seating",
+            "id": "RnElk7PO",
+            "shortDescription": "Indicates whether a theater has Reserved Seating enabled."
+          },
+          {
+            "code": "PrintAtHome",
+            "name": "Print at Home Tickets",
+            "id": "RV54A31M",
+            "shortDescription": "Indicates whether a theater has Print at Home enabled."
+          },
+          {
+            "code": "MobileTicket",
+            "name": "Mobile Tickets",
+            "id": "Gk5jd7Xl",
+            "shortDescription": "Indicates whether a theater support Mobile Tickets."
+          },
+          {
+            "code": "IMAX",
+            "name": "IMAX",
+            "id": "zP58kEvY",
+            "shortDescription": "Indicates whether a theater has IMAX auditoriums."
+          },
+          {
+            "code": "DigitalProjection",
+            "name": "Digital Projection",
+            "id": "Z65OQ7lJ",
+            "shortDescription": "Indicates whether a theater has Digital Projection auditoriums."
+          }
+        ],
+        "chainCode": "AMC",
+        "chainName": "AMC",
+        "city": "Grapevine",
+        "distance": null,
+        "geo": {
+          "latitude": 32.95085,
+          "longitude": -97.04011
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "AMC Grapevine Mills 24",
+        "phone": null,
+        "state": "TX",
+        "theaterMessage": "AMC reserves the right to exercise special pricing options for unique in-theatre experiences.<br><br>\r\nFeature Presentations Start 10-15 Minutes Following Published Show times<br><br>To find a film presented in 3D, look for the \"Digital 3D\" description. Some locations do not have Digital 3D available. All 3D, IMAX, alternative content, and premium services are subject to additional surcharges.",
+        "tqpMessageHeader": "",
+        "tqpMessageBody": "<b>R-Rated Age Policy:</b> For R-rated movies only, guests under 17 must be accompanied by a guardian who is 21 or older. Please be prepared to show ID at the theatre.",
+        "country": "US",
+        "amenitiesString": "Concession Pickup,Ticket Kiosk,Reserved Seating,Print at Home Tickets,Mobile Tickets,IMAX,Digital Projection",
+        "concessionAmenity": [
+          {
+            "name": "Concession Pickup",
+            "overlayDescription": "Buy your movie ticket, then order popcorn, candy, soda, and more for pickup at the concession area."
+          }
+        ],
+        "formattedID": "aaego",
+        "fullAddress": "3150 Grapevine Mills Parkway, Grapevine, TX 76051",
+        "hasConcessions": true,
+        "hasReservedSeating": true,
+        "id": "AAEGO",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=3150%20Grapevine%20Mills%20Parkway%2C%20Grapevine%2C%20TX%2076051",
+        "promotedAmenities": [
+          {
+            "name": "Ticket Kiosk",
+            "shortName": "Kiosk",
+            "overlayName": "Ticket Kiosk",
+            "overlayDescription": "Pick up tickets at a self-service kiosk.",
+            "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--ticket-kiosk",
+            "iconWhite": "icon icon-theater-amenity--ticket-kiosk--white"
+          },
+          {
+            "name": "Print at Home Tickets",
+            "shortName": "Print",
+            "overlayName": "Print Tickets",
+            "overlayDescription": "Print your tickets, scan at the theater.",
+            "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--print-at-home",
+            "iconWhite": "icon icon-theater-amenity--print-at-home--white"
+          },
+          {
+            "name": "Mobile Tickets",
+            "shortName": "Mobile",
+            "overlayName": "Mobile Tickets",
+            "overlayDescription": "Scan mobile tickets on the app or email.",
+            "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--mobile-ticketing",
+            "iconWhite": "icon icon-theater-amenity--mobile-ticketing--white"
+          }
+        ],
+        "sluggedName": "amc-grapevine-mills-24",
+        "theaterPageUrl": "/amc-grapevine-mills-24-aaego/theater-page",
+        "zip": "76051",
+        "cityStateZip": "Grapevine, TX 76051",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AAEGO"
+      },
+      {
+        "address1": "11170 N. Central Expressway",
+        "address2": "",
+        "agePolicy": "<p>No children 2 and under in any PG-13 rated movies after 6<br><br>No children age five or under will be admitted to any R-rated feature.</p>",
+        "amenities": [
+          {
+            "code": "Cafe",
+            "name": "Café",
+            "id": "BKE0N3xn",
+            "shortDescription": "Indicates whether a theater has a cafe."
+          },
+          {
+            "code": "DigitalProjection",
+            "name": "Digital Projection",
+            "id": "Z65OQ7lJ",
+            "shortDescription": "Indicates whether a theater has Digital Projection auditoriums."
+          },
+          {
+            "code": "ListeningDevices",
+            "name": "Listening Devices",
+            "id": "oO7N27wM",
+            "shortDescription": "Indicates whether a theater has listening devices available."
+          },
+          {
+            "code": "MobileTicket",
+            "name": "Mobile Tickets",
+            "id": "Gk5jd7Xl",
+            "shortDescription": "Indicates whether a theater support Mobile Tickets."
+          },
+          {
+            "code": "PrintAtHome",
+            "name": "Print at Home Tickets",
+            "id": "RV54A31M",
+            "shortDescription": "Indicates whether a theater has Print at Home enabled."
+          },
+          {
+            "code": "ReservedSeating",
+            "name": "Reserved Seating",
+            "id": "RnElk7PO",
+            "shortDescription": "Indicates whether a theater has Reserved Seating enabled."
+          },
+          {
+            "code": "AllStadium",
+            "name": "Stadium Seating",
+            "id": "zq5Rk3ex",
+            "shortDescription": "Indicates whether the theater has all stadium seating."
+          },
+          {
+            "code": "Kiosk",
+            "name": "Ticket Kiosk",
+            "id": "NJEX4EX1",
+            "shortDescription": "Indicates whether a theater has a kiosk on site."
+          },
+          {
+            "code": "Wheelchair",
+            "name": "Wheelchair Accessible",
+            "id": "6NExo7mG",
+            "shortDescription": "Indicates whether a theater has wheel chair seating."
+          }
+        ],
+        "chainCode": "SMG",
+        "chainName": "Studio Movie Grill",
+        "city": "Dallas",
+        "distance": null,
+        "geo": {
+          "latitude": 32.9003,
+          "longitude": -96.7686
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "Studio Movie Grill-Dallas",
+        "phone": "214-361-2966",
+        "state": "TX",
+        "theaterMessage": null,
+        "tqpMessageHeader": "",
+        "tqpMessageBody": "",
+        "country": "US",
+        "amenitiesString": "Café,Digital Projection,Listening Devices,Mobile Tickets,Print at Home Tickets,Reserved Seating,Stadium Seating,Ticket Kiosk,Wheelchair Accessible",
+        "concessionAmenity": [],
+        "formattedID": "aautc",
+        "fullAddress": "11170 N. Central Expressway, Dallas, TX 75243",
+        "hasConcessions": false,
+        "hasReservedSeating": true,
+        "id": "AAUTC",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=11170%20N.%20Central%20Expressway%2C%20Dallas%2C%20TX%2075243",
+        "promotedAmenities": [
+          {
+            "name": "Mobile Tickets",
+            "shortName": "Mobile",
+            "overlayName": "Mobile Tickets",
+            "overlayDescription": "Scan mobile tickets on the app or email.",
+            "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--mobile-ticketing",
+            "iconWhite": "icon icon-theater-amenity--mobile-ticketing--white"
+          },
+          {
+            "name": "Print at Home Tickets",
+            "shortName": "Print",
+            "overlayName": "Print Tickets",
+            "overlayDescription": "Print your tickets, scan at the theater.",
+            "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--print-at-home",
+            "iconWhite": "icon icon-theater-amenity--print-at-home--white"
+          },
+          {
+            "name": "Ticket Kiosk",
+            "shortName": "Kiosk",
+            "overlayName": "Ticket Kiosk",
+            "overlayDescription": "Pick up tickets at a self-service kiosk.",
+            "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--ticket-kiosk",
+            "iconWhite": "icon icon-theater-amenity--ticket-kiosk--white"
+          }
+        ],
+        "sluggedName": "studio-movie-grill-dallas",
+        "theaterPageUrl": "/studio-movie-grill-dallas-aautc/theater-page",
+        "zip": "75243",
+        "cityStateZip": "Dallas, TX 75243",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AAUTC"
+      },
+      {
+        "address1": "1818 Coit Road",
+        "address2": "",
+        "agePolicy": "No Children Under Age 6 Will Be Admitted To Any R-Rated Feature After 6:00 PM. Valid IDs will be required to attend Rated \"R\" movies. You must be at least 17 years of age or have your parent accompany you to view the movie. IDs will be checked at the theatre.",
+        "amenities": [
+          {
+            "code": "MobileTicket",
+            "name": "Mobile Tickets",
+            "id": "Gk5jd7Xl",
+            "shortDescription": "Indicates whether a theater support Mobile Tickets."
+          },
+          {
+            "code": "PrintAtHome",
+            "name": "Print at Home Tickets",
+            "id": "RV54A31M",
+            "shortDescription": "Indicates whether a theater has Print at Home enabled."
+          },
+          {
+            "code": "ReservedSeating",
+            "name": "Reserved Seating",
+            "id": "RnElk7PO",
+            "shortDescription": "Indicates whether a theater has Reserved Seating enabled."
+          },
+          {
+            "code": "Kiosk",
+            "name": "Ticket Kiosk",
+            "id": "NJEX4EX1",
+            "shortDescription": "Indicates whether a theater has a kiosk on site."
+          }
+        ],
+        "chainCode": "CNMK",
+        "chainName": "Cinemark Theatres",
+        "city": "Plano",
+        "distance": null,
+        "geo": {
+          "latitude": 33.02514,
+          "longitude": -96.76852
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "Cinemark Central Plano",
+        "phone": "972-985-1394",
+        "state": "TX",
+        "theaterMessage": null,
+        "tqpMessageHeader": "",
+        "tqpMessageBody": "",
+        "country": "US",
+        "amenitiesString": "Mobile Tickets,Print at Home Tickets,Reserved Seating,Ticket Kiosk",
+        "concessionAmenity": [],
+        "formattedID": "aacbz",
+        "fullAddress": "1818 Coit Road, Plano, TX 75075",
+        "hasConcessions": false,
+        "hasReservedSeating": true,
+        "id": "AACBZ",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=1818%20Coit%20Road%2C%20Plano%2C%20TX%2075075",
+        "promotedAmenities": [
+          {
+            "name": "Mobile Tickets",
+            "shortName": "Mobile",
+            "overlayName": "Mobile Tickets",
+            "overlayDescription": "Scan mobile tickets on the app or email.",
+            "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--mobile-ticketing",
+            "iconWhite": "icon icon-theater-amenity--mobile-ticketing--white"
+          },
+          {
+            "name": "Print at Home Tickets",
+            "shortName": "Print",
+            "overlayName": "Print Tickets",
+            "overlayDescription": "Print your tickets, scan at the theater.",
+            "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--print-at-home",
+            "iconWhite": "icon icon-theater-amenity--print-at-home--white"
+          },
+          {
+            "name": "Ticket Kiosk",
+            "shortName": "Kiosk",
+            "overlayName": "Ticket Kiosk",
+            "overlayDescription": "Pick up tickets at a self-service kiosk.",
+            "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--ticket-kiosk",
+            "iconWhite": "icon icon-theater-amenity--ticket-kiosk--white"
+          }
+        ],
+        "sluggedName": "cinemark-central-plano",
+        "theaterPageUrl": "/cinemark-central-plano-aacbz/theater-page",
+        "zip": "75075",
+        "cityStateZip": "Plano, TX 75075",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AACBZ"
+      },
+      {
+        "address1": "13933 N. Central Expressway",
+        "address2": "",
+        "agePolicy": "<p>No children 2 and under in any PG-13 rated movies after 6<br><br>No children age five or under will be admitted to any R-rated feature.</p>",
+        "amenities": [
+          {
+            "code": "DigitalProjection",
+            "name": "Digital Projection",
+            "id": "Z65OQ7lJ",
+            "shortDescription": "Indicates whether a theater has Digital Projection auditoriums."
+          },
+          {
+            "code": "PrintAtHome",
+            "name": "Print at Home Tickets",
+            "id": "RV54A31M",
+            "shortDescription": "Indicates whether a theater has Print at Home enabled."
+          },
+          {
+            "code": "Wheelchair",
+            "name": "Wheelchair Accessible",
+            "id": "6NExo7mG",
+            "shortDescription": "Indicates whether a theater has wheel chair seating."
+          },
+          {
+            "code": "Cafe",
+            "name": "Café",
+            "id": "BKE0N3xn",
+            "shortDescription": "Indicates whether a theater has a cafe."
+          },
+          {
+            "code": "Kiosk",
+            "name": "Ticket Kiosk",
+            "id": "NJEX4EX1",
+            "shortDescription": "Indicates whether a theater has a kiosk on site."
+          },
+          {
+            "code": "AllStadium",
+            "name": "Stadium Seating",
+            "id": "zq5Rk3ex",
+            "shortDescription": "Indicates whether the theater has all stadium seating."
+          },
+          {
+            "code": "ReservedSeating",
+            "name": "Reserved Seating",
+            "id": "RnElk7PO",
+            "shortDescription": "Indicates whether a theater has Reserved Seating enabled."
+          },
+          {
+            "code": "MobileTicket",
+            "name": "Mobile Tickets",
+            "id": "Gk5jd7Xl",
+            "shortDescription": "Indicates whether a theater support Mobile Tickets."
+          }
+        ],
+        "chainCode": "SMG",
+        "chainName": "Studio Movie Grill",
+        "city": "Dallas",
+        "distance": null,
+        "geo": {
+          "latitude": 32.93888,
+          "longitude": -96.75085
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "Studio Movie Grill Spring Valley",
+        "phone": "214-459-0977",
+        "state": "TX",
+        "theaterMessage": null,
+        "tqpMessageHeader": "",
+        "tqpMessageBody": "",
+        "country": "US",
+        "amenitiesString": "Digital Projection,Print at Home Tickets,Wheelchair Accessible,Café,Ticket Kiosk,Stadium Seating,Reserved Seating,Mobile Tickets",
+        "concessionAmenity": [],
+        "formattedID": "aawup",
+        "fullAddress": "13933 N. Central Expressway, Dallas, TX 75243",
+        "hasConcessions": false,
+        "hasReservedSeating": true,
+        "id": "AAWUP",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=13933%20N.%20Central%20Expressway%2C%20Dallas%2C%20TX%2075243",
+        "promotedAmenities": [
+          {
+            "name": "Print at Home Tickets",
+            "shortName": "Print",
+            "overlayName": "Print Tickets",
+            "overlayDescription": "Print your tickets, scan at the theater.",
+            "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--print-at-home",
+            "iconWhite": "icon icon-theater-amenity--print-at-home--white"
+          },
+          {
+            "name": "Ticket Kiosk",
+            "shortName": "Kiosk",
+            "overlayName": "Ticket Kiosk",
+            "overlayDescription": "Pick up tickets at a self-service kiosk.",
+            "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--ticket-kiosk",
+            "iconWhite": "icon icon-theater-amenity--ticket-kiosk--white"
+          },
+          {
+            "name": "Mobile Tickets",
+            "shortName": "Mobile",
+            "overlayName": "Mobile Tickets",
+            "overlayDescription": "Scan mobile tickets on the app or email.",
+            "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--mobile-ticketing",
+            "iconWhite": "icon icon-theater-amenity--mobile-ticketing--white"
+          }
+        ],
+        "sluggedName": "studio-movie-grill-spring-valley",
+        "theaterPageUrl": "/studio-movie-grill-spring-valley-aawup/theater-page",
+        "zip": "75243",
+        "cityStateZip": "Dallas, TX 75243",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AAWUP"
+      },
+      {
+        "address1": "5458 W. Lovers Lane",
+        "address2": "",
+        "agePolicy": "<p>Child tickets are valid for children 11 years and younger.&nbsp; Senior tickets are valid for adults 65 years and older.&nbsp; Not all ticket types are available for all performances.</p>",
+        "amenities": [
+          {
+            "code": "DigitalProjection",
+            "name": "Digital Projection",
+            "id": "Z65OQ7lJ",
+            "shortDescription": "Indicates whether a theater has Digital Projection auditoriums."
+          },
+          {
+            "code": "FullBar",
+            "name": "Full Bar",
+            "id": "DA5mj3y4",
+            "shortDescription": "Indicates whether the theater offers a full bar."
+          },
+          {
+            "code": "ListeningDevices",
+            "name": "Listening Devices",
+            "id": "oO7N27wM",
+            "shortDescription": "Indicates whether a theater has listening devices available."
+          },
+          {
+            "code": "MobileTicket",
+            "name": "Mobile Tickets",
+            "id": "Gk5jd7Xl",
+            "shortDescription": "Indicates whether a theater support Mobile Tickets."
+          },
+          {
+            "code": "PrintAtHome",
+            "name": "Print at Home Tickets",
+            "id": "RV54A31M",
+            "shortDescription": "Indicates whether a theater has Print at Home enabled."
+          }
+        ],
+        "chainCode": "L",
+        "chainName": "Landmark",
+        "city": "Dallas",
+        "distance": null,
+        "geo": {
+          "latitude": 32.8505,
+          "longitude": -96.8194
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "Landmark Inwood Theatre",
+        "phone": "214-352-5085",
+        "state": "TX",
+        "theaterMessage": null,
+        "tqpMessageHeader": "",
+        "tqpMessageBody": "",
+        "country": "US",
+        "amenitiesString": "Digital Projection,Full Bar,Listening Devices,Mobile Tickets,Print at Home Tickets",
+        "concessionAmenity": [],
+        "formattedID": "aaddm",
+        "fullAddress": "5458 W. Lovers Lane, Dallas, TX 75209",
+        "hasConcessions": false,
+        "hasReservedSeating": false,
+        "id": "AADDM",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=5458%20W.%20Lovers%20Lane%2C%20Dallas%2C%20TX%2075209",
+        "promotedAmenities": [
+          {
+            "name": "Mobile Tickets",
+            "shortName": "Mobile",
+            "overlayName": "Mobile Tickets",
+            "overlayDescription": "Scan mobile tickets on the app or email.",
+            "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--mobile-ticketing",
+            "iconWhite": "icon icon-theater-amenity--mobile-ticketing--white"
+          },
+          {
+            "name": "Print at Home Tickets",
+            "shortName": "Print",
+            "overlayName": "Print Tickets",
+            "overlayDescription": "Print your tickets, scan at the theater.",
+            "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--print-at-home",
+            "iconWhite": "icon icon-theater-amenity--print-at-home--white"
+          }
+        ],
+        "sluggedName": "landmark-inwood-theatre",
+        "theaterPageUrl": "/landmark-inwood-theatre-aaddm/theater-page",
+        "zip": "75209",
+        "cityStateZip": "Dallas, TX 75209",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AADDM"
+      },
+      {
+        "address1": "100 S. Central Expressway #14",
+        "address2": "",
+        "agePolicy": "Children ages 3+ admitted before 6pm, children 6+ admitted after 6pm. All minors under the age of 18 must be accompanied by an adult.",
+        "amenities": [
+          {
+            "code": "Cafe",
+            "name": "Café",
+            "id": "BKE0N3xn",
+            "shortDescription": "Indicates whether a theater has a cafe."
+          },
+          {
+            "code": "DigitalProjection",
+            "name": "Digital Projection",
+            "id": "Z65OQ7lJ",
+            "shortDescription": "Indicates whether a theater has Digital Projection auditoriums."
+          },
+          {
+            "code": "DineIn",
+            "name": "Dine In",
+            "id": "yVEJm7G0",
+            "shortDescription": "Indicates whether the theater offers dine in."
+          },
+          {
+            "code": "ListeningDevices",
+            "name": "Listening Devices",
+            "id": "oO7N27wM",
+            "shortDescription": "Indicates whether a theater has listening devices available."
+          },
+          {
+            "code": "PartyRoom",
+            "name": "Party Room",
+            "id": "zB7VN7L8",
+            "shortDescription": "Indicates whether a theater has a party room."
+          },
+          {
+            "code": "ReservedSeating",
+            "name": "Reserved Seating",
+            "id": "RnElk7PO",
+            "shortDescription": "Indicates whether a theater has Reserved Seating enabled."
+          },
+          {
+            "code": "AllStadium",
+            "name": "Stadium Seating",
+            "id": "zq5Rk3ex",
+            "shortDescription": "Indicates whether the theater has all stadium seating."
+          },
+          {
+            "code": "Wheelchair",
+            "name": "Wheelchair Accessible",
+            "id": "6NExo7mG",
+            "shortDescription": "Indicates whether a theater has wheel chair seating."
+          }
+        ],
+        "chainCode": "ALAM",
+        "chainName": "Alamo Drafthouse Cinemas",
+        "city": "Richardson",
+        "distance": null,
+        "geo": {
+          "latitude": 32.9493,
+          "longitude": -96.7383
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "Alamo Drafthouse Cinema Richardson",
+        "phone": "",
+        "state": "TX",
+        "theaterMessage": "No Latecomers Policy<br>\r\nGuests cannot enter the theater after the movie has begun. This means when the feature begins, so you can still come in while our ad tape and trailers are playing. The reason for this policy is to preserve the movie watching experience with minimal interruptions, much like our no talking and texting policy. If you show up to your desired screening late, we will happily exchange your ticket for a different showtime or for a raincheck to a future show.",
+        "tqpMessageHeader": "No Latecomers Policy",
+        "tqpMessageBody": "Guests cannot enter the theater after the movie has begun. This means when the feature begins, so you can still come in while our ad tape and trailers are playing. The reason for this policy is to preserve the movie watching experience with minimal interruptions, much like our no talking and texting policy. If you show up to your desired screening late, we will happily exchange your ticket for a different showtime or for a raincheck to a future show.",
+        "country": "US",
+        "amenitiesString": "Café,Digital Projection,Dine In,Listening Devices,Party Room,Reserved Seating,Stadium Seating,Wheelchair Accessible",
+        "concessionAmenity": [],
+        "formattedID": "aawym",
+        "fullAddress": "100 S. Central Expressway #14, Richardson, TX 75080",
+        "hasConcessions": false,
+        "hasReservedSeating": true,
+        "id": "AAWYM",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=100%20S.%20Central%20Expressway%20%2314%2C%20Richardson%2C%20TX%2075080",
+        "promotedAmenities": [],
+        "sluggedName": "alamo-drafthouse-cinema-richardson",
+        "theaterPageUrl": "/alamo-drafthouse-cinema-richardson-aawym/theater-page",
+        "zip": "75080",
+        "cityStateZip": "Richardson, TX 75080",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AAWYM"
+      },
+      {
+        "address1": "8687 North Central Expressway",
+        "address2": "",
+        "agePolicy": "<p>Senior tickets are valid for adults 60+.<br />Child tickets for 2 - 12 years.<br />Student: Age 13+ with valid student ID.<br />Not all ticket types are available for all performances.<br />Rated-R Films: Under 17 requires accompanying parent or adult guardian (age 21 or older).&nbsp; 25 years and under must show ID for rated R movies.<br /><br /></p><h><b>Distraction-Free Entertainment</b></h><p>In an effort to provide the most enjoyable experience for adults attending R-rated features in the evenings, no children younger than 6 will be admitted to these features after 6 p.m</p>",
+        "amenities": [
+          {
+            "code": "ExpressPickup",
+            "name": "Concession Pickup",
+            "id": "MYEel7DL",
+            "shortDescription": "Buy your movie ticket, then order popcorn, candy, soda, and more for pickup at the concession area."
+          },
+          {
+            "code": "ReservedSeating",
+            "name": "Reserved Seating",
+            "id": "RnElk7PO",
+            "shortDescription": "Indicates whether a theater has Reserved Seating enabled."
+          },
+          {
+            "code": "PrintAtHome",
+            "name": "Print at Home Tickets",
+            "id": "RV54A31M",
+            "shortDescription": "Indicates whether a theater has Print at Home enabled."
+          },
+          {
+            "code": "MobileTicket",
+            "name": "Mobile Tickets",
+            "id": "Gk5jd7Xl",
+            "shortDescription": "Indicates whether a theater support Mobile Tickets."
+          },
+          {
+            "code": "IMAX",
+            "name": "IMAX",
+            "id": "zP58kEvY",
+            "shortDescription": "Indicates whether a theater has IMAX auditoriums."
+          },
+          {
+            "code": "DigitalProjection",
+            "name": "Digital Projection",
+            "id": "Z65OQ7lJ",
+            "shortDescription": "Indicates whether a theater has Digital Projection auditoriums."
+          }
+        ],
+        "chainCode": "AMC",
+        "chainName": "AMC",
+        "city": "Dallas",
+        "distance": null,
+        "geo": {
+          "latitude": 32.86927,
+          "longitude": -96.77356
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "AMC NorthPark 15",
+        "phone": null,
+        "state": "TX",
+        "theaterMessage": "AMC reserves the right to exercise special pricing options for unique in-theatre experiences.<br><br>\r\nFeature Presentations Start 10-15 Minutes Following Published Show times<br><br>To find a film presented in 3D, look for the \"Digital 3D\" description. Some locations do not have Digital 3D available. All 3D, IMAX, alternative content, and premium services are subject to additional surcharges.",
+        "tqpMessageHeader": "",
+        "tqpMessageBody": "<b>R-Rated Age Policy:</b> For R-rated movies only, guests under 17 must be accompanied by a guardian who is 21 or older. Please be prepared to show ID at the theatre.",
+        "country": "US",
+        "amenitiesString": "Concession Pickup,Reserved Seating,Print at Home Tickets,Mobile Tickets,IMAX,Digital Projection",
+        "concessionAmenity": [
+          {
+            "name": "Concession Pickup",
+            "overlayDescription": "Buy your movie ticket, then order popcorn, candy, soda, and more for pickup at the concession area."
+          }
+        ],
+        "formattedID": "aatzh",
+        "fullAddress": "8687 North Central Expressway, Dallas, TX 75225",
+        "hasConcessions": true,
+        "hasReservedSeating": true,
+        "id": "AATZH",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=8687%20North%20Central%20Expressway%2C%20Dallas%2C%20TX%2075225",
+        "promotedAmenities": [
+          {
+            "name": "Print at Home Tickets",
+            "shortName": "Print",
+            "overlayName": "Print Tickets",
+            "overlayDescription": "Print your tickets, scan at the theater.",
+            "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--print-at-home",
+            "iconWhite": "icon icon-theater-amenity--print-at-home--white"
+          },
+          {
+            "name": "Mobile Tickets",
+            "shortName": "Mobile",
+            "overlayName": "Mobile Tickets",
+            "overlayDescription": "Scan mobile tickets on the app or email.",
+            "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--mobile-ticketing",
+            "iconWhite": "icon icon-theater-amenity--mobile-ticketing--white"
+          }
+        ],
+        "sluggedName": "amc-northpark-15",
+        "theaterPageUrl": "/amc-northpark-15-aatzh/theater-page",
+        "zip": "75225",
+        "cityStateZip": "Dallas, TX 75225",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AATZH"
+      },
+      {
+        "address1": "951 Long Prairie Road",
+        "address2": "",
+        "agePolicy": "<p>For children accompanying parents, we ask that no children 6 and under attend any PG-13 or rated R films after 6pm<p>",
+        "amenities": [
+          {
+            "code": "Cafe",
+            "name": "Café",
+            "id": "BKE0N3xn",
+            "shortDescription": "Indicates whether a theater has a cafe."
+          },
+          {
+            "code": "DigitalProjection",
+            "name": "Digital Projection",
+            "id": "Z65OQ7lJ",
+            "shortDescription": "Indicates whether a theater has Digital Projection auditoriums."
+          },
+          {
+            "code": "ListeningDevices",
+            "name": "Listening Devices",
+            "id": "oO7N27wM",
+            "shortDescription": "Indicates whether a theater has listening devices available."
+          },
+          {
+            "code": "MobileTicket",
+            "name": "Mobile Tickets",
+            "id": "Gk5jd7Xl",
+            "shortDescription": "Indicates whether a theater support Mobile Tickets."
+          },
+          {
+            "code": "ReservedSeating",
+            "name": "Reserved Seating",
+            "id": "RnElk7PO",
+            "shortDescription": "Indicates whether a theater has Reserved Seating enabled."
+          },
+          {
+            "code": "AllStadium",
+            "name": "Stadium Seating",
+            "id": "zq5Rk3ex",
+            "shortDescription": "Indicates whether the theater has all stadium seating."
+          },
+          {
+            "code": "Wheelchair",
+            "name": "Wheelchair Accessible",
+            "id": "6NExo7mG",
+            "shortDescription": "Indicates whether a theater has wheel chair seating."
+          }
+        ],
+        "chainCode": "CPLS",
+        "chainName": "Cinepolis",
+        "city": "Flower Mound",
+        "distance": null,
+        "geo": {
+          "latitude": 32.99722,
+          "longitude": -97.0655
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "Moviehouse & Eatery Flower Mound",
+        "phone": "972-355-6363",
+        "state": "TX",
+        "theaterMessage": null,
+        "tqpMessageHeader": "",
+        "tqpMessageBody": "",
+        "country": "US",
+        "amenitiesString": "Café,Digital Projection,Listening Devices,Mobile Tickets,Reserved Seating,Stadium Seating,Wheelchair Accessible",
+        "concessionAmenity": [],
+        "formattedID": "aaxpp",
+        "fullAddress": "951 Long Prairie Road, Flower Mound, TX 75022",
+        "hasConcessions": false,
+        "hasReservedSeating": true,
+        "id": "AAXPP",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=951%20Long%20Prairie%20Road%2C%20Flower%20Mound%2C%20TX%2075022",
+        "promotedAmenities": [
+          {
+            "name": "Mobile Tickets",
+            "shortName": "Mobile",
+            "overlayName": "Mobile Tickets",
+            "overlayDescription": "Scan mobile tickets on the app or email.",
+            "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--mobile-ticketing",
+            "iconWhite": "icon icon-theater-amenity--mobile-ticketing--white"
+          }
+        ],
+        "sluggedName": "moviehouse-and-eatery-flower-mound",
+        "theaterPageUrl": "/moviehouse-and-eatery-flower-mound-aaxpp/theater-page",
+        "zip": "75022",
+        "cityStateZip": "Flower Mound, TX 75022",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AAXPP"
+      },
+      {
+        "address1": "2433 Irving Mall",
+        "address2": "- (hwy 183 & Beltline)",
+        "agePolicy": "<p>Senior tickets are valid for adults 60+.<br />Child tickets for 2 - 12 years.<br />Student: Age 13+ with valid student ID.<br />Not all ticket types are available for all performances.<br />Rated-R Films: Under 17 requires accompanying parent or adult guardian (age 21 or older).&nbsp; 25 years and under must show ID for rated R movies.<br /><br /></p><h><b>Distraction-Free Entertainment</b></h><p>In an effort to provide the most enjoyable experience for adults attending R-rated features in the evenings, no children younger than 6 will be admitted to these features after 6 p.m</p>",
+        "amenities": [
+          {
+            "code": "ExpressPickup",
+            "name": "Concession Pickup",
+            "id": "MYEel7DL",
+            "shortDescription": "Buy your movie ticket, then order popcorn, candy, soda, and more for pickup at the concession area."
+          },
+          {
+            "code": "DigitalProjection",
+            "name": "Digital Projection",
+            "id": "Z65OQ7lJ",
+            "shortDescription": "Indicates whether a theater has Digital Projection auditoriums."
+          },
+          {
+            "code": "MobileTicket",
+            "name": "Mobile Tickets",
+            "id": "Gk5jd7Xl",
+            "shortDescription": "Indicates whether a theater support Mobile Tickets."
+          },
+          {
+            "code": "PrintAtHome",
+            "name": "Print at Home Tickets",
+            "id": "RV54A31M",
+            "shortDescription": "Indicates whether a theater has Print at Home enabled."
+          },
+          {
+            "code": "ReservedSeating",
+            "name": "Reserved Seating",
+            "id": "RnElk7PO",
+            "shortDescription": "Indicates whether a theater has Reserved Seating enabled."
+          }
+        ],
+        "chainCode": "AMC",
+        "chainName": "AMC",
+        "city": "Irving",
+        "distance": null,
+        "geo": {
+          "latitude": 32.83909,
+          "longitude": -96.99606
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "AMC Irving Mall 14",
+        "phone": null,
+        "state": "TX",
+        "theaterMessage": "AMC reserves the right to exercise special pricing options for unique in-theatre experiences.<br><br>\r\nFeature Presentations Start 10-15 Minutes Following Published Show times<br><br>To find a film presented in 3D, look for the \"Digital 3D\" description. Some locations do not have Digital 3D available. All 3D, IMAX, alternative content, and premium services are subject to additional surcharges.",
+        "tqpMessageHeader": "",
+        "tqpMessageBody": "<b>R-Rated Age Policy:</b> For R-rated movies only, guests under 17 must be accompanied by a guardian who is 21 or older. Please be prepared to show ID at the theatre.",
+        "country": "US",
+        "amenitiesString": "Concession Pickup,Digital Projection,Mobile Tickets,Print at Home Tickets,Reserved Seating",
+        "concessionAmenity": [
+          {
+            "name": "Concession Pickup",
+            "overlayDescription": "Buy your movie ticket, then order popcorn, candy, soda, and more for pickup at the concession area."
+          }
+        ],
+        "formattedID": "aacrp",
+        "fullAddress": "2433 Irving Mall, Irving, TX 75062",
+        "hasConcessions": true,
+        "hasReservedSeating": true,
+        "id": "AACRP",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=2433%20Irving%20Mall%2C%20Irving%2C%20TX%2075062",
+        "promotedAmenities": [
+          {
+            "name": "Mobile Tickets",
+            "shortName": "Mobile",
+            "overlayName": "Mobile Tickets",
+            "overlayDescription": "Scan mobile tickets on the app or email.",
+            "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--mobile-ticketing",
+            "iconWhite": "icon icon-theater-amenity--mobile-ticketing--white"
+          },
+          {
+            "name": "Print at Home Tickets",
+            "shortName": "Print",
+            "overlayName": "Print Tickets",
+            "overlayDescription": "Print your tickets, scan at the theater.",
+            "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--print-at-home",
+            "iconWhite": "icon icon-theater-amenity--print-at-home--white"
+          }
+        ],
+        "sluggedName": "amc-irving-mall-14",
+        "theaterPageUrl": "/amc-irving-mall-14-aacrp/theater-page",
+        "zip": "75062",
+        "cityStateZip": "Irving, TX 75062",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AACRP"
+      },
+      {
+        "address1": "911 State Hwy 114 West",
+        "address2": "",
+        "agePolicy": "No Children Under Age 6 Will Be Admitted To Any R-Rated Feature After 6:00 PM. Valid IDs will be required to attend Rated \"R\" movies. You must be at least 17 years of age or have your parent accompany you to view the movie. IDs will be checked at the theatre.",
+        "amenities": [
+          {
+            "code": "PrintAtHome",
+            "name": "Print at Home Tickets",
+            "id": "RV54A31M",
+            "shortDescription": "Indicates whether a theater has Print at Home enabled."
+          },
+          {
+            "code": "ReservedSeating",
+            "name": "Reserved Seating",
+            "id": "RnElk7PO",
+            "shortDescription": "Indicates whether a theater has Reserved Seating enabled."
+          },
+          {
+            "code": "Kiosk",
+            "name": "Ticket Kiosk",
+            "id": "NJEX4EX1",
+            "shortDescription": "Indicates whether a theater has a kiosk on site."
+          },
+          {
+            "code": "MobileTicket",
+            "name": "Mobile Tickets",
+            "id": "Gk5jd7Xl",
+            "shortDescription": "Indicates whether a theater support Mobile Tickets."
+          }
+        ],
+        "chainCode": "CNMK",
+        "chainName": "Cinemark Theatres",
+        "city": "Grapevine",
+        "distance": null,
+        "geo": {
+          "latitude": 32.91961,
+          "longitude": -97.08553
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "Cinemark Tinseltown Grapevine and XD",
+        "phone": "817-481-5040",
+        "state": "TX",
+        "theaterMessage": null,
+        "tqpMessageHeader": "",
+        "tqpMessageBody": "",
+        "country": "US",
+        "amenitiesString": "Print at Home Tickets,Reserved Seating,Ticket Kiosk,Mobile Tickets",
+        "concessionAmenity": [],
+        "formattedID": "aacbr",
+        "fullAddress": "911 State Hwy 114 West, Grapevine, TX 76051",
+        "hasConcessions": false,
+        "hasReservedSeating": true,
+        "id": "AACBR",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=911%20State%20Hwy%20114%20West%2C%20Grapevine%2C%20TX%2076051",
+        "promotedAmenities": [
+          {
+            "name": "Print at Home Tickets",
+            "shortName": "Print",
+            "overlayName": "Print Tickets",
+            "overlayDescription": "Print your tickets, scan at the theater.",
+            "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--print-at-home",
+            "iconWhite": "icon icon-theater-amenity--print-at-home--white"
+          },
+          {
+            "name": "Ticket Kiosk",
+            "shortName": "Kiosk",
+            "overlayName": "Ticket Kiosk",
+            "overlayDescription": "Pick up tickets at a self-service kiosk.",
+            "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--ticket-kiosk",
+            "iconWhite": "icon icon-theater-amenity--ticket-kiosk--white"
+          },
+          {
+            "name": "Mobile Tickets",
+            "shortName": "Mobile",
+            "overlayName": "Mobile Tickets",
+            "overlayDescription": "Scan mobile tickets on the app or email.",
+            "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--mobile-ticketing",
+            "iconWhite": "icon icon-theater-amenity--mobile-ticketing--white"
+          }
+        ],
+        "sluggedName": "cinemark-tinseltown-grapevine-and-xd",
+        "theaterPageUrl": "/cinemark-tinseltown-grapevine-and-xd-aacbr/theater-page",
+        "zip": "76051",
+        "cityStateZip": "Grapevine, TX 76051",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AACBR"
+      },
+      {
+        "address1": "5321 E. Mockingbird Lane",
+        "address2": "",
+        "agePolicy": "<p>All patrons require a ticket for entry to the theatre. Child tickets are valid for children 3-11 years of age. The senior ticket policy varies slightly by theater and is generally available to adults 55 to 62 years and older (please contact your local theater for specific senior ticket information). Not all ticket types are available for all performances. Rated R films: Under 17 requires accompanying  parent or adult guardian (age 21 or older). Guests 25 and under must show ID for “R” rated films</p>",
+        "amenities": [
+          {
+            "code": "Cafe",
+            "name": "Café",
+            "id": "BKE0N3xn",
+            "shortDescription": "Indicates whether a theater has a cafe."
+          },
+          {
+            "code": "Wheelchair",
+            "name": "Wheelchair Accessible",
+            "id": "6NExo7mG",
+            "shortDescription": "Indicates whether a theater has wheel chair seating."
+          },
+          {
+            "code": "ListeningDevices",
+            "name": "Listening Devices",
+            "id": "oO7N27wM",
+            "shortDescription": "Indicates whether a theater has listening devices available."
+          },
+          {
+            "code": "MobileTicket",
+            "name": "Mobile Tickets",
+            "id": "Gk5jd7Xl",
+            "shortDescription": "Indicates whether a theater support Mobile Tickets."
+          },
+          {
+            "code": "PrintAtHome",
+            "name": "Print at Home Tickets",
+            "id": "RV54A31M",
+            "shortDescription": "Indicates whether a theater has Print at Home enabled."
+          },
+          {
+            "code": "ReservedSeating",
+            "name": "Reserved Seating",
+            "id": "RnElk7PO",
+            "shortDescription": "Indicates whether a theater has Reserved Seating enabled."
+          },
+          {
+            "code": "AllStadium",
+            "name": "Stadium Seating",
+            "id": "zq5Rk3ex",
+            "shortDescription": "Indicates whether the theater has all stadium seating."
+          },
+          {
+            "code": "Kiosk",
+            "name": "Ticket Kiosk",
+            "id": "NJEX4EX1",
+            "shortDescription": "Indicates whether a theater has a kiosk on site."
+          }
+        ],
+        "chainCode": "AFC",
+        "chainName": "Angelika Film Center",
+        "city": "Dallas",
+        "distance": null,
+        "geo": {
+          "latitude": 32.8366,
+          "longitude": -96.7766
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "Angelika Film Center & Cafe",
+        "phone": "214-841-4713",
+        "state": "TX",
+        "theaterMessage": "**3D features - add $2.00",
+        "tqpMessageHeader": "",
+        "tqpMessageBody": "",
+        "country": "US",
+        "amenitiesString": "Café,Wheelchair Accessible,Listening Devices,Mobile Tickets,Print at Home Tickets,Reserved Seating,Stadium Seating,Ticket Kiosk",
+        "concessionAmenity": [],
+        "formattedID": "aapoy",
+        "fullAddress": "5321 E. Mockingbird Lane, Dallas, TX 75206",
+        "hasConcessions": false,
+        "hasReservedSeating": true,
+        "id": "AAPOY",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=5321%20E.%20Mockingbird%20Lane%2C%20Dallas%2C%20TX%2075206",
+        "promotedAmenities": [
+          {
+            "name": "Mobile Tickets",
+            "shortName": "Mobile",
+            "overlayName": "Mobile Tickets",
+            "overlayDescription": "Scan mobile tickets on the app or email.",
+            "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--mobile-ticketing",
+            "iconWhite": "icon icon-theater-amenity--mobile-ticketing--white"
+          },
+          {
+            "name": "Print at Home Tickets",
+            "shortName": "Print",
+            "overlayName": "Print Tickets",
+            "overlayDescription": "Print your tickets, scan at the theater.",
+            "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--print-at-home",
+            "iconWhite": "icon icon-theater-amenity--print-at-home--white"
+          },
+          {
+            "name": "Ticket Kiosk",
+            "shortName": "Kiosk",
+            "overlayName": "Ticket Kiosk",
+            "overlayDescription": "Pick up tickets at a self-service kiosk.",
+            "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--ticket-kiosk",
+            "iconWhite": "icon icon-theater-amenity--ticket-kiosk--white"
+          }
+        ],
+        "sluggedName": "angelika-film-center-and-cafe",
+        "theaterPageUrl": "/angelika-film-center-and-cafe-aapoy/theater-page",
+        "zip": "75206",
+        "cityStateZip": "Dallas, TX 75206",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AAPOY"
+      },
+      {
+        "address1": "6770 Abrams Rd",
+        "address2": "",
+        "agePolicy": "Children ages 3+ admitted before 6pm, children 6+ admitted after 6pm. All minors under the age of 18 must be accompanied by an adult.",
+        "amenities": [
+          {
+            "code": "Cafe",
+            "name": "Café",
+            "id": "BKE0N3xn",
+            "shortDescription": "Indicates whether a theater has a cafe."
+          },
+          {
+            "code": "DigitalProjection",
+            "name": "Digital Projection",
+            "id": "Z65OQ7lJ",
+            "shortDescription": "Indicates whether a theater has Digital Projection auditoriums."
+          },
+          {
+            "code": "ListeningDevices",
+            "name": "Listening Devices",
+            "id": "oO7N27wM",
+            "shortDescription": "Indicates whether a theater has listening devices available."
+          },
+          {
+            "code": "MobileTicket",
+            "name": "Mobile Tickets",
+            "id": "Gk5jd7Xl",
+            "shortDescription": "Indicates whether a theater support Mobile Tickets."
+          },
+          {
+            "code": "PartyRoom",
+            "name": "Party Room",
+            "id": "zB7VN7L8",
+            "shortDescription": "Indicates whether a theater has a party room."
+          },
+          {
+            "code": "PrintAtHome",
+            "name": "Print at Home Tickets",
+            "id": "RV54A31M",
+            "shortDescription": "Indicates whether a theater has Print at Home enabled."
+          },
+          {
+            "code": "ReservedSeating",
+            "name": "Reserved Seating",
+            "id": "RnElk7PO",
+            "shortDescription": "Indicates whether a theater has Reserved Seating enabled."
+          },
+          {
+            "code": "AllStadium",
+            "name": "Stadium Seating",
+            "id": "zq5Rk3ex",
+            "shortDescription": "Indicates whether the theater has all stadium seating."
+          },
+          {
+            "code": "Kiosk",
+            "name": "Ticket Kiosk",
+            "id": "NJEX4EX1",
+            "shortDescription": "Indicates whether a theater has a kiosk on site."
+          },
+          {
+            "code": "Wheelchair",
+            "name": "Wheelchair Accessible",
+            "id": "6NExo7mG",
+            "shortDescription": "Indicates whether a theater has wheel chair seating."
+          }
+        ],
+        "chainCode": "ALAM",
+        "chainName": "Alamo Drafthouse Cinemas",
+        "city": "Dallas",
+        "distance": null,
+        "geo": {
+          "latitude": 32.8673,
+          "longitude": -96.7418
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "Alamo Drafthouse Lake Highlands",
+        "phone": "214-453-6301",
+        "state": "TX",
+        "theaterMessage": "No Latecomers Policy<br>\r\nGuests cannot enter the theater after the movie has begun. This means when the feature begins, so you can still come in while our ad tape and trailers are playing. The reason for this policy is to preserve the movie watching experience with minimal interruptions, much like our no talking and texting policy. If you show up to your desired screening late, we will happily exchange your ticket for a different showtime or for a raincheck to a future show.",
+        "tqpMessageHeader": "No Latecomers Policy",
+        "tqpMessageBody": "Guests cannot enter the theater after the movie has begun. This means when the feature begins, so you can still come in while our ad tape and trailers are playing. The reason for this policy is to preserve the movie watching experience with minimal interruptions, much like our no talking and texting policy. If you show up to your desired screening late, we will happily exchange your ticket for a different showtime or for a raincheck to a future show.",
+        "country": "US",
+        "amenitiesString": "Café,Digital Projection,Listening Devices,Mobile Tickets,Party Room,Print at Home Tickets,Reserved Seating,Stadium Seating,Ticket Kiosk,Wheelchair Accessible",
+        "concessionAmenity": [],
+        "formattedID": "aayhw",
+        "fullAddress": "6770 Abrams Rd, Dallas, TX 75231",
+        "hasConcessions": false,
+        "hasReservedSeating": true,
+        "id": "AAYHW",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=6770%20Abrams%20Rd%2C%20Dallas%2C%20TX%2075231",
+        "promotedAmenities": [
+          {
+            "name": "Mobile Tickets",
+            "shortName": "Mobile",
+            "overlayName": "Mobile Tickets",
+            "overlayDescription": "Scan mobile tickets on the app or email.",
+            "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--mobile-ticketing",
+            "iconWhite": "icon icon-theater-amenity--mobile-ticketing--white"
+          },
+          {
+            "name": "Print at Home Tickets",
+            "shortName": "Print",
+            "overlayName": "Print Tickets",
+            "overlayDescription": "Print your tickets, scan at the theater.",
+            "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--print-at-home",
+            "iconWhite": "icon icon-theater-amenity--print-at-home--white"
+          },
+          {
+            "name": "Ticket Kiosk",
+            "shortName": "Kiosk",
+            "overlayName": "Ticket Kiosk",
+            "overlayDescription": "Pick up tickets at a self-service kiosk.",
+            "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--ticket-kiosk",
+            "iconWhite": "icon icon-theater-amenity--ticket-kiosk--white"
+          }
+        ],
+        "sluggedName": "alamo-drafthouse-lake-highlands",
+        "theaterPageUrl": "/alamo-drafthouse-lake-highlands-aayhw/theater-page",
+        "zip": "75231",
+        "cityStateZip": "Dallas, TX 75231",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AAYHW"
+      },
+      {
+        "address1": "2601 Preston Road",
+        "address2": "",
+        "agePolicy": "<p>Senior tickets are valid for adults 60+.<br />Child tickets for 2 - 12 years.<br />Student: Age 13+ with valid student ID.<br />Not all ticket types are available for all performances.<br />Rated-R Films: Under 17 requires accompanying parent or adult guardian (age 21 or older).&nbsp; 25 years and under must show ID for rated R movies.<br /><br /></p><h><b>Distraction-Free Entertainment</b></h><p>In an effort to provide the most enjoyable experience for adults attending R-rated features in the evenings, no children younger than 6 will be admitted to these features after 6 p.m</p>",
+        "amenities": [
+          {
+            "code": "Kiosk",
+            "name": "Ticket Kiosk",
+            "id": "NJEX4EX1",
+            "shortDescription": "Indicates whether a theater has a kiosk on site."
+          },
+          {
+            "code": "ReservedSeating",
+            "name": "Reserved Seating",
+            "id": "RnElk7PO",
+            "shortDescription": "Indicates whether a theater has Reserved Seating enabled."
+          },
+          {
+            "code": "PrintAtHome",
+            "name": "Print at Home Tickets",
+            "id": "RV54A31M",
+            "shortDescription": "Indicates whether a theater has Print at Home enabled."
+          },
+          {
+            "code": "MobileTicket",
+            "name": "Mobile Tickets",
+            "id": "Gk5jd7Xl",
+            "shortDescription": "Indicates whether a theater support Mobile Tickets."
+          },
+          {
+            "code": "IMAX",
+            "name": "IMAX",
+            "id": "zP58kEvY",
+            "shortDescription": "Indicates whether a theater has IMAX auditoriums."
+          },
+          {
+            "code": "ExpressPickup",
+            "name": "Concession Pickup",
+            "id": "MYEel7DL",
+            "shortDescription": "Buy your movie ticket, then order popcorn, candy, soda, and more for pickup at the concession area."
+          }
+        ],
+        "chainCode": "AMC",
+        "chainName": "AMC",
+        "city": "Frisco",
+        "distance": null,
+        "geo": {
+          "latitude": 33.10541,
+          "longitude": -96.80568
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "AMC Stonebriar 24",
+        "phone": null,
+        "state": "TX",
+        "theaterMessage": "AMC reserves the right to exercise special pricing options for unique in-theatre experiences.<br><br>\r\n\r\nFeature Presentations Start 10-15 Minutes Following Published Show times<br><br>To find a film presented in 3D, look for the \"Digital 3D\" description. Some locations do not have Digital 3D available. All 3D, IMAX, alternative content, and premium services are subject to additional surcharges.",
+        "tqpMessageHeader": "",
+        "tqpMessageBody": "<b>R-Rated Age Policy:</b> For R-rated movies only, guests under 17 must be accompanied by a guardian who is 21 or older. Please be prepared to show ID at the theatre.",
+        "country": "US",
+        "amenitiesString": "Ticket Kiosk,Reserved Seating,Print at Home Tickets,Mobile Tickets,IMAX,Concession Pickup",
+        "concessionAmenity": [
+          {
+            "name": "Concession Pickup",
+            "overlayDescription": "Buy your movie ticket, then order popcorn, candy, soda, and more for pickup at the concession area."
+          }
+        ],
+        "formattedID": "aaoxj",
+        "fullAddress": "2601 Preston Road, Frisco, TX 75034",
+        "hasConcessions": true,
+        "hasReservedSeating": true,
+        "id": "AAOXJ",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=2601%20Preston%20Road%2C%20Frisco%2C%20TX%2075034",
+        "promotedAmenities": [
+          {
+            "name": "Ticket Kiosk",
+            "shortName": "Kiosk",
+            "overlayName": "Ticket Kiosk",
+            "overlayDescription": "Pick up tickets at a self-service kiosk.",
+            "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--ticket-kiosk",
+            "iconWhite": "icon icon-theater-amenity--ticket-kiosk--white"
+          },
+          {
+            "name": "Print at Home Tickets",
+            "shortName": "Print",
+            "overlayName": "Print Tickets",
+            "overlayDescription": "Print your tickets, scan at the theater.",
+            "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--print-at-home",
+            "iconWhite": "icon icon-theater-amenity--print-at-home--white"
+          },
+          {
+            "name": "Mobile Tickets",
+            "shortName": "Mobile",
+            "overlayName": "Mobile Tickets",
+            "overlayDescription": "Scan mobile tickets on the app or email.",
+            "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--mobile-ticketing",
+            "iconWhite": "icon icon-theater-amenity--mobile-ticketing--white"
+          }
+        ],
+        "sluggedName": "amc-stonebriar-24",
+        "theaterPageUrl": "/amc-stonebriar-24-aaoxj/theater-page",
+        "zip": "75034",
+        "cityStateZip": "Frisco, TX 75034",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AAOXJ"
+      },
+      {
+        "address1": "3699 McKinney Ave",
+        "address2": "",
+        "agePolicy": "A Child is considered the age 12 and under.<br>\r\n<br>\r\nA Senior is considered 60 years old and up.<br>",
+        "amenities": [
+          {
+            "code": "ListeningDevices",
+            "name": "Listening Devices",
+            "id": "oO7N27wM",
+            "shortDescription": "Indicates whether a theater has listening devices available."
+          },
+          {
+            "code": "AllStadium",
+            "name": "Stadium Seating",
+            "id": "zq5Rk3ex",
+            "shortDescription": "Indicates whether the theater has all stadium seating."
+          },
+          {
+            "code": "Kiosk",
+            "name": "Ticket Kiosk",
+            "id": "NJEX4EX1",
+            "shortDescription": "Indicates whether a theater has a kiosk on site."
+          },
+          {
+            "code": "PrintAtHome",
+            "name": "Print at Home Tickets",
+            "id": "RV54A31M",
+            "shortDescription": "Indicates whether a theater has Print at Home enabled."
+          },
+          {
+            "code": "BeerAndWine",
+            "name": "Beer and Wine",
+            "id": "Lb3Am3qG",
+            "shortDescription": "Indicates whether the theater offers beer and wine."
+          },
+          {
+            "code": "Cafe",
+            "name": "Café",
+            "id": "BKE0N3xn",
+            "shortDescription": "Indicates whether a theater has a cafe."
+          },
+          {
+            "code": "Wheelchair",
+            "name": "Wheelchair Accessible",
+            "id": "6NExo7mG",
+            "shortDescription": "Indicates whether a theater has wheel chair seating."
+          },
+          {
+            "code": "DigitalProjection",
+            "name": "Digital Projection",
+            "id": "Z65OQ7lJ",
+            "shortDescription": "Indicates whether a theater has Digital Projection auditoriums."
+          },
+          {
+            "code": "FullBar",
+            "name": "Full Bar",
+            "id": "DA5mj3y4",
+            "shortDescription": "Indicates whether the theater offers a full bar."
+          },
+          {
+            "code": "ReservedSeating",
+            "name": "Reserved Seating",
+            "id": "RnElk7PO",
+            "shortDescription": "Indicates whether a theater has Reserved Seating enabled."
+          }
+        ],
+        "chainCode": "HOOK",
+        "chainName": "Hooky Entertainment",
+        "city": "Dallas",
+        "distance": null,
+        "geo": {
+          "latitude": 32.8078,
+          "longitude": -96.7973
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "Violet Crown Dallas",
+        "phone": "(469) 943-0006",
+        "state": "TX",
+        "theaterMessage": null,
+        "tqpMessageHeader": "",
+        "tqpMessageBody": "",
+        "country": "US",
+        "amenitiesString": "Listening Devices,Stadium Seating,Ticket Kiosk,Print at Home Tickets,Beer and Wine,Café,Wheelchair Accessible,Digital Projection,Full Bar,Reserved Seating",
+        "concessionAmenity": [],
+        "formattedID": "aaqfm",
+        "fullAddress": "3699 McKinney Ave, Dallas, TX 75204",
+        "hasConcessions": false,
+        "hasReservedSeating": true,
+        "id": "AAQFM",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=3699%20McKinney%20Ave%2C%20Dallas%2C%20TX%2075204",
+        "promotedAmenities": [
+          {
+            "name": "Ticket Kiosk",
+            "shortName": "Kiosk",
+            "overlayName": "Ticket Kiosk",
+            "overlayDescription": "Pick up tickets at a self-service kiosk.",
+            "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--ticket-kiosk",
+            "iconWhite": "icon icon-theater-amenity--ticket-kiosk--white"
+          },
+          {
+            "name": "Print at Home Tickets",
+            "shortName": "Print",
+            "overlayName": "Print Tickets",
+            "overlayDescription": "Print your tickets, scan at the theater.",
+            "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--print-at-home",
+            "iconWhite": "icon icon-theater-amenity--print-at-home--white"
+          }
+        ],
+        "sluggedName": "violet-crown-dallas",
+        "theaterPageUrl": "/violet-crown-dallas-aaqfm/theater-page",
+        "zip": "75204",
+        "cityStateZip": "Dallas, TX 75204",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AAQFM"
+      },
+      {
+        "address1": "2365 Victory Park Lane",
+        "address2": "",
+        "agePolicy": "<p>Children: 12 years and under<br/>Seniors: Over 60 years old</p>",
+        "amenities": [
+          {
+            "code": "Kiosk",
+            "name": "Ticket Kiosk",
+            "id": "NJEX4EX1",
+            "shortDescription": "Indicates whether a theater has a kiosk on site."
+          },
+          {
+            "code": "Wheelchair",
+            "name": "Wheelchair Accessible",
+            "id": "6NExo7mG",
+            "shortDescription": "Indicates whether a theater has wheel chair seating."
+          },
+          {
+            "code": "Cafe",
+            "name": "Café",
+            "id": "BKE0N3xn",
+            "shortDescription": "Indicates whether a theater has a cafe."
+          },
+          {
+            "code": "DigitalProjection",
+            "name": "Digital Projection",
+            "id": "Z65OQ7lJ",
+            "shortDescription": "Indicates whether a theater has Digital Projection auditoriums."
+          },
+          {
+            "code": "DineIn",
+            "name": "Dine In",
+            "id": "yVEJm7G0",
+            "shortDescription": "Indicates whether the theater offers dine in."
+          },
+          {
+            "code": "FullBar",
+            "name": "Full Bar",
+            "id": "DA5mj3y4",
+            "shortDescription": "Indicates whether the theater offers a full bar."
+          },
+          {
+            "code": "ListeningDevices",
+            "name": "Listening Devices",
+            "id": "oO7N27wM",
+            "shortDescription": "Indicates whether a theater has listening devices available."
+          },
+          {
+            "code": "MobileTicket",
+            "name": "Mobile Tickets",
+            "id": "Gk5jd7Xl",
+            "shortDescription": "Indicates whether a theater support Mobile Tickets."
+          },
+          {
+            "code": "PrintAtHome",
+            "name": "Print at Home Tickets",
+            "id": "RV54A31M",
+            "shortDescription": "Indicates whether a theater has Print at Home enabled."
+          },
+          {
+            "code": "ReservedSeating",
+            "name": "Reserved Seating",
+            "id": "RnElk7PO",
+            "shortDescription": "Indicates whether a theater has Reserved Seating enabled."
+          }
+        ],
+        "chainCode": "CPLS",
+        "chainName": "Cinepolis",
+        "city": "Dallas",
+        "distance": null,
+        "geo": {
+          "latitude": 32.7868,
+          "longitude": -96.8093
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "Cinepolis Luxury Cinema Victory Park",
+        "phone": "(214) 953-2202",
+        "state": "TX",
+        "theaterMessage": null,
+        "tqpMessageHeader": "",
+        "tqpMessageBody": "",
+        "country": "US",
+        "amenitiesString": "Ticket Kiosk,Wheelchair Accessible,Café,Digital Projection,Dine In,Full Bar,Listening Devices,Mobile Tickets,Print at Home Tickets,Reserved Seating",
+        "concessionAmenity": [],
+        "formattedID": "aaykn",
+        "fullAddress": "2365 Victory Park Lane, Dallas, TX 75219",
+        "hasConcessions": false,
+        "hasReservedSeating": true,
+        "id": "AAYKN",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=2365%20Victory%20Park%20Lane%2C%20Dallas%2C%20TX%2075219",
+        "promotedAmenities": [
+          {
+            "name": "Ticket Kiosk",
+            "shortName": "Kiosk",
+            "overlayName": "Ticket Kiosk",
+            "overlayDescription": "Pick up tickets at a self-service kiosk.",
+            "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--ticket-kiosk",
+            "iconWhite": "icon icon-theater-amenity--ticket-kiosk--white"
+          },
+          {
+            "name": "Mobile Tickets",
+            "shortName": "Mobile",
+            "overlayName": "Mobile Tickets",
+            "overlayDescription": "Scan mobile tickets on the app or email.",
+            "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--mobile-ticketing",
+            "iconWhite": "icon icon-theater-amenity--mobile-ticketing--white"
+          },
+          {
+            "name": "Print at Home Tickets",
+            "shortName": "Print",
+            "overlayName": "Print Tickets",
+            "overlayDescription": "Print your tickets, scan at the theater.",
+            "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--print-at-home",
+            "iconWhite": "icon icon-theater-amenity--print-at-home--white"
+          }
+        ],
+        "sluggedName": "cinepolis-luxury-cinema-victory-park",
+        "theaterPageUrl": "/cinepolis-luxury-cinema-victory-park-aaykn/theater-page",
+        "zip": "75219",
+        "cityStateZip": "Dallas, TX 75219",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AAYKN"
+      },
+      {
+        "address1": "4090 Barton Creek",
+        "address2": "",
+        "agePolicy": "<p>Senior tickets are valid for adults 60+.<br />Child tickets for 2 - 12 years.<br />Student: Age 13+ with valid student ID.<br />Not all ticket types are available for all performances.<br />Rated-R Films: Under 17 requires accompanying parent or adult guardian (age 21 or older).&nbsp; 25 years and under must show ID for rated R movies.<br /><br /></p><h><b>Distraction-Free Entertainment</b></h><p>In an effort to provide the most enjoyable experience for adults attending R-rated features in the evenings, no children younger than 6 will be admitted to these features after 6 p.m</p>",
+        "amenities": [
+          {
+            "code": "ExpressPickup",
+            "name": "Concession Pickup",
+            "id": "MYEel7DL",
+            "shortDescription": "Buy your movie ticket, then order popcorn, candy, soda, and more for pickup at the concession area."
+          },
+          {
+            "code": "DigitalProjection",
+            "name": "Digital Projection",
+            "id": "Z65OQ7lJ",
+            "shortDescription": "Indicates whether a theater has Digital Projection auditoriums."
+          },
+          {
+            "code": "IMAX",
+            "name": "IMAX",
+            "id": "zP58kEvY",
+            "shortDescription": "Indicates whether a theater has IMAX auditoriums."
+          },
+          {
+            "code": "MobileTicket",
+            "name": "Mobile Tickets",
+            "id": "Gk5jd7Xl",
+            "shortDescription": "Indicates whether a theater support Mobile Tickets."
+          },
+          {
+            "code": "PrintAtHome",
+            "name": "Print at Home Tickets",
+            "id": "RV54A31M",
+            "shortDescription": "Indicates whether a theater has Print at Home enabled."
+          },
+          {
+            "code": "ReservedSeating",
+            "name": "Reserved Seating",
+            "id": "RnElk7PO",
+            "shortDescription": "Indicates whether a theater has Reserved Seating enabled."
+          }
+        ],
+        "chainCode": "AMC",
+        "chainName": "AMC",
+        "city": "Highland Village",
+        "distance": null,
+        "geo": {
+          "latitude": 33.07387,
+          "longitude": -97.08507
+        },
+        "hasShowtimes": true,
+        "isTicketing": true,
+        "name": "AMC Highland Village 12",
+        "phone": null,
+        "state": "TX",
+        "theaterMessage": null,
+        "tqpMessageHeader": "",
+        "tqpMessageBody": "<b>R-Rated Age Policy:</b> For R-rated movies only, guests under 17 must be accompanied by a guardian who is 21 or older. Please be prepared to show ID at the theatre.",
+        "country": "US",
+        "amenitiesString": "Concession Pickup,Digital Projection,IMAX,Mobile Tickets,Print at Home Tickets,Reserved Seating",
+        "concessionAmenity": [
+          {
+            "name": "Concession Pickup",
+            "overlayDescription": "Buy your movie ticket, then order popcorn, candy, soda, and more for pickup at the concession area."
+          }
+        ],
+        "formattedID": "aausf",
+        "fullAddress": "4090 Barton Creek, Highland Village, TX 75077",
+        "hasConcessions": true,
+        "hasReservedSeating": true,
+        "id": "AAUSF",
+        "isOpen": true,
+        "isTemporarilyClosed": false,
+        "mapURI": "https://www.google.com/maps/search/?api=1&query=4090%20Barton%20Creek%2C%20Highland%20Village%2C%20TX%2075077",
+        "promotedAmenities": [
+          {
+            "name": "Mobile Tickets",
+            "shortName": "Mobile",
+            "overlayName": "Mobile Tickets",
+            "overlayDescription": "Scan mobile tickets on the app or email.",
+            "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--mobile-ticketing",
+            "iconWhite": "icon icon-theater-amenity--mobile-ticketing--white"
+          },
+          {
+            "name": "Print at Home Tickets",
+            "shortName": "Print",
+            "overlayName": "Print Tickets",
+            "overlayDescription": "Print your tickets, scan at the theater.",
+            "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+            "icon": "icon icon-theater-amenity--print-at-home",
+            "iconWhite": "icon icon-theater-amenity--print-at-home--white"
+          }
+        ],
+        "sluggedName": "amc-highland-village-12",
+        "theaterPageUrl": "/amc-highland-village-12-aausf/theater-page",
+        "zip": "75077",
+        "cityStateZip": "Highland Village, TX 75077",
+        "joinNowURL": "undefined&source=web_multiple_addtheater&action=addtheater&id=AAUSF"
+      }
+    ],
+    "theatersUri": "/movietimes"
+  }
+}

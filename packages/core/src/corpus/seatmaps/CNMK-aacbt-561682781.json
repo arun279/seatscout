@@ -1,0 +1,14 @@
+{
+  "capturedAt": "2026-08-28T07:40:37.740Z",
+  "request": {
+    "method": "GET",
+    "path": "/napi/seatMap/561682781"
+  },
+  "status": 404,
+  "body": [
+    {
+      "id": "ExpiredPerformance",
+      "message": "Showtime expired, is no longer available."
+    }
+  ]
+}
