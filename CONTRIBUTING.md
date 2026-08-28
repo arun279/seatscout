@@ -755,8 +755,8 @@ Run it with `pnpm --filter @seatscout/native start` and open the printed URL in 
 `apps/proxy` is the whole hosted component. It verifies the access layer's assertion,
 translates the session headers, and forwards the upstream bytes without reading them. It
 does nothing else, and `apps/proxy/wrangler.json` declares no storage binding, which a test
-asserts against the file rather than against intent. Run it with
-`pnpm --filter @seatscout/proxy dev`.
+asserts against the file rather than against intent, over the file's whole key set and
+over the assets block's own. Run it with `pnpm --filter @seatscout/proxy dev`.
 
 Three variables configure it and none is committed. `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD`
 name the access application whose assertion is verified against the signing keys that team
@@ -784,6 +784,42 @@ synthesising it here rather than passing the caller's through leaves the forward
 allowlist. Without it every request through the proxy is refused.
 
 See [ADR 2](docs/adr/0002-computation-on-the-client.md) for why.
+
+## The deployment
+
+`apps/proxy/wrangler.json` is the whole deployment: one Worker whose `assets.directory`
+is everything `apps/web` builds, and whose script is the proxy. A request matching a
+built file is served by the platform without invoking the Worker at all, and every other
+request reaches the proxy. That is the platform's default routing and it is why the
+configuration is five keys rather than a routing table. Two consequences are worth
+knowing. Asset requests are free and outside the daily request quota, which is what makes
+the free tier sufficient rather than a compromise. And the assertion the proxy verifies is
+therefore checked on proxy requests and not on asset requests, which is correct: the
+access layer is what gates the built shell, and the shell is this repository's own source
+with no user data and no reach upstream.
+
+`assets` declares a directory and nothing else. Naming a binding would hand the Worker a
+reader for what it publishes, and `run_worker_first` would put the Worker in front of
+every asset, which is what a Worker that needed to transform assets would do and would
+cost the quota exemption above. Both are one reviewed line away if a reason arrives.
+
+`.github/workflows/deploy.yml` deploys on merge to `main` and on manual dispatch. It runs
+`wrangler` from the workspace rather than through a deploy action, so the version that
+deploys is the version the lockfile pins and the dry run below already exercised. With
+neither `CLOUDFLARE_API_TOKEN` nor `CLOUDFLARE_ACCOUNT_ID` set it skips the deploy job and
+says so in the run summary, so a fork gets a green build rather than a confusing red one;
+with one of the two set it fails and names the other, because that is a half-configured
+repository rather than one nobody has set up.
+
+The `quality` job runs `wrangler deploy --dry-run`, which needs no credentials and no
+account. It is what holds the claim that a second instance stands up from this repository
+alone: it bundles the Worker, reads the asset directory and reports the bindings, and it
+would fail if the configuration ever needed a value only the original deployment has.
+
+`deploy/` holds the runbook and two scripts, `setup.sh` to walk the dashboards and
+`verify.sh` to read back what took effect without reading a secret. They are in the
+repository rather than beside it because self-hosting is in this project's scope and the
+public README already promises them; `shellcheck` runs over them in the `quality` job.
 
 ## Dependency updates
 

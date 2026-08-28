@@ -52,9 +52,10 @@ selected. It does not process payments and never stores card details. See
 
 ## Self-hosting
 
-The deployment holds no user data and has effectively no secrets. Running your own instance
-means your own hosting account and your own access allowlist. Instructions will land with
-the first release.
+The deployment holds no user data and there is no application secret to obtain from anyone.
+Running your own instance means your own hosting account and your own access allowlist, and
+everything it needs is in this repository. [deploy/README.md](deploy/README.md) is the
+runbook; `deploy/setup.sh` walks it and `deploy/verify.sh` checks the result.
 
 ## Documentation
 

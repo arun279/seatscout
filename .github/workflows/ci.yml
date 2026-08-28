@@ -33,11 +33,15 @@ jobs:
       - run: pnpm format:check
       - run: pnpm lint
       - run: actionlint
+      - run: shellcheck deploy/*.sh
       - run: pnpm spell
       - run: pnpm typecheck
       - run: pnpm dead-code
       - run: pnpm test:unit
       - run: pnpm build
+      - name: Check the deployment builds from the repository alone
+        working-directory: apps/proxy
+        run: pnpm exec wrangler deploy --dry-run
       - name: Install the browser the end-to-end suite drives
         run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
