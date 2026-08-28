@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "erasableSyntaxOnly": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmitOnError": true,
+    "noUncheckedIndexedAccess": true,
+    "strict": true,
+    "target": "ES2024",
+    "verbatimModuleSyntax": true
+  }
+}

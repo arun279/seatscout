@@ -1,0 +1,27 @@
+{
+  "name": "seatscout",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.24.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "tsc --build --pretty false",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "lint": "biome lint .",
+    "prepare": "lefthook install",
+    "test:e2e": "playwright test --pass-with-no-tests",
+    "test:unit": "vitest run --passWithNoTests",
+    "typecheck": "tsc --build --pretty false --noEmit"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.10",
+    "@playwright/test": "1.62.1",
+    "lefthook": "2.1.10",
+    "typescript": "7.0.2",
+    "vitest": "4.1.11"
+  }
+}
