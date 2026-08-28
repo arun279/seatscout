@@ -8,6 +8,10 @@ pre-commit:
     lint:
       glob: "*.{css,js,json,jsonc,jsx,ts,tsx,yaml,yml}"
       run: pnpm exec biome lint --no-errors-on-unmatched {staged_files}
+    spell:
+      run: pnpm exec cspell lint --no-must-find-files {staged_files}
+    secrets:
+      run: gitleaks git --pre-commit --staged --no-banner --redact
 
 pre-push:
   parallel: true
@@ -16,3 +20,5 @@ pre-push:
       run: pnpm typecheck
     unit:
       run: pnpm test:unit
+    dead-code:
+      run: pnpm dead-code

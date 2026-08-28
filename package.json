@@ -9,10 +9,12 @@
   },
   "scripts": {
     "build": "tsc --build --pretty false",
+    "dead-code": "knip",
     "format": "biome format --write .",
     "format:check": "biome format .",
     "lint": "biome lint .",
     "prepare": "lefthook install",
+    "spell": "cspell lint --dot .",
     "test:e2e": "playwright test --pass-with-no-tests",
     "test:unit": "vitest run --passWithNoTests",
     "typecheck": "tsc --build --pretty false --noEmit"
@@ -20,6 +22,8 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.10",
     "@playwright/test": "1.62.1",
+    "cspell": "10.1.1",
+    "knip": "6.32.3",
     "lefthook": "2.1.10",
     "typescript": "7.0.2",
     "vitest": "4.1.11"

@@ -16,5 +16,41 @@
         "noExcessiveCognitiveComplexity": "error"
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["packages/core/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "node:*",
+                      "node:*/**",
+                      "cloudflare:*",
+                      "react",
+                      "react/**",
+                      "react-dom",
+                      "react-dom/**",
+                      "react-native",
+                      "react-native/**",
+                      "react-native-*",
+                      "expo",
+                      "expo/**",
+                      "expo-*"
+                    ],
+                    "message": "packages/core stays platform free: no DOM, React, React Native, or runtime specific imports. See docs/adr/0003-separate-view-layers-shared-core.md."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }
