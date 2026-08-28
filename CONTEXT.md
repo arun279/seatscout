@@ -105,8 +105,18 @@ appear only for a Query that asks for them.
 
 ## Seat Group
 
-A run of adjacent Seats at one Showtime, uninterrupted by an aisle, large enough for the
-party.
+Exactly as many adjacent Seats at one Showtime as the party needs, taken from one run
+uninterrupted by an aisle.
+
+Adjacency is read from where the Seats are drawn and never from the Source's own neighbour
+links, which describe something narrower and are missing altogether from rooms that are
+perfectly regular. A Seat Group may cross a **pod divider**, the console between two
+recliners, and it records how many it crosses. One that crosses none is better than one
+that crosses two, and neither is excluded, because three people can sit either side of a
+console.
+
+An unbroken run yields one Seat Group rather than every party-sized window in it. A row of
+ten free Seats holds eight runs of three, and offering all eight is a list of duplicates.
 
 **This is the unit of a search result.** A search returns Seat Groups, not Showtimes. A
 Showtime with no acceptable Seat Group is not a result, however well it matches on Movie,

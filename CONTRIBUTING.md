@@ -525,6 +525,48 @@ widths and origins, Seats of differing widths, coincident Seats, rooms of one ro
 one Seat, Seats delivered in shuffled order, and labels whose letters and numbers both run
 against the geometry.
 
+## Seat Groups
+
+`packages/core/src/domain/seat-group.ts` turns an Auditorium's Seats into the unit of a
+search result. It takes a party size and whether accessible seating was asked for, and
+answers with runs of adjacent bookable Seats, each exactly the size of the party and each
+carrying the number of consoles it crosses.
+
+**Adjacency is geometry.** Seats fall into rows by the `y` they are drawn at, which is one
+value per row in all 376 captured rows, and into order along a row by `x`. The spacing
+between two neighbours, divided by a Seat's width, lands in one of three bands measured
+across the whole corpus: 5,688 gaps up to 1.45 are contiguous, 540 between 1.45 and 2.05
+are the console between two recliners, and 167 above 2.05 are an aisle. A run never crosses
+an aisle. It may cross a console, and it says how many, because three people can sit either
+side of one and dropping the Showtime or implying an unbroken row are both dishonest.
+
+**A gap beside an accessible space is that space's own width, not a console.** 78 of the
+540 middle-band gaps sit next to a wheelchair or companion Seat, and they are every
+middle-band gap in the four chains that build no recliner pods at all. The Seats either
+side of one are contiguous.
+
+**A run yields one Seat Group, not every window in it.** The chosen window crosses the
+fewest consoles, and among those sits most centrally in the run. Centre is the only choice
+that does not depend on which end of the row you count from: seat numbers fall as `x` rises
+in 33 of the 42 captured Auditoriums and rise in the other 9, so neither end of a row is
+the one to start at.
+
+**Wheelchair and companion Seats break an ordinary run** rather than being deleted from
+the row before the geometry is read, which would leave the Seats either side of an
+accessible space looking two aisles apart. A Query asking for accessible seating admits
+them instead, and offers them alongside ordinary Seats in the same group.
+
+**The neighbour links are held to the geometry rather than relied on.** All 10,974 links
+the aggregator sent name the immediately adjacent Seat in the same row, on the side they
+claim, and not one crosses a console or an aisle. They are also not adjacency: 279 gaps the
+geometry calls contiguous carry no link at all. A test asserts the agreement; nothing reads
+a link to build a run.
+
+Two measurements are what this is judged by. All 42 captured Auditoriums have three free
+Seats in one row and all 42 seat a party of three. Five of them, four of one chain and one
+of another, can only do it across a console, which is what treating a console as an aisle
+would silently cost.
+
 ## The native application
 
 `apps/native` is an Expo application that launches and renders its own name. It carries no
