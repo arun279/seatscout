@@ -6,15 +6,18 @@
   "ignorePaths": [".git", "pnpm-lock.yaml"],
   "words": [
     "Cinepolis",
+    "cloc",
     "Drafthouse",
     "ecommerce",
     "GHSA",
     "lefthook",
+    "marocchino",
     "renovatebot",
     "seatscout",
     "showtimes",
     "SMPTE",
     "subrequest",
-    "TestFlight"
+    "TestFlight",
+    "tokei"
   ]
 }

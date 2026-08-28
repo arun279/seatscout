@@ -32,6 +32,49 @@ jobs:
       - run: pnpm build
       - run: pnpm test:e2e
 
+  footprint:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      BASE: ${{ github.event.pull_request.base.sha }}
+      HEAD: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2
+        with:
+          runtime: node@24.20.0
+          cache: true
+          install: false
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Install the line counter
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/cloc" https://github.com/AlDanial/cloc/releases/download/v2.10/cloc-2.10.pl
+          echo "bf59272455172108072a0a106379f7509fd4349bdcfd85203bac038ccd286d83  $RUNNER_TEMP/cloc" | sha256sum --check
+          sudo install -m 0755 "$RUNNER_TEMP/cloc" /usr/local/bin/cloc
+      - name: Measure the footprint
+        run: pnpm footprint --base "$BASE" --head "$HEAD" --out footprint.md
+      - name: Check the report reproduces
+        if: ${{ !cancelled() }}
+        run: |
+          pnpm footprint --base "$BASE" --head "$HEAD" --out footprint-again.md || true
+          cmp footprint.md footprint-again.md
+      - name: Add the report to the run summary
+        if: ${{ !cancelled() }}
+        run: cat footprint.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Post the report on the pull request
+        if: ${{ !cancelled() && github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
+        with:
+          header: footprint
+          path: footprint.md
+
   secrets:
     runs-on: ubuntu-24.04
     steps:

@@ -5,6 +5,7 @@
 - Node.js 24 or newer
 - pnpm 11.24.0, pinned by `packageManager`
 - [gitleaks](https://github.com/gitleaks/gitleaks), for the pre-commit secret scan
+- [cloc](https://github.com/AlDanial/cloc), for the footprint report
 
 Run `pnpm install` after cloning. The install registers the lefthook Git hooks.
 
@@ -24,9 +25,9 @@ pnpm build
 pnpm test:e2e
 ```
 
-Two further jobs run alongside them. `secrets` scans the pull request's commits with
-gitleaks. `dependencies` runs `pnpm audit` and scans the lockfile against the OSV
-database; both fail on any advisory.
+Three further jobs run alongside them. `footprint` measures the change and is described
+below. `secrets` scans the pull request's commits with gitleaks. `dependencies` runs
+`pnpm audit` and scans the lockfile against the OSV database; both fail on any advisory.
 
 The pre-commit hook formats, lints, spell checks, and secret scans staged files. The
 pre-push hook type checks the workspace, runs unit tests, and checks for dead code.
@@ -34,7 +35,39 @@ pre-push hook type checks the workspace, runs unit tests, and checks for dead co
 TypeScript uses strict checking, unchecked indexed access checks, and erasable syntax.
 Biome uses its recommended rules plus the published
 [`noExcessiveCognitiveComplexity`](https://biomejs.dev/linter/rules/no-excessive-cognitive-complexity/)
-rule and its standard limit. Unknown words go in the `words` list in `cspell.json`.
+rule and its standard limit, which is the complexity gate. Unknown words go in the `words`
+list in `cspell.json`.
+
+## Footprint, comment load and bundle size
+
+The `footprint` job reports lines added, removed and changed in four buckets, each split
+into code and comments: product code from `apps/` and `packages/`, test code, build
+tooling, and everything else, which is where configuration, documentation and the lock
+file land. The total covers the first three, so a lock file rewrite is reported without
+drowning the lines somebody wrote. The same report carries the comment-to-code ratio
+against the merge base and the absolute bundle size against the ratchet in
+`.size-limit.json`.
+
+It goes to the run summary of every pull request, and to one pull request comment that is
+updated in place as commits land. A pull request from a fork gets the run summary only,
+because its token cannot write comments.
+
+Two of the figures gate the merge. Comment load may not exceed the merge base, and no
+bundle may exceed its ratchet. Raising a ratchet means editing `.size-limit.json`, which
+is a reviewed line in the diff. No figure here is an absolute this project invented. See
+[ADR 6](docs/adr/0006-gates-cite-a-standard-or-measure-a-regression.md) for why each is
+shaped the way it is, why the counter is cloc rather than scc or tokei, and what the
+comment-load gate means while the merge base still carries no comments.
+
+Run the report locally against a built tree:
+
+```sh
+pnpm build
+pnpm footprint
+```
+
+It compares `HEAD` with its merge base against `origin/main`. Pass `--base` and `--head`
+to compare something else, and `--out` to write the Markdown to a file.
 
 ## The nightly mutation gate
 

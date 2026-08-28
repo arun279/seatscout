@@ -5,6 +5,7 @@
     { "path": "packages/client" },
     { "path": "apps/web" },
     { "path": "apps/proxy" },
-    { "path": "tools/release-plan" }
+    { "path": "tools/release-plan" },
+    { "path": "tools/footprint" }
   ]
 }
