@@ -1,1 +1,1 @@
-export const typeViolation: string = 1;
+export {};
