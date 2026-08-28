@@ -1,1 +1,1 @@
-export {};
+export const pageTitle = document.title;
