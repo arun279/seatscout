@@ -30,21 +30,13 @@ jobs:
           install: false
       - run: pnpm install --frozen-lockfile
       - name: Read the live Source
-        shell: bash
+        id: reading
         env:
           SEATSCOUT_UPSTREAM_ORIGIN: ${{ secrets.SEATSCOUT_UPSTREAM_ORIGIN }}
           SEATSCOUT_AREA: ${{ secrets.SEATSCOUT_AREA }}
-        run: pnpm test:live 2>&1 | tee contract.log
-      - name: Add the reading to the run summary
-        if: ${{ !cancelled() }}
-        run: |
-          {
-            echo '```'
-            tail -n 200 contract.log || echo "the run reached no reading"
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
+        run: pnpm test:live
       - name: Say so where the maintainer will see it
-        if: failure()
+        if: ${{ !cancelled() && steps.reading.outcome == 'failure' }}
         env:
           GH_REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -52,13 +44,10 @@ jobs:
         run: |
           {
             echo "The nightly contract check failed. Either the upstream answers something"
-            echo "the corpus never recorded, or it could not be read at all."
+            echo "the corpus never recorded, or it could not be read at all. The reading is"
+            echo "in the run log, which is redacted where this issue would not be."
             echo
             echo "$RUN"
-            echo
-            echo '```'
-            tail -n 60 contract.log || echo "the run reached no reading"
-            echo '```'
           } > issue.md
           gh label create upstream-contract --color B60205 --force \
             --description "The live Source stopped matching what the corpus recorded"

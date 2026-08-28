@@ -1,5 +1,6 @@
 import { seatMapCaptures } from "../corpus/captures.js";
 import { gapBetween, rowsOf } from "../domain/seat-group.js";
+import { decoded, isRecord } from "../source/json.js";
 import {
   fieldsMissingFrom,
   isUpstreamSeat,
@@ -37,25 +38,6 @@ interface Recorded {
   readonly types: ReadonlySet<string>;
 }
 
-interface Side {
-  readonly link: (seat: Seat) => string | null;
-  readonly neighbour: (row: readonly Seat[], at: number) => Seat | undefined;
-  readonly pair: (seat: Seat, neighbour: Seat) => readonly [Seat, Seat];
-}
-
-const SIDES: readonly Side[] = [
-  {
-    link: (seat) => seat.leftNeighbour,
-    neighbour: (row, at) => row[at - 1],
-    pair: (seat, neighbour) => [neighbour, seat],
-  },
-  {
-    link: (seat) => seat.rightNeighbour,
-    neighbour: (row, at) => row[at + 1],
-    pair: (seat, neighbour) => [seat, neighbour],
-  },
-];
-
 const recorded = (): Recorded => {
   const maps = [...seatMapCaptures.values()].map((capture) => capture.body);
   const seats = maps.flatMap((body) => body.seats);
@@ -67,16 +49,8 @@ const recorded = (): Recorded => {
   };
 };
 
-const decoded = (body: string): { readonly value: unknown } | null => {
-  try {
-    return { value: JSON.parse(body) };
-  } catch {
-    return null;
-  }
-};
-
 const seatMapIn = (value: unknown): SeatMap | null =>
-  value instanceof Object && "seats" in value && Array.isArray(value.seats)
+  isRecord(value) && Array.isArray(value.seats)
     ? { keys: Object.keys(value), seats: value.seats }
     : null;
 
@@ -102,26 +76,27 @@ const unrecorded = (
   known: ReadonlySet<string>,
 ): readonly string[] => seats.map(read).filter((word) => !known.has(word));
 
-const holds = (
-  side: Side,
-  row: readonly Seat[],
-  seat: Seat,
-  at: number,
-): boolean => {
-  const link = side.link(seat);
-  if (link === null) return true;
-  const neighbour = side.neighbour(row, at);
-  return (
-    neighbour !== undefined &&
-    neighbour.id === link &&
-    gapBetween(...side.pair(seat, neighbour)) === null
-  );
-};
+const contiguous = (left: Seat, right: Seat) =>
+  gapBetween(left, right) === null;
+
+const holdsLeft = (seat: Seat, before: Seat | undefined) =>
+  seat.leftNeighbour === null ||
+  (before !== undefined &&
+    before.id === seat.leftNeighbour &&
+    contiguous(before, seat));
+
+const holdsRight = (seat: Seat, after: Seat | undefined) =>
+  seat.rightNeighbour === null ||
+  (after !== undefined &&
+    after.id === seat.rightNeighbour &&
+    contiguous(seat, after));
 
 const strayLinks = (seats: readonly Seat[]): readonly string[] =>
   rowsOf(seats).flatMap((row) =>
     row.flatMap((seat, at) =>
-      SIDES.every((side) => holds(side, row, seat, at)) ? [] : [seat.id],
+      holdsLeft(seat, row[at - 1]) && holdsRight(seat, row[at + 1])
+        ? []
+        : [seat.id],
     ),
   );
 

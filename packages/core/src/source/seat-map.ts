@@ -1,3 +1,5 @@
+import { decoded, isRecord } from "./json.js";
+
 export interface UpstreamSeat {
   readonly id: string;
   readonly type: string;
@@ -50,13 +52,10 @@ const SEAT_FIELDS: Readonly<Record<keyof UpstreamSeat, "string" | "number">> = {
   height: "number",
 };
 
-const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
-  value instanceof Object;
-
 export const fieldsMissingFrom = (value: unknown): readonly string[] =>
-  Object.entries(SEAT_FIELDS).flatMap(([field, kind]) =>
-    isRecord(value) && typeof value[field] === kind ? [] : [field],
-  );
+  Object.entries(SEAT_FIELDS)
+    .filter(([field, kind]) => !isRecord(value) || typeof value[field] !== kind)
+    .map(([field]) => field);
 
 export const isUpstreamSeat = (value: unknown): value is UpstreamSeat =>
   fieldsMissingFrom(value).length === 0;
@@ -67,14 +66,6 @@ const carriesSeats = (
   isRecord(value) &&
   Array.isArray(value.seats) &&
   value.seats.every(isUpstreamSeat);
-
-const decoded = (body: string): { readonly value: unknown } | null => {
-  try {
-    return { value: JSON.parse(body) };
-  } catch {
-    return null;
-  }
-};
 
 const linked = (neighbour: string) => (neighbour === "" ? null : neighbour);
 

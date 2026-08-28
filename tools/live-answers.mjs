@@ -3,16 +3,25 @@ const AREA = process.env.SEATSCOUT_AREA;
 
 const UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36";
-const PAUSE_MS = 1000;
+const PAUSE_MS = 500;
 const ATTEMPTS = 3;
-const CHAINS = 8;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const named = (path) => path.split("?")[0];
+
 let session = "";
 
+async function reach(path, init) {
+  try {
+    return await fetch(`${HOST}${path}`, init);
+  } catch {
+    throw new Error(`${named(path)} could not be reached`);
+  }
+}
+
 async function bootstrap() {
-  const response = await fetch(`${HOST}/napi/preferences/themes`, {
+  const response = await reach("/napi/preferences/themes", {
     method: "POST",
     headers: {
       "User-Agent": UA,
@@ -31,12 +40,16 @@ async function bootstrap() {
 }
 
 async function answer(path, attempt = 1) {
-  await sleep(PAUSE_MS);
+  await sleep(PAUSE_MS * 2 ** (attempt - 1));
   const fetchedAt = Date.now();
-  const response = await fetch(`${HOST}${path}`, {
+  const response = await reach(path, {
     headers: { "User-Agent": UA, Cookie: session, Referer: `${HOST}/` },
   });
   const body = await response.text();
+  if (response.status === 403 && attempt === 1) {
+    await bootstrap();
+    return answer(path, attempt + 1);
+  }
   if (response.status >= 500 && attempt < ATTEMPTS)
     return answer(path, attempt + 1);
   return { status: response.status, body, fetchedAt };
@@ -44,18 +57,16 @@ async function answer(path, attempt = 1) {
 
 function bodyOf(found, path) {
   if (found.status !== 200)
-    throw new Error(
-      `${path} answered ${found.status}: ${found.body.slice(0, 200)}`,
-    );
+    throw new Error(`${named(path)} answered ${found.status}`);
   return JSON.parse(found.body);
 }
 
-const showtimesIn = (movie) =>
+const showtimeCountOf = (movie) =>
   (movie.variants ?? []).flatMap((variant) =>
     (variant.amenityGroups ?? []).flatMap((group) => group.showtimes ?? []),
-  );
+  ).length;
 
-const rowsIn = (grouping) =>
+const showtimesIn = (grouping) =>
   (grouping.theaterShowtimes?.theaters ?? []).flatMap((theater) =>
     (theater.variants ?? []).flatMap((variant) =>
       (variant.amenityGroups ?? []).flatMap((group) =>
@@ -76,20 +87,25 @@ const rowsIn = (grouping) =>
     ),
   );
 
-function spreadOverChains(rows) {
-  const byChain = new Map();
-  for (const row of rows)
-    if (row.reserved && !row.expired && !row.soldOut && !byChain.has(row.chain))
-      byChain.set(row.chain, row);
-  return [...byChain.values()].slice(0, CHAINS);
+function onePerChain(showtimes) {
+  const chains = new Map();
+  for (const showtime of showtimes)
+    if (
+      showtime.reserved &&
+      !showtime.expired &&
+      !showtime.soldOut &&
+      !chains.has(showtime.chain)
+    )
+      chains.set(showtime.chain, showtime);
+  return [...chains.values()];
 }
 
-const refusalsAmong = (rows) =>
+const unbookableAmong = (showtimes) =>
   [
-    rows.find((row) => !row.reserved),
-    rows.find((row) => row.expired),
-    rows.find((row) => row.soldOut),
-  ].filter((row) => row !== undefined);
+    showtimes.find((showtime) => !showtime.reserved),
+    showtimes.find((showtime) => showtime.expired),
+    showtimes.find((showtime) => showtime.soldOut),
+  ].filter((showtime) => showtime !== undefined);
 
 export default async function readTheLiveSource(project) {
   if (!HOST || !AREA)
@@ -101,22 +117,23 @@ export default async function readTheLiveSource(project) {
   const today = new Date().toLocaleDateString("en-CA");
 
   const nearby = `/napi/nearbyTheaters?zipCode=${encodeURIComponent(AREA)}&limit=25`;
-  const theaters = await answer(nearby);
-  const anchor = bodyOf(theaters, nearby).theaters[0];
+  const anchor = bodyOf(await answer(nearby), nearby).theaters[0];
 
   const listing = `/napi/theaterMovieShowtimes/${anchor.id.toLowerCase()}?chainCode=${anchor.chainCode}&startDate=${today}&isdesktop=true&partnerRestrictedTicketing=`;
   const movies = bodyOf(await answer(listing), listing).viewModel.movies;
   const widest = movies.reduce((most, movie) =>
-    showtimesIn(movie).length > showtimesIn(most).length ? movie : most,
+    showtimeCountOf(movie) > showtimeCountOf(most) ? movie : most,
   );
 
   const grouping = `/napi/theaterShowtimeGroupings/${widest.id}/${today}?isdesktop=true&isDesktopMOP=true&zip=${encodeURIComponent(AREA)}&partnerRestrictedTicketing=`;
-  const catalogue = await answer(grouping);
-  const rows = rowsIn(bodyOf(catalogue, grouping));
+  const showtimes = showtimesIn(bodyOf(await answer(grouping), grouping));
 
   const seatMaps = [];
-  for (const row of [...spreadOverChains(rows), ...refusalsAmong(rows)])
-    seatMaps.push(await answer(`/napi/seatMap/${row.id}`));
+  for (const showtime of [
+    ...onePerChain(showtimes),
+    ...unbookableAmong(showtimes),
+  ])
+    seatMaps.push(await answer(`/napi/seatMap/${showtime.id}`));
 
   project.provide("liveSeatMaps", seatMaps);
 }

@@ -138,7 +138,8 @@ recorded, `contract.live.test.ts` holds the live aggregator to that, and
 `.github/workflows/contract.yml` runs it nightly.
 
 It states an assumption about the world rather than behaviour of this code, so it is not a
-required check and never gates a pull request. `pnpm test:live` runs it against
+required check and never gates a pull request. The mutation gate is off that list for a
+different reason, cost, and the two arguments are not interchangeable. `pnpm test:live` runs it against
 `SEATSCOUT_UPSTREAM_ORIGIN` and `SEATSCOUT_AREA`, neither of which has a default for the
 reason `corpus:refresh` has none. It has a vitest configuration of its own, and the root
 configuration excludes `*.live.test.ts`, so neither the unit suite nor the mutation run ever
@@ -176,16 +177,28 @@ upstream that refuses everything fails rather than passing vacantly.
 
 **The answers come from a global setup rather than from the test.** `tools/live-answers.mjs`
 opens a session, reads an area, takes the day's widest release, and asks for one seat map per
-Chain plus whatever the listing already knows to be unbookable, about a dozen requests a
-second apart. Core has no `fetch` and cannot get one, so the reading happens outside it and
-arrives as provided values; that is also what keeps the judgement itself a pure function the
-mutation gate can reach.
+Chain plus whatever the listing already knows to be unbookable, which is under twenty requests
+half a second apart, the spacing the corpus refresh uses and the spacing at which 156
+consecutive reads met no 5xx. Core has no `fetch` and cannot get one, so the reading happens
+outside it and arrives as provided values; that is also what keeps the judgement itself a pure
+function the mutation gate can reach. It is a second client of the aggregator rather than a
+share of `capture-corpus.mjs`, because that tool's session exists to harvest the values it has
+to redact and its getter exists to keep a request ledger, and neither belongs here.
 
-**A failed run opens an issue.** GitHub emails a failed scheduled run only to whoever last
-edited the cron line, which is neither discoverable nor stable, so the workflow labels and
-opens one issue instead, and comments on it while it stays open rather than opening another.
-It closes nothing: whether the contract question is settled is a judgement about the code,
-not about how the world happened to look last night.
+**Nothing it writes may name the aggregator or the area.** A failure message that quotes a URL
+would put both into a public run log and, worse, into a public issue, which is what the corpus
+redaction exists to prevent. So a message names a route with its query string dropped, and a
+transport failure is re-raised without the cause that carries the host. The workflow follows
+the same rule: the issue it opens carries a link to the run and no captured output at all,
+because the runner masks its secrets in the log and masks nothing in an issue body.
+
+**A failed run opens an issue.** A scheduled run's own notification reaches one person, and
+which person is a rule rather than a choice: whoever created the workflow, unless someone
+later changed its cron line, unless someone later re-enabled it. That is neither discoverable
+nor stable under editing, so the workflow labels and opens one issue instead, and comments on
+it while it stays open rather than opening another. It closes nothing: whether the contract
+question is settled is a judgement about the code, not about how the world happened to look
+last night.
 
 ## The Core import ban
 
