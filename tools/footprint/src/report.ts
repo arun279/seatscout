@@ -18,11 +18,24 @@ export interface Bundle {
   readonly passed: boolean;
 }
 
+export type Complexity = Readonly<Record<string, number>>;
+
+export interface CountedLanguage {
+  readonly Files: readonly {
+    readonly Location: string;
+    readonly Complexity: number;
+  }[];
+}
+
+export interface Side {
+  readonly ref: string;
+  readonly tree: Tree;
+  readonly complexity: Complexity;
+}
+
 export interface Measurement {
-  readonly base: string;
-  readonly head: string;
-  readonly baseTree: Tree;
-  readonly headTree: Tree;
+  readonly base: Side;
+  readonly head: Side;
   readonly diff: Diff;
   readonly bundles: readonly Bundle[];
 }
@@ -44,6 +57,12 @@ type Row = readonly [string, Bucket, Kind];
 
 const AUTHORED: readonly Bucket[] = ["product", "test", "tooling"];
 
+const COMMENT_REMEDY =
+  "Either make the code say what the comment would have said, or raise the baseline by a reviewed change to ADR 6.";
+
+const BUNDLE_REMEDY =
+  "Either make the bundle smaller, or raise the ratchet in this diff, where a reviewer sees it.";
+
 const LABELS: Record<Bucket, string> = {
   product: "Product",
   test: "Test",
@@ -56,6 +75,13 @@ const rowsFor = (buckets: readonly Bucket[]): readonly Row[] =>
     [`${LABELS[bucket]} code`, bucket, "code"],
     [`${LABELS[bucket]} comments`, bucket, "comment"],
   ]);
+
+export const branchesOf = (languages: readonly CountedLanguage[]): Complexity =>
+  Object.fromEntries(
+    languages.flatMap((language) =>
+      language.Files.map((file) => [file.Location, file.Complexity]),
+    ),
+  );
 
 export const filesOf = <T>(
   report: Readonly<Record<string, T>>,
@@ -90,6 +116,42 @@ const authored = (tree: Tree): Counts => {
   const sum = (kind: Kind) =>
     AUTHORED.reduce((total, bucket) => total + totals[bucket][kind], 0);
   return { code: sum("code"), comment: sum("comment") };
+};
+
+const branchesBy = (complexity: Complexity): Record<Bucket, number> => {
+  const totals: Record<Bucket, number> = {
+    product: 0,
+    test: 0,
+    tooling: 0,
+    other: 0,
+  };
+  for (const [path, branches] of Object.entries(complexity)) {
+    totals[bucketOf(path)] += branches;
+  }
+  return totals;
+};
+
+const signed = (change: number): string =>
+  change > 0 ? `+${change}` : String(change);
+
+const branchRows = (
+  base: Complexity,
+  head: Complexity,
+): readonly (readonly string[])[] => {
+  const was = branchesBy(base);
+  const now = branchesBy(head);
+  const row = (label: string, from: number, to: number) => [
+    label,
+    String(from),
+    String(to),
+    signed(to - from),
+  ];
+  const total = (totals: Record<Bucket, number>) =>
+    AUTHORED.reduce((sum, bucket) => sum + totals[bucket], 0);
+  return [
+    ...AUTHORED.map((bucket) => row(LABELS[bucket], was[bucket], now[bucket])),
+    row("Authored total", total(was), total(now)),
+  ];
 };
 
 const perHundred = (counts: Counts): string =>
@@ -131,19 +193,20 @@ const lineRows = (diff: Diff): readonly (readonly string[])[] => {
 };
 
 export const render = (measurement: Measurement): Report => {
-  const base = authored(measurement.baseTree);
-  const head = authored(measurement.headTree);
+  const base = authored(measurement.base.tree);
+  const head = authored(measurement.head.tree);
   const withinCommentLoad =
     head.comment * base.code <= base.comment * head.code;
   const withinRatchet = measurement.bundles.every((bundle) => bundle.passed);
-  const verdict = (within: boolean) => (within ? "Within it." : "Above it.");
+  const verdict = (within: boolean, remedy: string) =>
+    within ? "Within it." : `Above it. ${remedy}`;
 
   return {
     passed: withinCommentLoad && withinRatchet,
     markdown: [
       "### Code footprint",
       "",
-      `\`${measurement.base.slice(0, 7)}\` to \`${measurement.head.slice(0, 7)}\`, blank lines excluded.`,
+      `\`${measurement.base.ref.slice(0, 7)}\` to \`${measurement.head.ref.slice(0, 7)}\`, blank lines excluded.`,
       "",
       ...table(
         ["Lines", "Added", "Removed", "Changed"],
@@ -170,7 +233,18 @@ export const render = (measurement: Measurement): Report => {
         ],
       ),
       "",
-      `Comment load may not exceed the merge base. ${verdict(withinCommentLoad)}`,
+      `Comment load may not exceed the merge base. ${verdict(withinCommentLoad, COMMENT_REMEDY)}`,
+      "",
+      "### Cyclomatic complexity",
+      "",
+      "scc's estimate: branch and loop keywords counted per file rather than",
+      "measured from a syntax tree. Reported, never gated. What fails a build is",
+      "Biome's cognitive complexity rule at its documented limit of 15.",
+      "",
+      ...table(
+        ["Source", "Merge base", "This branch", "Change"],
+        branchRows(measurement.base.complexity, measurement.head.complexity),
+      ),
       "",
       "### Bundle size",
       "",
@@ -184,7 +258,7 @@ export const render = (measurement: Measurement): Report => {
         ]),
       ),
       "",
-      `Bundle size may not exceed the ratchet in \`.size-limit.json\`, which rises only by a reviewed change. ${verdict(withinRatchet)}`,
+      `Bundle size may not exceed the ratchet in \`.size-limit.json\`. ${verdict(withinRatchet, BUNDLE_REMEDY)}`,
       "",
     ].join("\n"),
   };

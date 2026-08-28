@@ -33,7 +33,20 @@ with `main`. The absolute figure is reported either way.
 **Cognitive complexity** uses Biome's
 [`noExcessiveCognitiveComplexity`](https://biomejs.dev/linter/rules/no-excessive-cognitive-complexity/)
 at its documented default limit of 15. The rule and the limit are both published, so
-nothing here is this project's invention.
+nothing here is this project's invention. This is the only complexity gate.
+
+**Cyclomatic complexity** is reported and gates nothing. The figure comes from
+[scc](https://github.com/boyter/scc), and its own documentation is careful about what it
+is: an approximation reached by counting branch and loop keywords as it scans, rather than
+a measurement taken from a syntax tree, and one that is only meaningful between files in
+the same language. Everything measured here is TypeScript, so that limit does not bind,
+but the report calls it an estimate because that is what it is.
+
+It earns its place for the same reason the line counts do. This report exists to show
+growth rather than to stop it, and complexity growth is the kind a line count hides: a
+function can absorb a great deal of branching without gaining many lines. A second gate
+on top of Biome's would only invent a threshold, which is the thing this decision forbids,
+so the number is put in front of a reviewer and left there.
 
 **Comment load** is comments per line of first-party source, and it may not exceed the
 merge base. Only files with a JavaScript or TypeScript extension count, which keeps the
@@ -59,36 +72,50 @@ size-limit signals a breach through its exit status while still printing its ver
 the report reads `passed` out of its JSON rather than looking at the status. That is why
 it is the one subprocess here whose exit code is ignored.
 
-The counter is [cloc](https://github.com/AlDanial/cloc), pinned to a released version and
-checked against its SHA-256 before use. scc and tokei were the alternatives, and both were
-rejected for the same reason: neither diffs. cloc classifies every changed line as added,
-removed, modified or unchanged, and independently as code, comment or blank. That pair of
-classifications is the report rather than an input to it.
+The line counter is [cloc](https://github.com/AlDanial/cloc), pinned to a released version
+and checked against its SHA-256 before use. scc and tokei were the alternatives for that
+job, and both were rejected for the same reason: neither diffs. cloc classifies every
+changed line as added, removed, modified or unchanged, and independently as code, comment
+or blank. That pair of classifications is the report rather than an input to it. scc is
+pinned the same way and used only for the branch count, which cloc does not produce.
 
-cloc's diff report is not byte-stable, though its plain count of a tree is. Eight
-consecutive diffs of the same two commits produced eight different byte sequences and one
-set of numbers, which is Perl's randomised hash ordering reaching the JSON output. The
-report therefore parses the JSON and renders in an order of its own, and continuous
-integration renders the report twice and compares the two files byte for byte, whatever
-verdict the gates reached.
+Neither counter's JSON is byte-stable, and both were checked rather than assumed. Eight
+consecutive cloc diffs of the same two commits produced eight different byte sequences and
+one set of numbers, which is Perl's randomised hash ordering reaching the JSON output; a
+plain cloc count of a tree, by contrast, is stable, so anyone checking only that would
+conclude the wrong thing. Eight scc runs over the same tree likewise produced eight byte
+sequences, one ordering of languages, and one identical map of file to branch count: there
+it is the per-language file arrays that come back in whatever order the workers finished.
+
+In both cases the numbers are stable and only the ordering is not. The report therefore
+parses each counter's JSON, aggregates it, and renders in an order of its own, and
+continuous integration renders the whole report twice and compares the two files byte for
+byte, whatever verdict the gates reached.
+
+scc has no equivalent of cloc's `--git`, so each side is measured by extracting that
+commit with `git archive` into a temporary directory. That also keeps the measurement off
+the working tree, which during a pull request run holds a merge commit rather than either
+side of the comparison.
 
 ## Consequences
 
 The gates exist before the code they judge, which is the only time a regression gate can
 be introduced honestly.
 
-A comment cannot be merged while the merge base has none, and the way through is to make
-the code say what the comment was going to.
+A comment cannot be merged while the merge base has none. Both ways through are named in
+the report itself when the gate fails, because a gate that fails without naming the remedy
+is a wall: make the code say what the comment was going to, or change this decision.
 
 Raising the bundle ratchet is a line in a diff that a reviewer sees, rather than a number
 that quietly stops meaning anything.
 
-cloc is a prerequisite for running the report locally, alongside gitleaks. Neither is an
-npm package, so neither is installed by `pnpm install`.
+cloc and scc are prerequisites for running the report locally, alongside gitleaks. None of
+the three is an npm package, so none is installed by `pnpm install`.
 
 The footprint report itself carries no threshold. It reports lines added, removed and
 changed, in four buckets: product code from `apps/` and `packages/`, test code, build
-tooling, and everything else, each split into code and comments.
+tooling, and everything else, each split into code and comments. It reports the branch
+count for the same buckets, on both sides of the comparison and as a change.
 
 Two of those boundaries are deliberate. Source outside `apps/` and `packages/` is tooling
 rather than product, because ADR 5 already draws that line and blurring it would overstate

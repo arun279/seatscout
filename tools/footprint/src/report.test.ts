@@ -1,21 +1,28 @@
 import * as fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import {
+  branchesOf,
   type Counts,
   filesOf,
   type Measurement,
   render,
+  type Side,
   type Tree,
 } from "./report.js";
 
 const counts = (code: number, comment: number): Counts => ({ code, comment });
 
+const side = (ref: string, over: Partial<Side> = {}): Side => ({
+  ref,
+  tree: {},
+  complexity: {},
+  ...over,
+});
+
 const reportOn = (over: Partial<Measurement>) =>
   render({
-    base: "0123456789abcdef0123456789abcdef01234567",
-    head: "fedcba9876543210fedcba9876543210fedcba98",
-    baseTree: {},
-    headTree: {},
+    base: side("0123456789abcdef0123456789abcdef01234567"),
+    head: side("fedcba9876543210fedcba9876543210fedcba98"),
     diff: { added: {}, removed: {}, modified: {} },
     bundles: [{ name: "web app", size: 15, sizeLimit: 15, passed: true }],
     ...over,
@@ -95,7 +102,7 @@ describe("the footprint report", () => {
     });
     const markdownFor = (tree: Tree) =>
       reportOn({
-        headTree: tree,
+        head: side("h", { tree }),
         diff: { added: tree, removed: {}, modified: {} },
       }).markdown;
 
@@ -110,8 +117,12 @@ describe("the footprint report", () => {
 
   it("fails when comments grow faster than the code they explain", () => {
     const report = reportOn({
-      baseTree: { "packages/core/src/seat.ts": counts(100, 1) },
-      headTree: { "packages/core/src/seat.ts": counts(100, 2) },
+      base: side("b", {
+        tree: { "packages/core/src/seat.ts": counts(100, 1) },
+      }),
+      head: side("h", {
+        tree: { "packages/core/src/seat.ts": counts(100, 2) },
+      }),
     });
 
     expect(report.passed).toBe(false);
@@ -122,8 +133,12 @@ describe("the footprint report", () => {
 
   it("allows comments that keep pace with the code", () => {
     const report = reportOn({
-      baseTree: { "packages/core/src/seat.ts": counts(100, 1) },
-      headTree: { "packages/core/src/seat.ts": counts(200, 2) },
+      base: side("b", {
+        tree: { "packages/core/src/seat.ts": counts(100, 1) },
+      }),
+      head: side("h", {
+        tree: { "packages/core/src/seat.ts": counts(200, 2) },
+      }),
     });
 
     expect(report.passed).toBe(true);
@@ -132,8 +147,12 @@ describe("the footprint report", () => {
 
   it("holds build tooling to the same comment load as the product", () => {
     const report = reportOn({
-      baseTree: { "tools/footprint/src/report.ts": counts(100, 0) },
-      headTree: { "tools/footprint/src/report.ts": counts(100, 1) },
+      base: side("b", {
+        tree: { "tools/footprint/src/report.ts": counts(100, 0) },
+      }),
+      head: side("h", {
+        tree: { "tools/footprint/src/report.ts": counts(100, 1) },
+      }),
     });
 
     expect(report.passed).toBe(false);
@@ -141,14 +160,70 @@ describe("the footprint report", () => {
 
   it("ignores comments outside source files, so pinning an action stays free", () => {
     const report = reportOn({
-      baseTree: { "packages/core/src/seat.ts": counts(100, 0) },
-      headTree: {
-        "packages/core/src/seat.ts": counts(100, 0),
-        ".github/workflows/ci.yml": counts(30, 5),
-      },
+      base: side("b", {
+        tree: { "packages/core/src/seat.ts": counts(100, 0) },
+      }),
+      head: side("h", {
+        tree: {
+          "packages/core/src/seat.ts": counts(100, 0),
+          ".github/workflows/ci.yml": counts(30, 5),
+        },
+      }),
     });
 
     expect(report.passed).toBe(true);
+  });
+
+  it("reports cyclomatic complexity per bucket without gating on it", () => {
+    const report = reportOn({
+      base: side("b", {
+        complexity: {
+          "packages/core/src/seat.ts": 4,
+          "tools/footprint/src/report.ts": 5,
+        },
+      }),
+      head: side("h", {
+        complexity: {
+          "packages/core/src/seat.ts": 30,
+          "packages/core/src/seat.test.ts": 2,
+          "tools/footprint/src/report.ts": 5,
+          "pnpm-lock.yaml": 900,
+        },
+      }),
+    });
+
+    expect(report.markdown).toContain("| Product | 4 | 30 | +26 |");
+    expect(report.markdown).toContain("| Test | 0 | 2 | +2 |");
+    expect(report.markdown).toContain("| Tooling | 5 | 5 | 0 |");
+    expect(report.markdown).toContain("| Authored total | 9 | 37 | +28 |");
+    expect(report.passed).toBe(true);
+  });
+
+  it("names both ways through when comment load fails", () => {
+    const { markdown } = reportOn({
+      base: side("b", {
+        tree: { "packages/core/src/seat.ts": counts(100, 0) },
+      }),
+      head: side("h", {
+        tree: { "packages/core/src/seat.ts": counts(100, 1) },
+      }),
+    });
+
+    expect(markdown).toContain(
+      "Above it. Either make the code say what the comment would have said, or raise the baseline by a reviewed change to ADR 6.",
+    );
+  });
+
+  it("names both ways through when a bundle breaks its ratchet", () => {
+    const { markdown } = reportOn({
+      bundles: [
+        { name: "web app", size: 2048, sizeLimit: 1024, passed: false },
+      ],
+    });
+
+    expect(markdown).toContain(
+      "Above it. Either make the bundle smaller, or raise the ratchet in this diff, where a reviewer sees it.",
+    );
   });
 
   it("fails when a bundle breaks its ratchet", () => {
@@ -166,6 +241,15 @@ describe("the footprint report", () => {
 });
 
 describe("reading a counter report", () => {
+  it("flattens per-language file lists into one map of branch counts", () => {
+    expect(
+      branchesOf([
+        { Files: [{ Location: "packages/core/src/seat.ts", Complexity: 7 }] },
+        { Files: [{ Location: "README.md", Complexity: 0 }] },
+      ]),
+    ).toStrictEqual({ "packages/core/src/seat.ts": 7, "README.md": 0 });
+  });
+
   it("keeps the files and drops the counter's own totals", () => {
     expect(
       filesOf({
