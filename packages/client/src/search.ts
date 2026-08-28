@@ -102,13 +102,10 @@ const removedFrom = (
 const bestIn = (seats: readonly Seat[], terms: SearchTerms): Best | null => {
   const placed = normalised(seats);
   const score = scoringIn(placed, terms.profile ?? REFERENCE);
-  const scored = seatGroupsIn(placed, terms).map((group) => ({
-    group,
-    ...score(group),
-  }));
-  return scored.length === 0
-    ? null
-    : scored.reduce((best, group) => (group.score > best.score ? group : best));
+  const [best] = seatGroupsIn(placed, terms)
+    .map((group) => ({ group, ...score(group) }))
+    .toSorted((left, right) => right.score - left.score);
+  return best ?? null;
 };
 
 const resultOf = (

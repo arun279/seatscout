@@ -163,9 +163,14 @@ const searching = async (options: Options = {}) => {
     now: () => AT,
   })(terms);
   const snapshots: Snapshot[] = [];
-  search.subscribe(() => snapshots.push(search.snapshot()));
+  const frozen: string[] = [];
+  search.subscribe(() => {
+    snapshots.push(search.snapshot());
+    frozen.push(JSON.stringify(search.snapshot()));
+  });
   return {
     candidates,
+    frozen,
     search,
     snapshots,
     requested: () =>
@@ -223,6 +228,14 @@ describe("a search", () => {
     expect(settled.results.map((result) => result.score)).toEqual(
       settled.results.map((result) => result.score).toSorted((a, b) => b - a),
     );
+    expect(run.snapshots.map((snapshot) => snapshot.phase)).toEqual([
+      "searching",
+      "searching",
+      "searching",
+      "searching",
+      "searching",
+      "settled",
+    ]);
   });
 
   it("delivers a ranking rather than an arrival order, under a seed that reorders", async () => {
@@ -300,6 +313,26 @@ describe("a search", () => {
     expect(left[0]).toBe(172);
     expect(left.at(-1)).toBe(0);
     expect(settled.coverage.candidates).toBe(176);
+  });
+
+  it("does not change a snapshot a caller is still holding", async () => {
+    const run = await searching({
+      at: [STONEBRIAR],
+      answers: (bookable) =>
+        Object.fromEntries([
+          [
+            `${SEAT_MAP}${bookable[0]?.id}`,
+            refusalNamed("GeneralAdmissionShowtimeError"),
+          ],
+          [`${SEAT_MAP}${bookable[1]?.id}`, refusalNamed("PerformanceSoldOut")],
+        ]),
+    });
+    await run.search.done;
+
+    expect(run.snapshots.map((snapshot) => JSON.stringify(snapshot))).toEqual(
+      run.frozen,
+    );
+    expect(new Set(run.frozen).size).toBe(run.frozen.length);
   });
 
   it("spends no request on a Showtime the listing already reported unbookable", async () => {
@@ -565,9 +598,19 @@ describe("a search", () => {
     });
     const settled = await run.search.done;
 
-    expect(settled.phase).toBe("unreachable");
-    expect(settled.coverage.candidates).toBe(0);
-    expect(settled.results).toEqual([]);
+    expect(settled).toEqual({
+      results: [],
+      coverage: {
+        candidates: 0,
+        checked: 0,
+        soldOut: [],
+        noSeatMap: [],
+        started: [],
+        unidentified: [],
+        failed: [],
+      },
+      phase: "unreachable",
+    });
     expect(run.requested()).toEqual([]);
   });
 });
