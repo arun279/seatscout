@@ -6,6 +6,7 @@ import {
   narrowed,
   type Showtime,
   type TheaterId,
+  type Unidentified,
 } from "./catalogue.js";
 
 const CAPTURE = "showtimes/grouping-245569-2026-08-28.json";
@@ -18,14 +19,18 @@ const captured = (): Catalogue => {
   return catalogue;
 };
 
-const everyShowtime = (catalogue: Catalogue): readonly Showtime[] => [
+const everyShowtime = (
+  catalogue: Catalogue,
+): readonly (Showtime | Unidentified)[] => [
   ...catalogue.bookable,
   ...catalogue.unbookable.map((entry) => entry.showtime),
+  ...catalogue.unidentified,
 ];
 
 const counted = (catalogue: Catalogue) => ({
   bookable: catalogue.bookable.length,
   unbookable: catalogue.unbookable.length,
+  unidentified: catalogue.unidentified.length,
 });
 
 const theaterNamed = (catalogue: Catalogue, name: string): TheaterId => {
@@ -57,12 +62,15 @@ describe("narrowing a catalogue", () => {
   it("admits every Showtime when nothing narrows it", () => {
     const catalogue = captured();
 
-    expect(counted(catalogue)).toEqual({ bookable: 172, unbookable: 4 });
-    expect(catalogue.unidentified).toEqual([]);
+    expect(counted(catalogue)).toEqual({
+      bookable: 172,
+      unbookable: 4,
+      unidentified: 0,
+    });
     expect(narrowed(catalogue, {})).toEqual(catalogue);
   });
 
-  it("narrows the Showtimes it has no identity for by the terms it narrows the rest by", () => {
+  it("narrows the Showtimes it could not identify by the terms it narrows the rest by", () => {
     const identified = captured();
     const catalogue = asUnidentified(identified);
     const theaters = [
@@ -70,20 +78,31 @@ describe("narrowing a catalogue", () => {
       theaterNamed(identified, "Landmark Inwood Theatre"),
     ];
 
-    expect(narrowed(catalogue, {}).unidentified).toHaveLength(176);
-    expect(narrowed(catalogue, { theaters }).unidentified).toHaveLength(17);
+    const none = { bookable: 0, unbookable: 0 };
+
+    expect(counted(narrowed(catalogue, {}))).toEqual({
+      ...none,
+      unidentified: 176,
+    });
+    expect(counted(narrowed(catalogue, { theaters }))).toEqual({
+      ...none,
+      unidentified: 17,
+    });
+    expect(counted(narrowed(catalogue, { formats: ["IMAX"] }))).toEqual({
+      ...none,
+      unidentified: 1,
+    });
     expect(
-      narrowed(catalogue, { formats: ["IMAX"] }).unidentified,
-    ).toHaveLength(1);
-    expect(
-      narrowed(catalogue, {
-        from: Date.parse("2026-08-28T19:00:00-05:00"),
-        until: Date.parse("2026-08-28T22:00:00-05:00"),
-      }).unidentified,
-    ).toHaveLength(46);
+      counted(
+        narrowed(catalogue, {
+          from: Date.parse("2026-08-28T19:00:00-05:00"),
+          until: Date.parse("2026-08-28T22:00:00-05:00"),
+        }),
+      ),
+    ).toEqual({ ...none, unidentified: 46 });
   });
 
-  it("narrows both halves of the catalogue to the Theaters asked for", () => {
+  it("narrows the identified Showtimes to the Theaters asked for", () => {
     const catalogue = captured();
     const theaters = [
       theaterNamed(catalogue, "Cinemark Dallas XD and IMAX"),
@@ -91,7 +110,11 @@ describe("narrowing a catalogue", () => {
     ];
     const kept = narrowed(catalogue, { theaters });
 
-    expect(counted(kept)).toEqual({ bookable: 14, unbookable: 3 });
+    expect(counted(kept)).toEqual({
+      bookable: 14,
+      unbookable: 3,
+      unidentified: 0,
+    });
     expect(
       everyShowtime(kept).every((showtime) =>
         theaters.includes(showtime.presentation.theater.id),
@@ -103,6 +126,7 @@ describe("narrowing a catalogue", () => {
     expect(counted(narrowed(captured(), { theaters: [] }))).toEqual({
       bookable: 0,
       unbookable: 0,
+      unidentified: 0,
     });
   });
 
@@ -112,20 +136,23 @@ describe("narrowing a catalogue", () => {
     expect(counted(narrowed(catalogue, { formats: ["IMAX"] }))).toEqual({
       bookable: 1,
       unbookable: 0,
+      unidentified: 0,
     });
     expect(counted(narrowed(catalogue, { formats: ["ScreenX"] }))).toEqual({
       bookable: 2,
       unbookable: 0,
+      unidentified: 0,
     });
     expect(
       counted(narrowed(catalogue, { formats: ["IMAX", "ScreenX"] })),
-    ).toEqual({ bookable: 3, unbookable: 0 });
+    ).toEqual({ bookable: 3, unbookable: 0, unidentified: 0 });
   });
 
   it("admits nothing when the Formats asked for are none", () => {
     expect(counted(narrowed(captured(), { formats: [] }))).toEqual({
       bookable: 0,
       unbookable: 0,
+      unidentified: 0,
     });
   });
 
@@ -140,18 +167,22 @@ describe("narrowing a catalogue", () => {
     expect(counted(narrowed(catalogue, { from: opening }))).toEqual({
       bookable: 172,
       unbookable: 4,
+      unidentified: 0,
     });
     expect(counted(narrowed(catalogue, { from: opening + 1 }))).toEqual({
       bookable: 171,
       unbookable: 4,
+      unidentified: 0,
     });
     expect(counted(narrowed(catalogue, { until: close }))).toEqual({
       bookable: 171,
       unbookable: 4,
+      unidentified: 0,
     });
     expect(counted(narrowed(catalogue, { until: close + 1 }))).toEqual({
       bookable: 172,
       unbookable: 4,
+      unidentified: 0,
     });
   });
 
@@ -162,7 +193,11 @@ describe("narrowing a catalogue", () => {
       until: Date.parse("2026-08-28T22:00:00-05:00"),
     });
 
-    expect(counted(kept)).toEqual({ bookable: 46, unbookable: 0 });
+    expect(counted(kept)).toEqual({
+      bookable: 46,
+      unbookable: 0,
+      unidentified: 0,
+    });
   });
 
   it("applies every term it was given at once", () => {
@@ -170,10 +205,7 @@ describe("narrowing a catalogue", () => {
     const theaters = [theaterNamed(catalogue, "Cinemark Dallas XD and IMAX")];
 
     expect(counted(narrowed(catalogue, { theaters, formats: ["XD"] }))).toEqual(
-      {
-        bookable: 4,
-        unbookable: 0,
-      },
+      { bookable: 4, unbookable: 0, unidentified: 0 },
     );
     expect(
       counted(
@@ -183,6 +215,6 @@ describe("narrowing a catalogue", () => {
           until: Date.parse("2026-08-28T20:00:00-05:00"),
         }),
       ),
-    ).toEqual({ bookable: 2, unbookable: 0 });
+    ).toEqual({ bookable: 2, unbookable: 0, unidentified: 0 });
   });
 });

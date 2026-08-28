@@ -45,12 +45,12 @@ export interface Showtime {
   readonly ticketing: TicketingUrl;
 }
 
-export type Unidentified = Omit<Showtime, "id">;
+export type Unidentified = Omit<Showtime, "id"> & { readonly id?: never };
 
 export type UnbookableReason = "noSeatMap" | "started" | "soldOut";
 
 export interface Unbookable {
-  readonly showtime: Showtime;
+  readonly showtime: Showtime | Unidentified;
   readonly reason: UnbookableReason;
 }
 
@@ -73,7 +73,7 @@ const within = (
   until: number | undefined,
 ) => (from === undefined || at >= from) && (until === undefined || at < until);
 
-const admits = (terms: ShowtimeTerms) => (showtime: Unidentified) =>
+const admits = (terms: ShowtimeTerms) => (showtime: Showtime | Unidentified) =>
   (terms.theaters?.includes(showtime.presentation.theater.id) ?? true) &&
   (terms.formats?.some((format) =>
     showtime.presentation.formats.includes(format),

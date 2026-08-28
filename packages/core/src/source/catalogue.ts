@@ -10,6 +10,7 @@ import type {
   TicketingUrl,
   Unbookable,
   UnbookableReason,
+  Unidentified,
 } from "../domain/catalogue.js";
 import { decoded, isRecord } from "./json.js";
 
@@ -23,7 +24,7 @@ interface UpstreamAmenity {
 }
 
 interface UpstreamShowtime {
-  readonly id: ShowtimeId;
+  readonly id?: ShowtimeId;
   readonly dateLocal: string;
   readonly expired: boolean;
   readonly isSoldOut: boolean;
@@ -46,7 +47,7 @@ interface UpstreamTheater extends UpstreamNamedTheater {
 }
 
 interface Listing {
-  readonly showtime: Showtime;
+  readonly showtime: Showtime | Unidentified;
   readonly reason: UnbookableReason | null;
 }
 
@@ -66,10 +67,11 @@ const GROUP_FIELDS: Readonly<Record<"hasReservedSeating" | "movieID", Kind>> = {
   movieID: "string",
 };
 
-const SHOWTIME_FIELDS: Readonly<Record<keyof UpstreamShowtime, Kind>> = {
+const SHOWTIME_FIELDS: Readonly<
+  Record<Exclude<keyof UpstreamShowtime, "id">, Kind>
+> = {
   dateLocal: "string",
   expired: "boolean",
-  id: "number",
   isSoldOut: "boolean",
   ticketingJumpPageURL: "string",
 };
@@ -105,7 +107,8 @@ const isAmenity = (value: unknown): value is UpstreamAmenity =>
   carries(value, AMENITY_FIELDS);
 
 const isShowtime = (value: unknown): value is UpstreamShowtime =>
-  carries(value, SHOWTIME_FIELDS);
+  carries(value, SHOWTIME_FIELDS) &&
+  (value.id === undefined || typeof value.id === "number");
 
 const isAmenityGroup = (value: unknown): value is UpstreamAmenityGroup =>
   carries(value, GROUP_FIELDS) &&
@@ -171,27 +174,31 @@ const listingsOf = (theater: UpstreamTheater): readonly Listing[] =>
   theater.variants.flatMap((variant) =>
     variant.amenityGroups.flatMap((group) => {
       const presentation = presentationOf(theater, group);
-      return group.showtimes.map((row) => ({
-        showtime: {
-          id: row.id,
+      return group.showtimes.map((row) => {
+        const listed = {
           startsAt: row.dateLocal,
           presentation,
           ticketing: row.ticketingJumpPageURL,
-        },
-        reason: notBookable(group, row),
-      }));
+        };
+        return {
+          showtime: row.id === undefined ? listed : { ...listed, id: row.id },
+          reason: notBookable(group, row),
+        };
+      });
     }),
   );
 
 const catalogued = (theaters: readonly UpstreamTheater[]): Catalogue => {
   const bookable: Showtime[] = [];
   const unbookable: Unbookable[] = [];
+  const unidentified: Unidentified[] = [];
   for (const theater of theaters)
     for (const { showtime, reason } of listingsOf(theater)) {
-      if (reason === null) bookable.push(showtime);
-      else unbookable.push({ showtime, reason });
+      if (reason !== null) unbookable.push({ showtime, reason });
+      else if (showtime.id === undefined) unidentified.push(showtime);
+      else bookable.push(showtime);
     }
-  return { bookable, unbookable, unidentified: [] };
+  return { bookable, unbookable, unidentified };
 };
 
 export const catalogueFrom = (body: string): Catalogue | null => {

@@ -134,8 +134,9 @@ The mutation gate judges the code against the tests. Nothing above it judges the
 other test runs against the committed corpus, so the whole suite stays green while the
 upstream quietly changes shape underneath it. `packages/core/src/testing/contract.ts` is what
 notices. It reads one seat map answer and reports every way it diverges from what the corpus
-recorded, `contract.live.test.ts` holds the live aggregator to that, and
-`.github/workflows/contract.yml` runs it nightly.
+recorded, and it reads a live area and a live listing and reports either one that no longer
+becomes a domain object or arrives with nothing in it. `contract.live.test.ts` holds the live
+aggregator to that, and `.github/workflows/contract.yml` runs it nightly.
 
 The same lane carries one more reading of the world: the live search timing described under
 Running a search. A failure there opens the same issue, because the two are the same
@@ -154,8 +155,8 @@ at the point of use rather than written down beside them: the top-level and seat
 the four seat statuses and the three seat types. Nothing has to be kept in step with a
 refresh, and a list written by hand cannot drift from what was measured. Six things are
 reported: a body that is not JSON, a field the parse needs and the answer no longer carries,
-a key never captured before, a seat status or a seat type outside the recorded vocabulary,
-and a neighbour link that disagrees with the geometry.
+an answer that parses into nothing at all, a key never captured before, a seat status or a seat
+type outside the recorded vocabulary, and a neighbour link that disagrees with the geometry.
 
 **An unrecognised seat type is why this exists at all.** The seat map adapter maps a type it
 does not recognise to `standard` rather than failing closed on it, deliberately, because
@@ -179,10 +180,24 @@ first live run met a reason the corpus never captured. What guards against a who
 refusal is coverage: at least one answer must read as an Auditorium with Seats in it, so an
 upstream that refuses everything fails rather than passing vacantly.
 
+**The catalogue is judged the same way and no further.** A live area must read into Theaters and
+a live listing into a Catalogue, and neither may arrive empty, which is the same vacuity guard
+the seat map half has: an area of no Theaters and a listing of no Showtimes both parse perfectly
+and mean the upstream stopped answering. That is the pairing the adapter owes for what it
+tolerates: it now carries a listing row whose identity the aggregator dropped rather than
+refusing the answer, and a tolerance nobody watches is how the next field leaves without anyone
+noticing. What is not
+judged is how many rows arrive without an identity, because a threshold on that is an invented
+number that would go red on a day nobody can act on. Nor is the missing field named, the way a
+missing seat field is: naming it would mean exporting the aggregator's listing shapes out of the
+adapter, and keeping them where no module above can name one is the first of the four
+mechanisms that hold the vocabulary boundary.
+
 **The answers come from a global setup rather than from the test.** `tools/live-answers.mjs`
 opens a session, reads an area, takes the day's widest release, and asks for one seat map per
-Chain plus whatever the listing already knows to be unbookable, which is under twenty requests
-half a second apart, the spacing the corpus refresh uses and the spacing at which 156
+Chain plus whatever the listing already knows to be unbookable, and hands on the area and the
+listing answers it already made rather than asking for them twice, which is under twenty
+requests half a second apart, the spacing the corpus refresh uses and the spacing at which 156
 consecutive reads met no 5xx. Core has no `fetch` and cannot get one, so the reading happens
 outside it and arrives as provided values; that is also what keeps the judgement itself a pure
 function the mutation gate can reach. It is a second client of the aggregator rather than a
@@ -510,6 +525,33 @@ An answer missing anything a Showtime or a Theater is built from is refused whol
 read into a listing with holes in it, for the reason a partial seat map is refused: a listing
 short of a theater cannot be told from an area that is genuinely that empty.
 
+**A row that carries everything but its identity is the one exception.** Nothing above the
+seat map route reads that identity, so a row without one still has its Presentation, its start
+time and its ticketing URL: it can be listed, narrowed and handed off, and the only thing it
+cannot do is be asked for Seats. Refusing the answer for it does not prevent a hole, it makes
+a larger one. The aggregator drops the field for whole theaters at a time, all of a theater's
+rows or none, and five readings half an hour apart across five metropolitan areas found it gone
+from a quarter of all rows, with every one of the sixty listings in the first reading holding at
+least one, so under the general rule every search would answer `unreachable`.
+
+Such a row goes to a third list on the catalogue, and the reason is asked before the identity.
+A Showtime the catalogue already knows to be expired, sold out or general admission never
+needed one, so it stays where it was and keeps the remedy that goes with its reason; folding
+it into "could not be checked" would offer the operator's page for a screening that has
+already started. What is left in the third list is exactly the candidates no request can be
+spent on, which is what a search reports as coverage it could not reach. The three lists
+partition the rows the answer held, and a test holds their total to the number of rows the
+Source sent, so a row can move between them and cannot be dropped.
+
+None of this weakens Availability. No Seat is presented as bookable on thinner evidence; a
+Showtime that cannot be checked is reported as one that cannot be checked. And an identity
+that is present and is not a number is not this case at all: that is a change of shape rather
+than a missing datum, and the answer is refused whole for it as for every other field.
+`SHOWTIME_FIELDS` is keyed by `keyof UpstreamShowtime` less the identity, so a field added to
+the declaration and not to the table still does not compile, and the identity's own kind is
+asserted in the predicate beside it because it is the only one of the five that may be
+absent.
+
 ### The session
 
 The adapter opens a session once and holds it, and a fan-out of any width opens one rather
@@ -733,8 +775,9 @@ the difference between the two. Narrowing a Catalogue yields a Catalogue, so all
 its lists are narrowed by one predicate and a Showtime the listing already knows to be
 unbookable, or could not give an identity, is still reported against the terms it satisfies.
 The predicate reads a Showtime's Presentation and start time and never its identity, which
-is what lets the third list exist at all. Absence of a term is what means "no constraint"; an empty list
-of Theaters or of Formats admits nothing, because a filter that accepts none accepts none.
+is what lets the third list exist at all. Absence of a term is what means "no constraint"; an
+empty list of Theaters or of Formats admits nothing, because a filter that accepts none accepts
+none.
 Chain and Amenity are deliberately not among the terms: the listing carries a chain code and
 no chain name, and the adapter drops the amenities that do not name a Format, so neither
 exists above the boundary to filter on.

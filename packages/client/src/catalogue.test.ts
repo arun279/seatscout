@@ -89,9 +89,26 @@ const payloadOf = <Found>(reading: Reading<Found>): Found => {
   return reading.payload;
 };
 
-const counted = (reading: Reading<Catalogue>) => ({
-  bookable: payloadOf(reading).bookable.length,
-  unbookable: payloadOf(reading).unbookable.length,
+const counted = (reading: Reading<Catalogue>) => {
+  const catalogue = payloadOf(reading);
+  return {
+    bookable: catalogue.bookable.length,
+    unbookable: catalogue.unbookable.length,
+    unidentified: catalogue.unidentified.length,
+  };
+};
+
+const asUnidentified = (catalogue: Catalogue): CachedCatalogue => ({
+  fetchedAt: FETCHED_AT,
+  catalogue: {
+    bookable: [],
+    unbookable: [],
+    unidentified: catalogue.bookable.map((showtime) => ({
+      startsAt: showtime.startsAt,
+      presentation: showtime.presentation,
+      ticketing: showtime.ticketing,
+    })),
+  },
 });
 
 const seatMapShowtime = () => {
@@ -111,10 +128,11 @@ describe("the catalogue phase", () => {
     expect(counted(await resolve(TERMS))).toEqual({
       bookable: 172,
       unbookable: 4,
+      unidentified: 0,
     });
     expect(
       counted(await resolve({ ...TERMS, formats: ["IMAX", "ScreenX"] })),
-    ).toEqual({ bookable: 3, unbookable: 0 });
+    ).toEqual({ bookable: 3, unbookable: 0, unidentified: 0 });
     expect(
       counted(
         await resolve({
@@ -123,7 +141,7 @@ describe("the catalogue phase", () => {
           until: Date.parse("2026-08-28T22:00:00-05:00"),
         }),
       ),
-    ).toEqual({ bookable: 46, unbookable: 0 });
+    ).toEqual({ bookable: 46, unbookable: 0, unidentified: 0 });
   });
 
   it("answers a second read inside the TTL from the cache, with the age it actually has", async () => {
@@ -181,8 +199,27 @@ describe("the catalogue phase", () => {
     const narrowed = counted(await resolve({ ...TERMS, formats: ["IMAX"] }));
 
     expect(listings()).toBe(1);
-    expect(whole).toEqual({ bookable: 172, unbookable: 4 });
-    expect(narrowed).toEqual({ bookable: 1, unbookable: 0 });
+    expect(whole).toEqual({ bookable: 172, unbookable: 4, unidentified: 0 });
+    expect(narrowed).toEqual({ bookable: 1, unbookable: 0, unidentified: 0 });
+  });
+
+  it("answers a Query with the Showtimes the Source could not identify, narrowed like the rest", async () => {
+    const listed = payloadOf(await opened().resolve(TERMS));
+    const { resolve, listings } = opened({
+      store: answering(asUnidentified(listed)),
+    });
+
+    expect(counted(await resolve(TERMS))).toEqual({
+      bookable: 0,
+      unbookable: 0,
+      unidentified: 172,
+    });
+    expect(counted(await resolve({ ...TERMS, formats: ["IMAX"] }))).toEqual({
+      bookable: 0,
+      unbookable: 0,
+      unidentified: 1,
+    });
+    expect(listings()).toBe(0);
   });
 
   it("gives a Movie, a date and an area their own cache entry each", async () => {
@@ -212,15 +249,36 @@ describe("the catalogue phase", () => {
       null,
       "a catalogue, honestly",
       {},
-      { fetchedAt: "recently", catalogue: EMPTY },
-      { fetchedAt: `${FETCHED_AT}`, catalogue: EMPTY },
+      {
+        fetchedAt: "recently",
+        catalogue: { bookable: [], unbookable: [], unidentified: [] },
+      },
+      {
+        fetchedAt: `${FETCHED_AT}`,
+        catalogue: { bookable: [], unbookable: [], unidentified: [] },
+      },
       { fetchedAt: FETCHED_AT },
       { fetchedAt: FETCHED_AT, catalogue: null },
-      { fetchedAt: FETCHED_AT, catalogue: { ...EMPTY, bookable: undefined } },
-      { fetchedAt: FETCHED_AT, catalogue: { ...EMPTY, unbookable: undefined } },
       {
         fetchedAt: FETCHED_AT,
-        catalogue: { ...EMPTY, unidentified: undefined },
+        catalogue: { bookable: [], unidentified: [] },
+      },
+      {
+        fetchedAt: FETCHED_AT,
+        catalogue: { unbookable: [], unidentified: [] },
+      },
+      { fetchedAt: FETCHED_AT, catalogue: { bookable: [], unbookable: [] } },
+      {
+        fetchedAt: FETCHED_AT,
+        catalogue: { bookable: "none", unbookable: [], unidentified: [] },
+      },
+      {
+        fetchedAt: FETCHED_AT,
+        catalogue: { bookable: [], unbookable: "none", unidentified: [] },
+      },
+      {
+        fetchedAt: FETCHED_AT,
+        catalogue: { bookable: [], unbookable: [], unidentified: "none" },
       },
       { fetchedAt: FETCHED_AT, catalogue: { ...EMPTY, bookable: "none" } },
       { fetchedAt: FETCHED_AT, catalogue: { ...EMPTY, unbookable: "none" } },
@@ -282,8 +340,13 @@ describe("the catalogue phase", () => {
     expect({
       bookable: stored?.catalogue.bookable.length,
       unbookable: stored?.catalogue.unbookable.length,
-    }).toEqual({ bookable: 172, unbookable: 4 });
-    expect(counted(reading)).toEqual({ bookable: 1, unbookable: 0 });
+      unidentified: stored?.catalogue.unidentified.length,
+    }).toEqual({ bookable: 172, unbookable: 4, unidentified: 0 });
+    expect(counted(reading)).toEqual({
+      bookable: 1,
+      unbookable: 0,
+      unidentified: 0,
+    });
   });
 
   it("will not accept Seats where the store takes a catalogue", async () => {
@@ -295,7 +358,7 @@ describe("the catalogue phase", () => {
     expectTypeOf<string>().not.toExtend<Written>();
     expectTypeOf({
       fetchedAt: FETCHED_AT,
-      catalogue: { bookable: seats, unbookable: [] },
+      catalogue: { bookable: seats, unbookable: [], unidentified: [] },
     }).not.toExtend<Written>();
   });
 });
