@@ -1,3 +1,3 @@
-import { readFileSync } from "fs";
+/// <reference lib="dom" />
 
-export const read = readFileSync;
+export const pageTitle = document.title;
