@@ -23,13 +23,14 @@ Early development. Not yet usable.
 is not a result, however well it matches on film, time, and location.
 
 **"Good seats" has an engineering definition.** The default seat profile targets two thirds
-of the way back on the centreline. That is where SMPTE ST 202 places the reference
+of the way back on the centreline, close to where SMPTE ST 202 places the reference
 microphone and where THX-certified auditoriums are calibrated, so it is the seat the mix
-was balanced for. It penalises the front rows, the back row, and seats beyond SMPTE's
-15 degree lateral comfort limit. Every part of it is adjustable.
+was balanced for. It penalises proximity to the screen and to any wall, which ST 202's own
+measurement area gives it, and off-axis viewing angle, which is how far sideways you sit
+divided by how far back. Every part of it is adjustable.
 
 **Auditoriums are compared on equal terms.** Seat positions are normalised to a depth from
-0.0 at the screen to 1.0 at the back, and a lateral from -1.0 to +1.0 across. "Middle"
+0.0 at the front row to 1.0 at the back, and a lateral from -1.0 to +1.0 across. "Middle"
 means the same thing in a 300-seat premium house and a 40-seat dine-in room, and it is
 derived from real seat geometry rather than from row letters, which are not reliably
 ordered and are sometimes not letters at all.

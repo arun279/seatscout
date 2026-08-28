@@ -5,9 +5,11 @@
   "inPlace": true,
   "mutate": [
     "{apps,packages,tools}/*/src/**/*.{ts,tsx}",
-    "!apps/{native,web}/src/**",
+    "!apps/native/src/**",
     "!**/*.{test,spec}.?(c|m)[jt]s?(x)"
   ],
   "reporters": ["clear-text"],
-  "thresholds": { "break": 100 }
+  "thresholds": {
+    "break": 100
+  }
 }
