@@ -12,8 +12,8 @@ const counts = (code: number, comment: number): Counts => ({ code, comment });
 
 const measure = (over: Partial<Measurement>) =>
   render({
-    base: "b".repeat(40),
-    head: "h".repeat(40),
+    base: "0123456789abcdef0123456789abcdef01234567",
+    head: "fedcba9876543210fedcba9876543210fedcba98",
     baseTree: {},
     headTree: {},
     diff: { added: {}, removed: {}, modified: {} },
@@ -45,6 +45,14 @@ describe("the footprint report", () => {
     expect(markdown).toContain("| Other code | 6 | 0 | 0 |");
     expect(markdown).toContain("| Other comments | 0 | 0 | 0 |");
     expect(markdown).toContain("| Total | 93 | 9 | 6 |");
+  });
+
+  it("names the two commits it was measured between", () => {
+    expect(measure({}).markdown).toContain("`0123456` to `fedcba9`");
+  });
+
+  it("reads zero comment load from a tree with no source at all", () => {
+    expect(measure({}).markdown).toContain("| Merge base | 0 | 0 | 0.00 |");
   });
 
   it("counts a directory of tests as test code", () => {
@@ -105,6 +113,15 @@ describe("the footprint report", () => {
 
     expect(report.ok).toBe(true);
     expect(report.markdown).toContain("| This branch | 200 | 2 | 1.00 |");
+  });
+
+  it("holds build tooling to the same comment load as the product", () => {
+    const report = measure({
+      baseTree: { "tools/footprint/src/report.ts": counts(100, 0) },
+      headTree: { "tools/footprint/src/report.ts": counts(100, 1) },
+    });
+
+    expect(report.ok).toBe(false);
   });
 
   it("ignores comments outside source files, so pinning an action stays free", () => {
