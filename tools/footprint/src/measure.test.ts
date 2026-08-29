@@ -141,6 +141,19 @@ describe("measuring a change", () => {
     );
   });
 
+  it("refuses a list where one bundle was weighed and another was not", () => {
+    const run = sizeLimitAnswering(
+      JSON.stringify([
+        { name: "web app", size: 15, sizeLimit: 15, passed: true },
+        { name: "proxy", passed: true, size: 0 },
+      ]),
+    );
+
+    expect(() => measureWith(run)("origin/main", "HEAD")).toThrow(
+      "size-limit weighed no bundle against a ratchet",
+    );
+  });
+
   it("refuses a run that weighed no bundle at all", () => {
     const run = sizeLimitAnswering("[]");
 
