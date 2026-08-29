@@ -24,6 +24,7 @@ import type { Reading, Source, Unreadable } from "./port.js";
 
 const BOOTSTRAP = "/napi/preferences/themes";
 const NEARBY = "/napi/nearbyTheaters";
+const SEAT_MAP = "/napi/seatMap/";
 const AREA = "75006";
 const TODAY = "2026-08-28";
 const WIDE_RELEASE = "245569";
@@ -192,7 +193,6 @@ const asTheSourceAnsweredIt = () => {
 
 const THEATER_THE_SOURCE_STOPPED_SELLING = "Cinemark Dallas XD and IMAX";
 const A_THEATER_STILL_SELLING = "AMC Village on the Parkway 9";
-const SEAT_MAP = "/napi/seatMap/";
 
 const notSelling = (theater: CapturedTheaters[number]) => ({
   ...theater,
