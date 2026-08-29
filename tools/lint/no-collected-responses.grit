@@ -20,23 +20,35 @@ pattern reader() {
   }
 }
 
+pattern body_read($receiver) {
+  or {
+    `$receiver.$reader($...)` where { $reader <: reader() },
+    `$receiver?.text($...)`,
+    `$receiver?.json($...)`,
+    `$receiver?.arrayBuffer($...)`,
+    `$receiver?.blob($...)`,
+    `$receiver?.bytes($...)`,
+    `$receiver?.formData($...)`
+  }
+}
+
 pattern reads_its_own_argument() {
   or {
     `($response) => $rest`,
     `async ($response) => $rest`
-  } where {
-    $rest <: contains `$response.$reader($...)` where { $reader <: reader() }
-  }
+  } where { $rest <: contains body_read($response) }
 }
 
 or {
   `$_.map($callback)`,
-  `$_.flatMap($callback)`
+  `$_.flatMap($callback)`,
+  `$_?.map($callback)`,
+  `$_?.flatMap($callback)`
 } where {
   or {
     and {
       $callback <: contains transport_call(),
-      ! $callback <: contains `$_.$reader($...)` where { $reader <: reader() }
+      ! $callback <: contains body_read($_)
     },
     $callback <: reads_its_own_argument()
   },

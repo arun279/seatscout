@@ -301,16 +301,23 @@ resolves scopes, so a local or a parameter borrowing one of those names is untou
 does the `top` in `seat-profile.test.ts`.
 
 **What it does not close is a receiver that is never named**, and a Grit plugin refusing the
-member instead, on the model of `no-cache-storage-detour.grit`, was written and measured
-before being dropped. Three findings decided that. Biome's GritQL has no pattern for an
-optional chain, so `held?.document` and `held?.["document"]` walk past any such rule, which
-is a ceiling on the technique rather than on one pattern: `self?.caches` walks past the
-Cache Storage rule for the same reason. A member pattern also cannot see
-`Function("return document")()`, which has no member. And it fires on honest code, because
-`document`, `location` and `process` are ordinary words: `theater.location` and the pure
-type `Theater["location"]` were both refused by it, and a type cannot reach a capability at
-all. A rule that refuses honest domain code is a rule that gets weakened, so the ban stops
-at the name.
+member instead was written and measured before being dropped. Two findings decided that. A
+member pattern cannot see `Function("return document")()`, which has no member. And it fires
+on honest code, because `document`, `location` and `process` are ordinary words:
+`theater.location` and the pure type `Theater["location"]` were both refused by it, and a
+type cannot reach a capability at all. A rule that refuses honest domain code is a rule that
+gets weakened, so the ban stops at the name.
+
+**A third finding was recorded here and its generalisation is wrong**: that Biome's GritQL
+has no pattern for an optional chain. It has one. `` `$_?.document` ``, `` `$_?.["document"]` ``,
+`` `$_?.[$key]` `` and `` `$_?.text($...)` `` all match. What was actually measured is narrower
+and is true: a metavariable in the property position after `?.` does not compile, so
+`` `$_?.$name` `` and `` `$_?.$method($...)` `` fail the plugin to load rather than silently
+matching nothing. A ban on the twenty two names would therefore have needed one literal
+alternative per name instead of one pattern, which is a cost rather than a ceiling. The two
+findings above decide the question without it and the conclusion is unchanged, but the
+correction is not free elsewhere: it is why `no-collected-responses.grit` could be repaired
+rather than only noted.
 
 The compiler is what makes bare names unreachable, and it is the real gate. This half is a
 second layer over the one route the compiler cannot see, a `lib` reference that re-declares
@@ -1032,14 +1039,71 @@ script imports the entry and calls `startShell`, which is why that entry has no 
 side effect and can therefore be imported by a test page as well as by the shell.
 
 **The service worker cannot cache seat Availability, and that is structural rather than
-observed.** `apps/web/src/worker/cache.ts` is the only file in `apps/web/src` allowed to
-name `caches`, which a Biome rule enforces the way ADR 3's platform ban is enforced.
-`noRestrictedGlobals` only sees the bare identifier, so `self.caches` and
-`globalThis.caches` would walk straight past it; `tools/lint/no-cache-storage-detour.grit`
-refuses those, and the computed form, everywhere in the workspace. Both halves were watched
-firing before either was relied on. Biome's GritQL has no pattern for an optional chain, so
-`self?.caches` walks past this rule; the import ban section says why that ceiling stopped
-the same technique being used there. It exports one writer, `precacheShell`, which **takes
+observed.** `apps/web/src/worker/cache.ts` is the only file the deployment ships that may
+name Cache Storage, and `tools/no-cache-storage-reach.mjs` is the whole of the gate: it
+takes the staged content of every tracked file under `apps/web` and `apps/proxy` and refuses
+any that carries the letters `caches`. It runs over both directories in `quality`, and again
+in the pre-commit hook whenever a file under either is staged. It reads source text rather
+than an AST, and that is the point: a member pattern sees only the spellings it enumerates,
+and `self?.caches`, a key held in a variable, a template literal, `Reflect.get(self,
+"caches")` and a renaming destructure all reach Cache Storage without being one, and none of
+them can be written without the letters. It was watched refusing all twenty reaches planted
+across those surfaces, and staying silent on the three that have to pass. On the gates it
+replaces, seven of twelve spellings walked past in a source file and eight of twelve in the
+shipped page.
+
+**It names three files and trusts none of them further than it has to.** `cache.ts` is exempt
+because it is the writer. `worker/cache.test.ts` and `worker/sw.test.ts` are allowed the single
+literal `vi.stubGlobal("caches",`, which is struck from those two files alone before the letters
+are looked for, because that is how they hand the module under test a fake and the runner's API
+takes the global's name as a string. Everything else in them is refused: a test writing
+`self.caches.open(...)` draws the same error a source file would, and it has to, because a test
+file can be exported from and an export reaching `apps/web/src/index.ts` reaches
+`dist/index.js`. Both weaker shapes of this exemption were built and broken first. Exempting
+`*.test.ts` wholesale let a reach travel that export route into the built output. Striking the
+idiom in *every* file let any file declare its own `vi` whose `stubGlobal` returns
+`Reflect.get(self, name)`, so the call that hides the letters was also the call that made the
+reach. Naming the two files closes both: the idiom is struck only where the runner really puts
+it.
+
+**The surface is the two deployed directories rather than `apps/web/src`.** `public/index.html`
+carries an inline module script that ships to every device, and the `noRestrictedGlobals` ban
+on `caches` was scoped `apps/web/src/**`, so a bare `caches.open("shell")` there was refused by
+nothing. Biome does lint JavaScript inside an HTML `<script>`, which is worth stating because
+it is the opposite of what it looks like: the deleted plugin fired there on the member forms,
+and only the scoped rule missed. `apps/proxy` is included because it is the Worker that serves
+seat maps, `caches.default` is the Cloudflare idiom for holding a response, and that proxy
+holds nothing about anybody, which `deploy/README.md` states as a property of what it
+publishes. The deleted plugin covered neither surface's real risk: it matched a member *named*
+`caches`, and `caches.default` is a member *of* it.
+
+**It reads through a unicode escape, because otherwise it does not hold at all.**
+`\u0063aches` is a lawful identifier that a bundler emits as `caches`, and `self["\u0063aches"]`
+is a lawful key, so an escape is a two-character edit to any reach. `\uXXXX` and `\u{...}` are decoded before the letters are
+looked for. Neither Biome rule this replaced normalised them either, so it closes a route
+that was open the whole time rather than one this check created.
+
+**The cost was measured rather than assumed, and it is zero.** Of the 22 tracked files across
+those directories, one carries the letters once the idiom is struck, and it is the writer. The
+word does appear elsewhere in the workspace, which is what decided the surface rather than a
+wider one: `packages/client/src/catalogue.test.ts` has `it("caches for two hours...")` in a test
+name, and `tests/e2e/shell.spec.ts` reads Cache Storage back on purpose to assert what the
+worker holds. Both would be refused by a workspace-wide check and neither is a reach. What this
+does cost is prose: a Markdown file under either directory could not use the word and would have
+to write Cache Storage instead, and `deploy/README.md` is the nearest thing to one.
+
+**What it surrenders and what stays open, stated rather than implied.** The deleted plugin was a
+workspace-wide member rule, so `self.caches` under `tools/` or `tests/` is now refused by
+nothing; that is a real loss and a small one, since neither ships and the end-to-end suite reads
+Cache Storage there on purpose. The check reads the index, so it judges what is staged rather
+than what is in the editor, which is right for a commit gate and is why it is not in the
+list of gates to run by hand above. And two routes remain open: a name assembled at runtime,
+which no source-text check can see, and a reach written inside one of the three files named
+above. Both need a deliberate decoy rather than a slip, both are plain in review, and the second
+would also have to be exported into the build past a bundle ratchet that a test file's imports
+would break by two orders of magnitude. They stand on the same
+footing as the import ban's own known-open routes. `cache.ts` exports one writer,
+`precacheShell`, which **takes
 no argument**: what it caches is that module's own constant list of the files the build
 publishes, so no caller can choose, and nothing outside that list can be written. The
 worker's request path reaches Cache Storage
@@ -1301,12 +1365,27 @@ the argument, so a callback that obtains its own response and then reads it is t
 form rather than a violation. It runs in `pnpm lint`, so it gates a pull request and the
 pre-commit hook alike.
 
+**Both halves count the optional forms too, and as first written neither did.**
+`paths?.map(...)` walked past the rule entirely and `response?.text()` walked past its reader,
+so `$_?.map` and `$_?.flatMap` now sit beside the plain ones and a `body_read` pattern carries
+one literal alternative per reader name. The six names are spelled out a second time rather
+than factored through `reader()` because `` `$receiver?.$reader($...)` `` does not compile,
+which the import ban section states precisely. The half that looks for **no** body read needed
+this as much as the half that looks for one: without it a callback reading its own response as
+`(await fetch(path))?.text()` counted as reading nothing and was refused for it. It keys on
+method names, so a non-`Response` receiver with a method of the same name draws it:
+`rows.map((row) => row.json())` already did, and `rows?.map((row) => row?.json())` now does
+too. That is the rule's pre-existing false positive widened consistently rather than a new
+kind, and nothing in the workspace trips it.
+
 Biome's own rules were looked at first and none of them expresses this. `noAwaitInLoops` is
 the nearest, and it is the wrong one twice over: it catches the serialised form rather than
 the two-phase one, and it would fire on the retry loop and on the store contract, which are
 sequential on purpose. A plugin is Biome's supported way to add a rule, so that is what this
 is. It was watched failing on both halves of three spellings of the wrong form planted in
 the adapter, and watched passing on two spellings of the right form, before it was trusted.
+The optional forms were watched the same way, on a matrix of fourteen: eight spellings of
+the wrong form all refused, six of the right form all silent.
 
 ### The live timing
 

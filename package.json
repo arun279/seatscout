@@ -9,6 +9,7 @@
   },
   "scripts": {
     "build": "tsc --build --pretty false && pnpm --filter @seatscout/web build",
+    "cache-storage": "node tools/no-cache-storage-reach.mjs",
     "corpus:refresh": "node tools/capture-corpus.mjs && node tools/corpus-index.mjs && biome format --write packages/core/src/corpus/captures.ts",
     "dead-code": "knip",
     "footprint": "node tools/footprint/dist/index.js",
