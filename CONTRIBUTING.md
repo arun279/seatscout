@@ -82,7 +82,7 @@ for the same reason. The two facts this one compares are both in the repository.
 
 The pre-commit hook runs six checks over staged files: it formats, lints and spell checks
 them, refuses a source carrying mutation-test instrumentation, refuses a reach for Cache
-Storage under `apps/web` and `apps/proxy`, and scans for secrets. The pre-push hook runs
+Storage under `apps/`, and scans for secrets. The pre-push hook runs
 four over the whole workspace: it type checks, runs unit tests, checks for dead code, and
 holds the counts stated in prose. `lefthook.yml` is where both are declared.
 
@@ -1166,8 +1166,9 @@ to write Cache Storage instead, and `deploy/README.md` is the nearest thing to o
 workspace-wide member rule, so `self.caches` under `tools/` or `tests/` is now refused by
 nothing; that is a real loss and a small one, since neither ships and the end-to-end suite reads
 Cache Storage there on purpose. The check reads the index, so it judges what is staged rather
-than what is in the editor, which is right for a commit gate and is why it is not in the
-list of gates to run by hand above. And two routes remain open: a name assembled at runtime,
+than what is in the editor, which is right for a commit gate and is the one thing to know
+about running `pnpm cache-storage` from the list above: it reports on the last `git add`
+rather than on the edit in front of you. And two routes remain open: a name assembled at runtime,
 which no source-text check can see, and a reach written inside one of the three files named
 above. Both need a deliberate decoy rather than a slip, both are plain in review, and the second
 would also have to be exported into the build past a bundle ratchet that a test file's imports
