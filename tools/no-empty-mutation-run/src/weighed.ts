@@ -3,28 +3,18 @@ export interface Mutant {
 }
 
 export interface Judged {
-  readonly mutants?: readonly Mutant[];
+  readonly mutants: readonly Mutant[];
 }
 
 export interface Report {
-  readonly files?: Readonly<Record<string, Judged>>;
+  readonly files: Readonly<Record<string, Judged>>;
 }
 
 export const WEIGHED = ["Killed", "Survived", "NoCoverage", "Timeout"];
 
-const judgedIn = (report: Report): readonly Judged[] => {
-  const files = report.files;
-  return files === undefined ? [] : Object.values(files);
-};
-
-const mutantsIn = (judged: Judged): readonly Mutant[] => {
-  const mutants = judged.mutants;
-  return mutants === undefined ? [] : mutants;
-};
-
 export const weighed = (report: Report): number =>
-  judgedIn(report)
-    .flatMap(mutantsIn)
+  Object.values(report.files)
+    .flatMap((judged) => judged.mutants)
     .filter((mutant) => WEIGHED.includes(mutant.status)).length;
 
 export const refusal = (path: string): string =>

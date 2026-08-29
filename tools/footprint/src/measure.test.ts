@@ -66,6 +66,10 @@ const sizeLimitExitingNonZero = (stdout: string): Run =>
   ).run;
 
 describe("measuring a change", () => {
+  it("reads the comment ratchet out of the file that holds it", () => {
+    expect(RATCHET).toBe(".footprint.json");
+  });
+
   it("resolves the head first, then the merge base against it", () => {
     const { run, commands } = recorder();
 

@@ -8,6 +8,11 @@ const read = (files: Readonly<Record<string, string>>) => (path: string) => {
 };
 
 describe("reaching Cache Storage", () => {
+  it("looks for the letters of the name itself", () => {
+    expect(NAME).toBe("caches");
+    expect(WRITER).toBe("apps/web/src/worker/cache.ts");
+  });
+
   it("keeps the file that names it and drops the one that does not", () => {
     const files = {
       "apps/web/src/a.ts": `const store = ${NAME};`,
@@ -68,9 +73,9 @@ describe("reaching Cache Storage", () => {
   });
 
   it("names every offender, the one writer, and why", () => {
-    expect(refusal(["apps/web/src/a.ts"])).toBe(
-      "Refusing 1 file(s) that name Cache Storage:\n" +
-        "  apps/web/src/a.ts\n\n" +
+    expect(refusal(["apps/web/src/a.ts", "apps/web/src/b.ts"])).toBe(
+      "Refusing 2 file(s) that name Cache Storage:\n" +
+        "  apps/web/src/a.ts\n  apps/web/src/b.ts\n\n" +
         `Cache Storage is reached only through ${WRITER}, whose writer takes no\n` +
         "argument and caches the build's own output. Availability changes minute to minute,\n" +
         "so a cached seat is a lie with a plausible face. CONTRIBUTING.md says why.\n",

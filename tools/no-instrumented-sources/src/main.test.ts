@@ -65,5 +65,6 @@ describe("the command line", () => {
 
     expect(status).toBe(1);
     expect(said).toBe(NOTHING);
+    expect(said).toContain("Refusing a run with no file to judge");
   });
 });

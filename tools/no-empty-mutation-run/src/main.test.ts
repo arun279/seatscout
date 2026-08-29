@@ -30,6 +30,10 @@ const weighing = (...statuses: readonly string[]) =>
   });
 
 describe("the guard", () => {
+  it("reads the report the json reporter is configured to write", () => {
+    expect(REPORT).toBe("reports/mutation/mutation.json");
+  });
+
   it("reads the report the json reporter writes when it is told no path", () => {
     expect(guard({ [REPORT]: weighing("Killed") }).status).toBe(0);
   });

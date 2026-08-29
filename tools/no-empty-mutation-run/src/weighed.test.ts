@@ -14,6 +14,7 @@ describe("counting what a run weighed", () => {
 
   it("counts neither an ignored mutant nor one that would not compile", () => {
     expect(weighed(report("Ignored", "CompileError", "RuntimeError"))).toBe(0);
+    expect(weighed(report("Killed", "Ignored"))).toBe(1);
   });
 
   it("counts across every file the run judged", () => {
@@ -31,12 +32,8 @@ describe("counting what a run weighed", () => {
     expect(weighed({ files: {} })).toBe(0);
   });
 
-  it("counts nothing in a report holding no files at all", () => {
-    expect(weighed({})).toBe(0);
-  });
-
-  it("counts nothing in a file holding no mutants at all", () => {
-    expect(weighed({ files: { "a.ts": {} } })).toBe(0);
+  it("counts nothing in a file that holds no mutant", () => {
+    expect(weighed({ files: { "a.ts": { mutants: [] } } })).toBe(0);
   });
 });
 

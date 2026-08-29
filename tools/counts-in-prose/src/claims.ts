@@ -1,10 +1,13 @@
 import type { Claim } from "./judge.ts";
 import {
   alternativesOf,
-  bodyOf,
+  deniedGlobalsOf,
+  fieldAlternativesOf,
   fieldsOf,
   type Read,
+  succeedingArmsOf,
   translationsOf,
+  weightsOf,
 } from "./structures.ts";
 
 const BIOME = "biome.json";
@@ -32,60 +35,14 @@ const distances = (read: Read) =>
     (field) => !field.endsWith("Weight") && !field.startsWith("target"),
   );
 
-const charges = (read: Read) =>
-  [
-    ...bodyOf(
-      read,
-      PROFILE,
-      "const REFERENCE",
-      /\bconst REFERENCE: SeatProfile = \{\n([\s\S]*?)\n\};/,
-    ).matchAll(/(?<=^ {2}\w+Weight: )[^,]+(?=,$)/gm),
-  ].map((charge) => {
-    const weight = Number(charge[0]);
-    if (Number.isNaN(weight))
-      throw new Error(
-        `REFERENCE in ${PROFILE} weights something by "${charge[0]}"`,
-      );
-    return weight;
-  });
-
 const lighter = (read: Read) => {
-  const weighed = charges(read);
+  const weighed = weightsOf(read, PROFILE, "REFERENCE");
   return weighed.filter((charge) => charge < Math.max(...weighed));
 };
 
 const bands = (read: Read) => alternativesOf(read, GROUP, "Gap");
 
 const answers = (read: Read) => alternativesOf(read, VERIFY, "Unverified");
-
-const succeeding = (read: Read) => [
-  ...read(VERIFY).matchAll(/^ {6}readonly ok: true;$/gm),
-];
-
-const divergences = (read: Read) => [
-  ...bodyOf(
-    read,
-    CONTRACT,
-    "the kind of a Divergence",
-    /\binterface Divergence \{\n {2}readonly kind:([\s\S]*?);\n/,
-  ).matchAll(/"[^"]*"/g),
-];
-
-const globals = (read: Read) => {
-  const banning = JSON.parse(read(BIOME)).overrides.find(
-    (override: {
-      includes?: string[];
-      linter?: { rules?: { style?: { noRestrictedGlobals?: unknown } } };
-    }) =>
-      override.includes?.some((path) => path.startsWith(`${PACKAGES}/`)) &&
-      override.linter?.rules?.style?.noRestrictedGlobals,
-  );
-  if (banning === undefined)
-    throw new Error(`${BIOME} denies no global under ${PACKAGES}`);
-  return Object.keys(
-    banning.linter.rules.style.noRestrictedGlobals.options.deniedGlobals,
-  );
-};
 
 const AMENITIES = `the alternatives of Amenity, in ${CATALOGUE}`;
 const COVERAGE_OUTCOMES = `every field of Coverage but candidates, in ${SEARCH}`;
@@ -116,7 +73,7 @@ export const CLAIMS: readonly Claim[] = [
     document: "CONTEXT.md",
     says: /It answers one of (\w+) ways\./,
     about: `${UNVERIFIED}, and the arms of Verified that succeed`,
-    count: (read) => answers(read).length + succeeding(read).length,
+    count: (read) => answers(read).length + succeedingArmsOf(read, VERIFY),
   },
   {
     document: "CONTEXT.md",
@@ -188,13 +145,14 @@ export const CLAIMS: readonly Claim[] = [
     document: "CONTRIBUTING.md",
     says: /(\w+) things are reported: a body that is not JSON/,
     about: `the kinds of Divergence, in ${CONTRACT}`,
-    count: (read) => divergences(read).length,
+    count: (read) =>
+      fieldAlternativesOf(read, CONTRACT, "Divergence", "kind").length,
   },
   {
     document: "CONTRIBUTING.md",
     says: /A ban on the ([\w ]+?) names would therefore have needed/,
     about: `the globals ${BIOME} denies under ${PACKAGES}`,
-    count: (read) => globals(read).length,
+    count: (read) => deniedGlobalsOf(read, BIOME, PACKAGES).length,
   },
   {
     document: "CONTRIBUTING.md",

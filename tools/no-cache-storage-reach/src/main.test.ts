@@ -24,6 +24,10 @@ const gate = (
 };
 
 describe("the command line", () => {
+  it("reads the applications by that name", () => {
+    expect(APPS).toBe("apps");
+  });
+
   it("reads the applications when it is told no pathspec", () => {
     expect(gate({ "apps/web/src/a.ts": "export {};" }).asked).toStrictEqual([
       APPS,
@@ -57,5 +61,8 @@ describe("the command line", () => {
 
     expect(status).toBe(1);
     expect(said).toBe(NOTHING);
+    expect(said).toContain(
+      "Refusing a run over a pathspec that matches no tracked file",
+    );
   });
 });

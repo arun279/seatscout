@@ -49,12 +49,16 @@ describe("holding the suite to the setup", () => {
     expect(
       refusal(
         "setup.mjs",
-        ["liveArea"],
-        [{ file: "a.live.test.ts", name: "liveShowtime" }],
+        ["liveArea", "liveSearch"],
+        [
+          { file: "a.live.test.ts", name: "liveShowtime" },
+          { file: "b.live.test.ts", name: "liveSeatMap" },
+        ],
       ),
     ).toBe(
-      "setup.mjs provides liveArea, and the live suite asks for more:\n" +
-        "  a.live.test.ts injects liveShowtime\n",
+      "setup.mjs provides liveArea, liveSearch, and the live suite asks for more:\n" +
+        "  a.live.test.ts injects liveShowtime\n" +
+        "  b.live.test.ts injects liveSeatMap\n",
     );
   });
 

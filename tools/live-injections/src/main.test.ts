@@ -30,9 +30,16 @@ const gate = async (
   return { status, asked, said: printed.join(""), refused: refused.join("") };
 };
 
-const PROVIDING = { [SETUP]: 'provide("liveArea", x);' };
+const PROVIDING = {
+  [SETUP]: 'provide("liveArea", x);\nconst area = inject("liveArea");',
+};
 
 describe("the command line", () => {
+  it("reads the live suite's own setup and its own tests by default", () => {
+    expect(SETUP).toBe("tools/live-answers.mjs");
+    expect(TESTS).toBe("{apps,packages,tools}/*/**/*.live.test.ts");
+  });
+
   it("reads the setup and the live suite it is given no argument for", async () => {
     const { asked } = await gate(
       { ...PROVIDING, "a.live.test.ts": 'inject("liveArea");' },
@@ -98,6 +105,7 @@ describe("the command line", () => {
 
     expect(status).toBe(1);
     expect(refused).toBe(providesNothing(SETUP));
+    expect(refused).toContain("provides no value at all");
   });
 
   it("refuses a pattern that matches no live test, rather than passing over nothing", async () => {
@@ -105,6 +113,7 @@ describe("the command line", () => {
 
     expect(status).toBe(1);
     expect(refused).toBe(matchesNothing(TESTS));
+    expect(refused).toContain("matches no live test");
   });
 
   it("reads the files in one order however the pattern matched them", async () => {
