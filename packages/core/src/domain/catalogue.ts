@@ -94,7 +94,7 @@ const within = (
   until: number | undefined,
 ) => (from === undefined || at >= from) && (until === undefined || at < until);
 
-const admitted = <Term>(
+const satisfied = <Term>(
   asked: readonly Term[] | undefined,
   matches: (term: Term) => boolean,
 ) => asked === undefined || asked.some(matches);
@@ -102,12 +102,12 @@ const admitted = <Term>(
 const admits =
   (terms: ShowtimeTerms) =>
   ({ presentation, startsAt }: Showtime | Unidentified) =>
-    admitted(terms.theaters, (id) => id === presentation.theater.id) &&
-    admitted(terms.chains, (chain) => chain === presentation.theater.chain) &&
-    admitted(terms.formats, (format) =>
+    satisfied(terms.theaters, (id) => id === presentation.theater.id) &&
+    satisfied(terms.chains, (chain) => chain === presentation.theater.chain) &&
+    satisfied(terms.formats, (format) =>
       presentation.formats.includes(format),
     ) &&
-    admitted(terms.amenities, (amenity) =>
+    satisfied(terms.amenities, (amenity) =>
       presentation.amenities.includes(amenity),
     ) &&
     within(Date.parse(startsAt), terms.from, terms.until);
