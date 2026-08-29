@@ -118,7 +118,7 @@
       }
     },
     {
-      "includes": ["apps/web/src/**", "!apps/web/src/shell-cache.ts"],
+      "includes": ["apps/web/src/**", "!apps/web/src/worker/cache.ts"],
       "linter": {
         "rules": {
           "style": {
@@ -126,7 +126,7 @@
               "level": "error",
               "options": {
                 "deniedGlobals": {
-                  "caches": "Cache Storage is reached only through apps/web/src/shell-cache.ts, whose write takes no argument and caches the shell alone."
+                  "caches": "Cache Storage is reached only through apps/web/src/worker/cache.ts, whose write takes no argument and caches the shell alone."
                 }
               }
             }

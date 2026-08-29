@@ -256,7 +256,7 @@ shared packages it reaches, compressed. It is not a page weight, and the report 
 rather than leaving it to be inferred: the glob covers every script the build emits, while
 a page loads the ones it reaches. Nothing had to remember to re-set the ratchet when the
 shell landed: the shell did not fit under 298 B, so the gate failed until that diff raised
-it to 703 B.
+it to 704 B.
 
 A complexity finding is acted on where it is raised, by the author, before the branch
 leaves the machine: the same rule runs in the pre-commit hook over staged files. Nothing

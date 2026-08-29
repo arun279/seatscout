@@ -998,7 +998,7 @@ script imports the entry and calls `startShell`, which is why that entry has no 
 side effect and can therefore be imported by a test page as well as by the shell.
 
 **The service worker cannot cache seat Availability, and that is structural rather than
-observed.** `apps/web/src/shell-cache.ts` is the only file in `apps/web/src` allowed to
+observed.** `apps/web/src/worker/cache.ts` is the only file in `apps/web/src` allowed to
 name `caches`, which a Biome rule enforces the way ADR 3's platform ban is enforced. It
 exports one writer, `precacheShell`, which **takes no argument**: what it caches is that
 module's own constant list of the files the build publishes, so no caller can choose. The

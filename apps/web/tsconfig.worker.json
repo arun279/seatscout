@@ -7,10 +7,5 @@
     "tsBuildInfoFile": "tsconfig.worker.tsbuildinfo",
     "types": []
   },
-  "include": [
-    "src/shell-cache.ts",
-    "src/shell-cache.test.ts",
-    "src/sw.ts",
-    "src/sw.test.ts"
-  ]
+  "include": ["src/worker"]
 }

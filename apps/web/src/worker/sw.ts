@@ -1,4 +1,4 @@
-import { cachedShell, isShellPath, precacheShell } from "./shell-cache.js";
+import { cachedShell, isShellPath, precacheShell } from "./cache.js";
 
 declare const self: ServiceWorkerGlobalScope;
 

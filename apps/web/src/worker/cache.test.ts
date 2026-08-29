@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cachedShell, isShellPath, precacheShell } from "./shell-cache.js";
+import { cachedShell, isShellPath, precacheShell } from "./cache.js";
 
 const AVAILABILITY = "/napi/seatMap/561478479";
 
