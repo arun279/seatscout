@@ -286,7 +286,38 @@ which reaches none. It restates rather than extends because Biome replaces a rul
 rather than merging them, so a pattern added to one list has to be added to the other.
 `noRestrictedGlobals` rejects the host globals by name, which matters because a single
 `/// <reference lib="dom" />` re-declares the whole DOM to the compiler and the type error
-disappears.
+disappears. It matches a bare identifier and nothing else, so `globalThis.document` walked
+past a ban on `document`, and the list therefore carries every name that denotes the global
+object as well: `globalThis`, Node's `global`, and the DOM's `frames`, `opener`, `parent`
+and `top`, beside the `self` and `window` already on it. `Function` is there for the same
+reason, because `Function("return document")` hands one back without naming it.
+
+That closes the reach through a *named* global object completely, and not only its member
+form. `const held = globalThis`, the destructured `const { document } = globalThis`,
+`Reflect.get(globalThis, "document")` and a computed key held in a variable are all refused
+at the name, because none of them can be written without first naming the object. The rule
+resolves scopes, so a local or a parameter borrowing one of those names is untouched: the
+`window` that `seat-group.ts` gives each party-sized slice of a run still compiles, and so
+does the `top` in `seat-profile.test.ts`.
+
+**What it does not close is a receiver that is never named**, and a Grit plugin refusing the
+member instead, on the model of `no-cache-storage-detour.grit`, was written and measured
+before being dropped. Three findings decided that. Biome's GritQL has no pattern for an
+optional chain, so `held?.document` and `held?.["document"]` walk past any such rule, which
+is a ceiling on the technique rather than on one pattern: `self?.caches` walks past the
+Cache Storage rule for the same reason. A member pattern also cannot see
+`Function("return document")()`, which has no member. And it fires on honest code, because
+`document`, `location` and `process` are ordinary words: `theater.location` and the pure
+type `Theater["location"]` were both refused by it, and a type cannot reach a capability at
+all. A rule that refuses honest domain code is a rule that gets weakened, so the ban stops
+at the name.
+
+The compiler is what makes bare names unreachable, and it is the real gate. This half is a
+second layer over the one route the compiler cannot see, a `lib` reference that re-declares
+the DOM, and it is deliberately not airtight. Reaching a host global through a function
+built by `(() => {}).constructor("return document")`, or through a name introduced by
+`declare const document: { title: string }`, is refused by neither half and is known open.
+Neither is reachable by accident, and both are plain in review.
 
 Tests are compiled by a project of their own in each package. `tsconfig.json` excludes
 `src/**/*.test.ts` and `tsconfig.test.json` takes them, with the language's default
@@ -1006,10 +1037,12 @@ name `caches`, which a Biome rule enforces the way ADR 3's platform ban is enfor
 `noRestrictedGlobals` only sees the bare identifier, so `self.caches` and
 `globalThis.caches` would walk straight past it; `tools/lint/no-cache-storage-detour.grit`
 refuses those, and the computed form, everywhere in the workspace. Both halves were watched
-firing before either was relied on. It
-exports one writer, `precacheShell`, which **takes no argument**: what it caches is that
-module's own constant list of the files the build publishes, so no caller can choose, and
-nothing outside that list can be written. The worker's request path reaches Cache Storage
+firing before either was relied on. Biome's GritQL has no pattern for an optional chain, so
+`self?.caches` walks past this rule; the import ban section says why that ceiling stopped
+the same technique being used there. It exports one writer, `precacheShell`, which **takes
+no argument**: what it caches is that module's own constant list of the files the build
+publishes, so no caller can choose, and nothing outside that list can be written. The
+worker's request path reaches Cache Storage
 only through `cachedShell`, which reads, and it reads through `CacheStorage.match` rather
 than through the cache's own, so no writable handle exists outside the writer. Nothing the
 fetch handler sees can therefore be cached, and a request outside the shell is not answered
