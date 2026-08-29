@@ -67,7 +67,7 @@ code, so it costs nothing to keep and cannot be honestly added later.
 
 **Cyclomatic complexity is not measured.** An earlier revision of this decision reported
 it per bucket and gated nothing on it, on the argument that complexity growth is the kind
-a line count hides. Three findings retired that.
+a line count hides. None of that survived being checked.
 
 The figure was not cyclomatic complexity. It came from [scc](https://github.com/boyter/scc),
 which says of itself that it "does not build an AST of the code as it only scans through
