@@ -41,19 +41,26 @@
               "options": {
                 "deniedGlobals": {
                   "Buffer": "Everything under packages/ stays platform free. See ADR 3.",
+                  "Function": "Everything under packages/ stays platform free, and Function(\"return document\") reaches a host global without naming one. See ADR 3.",
                   "__dirname": "Everything under packages/ stays platform free. See ADR 3.",
                   "__filename": "Everything under packages/ stays platform free. See ADR 3.",
                   "caches": "Everything under packages/ stays platform free. See ADR 3.",
                   "document": "Everything under packages/ stays platform free. See ADR 3.",
+                  "frames": "Everything under packages/ stays platform free. See ADR 3.",
+                  "global": "Everything under packages/ stays platform free. See ADR 3.",
+                  "globalThis": "Everything under packages/ stays platform free, and nothing here reaches a host through the global object. See ADR 3.",
                   "importScripts": "Everything under packages/ stays platform free. See ADR 3.",
                   "indexedDB": "Everything under packages/ stays platform free. See ADR 3.",
                   "localStorage": "Everything under packages/ stays platform free. See ADR 3.",
                   "location": "Everything under packages/ stays platform free. See ADR 3.",
                   "navigator": "Everything under packages/ stays platform free. See ADR 3.",
+                  "opener": "Everything under packages/ stays platform free. See ADR 3.",
+                  "parent": "Everything under packages/ stays platform free. See ADR 3.",
                   "process": "Everything under packages/ stays platform free. See ADR 3.",
                   "require": "Everything under packages/ stays platform free. See ADR 3.",
                   "self": "Everything under packages/ stays platform free. See ADR 3.",
                   "sessionStorage": "Everything under packages/ stays platform free. See ADR 3.",
+                  "top": "Everything under packages/ stays platform free. See ADR 3.",
                   "window": "Everything under packages/ stays platform free. See ADR 3."
                 }
               }
