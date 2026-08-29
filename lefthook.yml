@@ -10,6 +10,9 @@ pre-commit:
       run: pnpm exec biome lint --no-errors-on-unmatched {staged_files}
     spell:
       run: pnpm exec cspell lint --no-must-find-files {staged_files}
+    instrumented:
+      glob: "*.{ts,tsx}"
+      run: node tools/no-instrumented-sources.mjs {staged_files}
     secrets:
       run: gitleaks git --pre-commit --staged --no-banner --redact --verbose
       fail_text: Install gitleaks, or run git commit --no-verify to skip the scan
