@@ -14,7 +14,7 @@ pre-commit:
       glob: "*.{ts,tsx}"
       run: node tools/no-instrumented-sources.mjs {staged_files}
     cache-storage:
-      glob: "{apps/web,apps/proxy}/**"
+      glob: "apps/**"
       run: node tools/no-cache-storage-reach.mjs
     secrets:
       run: gitleaks git --pre-commit --staged --no-banner --redact --verbose

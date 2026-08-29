@@ -1,24 +1,31 @@
 import { execFileSync } from "node:child_process";
 import { exit } from "node:process";
 
+const APPS = "apps";
 const WRITER = "apps/web/src/worker/cache.ts";
 const STUBS = [
   "apps/web/src/worker/cache.test.ts",
   "apps/web/src/worker/sw.test.ts",
 ];
 const STUB = 'vi.stubGlobal("caches",';
-const ESCAPE = /\\u\{([0-9a-fA-F]+)\}|\\u([0-9a-fA-F]{4})/g;
+const ESCAPE =
+  /\\u\{([0-9a-fA-F]+)\}|\\u([0-9a-fA-F]{4})|\\x([0-9a-fA-F]{2})|\\(?:\r\n|[\n\r\u2028\u2029])|\\(.)/g;
 
 const git = (...args) => execFileSync("git", args, { encoding: "utf8" });
 
+const decoded = (_, braced, plain, hex, literal) => {
+  const point = braced ?? plain ?? hex;
+  return point === undefined
+    ? (literal ?? "")
+    : String.fromCodePoint(Number.parseInt(point, 16));
+};
+
 const spelled = (path) => {
-  const source = git("show", `:${path}`).replace(ESCAPE, (_, braced, plain) =>
-    String.fromCodePoint(Number.parseInt(braced ?? plain, 16)),
-  );
+  const source = git("show", `:${path}`).replace(ESCAPE, decoded);
   return STUBS.includes(path) ? source.replaceAll(STUB, "") : source;
 };
 
-const offenders = git("ls-files", "--", "apps/web", "apps/proxy")
+const offenders = git("ls-files", "--", APPS)
   .trim()
   .split("\n")
   .filter((path) => path !== WRITER && spelled(path).includes("caches"));
