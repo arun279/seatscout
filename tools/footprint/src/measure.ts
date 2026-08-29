@@ -1,8 +1,5 @@
-import { join } from "node:path";
 import {
-  branchesOf,
   type Bundle,
-  type Complexity,
   type Diff,
   filesOf,
   type Measurement,
@@ -12,12 +9,8 @@ import {
 import type { Shell } from "./shell.js";
 
 export const measureWith = (shell: Shell) => {
-  const output = (
-    command: string,
-    args: readonly string[],
-    cwd?: string,
-  ): string => {
-    const completed = shell.run(command, args, cwd);
+  const output = (command: string, args: readonly string[]): string => {
+    const completed = shell.run(command, args);
     if (!completed.ok) {
       throw new Error(`${command} ${args.join(" ")}\n${completed.stderr}`);
     }
@@ -35,26 +28,7 @@ export const measureWith = (shell: Shell) => {
   const diffOf = (base: string, head: string): Diff =>
     JSON.parse(cloc("--git", "--diff", base, head));
 
-  const complexityOf = (ref: string): Complexity => {
-    const directory = shell.temporary();
-    const archive = join(directory, "tree.tar");
-    git("archive", "--output", archive, ref);
-    output("tar", ["-x", "-f", archive, "-C", directory]);
-    shell.discard(archive);
-    const counted = output(
-      "scc",
-      ["--format", "json", "--by-file", "."],
-      directory,
-    );
-    shell.discard(directory);
-    return branchesOf(JSON.parse(counted));
-  };
-
-  const sideOf = (ref: string): Side => ({
-    ref,
-    tree: treeOf(ref),
-    complexity: complexityOf(ref),
-  });
+  const sideOf = (ref: string): Side => ({ ref, tree: treeOf(ref) });
 
   const bundles = (): readonly Bundle[] =>
     JSON.parse(shell.run("pnpm", ["exec", "size-limit", "--json"]).stdout);

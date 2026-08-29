@@ -1,6 +1,3 @@
-import { existsSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { basename, dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { shell } from "./shell.js";
 
@@ -28,36 +25,5 @@ describe("running a command", () => {
 
     expect(completed.ok).toBe(false);
     expect(completed.stderr).toBe("no such revision");
-  });
-
-  it("runs the command in the directory it is given", () => {
-    const directory = shell.temporary();
-
-    expect(
-      shell.run(node, ["-e", "process.stdout.write(process.cwd())"], directory)
-        .stdout,
-    ).toContain(basename(directory));
-
-    shell.discard(directory);
-  });
-});
-
-describe("temporary directories", () => {
-  it("names them so a leaked one is identifiable, under the system temporary root", () => {
-    const directory = shell.temporary();
-
-    expect(basename(directory).startsWith("footprint-")).toBe(true);
-    expect(dirname(directory)).toBe(tmpdir());
-
-    shell.discard(directory);
-  });
-
-  it("discards a directory along with what is inside it", () => {
-    const directory = shell.temporary();
-    writeFileSync(join(directory, "tree.tar"), "");
-
-    shell.discard(directory);
-
-    expect(existsSync(directory)).toBe(false);
   });
 });

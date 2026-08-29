@@ -18,19 +18,9 @@ export interface Bundle {
   readonly passed: boolean;
 }
 
-export type Complexity = Readonly<Record<string, number>>;
-
-export interface CountedLanguage {
-  readonly Files: readonly {
-    readonly Location: string;
-    readonly Complexity: number;
-  }[];
-}
-
 export interface Side {
   readonly ref: string;
   readonly tree: Tree;
-  readonly complexity: Complexity;
 }
 
 export interface Measurement {
@@ -76,13 +66,6 @@ const rowsFor = (buckets: readonly Bucket[]): readonly Row[] =>
     [`${LABELS[bucket]} comments`, bucket, "comment"],
   ]);
 
-export const branchesOf = (languages: readonly CountedLanguage[]): Complexity =>
-  Object.fromEntries(
-    languages.flatMap((language) =>
-      language.Files.map((file) => [file.Location, file.Complexity]),
-    ),
-  );
-
 export const filesOf = <T>(
   report: Readonly<Record<string, T>>,
 ): Readonly<Record<string, T>> =>
@@ -116,42 +99,6 @@ const authored = (tree: Tree): Counts => {
   const sum = (kind: Kind) =>
     AUTHORED.reduce((total, bucket) => total + totals[bucket][kind], 0);
   return { code: sum("code"), comment: sum("comment") };
-};
-
-const branchesBy = (complexity: Complexity): Record<Bucket, number> => {
-  const totals: Record<Bucket, number> = {
-    product: 0,
-    test: 0,
-    tooling: 0,
-    other: 0,
-  };
-  for (const [path, branches] of Object.entries(complexity)) {
-    totals[bucketOf(path)] += branches;
-  }
-  return totals;
-};
-
-const signed = (change: number): string =>
-  change > 0 ? `+${change}` : String(change);
-
-const branchRows = (
-  base: Complexity,
-  head: Complexity,
-): readonly (readonly string[])[] => {
-  const was = branchesBy(base);
-  const now = branchesBy(head);
-  const row = (label: string, from: number, to: number) => [
-    label,
-    String(from),
-    String(to),
-    signed(to - from),
-  ];
-  const total = (totals: Record<Bucket, number>) =>
-    AUTHORED.reduce((sum, bucket) => sum + totals[bucket], 0);
-  return [
-    ...AUTHORED.map((bucket) => row(LABELS[bucket], was[bucket], now[bucket])),
-    row("Authored total", total(was), total(now)),
-  ];
 };
 
 const perHundred = (counts: Counts): string =>
@@ -234,17 +181,6 @@ export const render = (measurement: Measurement): Report => {
       ),
       "",
       `Comment load may not exceed the merge base. ${verdict(withinCommentLoad, COMMENT_REMEDY)}`,
-      "",
-      "### Cyclomatic complexity",
-      "",
-      "scc's estimate: branch and loop keywords counted per file rather than",
-      "measured from a syntax tree. Reported, never gated. What fails a build is",
-      "Biome's cognitive complexity rule at its documented limit of 15.",
-      "",
-      ...table(
-        ["Source", "Merge base", "This branch", "Change"],
-        branchRows(measurement.base.complexity, measurement.head.complexity),
-      ),
       "",
       "### Bundle size",
       "",

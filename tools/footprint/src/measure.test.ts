@@ -5,16 +5,12 @@ import type { Completed, Shell } from "./shell.js";
 interface Command {
   readonly command: string;
   readonly args: readonly string[];
-  readonly cwd: string | undefined;
 }
-
-const DIRECTORY = "/tmp/footprint-fake";
 
 const recorder = (
   over: (command: Command) => Completed | undefined = () => undefined,
 ) => {
   const commands: Command[] = [];
-  const discarded: string[] = [];
 
   const canned = (command: Command): string => {
     if (command.command === "git" && command.args[0] === "rev-parse")
@@ -33,10 +29,6 @@ const recorder = (
         "packages/core/src/seat.ts": { code: 40, comment: 1 },
         SUM: { code: 40, comment: 1 },
       });
-    if (command.command === "scc")
-      return JSON.stringify([
-        { Files: [{ Location: "packages/core/src/seat.ts", Complexity: 7 }] },
-      ]);
     if (command.command === "pnpm")
       return JSON.stringify([
         { name: "web app", size: 15, sizeLimit: 15, passed: true },
@@ -45,18 +37,14 @@ const recorder = (
   };
 
   const shell: Shell = {
-    run: (command, args, cwd) => {
-      const call = { command, args: [...args], cwd };
+    run: (command, args) => {
+      const call = { command, args: [...args] };
       commands.push(call);
       return over(call) ?? { ok: true, stdout: canned(call), stderr: "" };
     },
-    temporary: () => DIRECTORY,
-    discard: (path) => {
-      discarded.push(path);
-    },
   };
 
-  return { shell, commands, discarded };
+  return { shell, commands };
 };
 
 const lines = (commands: readonly Command[]): readonly string[] =>
@@ -98,39 +86,6 @@ describe("measuring a change", () => {
     expect(lines(commands)).toContain("pnpm exec size-limit --json");
   });
 
-  it("extracts a side into a temporary directory to count its branches", () => {
-    const { shell, commands } = recorder();
-
-    measureWith(shell)("origin/main", "HEAD");
-
-    expect(lines(commands)).toContain(
-      `git archive --output ${DIRECTORY}/tree.tar base-sha`,
-    );
-    expect(lines(commands)).toContain(
-      `tar -x -f ${DIRECTORY}/tree.tar -C ${DIRECTORY}`,
-    );
-    expect(commands.find((command) => command.command === "scc")).toStrictEqual(
-      {
-        command: "scc",
-        args: ["--format", "json", "--by-file", "."],
-        cwd: DIRECTORY,
-      },
-    );
-  });
-
-  it("discards the archive before counting, and the directory after", () => {
-    const { shell, discarded } = recorder();
-
-    measureWith(shell)("origin/main", "HEAD");
-
-    expect(discarded).toStrictEqual([
-      `${DIRECTORY}/tree.tar`,
-      DIRECTORY,
-      `${DIRECTORY}/tree.tar`,
-      DIRECTORY,
-    ]);
-  });
-
   it("carries the counter's numbers into the measurement", () => {
     const { shell } = recorder();
 
@@ -140,9 +95,6 @@ describe("measuring a change", () => {
     expect(measurement.head.ref).toBe("head-sha");
     expect(measurement.head.tree).toStrictEqual({
       "packages/core/src/seat.ts": { code: 40, comment: 1 },
-    });
-    expect(measurement.head.complexity).toStrictEqual({
-      "packages/core/src/seat.ts": 7,
     });
     expect(measurement.diff.added).toStrictEqual({
       "packages/core/src/seat.ts": { code: 5, comment: 0 },
