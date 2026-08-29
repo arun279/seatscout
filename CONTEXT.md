@@ -149,13 +149,15 @@ THX-certified auditorium is calibrated. That two thirds is measured to the rear 
 which a seat map does not locate, so the target is a close approximation of that point on
 the row axis rather than the point itself.
 
-It penalises four things. Proximity to a wall, of which the last row is one case, because
-ST 202 keeps its measurement positions more than five feet from any wall. Proximity to the
-screen, because the same figure keeps them more than sixteen feet from it. Off-axis viewing
-angle, which is lateral offset divided by distance to the screen rather than lateral offset
-on its own, because the same sideways offset is a larger angle the nearer you sit. And each
-pod divider the Seat Group crosses, because a run that crosses none is better than one that
-crosses two and ordering is the only thing the score does.
+It penalises five things. How far the Seat sits from the target depth, which carries the
+heaviest weight of the five because the target is what the Profile is for. Off-axis viewing
+angle, weighted equally, which is lateral offset divided by distance to the screen rather
+than lateral offset on its own, because the same sideways offset is a larger angle the
+nearer you sit. Then three lighter terms: proximity to the screen and proximity to a wall,
+of which the last row is one case, because ST 202 keeps its measurement positions more than
+sixteen feet from the screen and more than five feet from any wall; and each pod divider the
+Seat Group crosses, because a run that crosses none is better than one that crosses two and
+ordering is the only thing the score does.
 
 Two of those are distances the seat map does not carry, so the Profile holds the geometry it
 is scored in as well as its targets and weights: how far the screen stands in front of the
