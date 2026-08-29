@@ -62,6 +62,19 @@ bundle may exceed its ratchet. Raising a ratchet means editing `.size-limit.json
 is a reviewed line in the diff. When either fails, the report names both ways through
 rather than only the verdict.
 
+The bundle figure is brotli, summed per file, over every script `apps/web`'s own Vite
+build emits. The workspace packages are inside that bundle, so they are counted where a
+browser would receive them rather than named in an import statement the measurement never
+follows. While `apps/web` has no page it is a library build of the module that application
+publishes, and it is not a page weight: nothing links to it, so the bytes a user downloads
+today are none.
+
+`apps/web/vite.config.ts` is that build, and `pnpm build` runs `tsc --build` across the
+workspace before it, because a bundler transpiles without type information and the
+directory it writes is the one the deployment publishes. `apps/web` therefore emits
+nothing from `tsc` and is a single project rather than the emit-and-test pair the packages
+use.
+
 The cyclomatic figure gates nothing. It is scc's estimate, counted from branch and loop
 keywords rather than from a syntax tree, and it is there so that complexity growth is as
 visible as line growth. Complexity that fails a build is cognitive complexity, caught by
@@ -908,11 +921,12 @@ another caller is about to read, and would pass in Node what fails in a browser.
 
 The in-memory store runs it under vitest. The browser adapter runs the same clauses in a
 real browser: `tests/e2e/store-contract.spec.ts` serves the built
-`packages/client/dist/store-contract.js` and `apps/web/dist/store.js` from one origin and
+`packages/client/dist/index.js` and the bundle `apps/web` ships from one origin and
 renders each clause's verdict onto a page, which is also what makes a headed run readable by
-a person. Both load straight out of `dist` with no bundler: the client's modules import
-nothing outside themselves, and the one bare specifier the web adapter emits is resolved by
-an import map on the page. A contract that passes only in Node proves
+a person. The page carries no import map, and that is the point: the client's modules
+import nothing outside themselves, and the web bundle carries its dependencies inside it,
+so output the deployment could not resolve fails a test here rather than passing the
+bundle gate's weigh-in. A contract that passes only in Node proves
 nothing about the adapter that ships, which is why the browser run exists; and because the
 mutation gate runs vitest and not Playwright, the adapter is judged by unit tests of its own
 as well.

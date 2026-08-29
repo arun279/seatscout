@@ -8,7 +8,7 @@
     "node": ">=24"
   },
   "scripts": {
-    "build": "tsc --build --pretty false",
+    "build": "tsc --build --pretty false && pnpm --filter @seatscout/web build",
     "corpus:refresh": "node tools/capture-corpus.mjs && node tools/corpus-index.mjs && biome format --write packages/core/src/corpus/captures.ts",
     "dead-code": "knip",
     "footprint": "node tools/footprint/dist/index.js",

@@ -68,9 +68,29 @@ emitted script rather than an entry point, so deferring bytes into a chunk that 
 later does not move the number. Remaining headroom is reported, so a ratchet that has
 drifted above the real size is visible.
 
+What the glob is pointed at has to be the output of the application's own bundler, and
+that is the load-bearing half of this gate. The web application first shipped without one:
+its build was `tsc`, which emits a file per source file and rewrites no import specifier,
+so the directory being weighed held modules no browser could resolve, and the workspace
+packages those modules imported were named in an import statement rather than present in
+the measurement. The figure moved once in the twenty-three merges after this decision was
+taken, and it moved because a second file appeared in the directory, not because anything
+a browser would download had changed. A ratchet over a per-file transpile is a ratchet
+over a stand-in, which is the failure named at the top of this decision arriving one step
+earlier than the deferred chunk. The web application therefore builds with Vite, which
+ADR 3 already chose, from the first commit at which there is something to measure rather
+than from the first screen.
+
+The pairing that keeps that honest is in the end-to-end suite rather than in the gate. It
+serves the built output over HTTP with no import map and runs the store contract against
+it in a real browser, so output a browser cannot resolve fails a test instead of passing a
+weigh-in.
+
 size-limit signals a breach through its exit status while still printing its verdict, so
 the report reads `passed` out of its JSON rather than looking at the status. That is why
-it is the one subprocess here whose exit code is ignored.
+it is the one subprocess here whose exit code is ignored. `@size-limit/file` compresses
+each matched file on its own and adds the results, so the figure is a sum of per-file
+brotli rather than the brotli of everything concatenated.
 
 The line counter is [cloc](https://github.com/AlDanial/cloc), pinned to a released version
 and checked against its SHA-256 before use. scc and tokei were the alternatives for that
@@ -108,6 +128,14 @@ is a wall: make the code say what the comment was going to, or change this decis
 
 Raising the bundle ratchet is a line in a diff that a reviewer sees, rather than a number
 that quietly stops meaning anything.
+
+The web bundle is a library build for as long as the web application has no page. Its
+entry is the module that application publishes, so the figure is all of the JavaScript the
+application contributes plus the slice of the shared packages it reaches, compressed. It
+is not a page weight, and it should not be read as one: nothing links to it yet, so the
+bytes a user downloads today are none. The entry becomes `index.html` when the shell
+lands, the ratchet is re-set from that measurement in the same diff, and the glob does not
+change, because it already covers every script the build emits.
 
 cloc and scc are prerequisites for running the report locally, alongside gitleaks. None of
 the three is an npm package, so none is installed by `pnpm install`.

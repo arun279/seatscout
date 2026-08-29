@@ -1,1 +1,1 @@
-export {};
+export { browserStore } from "./store.js";

@@ -182,6 +182,10 @@ Biome's cognitive complexity rule at its documented limit of 15.
 
 ### Bundle size
 
+Brotli, summed per file, over every script the application's own bundler
+emits. Workspace dependencies are inlined, so the shared packages are
+counted where a browser would receive them.
+
 | Bundle | Brotli | Ratchet | Headroom |
 | --- | ---: | ---: | ---: |
 | web app | 15 B | 15 B | 0 B |

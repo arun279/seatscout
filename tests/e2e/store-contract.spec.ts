@@ -11,15 +11,12 @@ const AWKWARD_KEY = 'a "quoted" \\ key with a ☃ in it';
 
 const PAGE = `<!doctype html>
 <title>Key-value store contract</title>
-<script type="importmap">
-  { "imports": { "@seatscout/client": "/client/index.js" } }
-</script>
 <h1>Key-value store contract</h1>
 <p id="verdict">running</p>
 <ul id="checks"></ul>
 <script type="module">
-  import { storeContract } from "@seatscout/client";
-  import { browserStore } from "/web/store.js";
+  import { storeContract } from "/client/index.js";
+  import { browserStore } from "/web/index.js";
 
   const checks = await storeContract(browserStore());
   document.querySelector("#checks").replaceChildren(

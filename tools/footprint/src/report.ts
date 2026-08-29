@@ -248,6 +248,10 @@ export const render = (measurement: Measurement): Report => {
       "",
       "### Bundle size",
       "",
+      "Brotli, summed per file, over every script the application's own bundler",
+      "emits. Workspace dependencies are inlined, so the shared packages are",
+      "counted where a browser would receive them.",
+      "",
       ...table(
         ["Bundle", "Brotli", "Ratchet", "Headroom"],
         measurement.bundles.map((bundle) => [
