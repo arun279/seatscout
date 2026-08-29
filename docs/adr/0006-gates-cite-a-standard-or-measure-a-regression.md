@@ -50,6 +50,19 @@ cognitive complexity to be the first validated, purely code-based measure of
 understandability. Its diagnostic names the file, the function, its score, the limit and
 the remedy, which is the whole test of whether a number belongs in a gate.
 
+Choosing it over cyclomatic complexity is also the choice the body that publishes both has
+made. SonarSource ships a cyclomatic complexity rule, S1541, and leaves it out of every
+default quality profile; the cognitive complexity rule, S3776, is in the default Sonar way
+profile at a threshold of 15. Biome's rule is that rule, and that threshold.
+
+Keeping any complexity gate is nonetheless a choice against the grain, and worth naming as
+one. TypeScript, VS Code, Next.js, Node, Vue, Svelte, Astro, React Router and Biome itself
+enable no complexity rule of any kind, and React's configuration turns ESLint's off by
+name. That is a reasonable position for a large codebase with many hands and a long
+history, where a limit introduced late grandfathers whatever preceded it. It is the wrong
+position here for the reason this decision opens with: the gate is in place before the
+code, so it costs nothing to keep and cannot be honestly added later.
+
 **Cyclomatic complexity is not measured.** An earlier revision of this decision reported
 it per bucket and gated nothing on it, on the argument that complexity growth is the kind
 a line count hides. Three findings retired that.
@@ -77,6 +90,22 @@ by, lines of code", to SonarSource, whose reason for formulating cognitive compl
 that cyclomatic complexity excels at testability and not at maintainability. This
 workspace does not need a proxy for test adequacy. The nightly mutation run measures it,
 and breaks below 100 per cent.
+
+Measuring it properly instead was considered and is not available. No maintained tool
+computes cyclomatic complexity from a TypeScript syntax tree: `ts-complex` last published
+in 2018 against TypeScript 2.8, `typhonjs-escomplex` has been at 0.1.x since 2018, and
+`escomplex` and `complexity-report` have been at a 2016 alpha ever since. ESLint's
+`complexity` rule is the maintained one, and taking it would mean running ESLint and
+typescript-eslint beside Biome for a single rule.
+
+There would also be no threshold to take from it. Its default of 20 is off unless switched
+on, is absent from `eslint:recommended`, and was settled in a 2015 issue thread as a
+ceiling on the obviously unreasonable rather than a measured limit. The older number it
+was weighed against is no firmer: NIST Special Publication 500-235, the document that
+established 10, says in the same breath that "limits as high as 15 have been used
+successfully as well" and that "an organization can pick a complexity limit greater than
+10, but only if it is sure it knows what it is doing". A gate here would have had to pick,
+and picking is what this decision forbids.
 
 One limit of what survives is worth stating here rather than discovering later. Cognitive
 complexity is defined per function, as ESLint's `complexity` rule and every other
