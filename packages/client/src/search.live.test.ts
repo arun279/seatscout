@@ -32,12 +32,14 @@ const reaching = (
   return async (
     path: string,
     init?: {
+      readonly cache?: "no-store";
       readonly method?: string;
       readonly headers?: Readonly<Record<string, string>>;
       readonly body?: string;
     },
   ) => {
     const response = await fetch(`${origin}${path}`, {
+      cache: init?.cache,
       method: init?.method,
       headers: {
         ...headers,

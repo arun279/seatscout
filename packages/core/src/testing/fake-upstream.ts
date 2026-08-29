@@ -31,6 +31,7 @@ export interface UpstreamScript {
 interface RecordedRequest {
   readonly path: string;
   readonly method: string;
+  readonly cache: "no-store" | null;
   readonly headers: Readonly<Record<string, string>>;
   readonly body: string | null;
 }
@@ -119,6 +120,7 @@ export const fakeUpstream = (script: UpstreamScript): FakeUpstream => {
     requests.push({
       path: url,
       method: init?.method ?? "GET",
+      cache: init?.cache ?? null,
       headers: lowercased(init?.headers ?? {}),
       body: init?.body ?? null,
     });

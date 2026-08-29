@@ -241,6 +241,7 @@ describe("the fake upstream", () => {
 
     await fetch("/napi/nearbyTheaters?zipCode=75006&limit=25");
     await fetch("/napi/preferences/themes", {
+      cache: "no-store",
       method: "POST",
       headers: { "Content-Type": "text/plain", "X-Upstream-Cookie": "a=b" },
       body: "_expiry=1",
@@ -250,12 +251,14 @@ describe("the fake upstream", () => {
       {
         path: "/napi/nearbyTheaters?zipCode=75006&limit=25",
         method: "GET",
+        cache: null,
         headers: {},
         body: null,
       },
       {
         path: "/napi/preferences/themes",
         method: "POST",
+        cache: "no-store",
         headers: { "content-type": "text/plain", "x-upstream-cookie": "a=b" },
         body: "_expiry=1",
       },

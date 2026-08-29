@@ -55,6 +55,7 @@ export const openSource = (deps: SourceDependencies): Source => {
 
   const bootstrap = async () => {
     const response = await deps.fetch(BOOTSTRAP, {
+      cache: "no-store",
       method: "POST",
       headers: { "content-type": BOOTSTRAP_FORM },
       body: `_expiry=${deps.now()}`,
@@ -79,12 +80,10 @@ export const openSource = (deps: SourceDependencies): Source => {
     try {
       const carried = await held();
       if (!sessionOpened) return null;
-      const response = await deps.fetch(
-        path,
-        carried === null
-          ? undefined
-          : { headers: { [UPSTREAM_COOKIE]: carried } },
-      );
+      const response = await deps.fetch(path, {
+        cache: "no-store",
+        headers: carried === null ? {} : { [UPSTREAM_COOKIE]: carried },
+      });
       const reopened = response.headers.get(UPSTREAM_SET_COOKIE);
       if (reopened !== null) session = reopened;
       return { status: response.status, body: await response.text() };

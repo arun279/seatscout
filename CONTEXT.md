@@ -190,6 +190,12 @@ status codes are mapped onto a known-bookable set, and any code outside that set
 treated as not bookable. A Seat is never presented as available on the strength of an
 unrecognised code.
 
+**Never taken from a cache.** A client's read asks not to be answered from one and not to
+be kept in one, whatever the upstream's response headers would otherwise entitle it to
+keep. An Availability held over is a judgement about a moment that has passed, which is the
+thing Re-verification exists to prevent. What a cache between a client and a Source does is
+not this application's to decide; what its own reads ask for is.
+
 ## Re-verification
 
 Reading a Seat Group's Availability again at the moment of hand-off. It is the only thing
