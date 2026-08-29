@@ -17,6 +17,9 @@ export const measureWith = (shell: Shell) => {
     return completed.stdout;
   };
 
+  const git = (...args: readonly string[]): string =>
+    output("git", args).trim();
+
   const cloc = (...args: readonly string[]): string =>
     output("cloc", [...args, "--by-file", "--json", "--hide-rate", "--quiet"]);
 
@@ -31,8 +34,8 @@ export const measureWith = (shell: Shell) => {
     JSON.parse(shell.run("pnpm", ["exec", "size-limit", "--json"]).stdout);
 
   return (baseRef: string, headRef: string): Measurement => {
-    const head = output("git", ["rev-parse", headRef]).trim();
-    const base = output("git", ["merge-base", baseRef, head]).trim();
+    const head = git("rev-parse", headRef);
+    const base = git("merge-base", baseRef, head);
     return {
       base: sideOf(base),
       head: sideOf(head),
