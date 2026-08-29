@@ -1,39 +1,12 @@
 import { readFileSync } from "node:fs";
 import { exit, stderr, stdout } from "node:process";
 
-const UNITS = [
-  "zero",
-  "one",
-  "two",
-  "three",
-  "four",
-  "five",
-  "six",
-  "seven",
-  "eight",
-  "nine",
-  "ten",
-  "eleven",
-  "twelve",
-  "thirteen",
-  "fourteen",
-  "fifteen",
-  "sixteen",
-  "seventeen",
-  "eighteen",
-  "nineteen",
-];
+const UNITS = `zero one two three four five six seven eight nine
+  ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen`.split(
+  /\s+/,
+);
 
-const TENS = [
-  "twenty",
-  "thirty",
-  "forty",
-  "fifty",
-  "sixty",
-  "seventy",
-  "eighty",
-  "ninety",
-];
+const TENS = "twenty thirty forty fifty sixty seventy eighty ninety".split(" ");
 
 const NUMBERS = [
   ...UNITS,
