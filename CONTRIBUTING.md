@@ -6,29 +6,41 @@
 - pnpm 11.24.0, pinned by `packageManager`
 - [gitleaks](https://github.com/gitleaks/gitleaks), for the pre-commit secret scan
 - [cloc](https://github.com/AlDanial/cloc), for the footprint report
+- [actionlint](https://github.com/rhysd/actionlint) and
+  [shellcheck](https://www.shellcheck.net), for the workflow and shell checks in the
+  `quality` job
 
 Run `pnpm install` after cloning. The install registers the lefthook Git hooks.
 
 ## Quality gates
 
-Pull requests run formatting, linting, spelling, type checking, dead-code analysis, unit
-tests, the build, and the end-to-end suite. The end-to-end suite drives a real browser, so
-the `quality` job installs Chromium before it runs, and it runs after the build because
-what it loads is the built output. The accessibility gate lives there too: axe-core scans
-the shell against WCAG 2.2 at levels A and AA and a violation fails the job. Run the same
-gates locally with:
+Pull requests run the `quality` job, which is the list below in the order it runs them,
+and three further jobs described after it. The end-to-end suite drives a real browser, so the
+`quality` job installs Chromium before it runs, and it runs after the build because what it
+loads is the built output. The accessibility gate lives there too: axe-core scans the shell
+against WCAG 2.2 at levels A and AA and a violation fails the job. Run the same gates
+locally with:
 
 ```sh
 pnpm format:check
 pnpm lint
+actionlint
+shellcheck deploy/*.sh
 pnpm spell
 pnpm typecheck
 pnpm dead-code
+pnpm live-injections
+git ls-files '*.ts' '*.tsx' | xargs pnpm -s instrumented
+pnpm cache-storage
 pnpm counts
 pnpm test:unit
 pnpm build
+pnpm --filter @seatscout/proxy exec wrangler deploy --dry-run
 pnpm test:e2e
 ```
+
+The list is the job, not a selection from it. Running a shorter one and finding it green is
+how a contributor arrives red on a pull request, which is what this list is for.
 
 Three further jobs run alongside them. `footprint` measures the change and is described
 below. `secrets` scans the pull request's commits with gitleaks. `dependencies` runs
@@ -67,9 +79,11 @@ this gate: that decision governs a gate that needs a number, and the exact check
 one, the import ban and `pnpm live-injections` and `pnpm cache-storage`, sit outside it
 for the same reason. The two facts this one compares are both in the repository.
 
-The pre-commit hook formats, lints, spell checks, and secret scans staged files. The
-pre-push hook type checks the workspace, runs unit tests, checks for dead code, and holds
-the counts stated in prose.
+The pre-commit hook runs six checks over staged files: it formats, lints and spell checks
+them, refuses a source carrying mutation-test instrumentation, refuses a reach for Cache
+Storage under `apps/web` and `apps/proxy`, and scans for secrets. The pre-push hook runs
+four over the whole workspace: it type checks, runs unit tests, checks for dead code, and
+holds the counts stated in prose. `lefthook.yml` is where both are declared.
 
 TypeScript uses strict checking, unchecked indexed access checks, and erasable syntax.
 Biome uses its recommended rules plus two published ones. The standard limit of
