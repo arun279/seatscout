@@ -110,10 +110,12 @@ describe("the aggregating source", () => {
     await source.showtimesFor("245569", "2026-08-28", "75006");
     await source.seatsFor("561748075");
 
-    expect(pathsOf(fetch)).toHaveLength(4);
-    expect(new Set(fetch.requests.map((request) => request.cache))).toEqual(
-      new Set(["no-store"]),
-    );
+    expect(fetch.requests.map((request) => request.cache)).toEqual([
+      "no-store",
+      "no-store",
+      "no-store",
+      "no-store",
+    ]);
   });
 
   it("opens one session for a whole fan-out rather than one for each request", async () => {

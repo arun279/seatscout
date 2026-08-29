@@ -417,10 +417,12 @@ made either way, so scripting a sequence does not move the arrival order a test 
 against.
 
 The returned `Fetch` carries a `requests` log: the path each request went to, query string
-included, its method, its headers lowercased, and its body. That is what lets a test assert
-which headers were sent rather than only that a request happened, and it is also what puts
-a query string under the gate at all, since replays are keyed on pathname alone. It observes the
-substitution point rather than adding one: tests still substitute at `fetch`.
+included, its method, its cache mode, its headers lowercased, and its body. That is what lets
+a test assert which headers were sent rather than only that a request happened, and it is also
+what puts a query string under the gate at all, since replays are keyed on pathname alone. The
+cache mode is logged as `null` where a caller asked for nothing, so a test that asserts the
+adapter asks for `no-store` is distinguishable from a recorder that always says so. It observes
+the substitution point rather than adding one: tests still substitute at `fetch`.
 
 Arrival order is where the seed earns its place. Every request draws a latency, and
 requests issued in the same turn are delivered in latency order rather than request order,
@@ -1044,8 +1046,14 @@ contrast of 1.91:1 against the 4.5:1 success criterion 1.4.3 requires.
 
 **What this does not govern is the browser's own HTTP cache**, which is a third mechanism
 beside Cache Storage and the catalogue's Web Storage. The proxy passes an upstream response's
-headers through unchanged, so what the browser is entitled to hold for a seat map is decided
-upstream and has not been measured. Nothing here weakens that; nothing here fixes it either.
+headers through unchanged, so what a browser is entitled to hold for a seat map is decided
+upstream. That was measured on 2026-08-29 and it is now closed from the other end: the
+upstream sends no `Cache-Control`, `Expires` or `Last-Modified` on a seat map, which under
+[RFC 9111](https://www.rfc-editor.org/rfc/rfc9111#section-4.2.2) leaves a storable response
+with no freshness to calculate, so Chromium revalidates rather than reusing. Adding a
+`Last-Modified` upstream would have been enough to change that silently, so the adapter no
+longer relies on its absence: every request it makes asks for `no-store`. That belongs to
+Core's transport rather than to this worker, because a native client has no worker.
 
 **Biome lints the page for accessibility too, and gets there first.** A missing or invalid
 `lang` fails `lint/a11y/useHtmlLang` or `useValidLang` before the browser is even installed.
