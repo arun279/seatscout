@@ -1,4 +1,4 @@
-import { CLAIMS } from "./claims.ts";
+import { CLAIMS } from "../claims.ts";
 import { read } from "./file.ts";
 import { main } from "./main.ts";
 

@@ -7,5 +7,5 @@
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
     "types": ["node"]
   },
-  "include": ["src", "planted"]
+  "include": ["claims.ts", "src", "planted"]
 }

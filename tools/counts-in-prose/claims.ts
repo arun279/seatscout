@@ -1,4 +1,4 @@
-import type { Claim } from "./judge.ts";
+import type { Claim } from "./src/judge.ts";
 import {
   alternativesOf,
   deniedGlobalsOf,
@@ -8,7 +8,7 @@ import {
   succeedingArmsOf,
   translationsOf,
   weightsOf,
-} from "./structures.ts";
+} from "./src/structures.ts";
 
 const BIOME = "biome.json";
 const PACKAGES = "packages";
