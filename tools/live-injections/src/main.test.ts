@@ -31,7 +31,7 @@ const gate = async (
 };
 
 const PROVIDING = {
-  [SETUP]: 'provide("liveArea", x);\nconst area = inject("liveArea");',
+  [SETUP]: 'provide("liveArea", x);\nconst gone = inject("liveNothing");',
 };
 
 describe("the command line", () => {

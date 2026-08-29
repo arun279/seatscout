@@ -12,10 +12,11 @@ const STUB = 'vi.stubGlobal("caches",';
 
 export type Read = (path: string) => string;
 
-const sourceOf = (path: string, read: Read): string => {
-  const source = spelled(read(path));
-  return STUBS.includes(path) ? source.replaceAll(STUB, "") : source;
-};
+export const withoutStub = (path: string, source: string): string =>
+  STUBS.includes(path) ? source.replaceAll(STUB, "") : source;
+
+const sourceOf = (path: string, read: Read): string =>
+  withoutStub(path, spelled(read(path)));
 
 export const tracked = (listing: string): readonly string[] =>
   listing.split("\n").filter((path) => path !== "");

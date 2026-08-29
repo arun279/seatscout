@@ -26,8 +26,8 @@ const RENDERED = `### Code footprint
 | Authored total | 50 | 6 | 2 |
 | Prose code | 200 | 0 | 0 |
 | Prose comments | 0 | 0 | 0 |
-| Other code | 40 | 0 | 0 |
-| Other comments | 0 | 0 | 0 |
+| Data code | 40 | 0 | 0 |
+| Data comments | 0 | 0 | 0 |
 
 ### Comment load
 
@@ -49,9 +49,10 @@ markdown keeps the comment count flat, so the two are read together.
 | Test | 1 | 1 |
 | Tooling | 1 | 1 |
 | Prose | 1 | 1 |
-| Other | 0 | 0 |
+| Data | 0 | 0 |
 
-Every bucket the merge base held still holds a file. Holds.
+Every file on both sides is sorted into one of these, and every bucket the merge base
+held still holds a file. Holds.
 
 ### Bundle size
 
@@ -117,8 +118,8 @@ describe("the footprint report", () => {
     expect(markdown).toContain("| Test comments | 1 | 0 | 0 |");
     expect(markdown).toContain("| Tooling code | 18 | 0 | 0 |");
     expect(markdown).toContain("| Tooling comments | 0 | 0 | 0 |");
-    expect(markdown).toContain("| Other code | 6 | 0 | 0 |");
-    expect(markdown).toContain("| Other comments | 0 | 0 | 0 |");
+    expect(markdown).toContain("| Data code | 6 | 0 | 0 |");
+    expect(markdown).toContain("| Data comments | 0 | 0 | 0 |");
   });
 
   it("leaves generated and configuration lines out of the authored total", () => {
@@ -134,7 +135,7 @@ describe("the footprint report", () => {
     });
 
     expect(markdown).toContain("| Authored total | 43 | 0 | 0 |");
-    expect(markdown).toContain("| Other code | 900 | 0 | 0 |");
+    expect(markdown).toContain("| Data code | 900 | 0 | 0 |");
   });
 
   it("names the two commits it was measured between", () => {
@@ -207,16 +208,25 @@ describe("the footprint report", () => {
     expect(markdown).toContain("| Product code | 0 | 0 | 0 |");
   });
 
-  it("keeps a file that is neither source nor prose out of the authored total", () => {
+  it("keeps configuration and data out of the authored total", () => {
     const { markdown } = reportOn({
       diff: {
-        added: { "apps/proxy/wrangler.json": counts(50, 0) },
+        added: {
+          "apps/proxy/wrangler.json": counts(50, 0),
+          "deploy/setup.sh": counts(20, 0),
+          "apps/web/index.html": counts(10, 0),
+          "renovate.toml": counts(4, 0),
+          "apps/web/site.webmanifest": counts(3, 0),
+          "tools/x/planted/a.ts.txt": counts(2, 0),
+          "lefthook.yml": counts(6, 0),
+          "pnpm-workspace.yaml": counts(5, 0),
+        },
         removed: {},
         modified: {},
       },
     });
 
-    expect(markdown).toContain("| Other code | 50 | 0 | 0 |");
+    expect(markdown).toContain("| Data code | 100 | 0 | 0 |");
     expect(markdown).toContain("| Authored total | 0 | 0 | 0 |");
   });
 
@@ -248,6 +258,19 @@ describe("the footprint report", () => {
 });
 
 describe("prose", () => {
+  it("counts a source whose name only holds the prose suffix as source", () => {
+    const { markdown } = reportOn({
+      diff: {
+        added: { "packages/core/src/readme.md.ts": counts(12, 0) },
+        removed: {},
+        modified: {},
+      },
+    });
+
+    expect(markdown).toContain("| Product code | 12 | 0 | 0 |");
+    expect(markdown).toContain("| Prose code | 0 | 0 | 0 |");
+  });
+
   it("counts markdown as prose rather than as something uncounted", () => {
     const { markdown } = reportOn({
       diff: {
@@ -261,7 +284,7 @@ describe("prose", () => {
     });
 
     expect(markdown).toContain("| Prose code | 1825 | 0 | 0 |");
-    expect(markdown).toContain("| Other code | 0 | 0 | 0 |");
+    expect(markdown).toContain("| Data code | 0 | 0 | 0 |");
     expect(markdown).toContain("| Authored total | 0 | 0 | 0 |");
   });
 
@@ -277,10 +300,10 @@ describe("prose", () => {
 
   it("reports prose without gating it, so growing it alone still passes", () => {
     expect(
-      between(SOME_SOURCE, {
-        ...SOME_SOURCE,
-        "CONTRIBUTING.md": counts(9000, 0),
-      }).passed,
+      between(
+        { ...SOME_SOURCE, "CONTRIBUTING.md": counts(10, 0) },
+        { ...SOME_SOURCE, "CONTRIBUTING.md": counts(9000, 0) },
+      ).passed,
     ).toBe(true);
   });
 
@@ -368,7 +391,7 @@ describe("what was counted", () => {
     expect(markdown).toContain("| Test | 1 | 1 |");
     expect(markdown).toContain("| Tooling | 1 | 1 |");
     expect(markdown).toContain("| Prose | 0 | 1 |");
-    expect(markdown).toContain("| Other | 0 | 1 |");
+    expect(markdown).toContain("| Data | 0 | 1 |");
   });
 
   it("holds when every bucket the merge base held still holds a file", () => {
@@ -376,7 +399,7 @@ describe("what was counted", () => {
 
     expect(report.passed).toBe(true);
     expect(report.markdown).toContain(
-      "Every bucket the merge base held still holds a file. Holds.",
+      "Every file on both sides is sorted into one of these, and every bucket the merge base\nheld still holds a file. Holds.",
     );
   });
 
@@ -388,14 +411,38 @@ describe("what was counted", () => {
 
     expect(report.passed).toBe(false);
     expect(report.markdown).toContain(
-      "Tooling held files at the merge base and holds none here. A bucket empties when a path stops matching how this report sorts it. Either put the files back, or teach bucketOf the new layout in tools/footprint/src/report.ts.",
+      "Tooling held files at the merge base and holds none here. A file leaves the measurement when its path stops matching how this report sorts it. Either put it back, or sort it in tools/footprint/src/report.ts, where a reviewer sees which side of the count it landed on.",
     );
   });
 
-  it("fails when a renamed tree drops every authored file out of the measurement", () => {
+  it("names every bucket that emptied, not only the first", () => {
+    expect(
+      between(SOME_SOURCE, { "packages/core/src/seat.ts": counts(40, 0) })
+        .markdown,
+    ).toContain("Test, Tooling held files at the merge base");
+  });
+
+  it("fails on a file it sorts nowhere, rather than leaving its lines in no column", () => {
     const report = between(SOME_SOURCE, {
-      "sources/core/seat.svelte": counts(40, 0),
+      ...SOME_SOURCE,
+      "apps/web/src/view.svelte": counts(40, 0),
     });
+
+    expect(report.passed).toBe(false);
+    expect(report.markdown).toContain(
+      "1 file(s) match nothing this report sorts by, so their lines are in no column: apps/web/src/view.svelte.",
+    );
+  });
+
+  it("names an unsorted file on the merge base side too", () => {
+    expect(
+      between({ ...SOME_SOURCE, "old.svelte": counts(1, 0) }, SOME_SOURCE)
+        .passed,
+    ).toBe(false);
+  });
+
+  it("fails when nothing authored is counted at all", () => {
+    const report = between(SOME_SOURCE, { "README.md": counts(40, 0) });
 
     expect(report.passed).toBe(false);
     expect(report.markdown).toContain(

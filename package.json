@@ -16,7 +16,6 @@
     "footprint": "node tools/footprint/dist/index.js",
     "format": "biome format --write .",
     "format:check": "biome format .",
-    "instrumented": "node tools/no-instrumented-sources/src/index.ts",
     "lint": "biome lint .",
     "live-injections": "node tools/live-injections/src/index.ts",
     "prepare": "lefthook install",

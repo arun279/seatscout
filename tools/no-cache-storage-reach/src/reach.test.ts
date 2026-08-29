@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { NAME, reaching, refusal, tracked, WRITER } from "./reach.ts";
+import {
+  NAME,
+  reaching,
+  refusal,
+  tracked,
+  withoutStub,
+  WRITER,
+} from "./reach.ts";
 
 const read = (files: Readonly<Record<string, string>>) => (path: string) => {
   const source = files[path];
@@ -36,6 +43,18 @@ describe("reaching Cache Storage", () => {
     const files = { [WRITER]: `const store = ${NAME};` };
 
     expect(reaching(Object.keys(files), read(files))).toStrictEqual([]);
+  });
+
+  it("strikes the stub out of the two worker tests and leaves the rest", () => {
+    expect(
+      withoutStub(
+        "apps/web/src/worker/cache.test.ts",
+        'vi.stubGlobal("caches", fake);',
+      ),
+    ).toBe(" fake);");
+    expect(
+      withoutStub("apps/web/src/a.ts", 'vi.stubGlobal("caches", fake);'),
+    ).toBe('vi.stubGlobal("caches", fake);');
   });
 
   it("lets a stub in the two worker tests name it, and nothing else there", () => {

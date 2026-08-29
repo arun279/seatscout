@@ -51,5 +51,6 @@ describe("the gate", () => {
 
     expect(status).toBe(1);
     expect(refused).toBe(NOTHING);
+    expect(refused).toContain("Refusing a run that declares no pair");
   });
 });

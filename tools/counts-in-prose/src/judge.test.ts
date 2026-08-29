@@ -114,10 +114,15 @@ describe("what the gate says", () => {
     expect(
       refusal([
         { claim: claim({}), disagreement: "a.md says three, and there are 4" },
+        {
+          claim: claim({ document: "b.md" }),
+          disagreement: "b.md says two, and there are 5",
+        },
       ]),
     ).toBe(
-      "1 count(s) stated in prose could not be held to the structure they count:\n" +
-        "  a.md: a.md says three, and there are 4\n\n" +
+      "2 count(s) stated in prose could not be held to the structure they count:\n" +
+        "  a.md: a.md says three, and there are 4\n" +
+        "  b.md: b.md says two, and there are 5\n\n" +
         "Correct the sentence, or the structure. If a sentence has moved or been reworded,\n" +
         "follow it in tools/counts-in-prose/src/claims.ts, where every pair is declared.\n",
     );

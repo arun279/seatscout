@@ -26,9 +26,12 @@ describe("reading the names out of a source", () => {
   });
 
   it("carries the file each injection was asked from", () => {
-    expect(askedIn("a.live.test.ts", 'inject("liveArea");')).toStrictEqual([
-      { file: "a.live.test.ts", name: "liveArea" },
-    ]);
+    expect(
+      askedIn(
+        "a.live.test.ts",
+        'provide("liveSearch", x);\ninject("liveArea");',
+      ),
+    ).toStrictEqual([{ file: "a.live.test.ts", name: "liveArea" }]);
   });
 });
 

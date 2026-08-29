@@ -5,15 +5,16 @@ const gate = (
   files: Readonly<Record<string, string>>,
   ...argv: readonly string[]
 ) => {
-  const asked: string[] = [];
+  const asked: string[][] = [];
   const refused: string[] = [];
   const status = main(
     ["node", "cache-storage", ...argv],
-    (pathspec) => {
-      asked.push(pathspec);
-      return Object.keys(files).join("\n");
+    (args) => {
+      asked.push([...args]);
+      const [command, subject = ""] = args;
+      if (command === "ls-files") return Object.keys(files).join("\n");
+      return files[subject.slice(1)] ?? "";
     },
-    (path) => files[path] ?? "",
     {
       write: (text) => {
         refused.push(text);
@@ -28,16 +29,25 @@ describe("the command line", () => {
     expect(APPS).toBe("apps");
   });
 
-  it("reads the applications when it is told no pathspec", () => {
-    expect(gate({ "apps/web/src/a.ts": "export {};" }).asked).toStrictEqual([
+  it("lists the applications from the index when it is told no pathspec", () => {
+    expect(gate({ "apps/web/src/a.ts": "export {};" }).asked[0]).toStrictEqual([
+      "ls-files",
+      "--",
       APPS,
+    ]);
+  });
+
+  it("reads each listed file out of the index rather than the working tree", () => {
+    expect(gate({ "apps/web/src/a.ts": "export {};" }).asked[1]).toStrictEqual([
+      "show",
+      ":apps/web/src/a.ts",
     ]);
   });
 
   it("reads whatever pathspec it is given", () => {
     expect(
-      gate({ "somewhere/a.ts": "export {};" }, "somewhere").asked,
-    ).toStrictEqual(["somewhere"]);
+      gate({ "somewhere/a.ts": "export {};" }, "somewhere").asked[0],
+    ).toStrictEqual(["ls-files", "--", "somewhere"]);
   });
 
   it("passes a tree that names nothing, and says nothing", () => {

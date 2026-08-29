@@ -1,8 +1,8 @@
-export interface Mutant {
+interface Mutant {
   readonly status: string;
 }
 
-export interface Judged {
+interface Judged {
   readonly mutants: readonly Mutant[];
 }
 

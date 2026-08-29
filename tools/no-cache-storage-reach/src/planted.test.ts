@@ -1,7 +1,10 @@
-import { spawnSync } from "node:child_process";
-import { describe, expect, it } from "vitest";
+import { execFileSync, spawnSync } from "node:child_process";
+import { cpSync, mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-const ENTRY = "tools/no-cache-storage-reach/src/index.ts";
+const ENTRY = resolve("tools/no-cache-storage-reach/src/index.ts");
 const PLANTED = "tools/no-cache-storage-reach/planted";
 
 const REFUSED = [
@@ -13,8 +16,27 @@ const REFUSED = [
   "plain.ts.txt",
 ];
 
+let repository: string;
+
 const gate = (...args: readonly string[]) =>
-  spawnSync(process.execPath, [ENTRY, ...args], { encoding: "utf8" });
+  spawnSync(process.execPath, [ENTRY, ...args], {
+    cwd: repository,
+    encoding: "utf8",
+  });
+
+beforeAll(() => {
+  repository = mkdtempSync(join(tmpdir(), "planted-"));
+  cpSync(PLANTED, join(repository, PLANTED), { recursive: true });
+  for (const args of [
+    ["init", "--quiet"],
+    ["add", "--all"],
+  ])
+    execFileSync("git", args, { cwd: repository });
+});
+
+afterAll(() => {
+  rmSync(repository, { recursive: true, force: true });
+});
 
 describe("the planted red", () => {
   it("refuses every spelling planted under it, and only those", () => {

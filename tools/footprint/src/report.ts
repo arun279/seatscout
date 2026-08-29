@@ -38,24 +38,25 @@ export interface Report {
 
 const SOURCE = /\.[cm]?[jt]sx?$/;
 const PROSE = /\.mdx?$/;
+const DATA = /\.(html|jsonc?|sh|toml|txt|webmanifest|ya?ml)$/;
 const TEST = /(^|\/)tests?\/|\.(test|spec)\./;
 const APPLICATION = /^(apps|packages)\//;
 const NOT_A_FILE = new Set(["header", "SUM"]);
 
-type Bucket = "product" | "test" | "tooling" | "prose" | "other";
+type Bucket = "product" | "test" | "tooling" | "prose" | "data";
 type Kind = keyof Counts;
 type Volume = Counts & { readonly files: number };
 type Split = Record<Bucket, { code: number; comment: number; files: number }>;
 type Row = readonly [string, Bucket, Kind];
 
 const AUTHORED: readonly Bucket[] = ["product", "test", "tooling"];
-const EVERY: readonly Bucket[] = [...AUTHORED, "prose", "other"];
+const EVERY: readonly Bucket[] = [...AUTHORED, "prose", "data"];
 
 const COMMENT_REMEDY =
   "Either make the code say what the comment would have said, or raise the ratchet in this diff, where a reviewer sees it.";
 
 const COUNTED_REMEDY =
-  "A bucket empties when a path stops matching how this report sorts it. Either put the files back, or teach bucketOf the new layout in tools/footprint/src/report.ts.";
+  "A file leaves the measurement when its path stops matching how this report sorts it. Either put it back, or sort it in tools/footprint/src/report.ts, where a reviewer sees which side of the count it landed on.";
 
 const BUNDLE_REMEDY =
   "Either make the bundle smaller, or raise the ratchet in this diff, where a reviewer sees it.";
@@ -68,7 +69,7 @@ const LABELS: Record<Bucket, string> = {
   test: "Test",
   tooling: "Tooling",
   prose: "Prose",
-  other: "Other",
+  data: "Data",
 };
 
 const rowsFor = (buckets: readonly Bucket[]): readonly Row[] =>
@@ -84,12 +85,18 @@ export const filesOf = <T>(
     Object.entries(report).filter(([key]) => !NOT_A_FILE.has(key)),
   );
 
-const bucketOf = (path: string): Bucket => {
+const bucketOf = (path: string): Bucket | null => {
   if (PROSE.test(path)) return "prose";
-  if (!SOURCE.test(path)) return "other";
+  if (DATA.test(path)) return "data";
+  if (!SOURCE.test(path)) return null;
   if (TEST.test(path)) return "test";
   return APPLICATION.test(path) ? "product" : "tooling";
 };
+
+const unsorted = (tree: Tree): readonly string[] =>
+  Object.keys(tree)
+    .filter((path) => bucketOf(path) === null)
+    .sort();
 
 const split = (tree: Tree): Split => {
   const totals: Split = {
@@ -97,10 +104,12 @@ const split = (tree: Tree): Split => {
     test: { code: 0, comment: 0, files: 0 },
     tooling: { code: 0, comment: 0, files: 0 },
     prose: { code: 0, comment: 0, files: 0 },
-    other: { code: 0, comment: 0, files: 0 },
+    data: { code: 0, comment: 0, files: 0 },
   };
   for (const [path, counts] of Object.entries(tree)) {
-    const bucket = totals[bucketOf(path)];
+    const sorted = bucketOf(path);
+    if (sorted === null) continue;
+    const bucket = totals[sorted];
     bucket.code += counts.code;
     bucket.comment += counts.comment;
     bucket.files += 1;
@@ -119,9 +128,16 @@ const emptied = (base: Split, head: Split): readonly Bucket[] =>
     (bucket) => base[bucket].files > 0 && head[bucket].files === 0,
   );
 
-const COUNTED = "Every bucket the merge base held still holds a file. Holds.";
+const COUNTED =
+  "Every file on both sides is sorted into one of these, and every bucket the merge base\nheld still holds a file. Holds.";
 
-const uncounted = (base: Split, head: Split): string | null => {
+const uncounted = (
+  base: Split,
+  head: Split,
+  strays: readonly string[],
+): string | null => {
+  if (strays.length > 0)
+    return `${strays.length} file(s) match nothing this report sorts by, so their lines are in no column: ${strays.join(", ")}. ${COUNTED_REMEDY}`;
   if (authored(head).files === 0)
     return `Nothing under ${AUTHORED.join(", ")} was counted at all, so there is no measurement to report. ${COUNTED_REMEDY}`;
   const gone = emptied(base, head);
@@ -156,7 +172,7 @@ const lineRows = (diff: Diff): readonly (readonly string[])[] => {
   return [
     ...cellsFor(rowsFor(AUTHORED)),
     ["Authored total", ...authoredTotal],
-    ...cellsFor(rowsFor(["prose", "other"])),
+    ...cellsFor(rowsFor(["prose", "data"])),
   ];
 };
 
@@ -165,7 +181,10 @@ export const render = (measurement: Measurement): Report => {
   const head = split(measurement.head.tree);
   const withinCommentRatchet =
     authored(head).comment <= measurement.commentRatchet;
-  const missed = uncounted(base, head);
+  const missed = uncounted(base, head, [
+    ...unsorted(measurement.base.tree),
+    ...unsorted(measurement.head.tree),
+  ]);
   const withinRatchet = measurement.bundles.every((bundle) => bundle.passed);
   const verdict = (within: boolean, remedy: string) =>
     within ? "Within it." : `Above it. ${remedy}`;

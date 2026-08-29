@@ -131,12 +131,6 @@ importers:
         specifier: 24.13.3
         version: 24.13.3
 
-  tools/no-instrumented-sources:
-    devDependencies:
-      '@types/node':
-        specifier: 24.13.3
-        version: 24.13.3
-
   tools/release-plan:
     dependencies:
       semver:

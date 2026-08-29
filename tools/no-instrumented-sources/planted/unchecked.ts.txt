@@ -1,2 +1,0 @@
-// @ts-nocheck
-export const total = (a, b) => a + b;

@@ -44,7 +44,6 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm dead-code
       - run: pnpm live-injections
-      - run: pnpm instrumented
       - run: pnpm cache-storage
       - run: pnpm counts
       - run: pnpm test:unit

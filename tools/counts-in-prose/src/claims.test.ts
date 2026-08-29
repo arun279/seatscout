@@ -1,18 +1,12 @@
-import { execFileSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
 import { CLAIMS } from "./claims.ts";
+import { read } from "./file.ts";
 import { agreement, disagreements } from "./judge.ts";
-
-const committed = (path: string): string =>
-  execFileSync("git", ["show", `HEAD:${path}`], {
-    encoding: "utf8",
-    maxBuffer: Infinity,
-  });
 
 describe("the declared pairs", () => {
   it("agree with the tree they are committed beside", () => {
     expect(
-      disagreements(CLAIMS, committed).map(
+      disagreements(CLAIMS, read).map(
         ({ claim, disagreement }) => `${claim.document}: ${disagreement}`,
       ),
     ).toStrictEqual([]);
