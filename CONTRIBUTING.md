@@ -50,9 +50,11 @@ tomorrow is unguarded until it is added. It fails just as loudly when the senten
 reworded out from under it or the declaration renamed, because a pair that quietly stops
 matching is a pair that stops holding. Rewording one of those sentences therefore costs a
 line in the declaration too, which is the trade the bundle ratchet already makes: the
-number moves in a diff a reviewer reads. It cites no threshold and invents no absolute, so
-[ADR 6](docs/adr/0006-gates-cite-a-standard-or-measure-a-regression.md) has nothing to say
-about it; the two facts it compares are both in the repository.
+number moves in a diff a reviewer reads. There is no figure to choose here, which is why
+[ADR 6](docs/adr/0006-gates-cite-a-standard-or-measure-a-regression.md) does not reach it:
+that decision governs a gate that needs a number, and the exact checks beside this one, the
+import ban and `pnpm live-injections` and `pnpm cache-storage`, sit outside it for the same
+reason. The two facts this one compares are both in the repository.
 
 The pre-commit hook formats, lints, spell checks, and secret scans staged files. The
 pre-push hook type checks the workspace, runs unit tests, and checks for dead code.
