@@ -1,7 +1,6 @@
 import * as fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import {
-  branchesOf,
   type Counts,
   filesOf,
   type Measurement,
@@ -15,7 +14,6 @@ const counts = (code: number, comment: number): Counts => ({ code, comment });
 const side = (ref: string, over: Partial<Side> = {}): Side => ({
   ref,
   tree: {},
-  complexity: {},
   ...over,
 });
 
@@ -119,16 +117,11 @@ describe("the footprint report", () => {
     const { markdown } = reportOn({
       base: side("0123456789abcdef0123456789abcdef01234567", {
         tree: { "packages/core/src/seat.ts": counts(100, 2) },
-        complexity: { "packages/core/src/seat.ts": 4 },
       }),
       head: side("fedcba9876543210fedcba9876543210fedcba98", {
         tree: {
           "packages/core/src/seat.ts": counts(120, 2),
           "packages/core/src/seat.test.ts": counts(30, 0),
-        },
-        complexity: {
-          "packages/core/src/seat.ts": 6,
-          "packages/core/src/seat.test.ts": 1,
         },
       }),
       diff: {
@@ -166,19 +159,6 @@ describe("the footprint report", () => {
 | This branch | 150 | 2 | 1.33 |
 
 Comment load may not exceed the merge base. Within it.
-
-### Cyclomatic complexity
-
-scc's estimate: branch and loop keywords counted per file rather than
-measured from a syntax tree. Reported, never gated. What fails a build is
-Biome's cognitive complexity rule at its documented limit of 15.
-
-| Source | Merge base | This branch | Change |
-| --- | ---: | ---: | ---: |
-| Product | 4 | 6 | +2 |
-| Test | 0 | 1 | +1 |
-| Tooling | 0 | 0 | 0 |
-| Authored total | 4 | 7 | +3 |
 
 ### Bundle size
 
@@ -315,31 +295,6 @@ Bundle size may not exceed the ratchet in \`.size-limit.json\`. Within it.
     expect(report.passed).toBe(true);
   });
 
-  it("reports cyclomatic complexity per bucket without gating on it", () => {
-    const report = reportOn({
-      base: side("b", {
-        complexity: {
-          "packages/core/src/seat.ts": 4,
-          "tools/footprint/src/report.ts": 5,
-        },
-      }),
-      head: side("h", {
-        complexity: {
-          "packages/core/src/seat.ts": 30,
-          "packages/core/src/seat.test.ts": 2,
-          "tools/footprint/src/report.ts": 5,
-          "pnpm-lock.yaml": 900,
-        },
-      }),
-    });
-
-    expect(report.markdown).toContain("| Product | 4 | 30 | +26 |");
-    expect(report.markdown).toContain("| Test | 0 | 2 | +2 |");
-    expect(report.markdown).toContain("| Tooling | 5 | 5 | 0 |");
-    expect(report.markdown).toContain("| Authored total | 9 | 37 | +28 |");
-    expect(report.passed).toBe(true);
-  });
-
   it("names both ways through when comment load fails", () => {
     const { markdown } = reportOn({
       base: side("b", {
@@ -393,15 +348,6 @@ Bundle size may not exceed the ratchet in \`.size-limit.json\`. Within it.
 });
 
 describe("reading a counter report", () => {
-  it("flattens per-language file lists into one map of branch counts", () => {
-    expect(
-      branchesOf([
-        { Files: [{ Location: "packages/core/src/seat.ts", Complexity: 7 }] },
-        { Files: [{ Location: "README.md", Complexity: 0 }] },
-      ]),
-    ).toStrictEqual({ "packages/core/src/seat.ts": 7, "README.md": 0 });
-  });
-
   it("keeps the files and drops the counter's own totals", () => {
     expect(
       filesOf({

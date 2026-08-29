@@ -5,8 +5,7 @@
 - Node.js 24 or newer
 - pnpm 11.24.0, pinned by `packageManager`
 - [gitleaks](https://github.com/gitleaks/gitleaks), for the pre-commit secret scan
-- [cloc](https://github.com/AlDanial/cloc) and [scc](https://github.com/boyter/scc), for
-  the footprint report
+- [cloc](https://github.com/AlDanial/cloc), for the footprint report
 
 Run `pnpm install` after cloning. The install registers the lefthook Git hooks.
 
@@ -38,10 +37,16 @@ pre-push hook type checks the workspace, runs unit tests, and checks for dead co
 TypeScript uses strict checking, unchecked indexed access checks, and erasable syntax.
 Biome uses its recommended rules plus two published ones. The standard limit of
 [`noExcessiveCognitiveComplexity`](https://biomejs.dev/linter/rules/no-excessive-cognitive-complexity/)
-is the complexity gate, and
+is the only complexity gate, and
 [`noUnsafeTypeAssertion`](https://biomejs.dev/linter/rules/no-unsafe-type-assertion/) refuses
 a type assertion, which is the widest way past the compile-time guarantees below. Unknown
 words go in the `words` list in `cspell.json`.
+
+A complexity failure names the file, the function, its score and the limit, and asks for
+one thing: extract part of the function. There is no figure to weigh and no exemption to
+grant. Suppressing the rule in place would take a comment, and comment load is gated
+separately, so the way through is the refactor. Cyclomatic complexity is not measured at
+all; [ADR 6](docs/adr/0006-gates-cite-a-standard-or-measure-a-regression.md) says why.
 
 ## Footprint, comment load and bundle size
 
@@ -49,9 +54,9 @@ The `footprint` job reports lines added, removed and changed in four buckets, ea
 into code and comments: product code from `apps/` and `packages/`, test code, build
 tooling, and everything else, which is where configuration, documentation and the lock
 file land. The total covers the first three, so a lock file rewrite is reported without
-drowning the lines somebody wrote. The same report carries the cyclomatic complexity of
-each bucket on both sides of the comparison, the comment-to-code ratio against the merge
-base, and the absolute bundle size against the ratchet in `.size-limit.json`.
+drowning the lines somebody wrote. The same report carries the comment-to-code ratio
+against the merge base, and the absolute bundle size against the ratchet in
+`.size-limit.json`.
 
 It goes to the run summary of every pull request, and to one pull request comment that is
 updated in place as commits land. A pull request from a fork gets the run summary only,
@@ -62,10 +67,8 @@ bundle may exceed its ratchet. Raising a ratchet means editing `.size-limit.json
 is a reviewed line in the diff. When either fails, the report names both ways through
 rather than only the verdict.
 
-The cyclomatic figure gates nothing. It is scc's estimate, counted from branch and loop
-keywords rather than from a syntax tree, and it is there so that complexity growth is as
-visible as line growth. Complexity that fails a build is cognitive complexity, caught by
-Biome above.
+The line counts gate nothing, and describe the change rather than judging it. Nothing else
+here is reported without a limit to read it against.
 
 No figure here is an absolute this project invented. See
 [ADR 6](docs/adr/0006-gates-cite-a-standard-or-measure-a-regression.md) for why each is

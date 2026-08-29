@@ -11,12 +11,15 @@
   ],
   "words": [
     "Barco",
+    "Barón",
+    "Bouwers",
     "Cinepolis",
     "cloc",
     "cloudflareaccess",
     "Drafthouse",
     "ecommerce",
     "elif",
+    "ESEM",
     "esbuild",
     "EDCF",
     "GHSA",
@@ -33,6 +36,8 @@
     "renovatebot",
     "seatmaps",
     "seatscout",
+    "Serebrenik",
+    "Shepperd",
     "sellability",
     "setaf",
     "shellcheck",
@@ -50,8 +55,10 @@
     "unstub",
     "usercountry",
     "userlocation",
+    "Vinju",
     "workerd",
     "wslview",
+    "Wyrich",
     "xoroshiro"
   ]
 }

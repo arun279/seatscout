@@ -3,8 +3,8 @@ import { main, type Measure } from "./main.js";
 import type { Bundle, Measurement } from "./report.js";
 
 const measurement = (bundle: Bundle): Measurement => ({
-  base: { ref: "base-sha", tree: {}, complexity: {} },
-  head: { ref: "head-sha", tree: {}, complexity: {} },
+  base: { ref: "base-sha", tree: {} },
+  head: { ref: "head-sha", tree: {} },
   diff: { added: {}, removed: {}, modified: {} },
   bundles: [bundle],
 });
