@@ -10,6 +10,23 @@ export type ShowtimeId = Id<"showtime", number>;
 
 export type TicketingUrl = Id<"ticketing">;
 
+export type Amenity =
+  | "Accessibility Devices"
+  | "Closed Captioning"
+  | "Dine-In"
+  | "Recliners";
+
+export type Chain =
+  | "AMC"
+  | "Alamo Drafthouse Cinemas"
+  | "Angelika Film Center"
+  | "Cinemark Theatres"
+  | "Cinepolis"
+  | "Galaxy Theatres"
+  | "Hooky Entertainment"
+  | "Landmark"
+  | "Studio Movie Grill";
+
 export type Format =
   | "3D"
   | "D-BOX"
@@ -30,12 +47,14 @@ export type Format =
 export interface Theater {
   readonly id: TheaterId;
   readonly name: string;
+  readonly chain?: Chain;
 }
 
 export interface Presentation {
   readonly movie: MovieId;
   readonly theater: Theater;
   readonly formats: readonly Format[];
+  readonly amenities: readonly Amenity[];
 }
 
 export interface Showtime {
@@ -62,7 +81,9 @@ export interface Catalogue {
 
 export interface ShowtimeTerms {
   readonly theaters?: readonly TheaterId[];
+  readonly chains?: readonly Chain[];
   readonly formats?: readonly Format[];
+  readonly amenities?: readonly Amenity[];
   readonly from?: number;
   readonly until?: number;
 }
@@ -73,13 +94,24 @@ const within = (
   until: number | undefined,
 ) => (from === undefined || at >= from) && (until === undefined || at < until);
 
-const admits = (terms: ShowtimeTerms) => (showtime: Showtime | Unidentified) =>
-  (terms.theaters?.includes(showtime.presentation.theater.id) ?? true) &&
-  (terms.formats?.some((format) =>
-    showtime.presentation.formats.includes(format),
-  ) ??
-    true) &&
-  within(Date.parse(showtime.startsAt), terms.from, terms.until);
+const oneOf = <Term>(
+  asked: readonly Term[] | undefined,
+  carried: Term | undefined,
+) => asked === undefined || (carried !== undefined && asked.includes(carried));
+
+const anyOf = <Term>(
+  asked: readonly Term[] | undefined,
+  carried: readonly Term[],
+) => asked === undefined || asked.some((term) => carried.includes(term));
+
+const admits =
+  (terms: ShowtimeTerms) =>
+  ({ presentation, startsAt }: Showtime | Unidentified) =>
+    oneOf(terms.theaters, presentation.theater.id) &&
+    oneOf(terms.chains, presentation.theater.chain) &&
+    anyOf(terms.formats, presentation.formats) &&
+    anyOf(terms.amenities, presentation.amenities) &&
+    within(Date.parse(startsAt), terms.from, terms.until);
 
 export const narrowed = (
   catalogue: Catalogue,

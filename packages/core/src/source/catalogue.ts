@@ -1,5 +1,7 @@
 import type {
+  Amenity,
   Catalogue,
+  Chain,
   Format,
   MovieId,
   Presentation,
@@ -17,6 +19,7 @@ import { decoded, isRecord } from "./json.js";
 interface UpstreamNamedTheater {
   readonly formattedID: TheaterId;
   readonly name: string;
+  readonly chainCode?: string;
 }
 
 interface UpstreamAmenity {
@@ -60,7 +63,9 @@ export interface Sellability {
 
 type Kind = "boolean" | "number" | "string";
 
-const THEATER_FIELDS: Readonly<Record<keyof UpstreamNamedTheater, Kind>> = {
+const THEATER_FIELDS: Readonly<
+  Record<Exclude<keyof UpstreamNamedTheater, "chainCode">, Kind>
+> = {
   formattedID: "string",
   name: "string",
 };
@@ -86,6 +91,27 @@ const SHOWTIME_FIELDS: Readonly<
 const SALES_OFF = "disabled";
 
 export const ON_SALE = "available";
+
+const CHAINS: Readonly<Record<string, Chain>> = {
+  AFC: "Angelika Film Center",
+  ALAM: "Alamo Drafthouse Cinemas",
+  AMC: "AMC",
+  CNMK: "Cinemark Theatres",
+  CPLS: "Cinepolis",
+  GLXY: "Galaxy Theatres",
+  HOOK: "Hooky Entertainment",
+  L: "Landmark",
+  SMG: "Studio Movie Grill",
+};
+
+const AMENITIES: Readonly<Record<string, Amenity>> = {
+  "Accessibility devices available": "Accessibility Devices",
+  "Closed caption": "Closed Captioning",
+  "Dine-In Delivery to Seat": "Dine-In",
+  "Luxury Lounge Recliners": "Recliners",
+  "Luxury Recliners": "Recliners",
+  "Recliner Seats": "Recliners",
+};
 
 const FORMATS: Readonly<Record<string, Format>> = {
   "Cinemark XD": "XD",
@@ -117,6 +143,9 @@ const carries = (
 const isAmenity = (value: unknown): value is UpstreamAmenity =>
   carries(value, AMENITY_FIELDS);
 
+const namesAChain = (value: Readonly<Record<string, unknown>>) =>
+  value.chainCode === undefined || typeof value.chainCode === "string";
+
 const isShowtime = (value: unknown): value is UpstreamShowtime =>
   carries(value, SHOWTIME_FIELDS) &&
   (value.id === undefined || typeof value.id === "number") &&
@@ -136,6 +165,7 @@ const isVariant = (value: unknown): value is UpstreamVariant =>
 
 const isTheater = (value: unknown): value is UpstreamTheater =>
   carries(value, THEATER_FIELDS) &&
+  namesAChain(value) &&
   Array.isArray(value.variants) &&
   value.variants.every(isVariant);
 
@@ -154,12 +184,22 @@ const carriesTheaters = (
 ): value is { readonly theaters: readonly UpstreamNamedTheater[] } =>
   isRecord(value) &&
   Array.isArray(value.theaters) &&
-  value.theaters.every((theater) => carries(theater, THEATER_FIELDS));
+  value.theaters.every(
+    (theater) => carries(theater, THEATER_FIELDS) && namesAChain(theater),
+  );
 
-const theaterOf = (upstream: UpstreamNamedTheater): Theater => ({
-  id: upstream.formattedID,
-  name: upstream.name,
-});
+const theaterOf = (upstream: UpstreamNamedTheater): Theater => {
+  const named = { id: upstream.formattedID, name: upstream.name };
+  const chain =
+    upstream.chainCode === undefined ? undefined : CHAINS[upstream.chainCode];
+  return chain === undefined ? named : { ...named, chain };
+};
+
+const labelled = <Named extends string>(
+  group: UpstreamAmenityGroup,
+  known: Readonly<Record<string, Named>>,
+): readonly Named[] =>
+  group.amenities.flatMap((amenity) => known[amenity.name] ?? []).toSorted();
 
 const presentationOf = (
   theater: UpstreamNamedTheater,
@@ -167,9 +207,8 @@ const presentationOf = (
 ): Presentation => ({
   movie: group.movieID,
   theater: theaterOf(theater),
-  formats: group.amenities
-    .flatMap((amenity) => FORMATS[amenity.name] ?? [])
-    .toSorted(),
+  formats: labelled(group, FORMATS),
+  amenities: labelled(group, AMENITIES),
 });
 
 const notBookable = (

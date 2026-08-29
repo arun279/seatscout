@@ -18,6 +18,7 @@ const NUMBERS = [
 
 const BIOME = "biome.json";
 const PACKAGES = "packages";
+const ADAPTER = "packages/core/src/source/catalogue.ts";
 const CATALOGUE = "packages/core/src/domain/catalogue.ts";
 const CONTRACT = "packages/core/src/testing/contract.ts";
 const GROUP = "packages/core/src/domain/seat-group.ts";
@@ -64,6 +65,16 @@ const alternativesOf = (path, name) => {
     (alternative) => alternative[0],
   );
 };
+
+const translations = (name) => [
+  ...bodyOf(
+    ADAPTER,
+    `const ${name}`,
+    new RegExp(
+      `\\bconst ${name}: Readonly<Record<string, \\w+>> = \\{\\n([\\s\\S]*?)\\n\\};`,
+    ),
+  ).matchAll(/^ {2}(?:"[^"]*"|[\w$]+):/gm),
+];
 
 const outcomes = () =>
   fieldsOf(SEARCH, "Coverage").filter((field) => field !== "candidates");
@@ -239,6 +250,18 @@ const CLAIMS = [
     says: /Its (\w+) operations are domain questions rather than upstream routes/,
     about: `the fields of Source, in ${PORT}`,
     count: () => fieldsOf(PORT, "Source").length,
+  },
+  {
+    document: "CONTRIBUTING.md",
+    says: /`Amenity` is a closed set of (\w+) read from those same labels/,
+    about: `the alternatives of Amenity, in ${CATALOGUE}`,
+    count: () => alternativesOf(CATALOGUE, "Amenity").length,
+  },
+  {
+    document: "CONTRIBUTING.md",
+    says: /the table's (\w+) entries are each the name the Source itself states/,
+    about: `the entries of CHAINS, in ${ADAPTER}`,
+    count: () => translations("CHAINS").length,
   },
 ];
 

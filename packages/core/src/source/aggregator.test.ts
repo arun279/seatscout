@@ -70,6 +70,7 @@ describe("the aggregating source", () => {
       payload: capture?.body.theaters.map((theater) => ({
         id: theater.formattedID,
         name: theater.name,
+        chain: theater.chainName,
       })),
       fetchedAt: 1000,
       attempts: 1,

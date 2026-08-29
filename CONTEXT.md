@@ -11,10 +11,17 @@ Provider names are translated at the adapter boundary and never leak inward.
 
 ## Chain
 
-The brand that operates venues. AMC, Cinemark, Alamo Drafthouse, Regal.
+The brand that operates venues. AMC, Cinemark Theatres, Alamo Drafthouse Cinemas, Landmark.
 
 **Not a Source.** A single Source can supply data for many Chains, and one Chain may be
 reachable through several Sources.
+
+The set of them is closed and every member is spelled the way the Source spells it, so no
+name here is one this application invented. A Theater whose Chain the Source has never named
+carries none, which is the rule Format follows and for the same reason. What follows is that
+such a Chain cannot be asked for at all: it is not a member, so a Query naming it does not
+compile, which is a refusal a reader can see rather than an answer that quietly comes back
+empty.
 
 ## Source
 
@@ -53,7 +60,9 @@ reads as a code artifact rather than something a moviegoer would recognise.
 
 A Presentation carries every Format that applies to it rather than one, because a premium
 projection and motion seating are both Formats and apply to the same screening at once. A
-Presentation with no Format is a standard screening.
+Presentation with no Format is a standard screening. It carries its Amenities the same way,
+read from the same labels, and a Presentation with no Amenity is one the Source labelled with
+none this application has named.
 
 ## Showtime
 
@@ -76,8 +85,17 @@ invented from the label, which is the rule Availability follows for the same rea
 
 ## Amenity
 
-Everything else a Showtime or Auditorium offers that is not a Format: recliner seats,
-reserved seating, dine-in service, closed captioning, accessibility devices.
+Everything else a Showtime offers that is not a Format: recliner seats, dine-in service,
+closed captioning, accessibility devices.
+
+The set of them is closed, for Format's reason and in Format's words: a label outside it is
+not an Amenity, and a screening labelled with one the application does not know carries no
+Amenity rather than one invented from the label. Both are read from the same labels the
+Source puts on a screening, and no label yields both.
+
+Reserved seating is labelled and is deliberately not among them. It is the predicate that
+decides whether a Showtime is bookable at all, so every Showtime a search can offer already
+has it, and a Query term restating it would ask for something no answer lacks.
 
 **Not a Format.** Amenities describe comfort and service.
 
@@ -115,8 +133,8 @@ What a Seat is for: an ordinary seat, a wheelchair space, or the companion seat 
 It is translated from the Source's own normalised seat type, never from its chain-specific
 seat label, which spells the same distinction four different ways.
 
-**Not an Amenity.** An Amenity is something a Showtime or an Auditorium offers; a Designation
-belongs to one Seat. Wheelchair and companion Seats are kept out of ordinary results and
+**Not an Amenity.** An Amenity is something a Showtime offers; a Designation belongs to one
+Seat. Wheelchair and companion Seats are kept out of ordinary results and
 appear only for a Query that asks for them.
 
 ## Seat Group

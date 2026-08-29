@@ -146,6 +146,29 @@ describe("the captured corpus", () => {
     }
   });
 
+  it("holds a theater-centric answer that names no start instant and no Movie", () => {
+    const groups = [...theaterMovieShowtimesCaptures.values()].flatMap(
+      (capture) =>
+        capture.body.viewModel.movies.flatMap((movie) =>
+          movie.variants.flatMap((variant) => variant.amenityGroups),
+        ),
+    );
+    const named = new Set([
+      ...groups.flatMap((group) => Object.keys(group)),
+      ...groups.flatMap((group) =>
+        group.showtimes.flatMap((showtime) => Object.keys(showtime)),
+      ),
+    ]);
+
+    expect(groups).toHaveLength(37);
+    expect(
+      ["id", "ticketingJumpPageURL"].filter((key) => named.has(key)),
+    ).toHaveLength(2);
+    expect(
+      ["dateLocal", "dateUtc", "movieID"].filter((key) => named.has(key)),
+    ).toEqual([]);
+  });
+
   it("holds a ticketing URL on every captured Showtime", () => {
     const showtimes = capturedShowtimes();
 
