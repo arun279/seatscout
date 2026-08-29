@@ -47,14 +47,18 @@ describe("finding instrumentation", () => {
     expect(carrying(paths, read)).toStrictEqual([beside]);
   });
 
-  it("names every offender, the way back, and the one file that is allowed", () => {
+  it("names every offender, both reasons, and the one file that is allowed", () => {
     expect(refusal(["one.ts", "two.ts"])).toBe(
-      "Refusing 2 file(s) carrying mutation-test instrumentation:\n" +
+      "Refusing 2 file(s) that have opted out of being judged:\n" +
         "  one.ts\n  two.ts\n\n" +
-        "The mutation runner rewrites sources in place. Restore them with\n" +
+        `The markers are ${MARKERS.join(", ")}: what the mutation runner leaves\n` +
+        "behind when it rewrites a source in place, and the directive that turns the compiler\n" +
+        "off for a whole file, which Biome's noTsIgnore does not reach because that rule covers\n" +
+        "ts-ignore alone. Restore a rewritten source with\n" +
         "  git restore <paths>\nand rebuild before committing.\n\n" +
-        `${DECLARING} is the one file allowed to spell a marker, because it is\n` +
-        "where the list is written down. Everything else is judged, tests included.\n",
+        `${DECLARING} is the one file allowed to spell a marker,\n` +
+        "because it is where the list is written down. A fixture that has to carry one lives\n" +
+        "outside src under a .txt suffix, where neither this check nor a compiler reads it.\n",
     );
   });
 });
