@@ -132,6 +132,7 @@ export const openSource = (deps: SourceDependencies): Source => {
     refusals: Refusals = {},
   ) => {
     let refreshable = true;
+    if (path === "") return unreachable(0);
     for (let attempt = 1; attempt <= policy.attempts; attempt += 1) {
       if (breaker.refuses()) return unreachable(attempt - 1);
       const answer = await send(path);
