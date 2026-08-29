@@ -11,7 +11,8 @@ Provider names are translated at the adapter boundary and never leak inward.
 
 ## Chain
 
-The brand that operates venues. AMC, Cinemark Theatres, Alamo Drafthouse Cinemas, Landmark.
+The brand that operates venues, among them AMC, Cinemark Theatres, Alamo Drafthouse Cinemas
+and Landmark.
 
 **Not a Source.** A single Source can supply data for many Chains, and one Chain may be
 reachable through several Sources.
@@ -36,7 +37,8 @@ having a Source of its own.
 
 ## Theater
 
-One physical venue at one address, operated by a Chain.
+One physical venue at one address, operated by a Chain, whether or not this application has a
+name for that Chain.
 
 Spelled `theater` throughout. Upstream providers disagree with each other on this
 (`theaterId` in one, `theatreNumber` in another); adapters normalise to `theater`.
@@ -87,8 +89,8 @@ invented from the label, which is the rule Availability follows for the same rea
 
 ## Amenity
 
-Everything else a Showtime or Auditorium offers that is not a Format: recliner seats, dine-in
-service, closed captioning, accessibility devices.
+What a Showtime or an Auditorium offers that is neither a Format nor a reason it can be booked
+at all: recliner seats, dine-in service, closed captioning, accessibility devices.
 
 The set of them is closed, for Format's reason and in Format's words: a label outside it is
 not an Amenity, and a screening labelled with one the application does not know carries no

@@ -402,9 +402,11 @@ See [ADR 3](docs/adr/0003-separate-view-layers-shared-core.md) for why.
 
 `packages/core/src/corpus` holds real responses from the upstream aggregator, captured
 once and committed: nearby theaters, showtime listings, and forty two seat maps across
-eleven Chains, forty one Auditoriums and rooms of forty six to three hundred and four
-Seats. A twelfth Chain sells only general admission, and is present as the refusal its
-seat map request returned, beside the two other refusals that capture met. Everything
+eleven chain codes, forty one Auditoriums and rooms of forty six to three hundred and four
+Seats. A twelfth code sells only general admission, and is present as the refusal its
+seat map request returned, beside the two other refusals that capture met. Those are the
+aggregator's codes rather than domain Chains, which are a closed set the adapter maps a code
+onto and which three of the twelve codes have no member of. Everything
 that parses, normalises, scores or ranks is written against this.
 
 Tests reach it through `captures.ts`, which imports each capture as a JSON module. Nothing
@@ -651,9 +653,9 @@ Amenity and a Format and one nobody has classified yields neither. It is the fou
 the application has not classified, and naming one is a reviewed line rather than a change of
 rule. Reserved seating is labelled and is deliberately not among them: it is already the
 predicate that decides a Showtime is bookable, so a term restating it would ask for something
-every offered Showtime has. A theater record carries its own list of what the venue offers, in
-a second and coded vocabulary; those describe an address rather than a screening and the
-adapter does not read them.
+every offered Showtime has. A theater record carries its own list of what the venue offers;
+those describe an address rather than a screening, the listing route names them without the
+code the other two routes give them, and the adapter reads none of them.
 
 `Chain` is a closed set on the same principle and no name in it is one this project invented.
 The listing names a Theater's chain by a code and never by a name, which is what an earlier
@@ -1039,13 +1041,20 @@ and so is `store.write(key, JSON.stringify(seats))`, which is the way round that
 strings would have left open. It is the technique `corpus/types.ts` and the catalogue
 adapter already use for what may be *read*, pointed at what may be written.
 
-What comes back is checked before it is used: a numeric fetch moment, and a catalogue
-carrying its three arrays. All three are checked rather than the two the reader will
-obviously touch, because an entry written by an older build is a real thing a device holds
-and a missing array would reach a search as an absent Coverage outcome. Anything else is a miss and the Source is read again. It is not
-checked deeper than that, because deeper is the adapter's own parse restated against data
-the adapter wrote, and because the store it came from is the reader's own device rather than
-a third party's answer.
+What comes back is checked before it is used: a numeric fetch moment, a catalogue carrying
+its three arrays, and a Presentation carrying its Amenities on every Showtime in them. All
+three arrays are checked rather than the two the reader will obviously touch, because an entry
+written by an older build is a real thing a device holds and a missing array would reach a
+search as an absent Coverage outcome. The Amenities are checked for the same reason one level
+down: the narrowing filter reads them, so an entry written before a Presentation carried them
+would answer nothing at all against a Chain term and raise against an Amenity one. Anything
+else is a miss and the Source is read again.
+
+**The rule is the fields the reader touches, and the check stops there.** It is not the
+adapter's own parse restated against data the adapter wrote, and it does not go looking for a
+Showtime's identity or a Theater's name, because the store it came from is the reader's own
+device rather than a third party's answer. When the reader reaches further, this reaches with
+it, and that is the only thing that moves it.
 
 Nothing is read back as absent that a store answered with `null`, because absent is
 `undefined`. `read` answers `unknown`, so `null` is a value a store might hold like any
