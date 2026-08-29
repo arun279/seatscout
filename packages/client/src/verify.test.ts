@@ -21,7 +21,6 @@ import { type SearchTerms, openSearch } from "./search.js";
 import { type KeyValueStore, inMemoryStore } from "./store.js";
 import { type Verified, openVerification } from "./verify.js";
 
-const BOOTSTRAP = "/napi/preferences/themes";
 const SEAT_MAP = "/napi/seatMap/";
 const LISTING = "/napi/theaterShowtimeGroupings/245569/2026-08-28";
 const AREA = "75006";
@@ -54,8 +53,6 @@ interface Options {
   readonly at?: number;
   readonly store?: (listed: Catalogue) => KeyValueStore;
 }
-
-const SESSION: Answer = { status: 200, body: "{}" };
 
 const payloadOf = <Found>(reading: Reading<Found>): Found => {
   if (!reading.ok) throw new Error(`the read answered ${reading.reason}`);
@@ -116,10 +113,7 @@ const refusing = (bookable: readonly Showtime[]): Script => ({
 });
 
 const listing = async () => {
-  const source = sourceAt(
-    fakeUpstream({ seed: 1, routes: { [BOOTSTRAP]: SESSION } }),
-    SEARCHED_AT,
-  );
+  const source = sourceAt(fakeUpstream({ seed: 1 }), SEARCHED_AT);
   return payloadOf(await source.showtimesFor(WIDE_RELEASE, TODAY, AREA));
 };
 
@@ -170,7 +164,6 @@ const verifying = async (options: Options = {}) => {
       fakeUpstream({
         seed: SEED,
         routes: {
-          [BOOTSTRAP]: SESSION,
           ...roomsFor(
             candidates.bookable,
             options.searchedIn?.(room) ?? roomWhere(room),
@@ -188,7 +181,6 @@ const verifying = async (options: Options = {}) => {
     seed: SEED,
     ...options.script?.(candidates.bookable),
     routes: {
-      [BOOTSTRAP]: SESSION,
       ...roomsFor(
         candidates.bookable,
         options.answer?.(result, room) ?? roomWhere(room),
@@ -240,11 +232,9 @@ describe("re-verifying a Seat Group", () => {
     expect((await fresh.verify()).ok).toBe(true);
     expect((await stale.verify()).ok).toBe(true);
     expect(fresh.requested()).toEqual([
-      BOOTSTRAP,
       `${SEAT_MAP}${fresh.result.showtime.id}`,
     ]);
     expect(stale.requested()).toEqual([
-      BOOTSTRAP,
       `${SEAT_MAP}${stale.result.showtime.id}`,
     ]);
 

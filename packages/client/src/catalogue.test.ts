@@ -13,7 +13,6 @@ import {
   inMemoryStore,
 } from "./store.js";
 
-const BOOTSTRAP = "/napi/preferences/themes";
 const AREA = "75006";
 const TODAY = "2026-08-28";
 const YESTERDAY = "2026-08-27";
@@ -45,14 +44,7 @@ interface Options {
 
 const opened = (options: Options = {}) => {
   const clock = { at: FETCHED_AT };
-  const upstream = fakeUpstream({
-    seed: 4,
-    ...options.script,
-    routes: {
-      [BOOTSTRAP]: { status: 200, body: "{}" },
-      ...options.script?.routes,
-    },
-  });
+  const upstream = fakeUpstream({ seed: 4, ...options.script });
   const source = openSource({
     fetch: upstream,
     now: () => clock.at,
