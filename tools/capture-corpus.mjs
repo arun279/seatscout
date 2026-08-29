@@ -2,12 +2,7 @@
 import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-
-const HOST = process.env.SEATSCOUT_UPSTREAM_ORIGIN;
-if (!HOST)
-  throw new Error(
-    "Set SEATSCOUT_UPSTREAM_ORIGIN to the upstream aggregator's origin.",
-  );
+import { UPSTREAM_ORIGIN as HOST } from "./upstream.mjs";
 
 const UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36";
