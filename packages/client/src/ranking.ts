@@ -13,8 +13,9 @@ import {
   scoringIn,
   seatGroupsIn,
 } from "@seatscout/core";
+import type { ListingTerms } from "./catalogue.js";
 
-export interface RankingTerms extends SeatGroupTerms {
+export interface ResultTerms extends ListingTerms, SeatGroupTerms {
   readonly profile?: SeatProfile;
 }
 
@@ -31,6 +32,7 @@ export interface SeatGroupResult {
   readonly position: NormalisedPosition;
   readonly reasons: RankReasons;
   readonly showtime: Omit<Showtime, "ticketing">;
+  readonly terms: ResultTerms;
   readonly removed: RemovedSeats;
   readonly fetchedAt: number;
   readonly attempts: number;
@@ -59,17 +61,25 @@ const removedFrom = (
 
 export const rankingIn = (
   auditorium: Extract<Reading<readonly Seat[]>, { ok: true }>,
-  terms: RankingTerms,
+  query: ResultTerms,
 ): Ranking => {
   const placed = normalised(auditorium.payload);
-  const score = scoringIn(placed, terms.profile ?? REFERENCE);
-  const removed = removedFrom(auditorium.payload, terms);
+  const score = scoringIn(placed, query.profile ?? REFERENCE);
+  const removed = removedFrom(auditorium.payload, query);
+  const terms: ResultTerms = {
+    movie: query.movie,
+    date: query.date,
+    area: query.area,
+    partySize: query.partySize,
+    accessibleSeating: query.accessibleSeating,
+    profile: query.profile,
+  };
   const rank = (group: SeatGroup<Seat & NormalisedPosition>): Ranked => ({
     group,
     ...score(group),
   });
   return {
-    offered: seatGroupsIn(placed, terms)
+    offered: seatGroupsIn(placed, query)
       .map(rank)
       .toSorted((left, right) => right.score - left.score),
     holding: (group) => {
@@ -92,6 +102,7 @@ export const rankingIn = (
         startsAt: showtime.startsAt,
         presentation: showtime.presentation,
       },
+      terms,
       removed,
       fetchedAt: auditorium.fetchedAt,
       attempts: auditorium.attempts,

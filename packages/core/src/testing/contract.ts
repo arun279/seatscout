@@ -146,7 +146,7 @@ export const listingDivergencesIn = (answer: Answer): readonly Divergence[] => {
   return [
     ...diverging(
       "missing",
-      listed.notRefused.includes(undefined) ? ["type"] : [],
+      listed.notRefused.includes(undefined) ? ["sellability"] : [],
     ),
     ...diverging(
       "sellability",

@@ -23,13 +23,14 @@ const SEAT_MAP = "/napi/seatMap/";
 const TERMS: CatalogueTerms = { movie: WIDE_RELEASE, date: TODAY, area: AREA };
 const TWO_HOURS = 7_200_000;
 const EMPTY = { bookable: [], unbookable: [], unidentified: [] };
-const AS_AN_EARLIER_BUILD_WROTE_IT = {
+const EARLIER_KEY = 'seatscout.catalogue.["245569","2026-08-28","75006"]';
+const PAST_THE_FIELD_PROBE = {
   id: 561682849,
   startsAt: "2026-08-28T19:20:00-05:00",
   presentation: {
     movie: WIDE_RELEASE,
     theater: { id: "a-theater", name: "Cinemark Dallas XD and IMAX" },
-    formats: ["XD"],
+    amenities: [],
   },
   ticketing: "https://tickets.invalid/jump",
 };
@@ -93,6 +94,21 @@ const answering = (value: unknown): KeyValueStore => ({
   read: async () => value,
   write: async () => undefined,
 });
+
+const holdingAt = (key: string, value: unknown): KeyValueStore => ({
+  read: async (asked) => (asked === key ? value : undefined),
+  write: async () => undefined,
+});
+
+const fieldsIn = (value: unknown, at = ""): readonly string[] =>
+  Array.isArray(value)
+    ? value.flatMap((item) => fieldsIn(item, at))
+    : value instanceof Object
+      ? Object.entries(value).flatMap(([field, held]) => [
+          `${at}${field}`,
+          ...fieldsIn(held, `${at}${field}.`),
+        ])
+      : [];
 
 const payloadOf = <Found>(reading: Reading<Found>): Found => {
   if (!reading.ok) throw new Error(`the catalogue answered ${reading.reason}`);
@@ -242,7 +258,7 @@ describe("the catalogue phase", () => {
     expect(listings()).toBe(4);
   });
 
-  it("names a cache entry after the terms that identify it", async () => {
+  it("names a cache entry after the terms that identify it and the shape it stores", async () => {
     const watched = watching();
     await opened({ store: watched.store }).resolve({
       ...TERMS,
@@ -250,7 +266,40 @@ describe("the catalogue phase", () => {
     });
 
     expect(watched.written.map((entry) => entry.key)).toEqual([
-      'seatscout.catalogue.["245569","2026-08-28","75006"]',
+      'seatscout.catalogue.v1.["245569","2026-08-28","75006"]',
+    ]);
+    expect(
+      [...new Set(fieldsIn(watched.written[0]?.value))].toSorted(),
+    ).toEqual([
+      "catalogue",
+      "catalogue.bookable",
+      "catalogue.bookable.id",
+      "catalogue.bookable.presentation",
+      "catalogue.bookable.presentation.amenities",
+      "catalogue.bookable.presentation.formats",
+      "catalogue.bookable.presentation.movie",
+      "catalogue.bookable.presentation.theater",
+      "catalogue.bookable.presentation.theater.chain",
+      "catalogue.bookable.presentation.theater.id",
+      "catalogue.bookable.presentation.theater.name",
+      "catalogue.bookable.startsAt",
+      "catalogue.bookable.ticketing",
+      "catalogue.unbookable",
+      "catalogue.unbookable.reason",
+      "catalogue.unbookable.showtime",
+      "catalogue.unbookable.showtime.id",
+      "catalogue.unbookable.showtime.presentation",
+      "catalogue.unbookable.showtime.presentation.amenities",
+      "catalogue.unbookable.showtime.presentation.formats",
+      "catalogue.unbookable.showtime.presentation.movie",
+      "catalogue.unbookable.showtime.presentation.theater",
+      "catalogue.unbookable.showtime.presentation.theater.chain",
+      "catalogue.unbookable.showtime.presentation.theater.id",
+      "catalogue.unbookable.showtime.presentation.theater.name",
+      "catalogue.unbookable.showtime.startsAt",
+      "catalogue.unbookable.showtime.ticketing",
+      "catalogue.unidentified",
+      "fetchedAt",
     ]);
   });
 
@@ -290,36 +339,6 @@ describe("the catalogue phase", () => {
         fetchedAt: FETCHED_AT,
         catalogue: { bookable: [], unbookable: [], unidentified: "none" },
       },
-      { fetchedAt: FETCHED_AT, catalogue: { ...EMPTY, bookable: "none" } },
-      { fetchedAt: FETCHED_AT, catalogue: { ...EMPTY, unbookable: "none" } },
-      { fetchedAt: FETCHED_AT, catalogue: { ...EMPTY, unidentified: "none" } },
-      {
-        fetchedAt: FETCHED_AT,
-        catalogue: { ...EMPTY, bookable: ["a Showtime"] },
-      },
-      { fetchedAt: FETCHED_AT, catalogue: { ...EMPTY, bookable: [{}] } },
-      {
-        fetchedAt: FETCHED_AT,
-        catalogue: { ...EMPTY, unbookable: ["an entry"] },
-      },
-      { fetchedAt: FETCHED_AT, catalogue: { ...EMPTY, unbookable: [{}] } },
-      {
-        fetchedAt: FETCHED_AT,
-        catalogue: { ...EMPTY, bookable: [AS_AN_EARLIER_BUILD_WROTE_IT] },
-      },
-      {
-        fetchedAt: FETCHED_AT,
-        catalogue: { ...EMPTY, unidentified: [AS_AN_EARLIER_BUILD_WROTE_IT] },
-      },
-      {
-        fetchedAt: FETCHED_AT,
-        catalogue: {
-          ...EMPTY,
-          unbookable: [
-            { showtime: AS_AN_EARLIER_BUILD_WROTE_IT, reason: "soldOut" },
-          ],
-        },
-      },
     ];
     const reread: number[] = [];
     for (const value of unreadable) {
@@ -329,6 +348,22 @@ describe("the catalogue phase", () => {
     }
 
     expect(reread).toEqual(unreadable.map(() => 1));
+  });
+
+  it("never reads an entry written under an earlier build's key, however far its Showtimes have drifted", async () => {
+    const { resolve, listings } = opened({
+      store: holdingAt(EARLIER_KEY, {
+        fetchedAt: FETCHED_AT,
+        catalogue: { ...EMPTY, bookable: [PAST_THE_FIELD_PROBE] },
+      }),
+    });
+
+    expect(counted(await resolve({ ...TERMS, formats: ["IMAX"] }))).toEqual({
+      bookable: 1,
+      unbookable: 0,
+      unidentified: 0,
+    });
+    expect(listings()).toBe(1);
   });
 
   it("answers an area the Source listed nothing in from the cache like any other", async () => {

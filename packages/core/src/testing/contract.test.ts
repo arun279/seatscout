@@ -334,7 +334,7 @@ describe("the contract the corpus recorded", () => {
       "the word the corpus recorded": [],
       "the word for a Theater that has stopped selling": [],
       "a word nobody has met": [{ kind: "sellability", name: "reopening" }],
-      "no word at all": [{ kind: "missing", name: "type" }],
+      "no word at all": [{ kind: "missing", name: "sellability" }],
     });
   });
 

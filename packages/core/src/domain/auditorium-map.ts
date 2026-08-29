@@ -1,6 +1,6 @@
 import type { Seat } from "../source/seat-map.js";
 import { type NormalisedPosition, normalised } from "./auditorium.js";
-import { type Gap, gapBetween } from "./seat-group.js";
+import { type Gap, gapBetween, rowsOf } from "./seat-group.js";
 
 export type PositionedSeat = Seat & NormalisedPosition;
 
@@ -26,16 +26,6 @@ export interface AuditoriumMap {
 const bookableIn = (seats: readonly Seat[]) =>
   seats.filter((seat) => seat.bookable).length;
 
-const rowsOf = <T extends NormalisedPosition>(seats: readonly T[]) =>
-  [...new Set(seats.map((seat) => seat.depth))]
-    .sort((nearer, further) => nearer - further)
-    .map((depth) => ({
-      depth,
-      seats: seats
-        .filter((seat) => seat.depth === depth)
-        .toSorted((left, right) => left.lateral - right.lateral),
-    }));
-
 const gapsAlong = (seats: readonly Seat[]): readonly Gap[] => {
   const gaps: Gap[] = [];
   let left: Seat | null = null;
@@ -57,15 +47,14 @@ export const auditoriumMap = (
   seats: readonly Seat[],
   recommended: readonly Seat[],
 ): AuditoriumMap => {
-  const placed = normalised(seats);
   const wanted = new Set(recommended.map((seat) => seat.id));
-  const rows = rowsOf(placed).map((row, index) => ({
+  const rows = rowsOf(normalised(seats)).map((row, index) => ({
     ordinalFromFront: index + 1,
-    label: labelOf(row.seats),
-    depth: row.depth,
-    seats: row.seats,
-    bookableCount: bookableIn(row.seats),
-    gapAfter: gapsAlong(row.seats),
+    label: labelOf(row),
+    depth: row[0].depth,
+    seats: row,
+    bookableCount: bookableIn(row),
+    gapAfter: gapsAlong(row),
   }));
 
   return {

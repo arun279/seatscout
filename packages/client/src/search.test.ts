@@ -496,17 +496,20 @@ describe("a search", () => {
     ).toEqual([]);
   });
 
-  it("lists the Showtimes it could not reach, and reaches them once the fault is gone", async () => {
+  it("names the Showtimes it could not reach with their Theater and time, and reaches them once the fault is gone", async () => {
     const listed = await listing();
     const stonebriar = narrowed(listed, {
       theaters: [theaterIn(listed, STONEBRIAR)],
     }).bookable;
-    const refused = stonebriar.slice(0, 2).map((showtime) => showtime.id);
+    const refused = stonebriar.slice(0, 2);
     const run = await searching({
       at: [STONEBRIAR],
       script: {
         sequences: Object.fromEntries(
-          refused.map((id) => [`${SEAT_MAP}${id}`, [500, 500, 500]]),
+          refused.map((showtime) => [
+            `${SEAT_MAP}${showtime.id}`,
+            [500, 500, 500],
+          ]),
         ),
       },
     });
@@ -514,6 +517,15 @@ describe("a search", () => {
     const again = await searching({ at: [STONEBRIAR] });
 
     expect(settled.coverage.failed).toEqual(refused);
+    expect(
+      settled.coverage.failed.map((showtime) => [
+        showtime.presentation.theater.name,
+        showtime.startsAt,
+      ]),
+    ).toEqual([
+      [STONEBRIAR, "2026-08-28T16:20:00-05:00"],
+      [STONEBRIAR, "2026-08-28T18:00:00-05:00"],
+    ]);
     expect(
       namedIn(settled.coverage).map((showtime) => showtime.startsAt),
     ).not.toContain(stonebriar[0]?.startsAt);

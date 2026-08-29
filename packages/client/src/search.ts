@@ -2,7 +2,6 @@ import type {
   Reading,
   Seat,
   Showtime,
-  ShowtimeId,
   UnbookableReason,
   Unidentified,
 } from "@seatscout/core";
@@ -12,14 +11,14 @@ import {
   openCatalogue,
 } from "./catalogue.js";
 import {
-  type RankingTerms,
+  type ResultTerms,
   type SeatGroupResult,
   rankingIn,
 } from "./ranking.js";
 
 const WIDTH = 24;
 
-export interface SearchTerms extends CatalogueTerms, RankingTerms {}
+export interface SearchTerms extends CatalogueTerms, ResultTerms {}
 
 export interface Coverage {
   readonly candidates: number;
@@ -29,7 +28,7 @@ export interface Coverage {
   readonly started: readonly (Showtime | Unidentified)[];
   readonly salesOff: readonly (Showtime | Unidentified)[];
   readonly unidentified: readonly Unidentified[];
-  readonly failed: readonly ShowtimeId[];
+  readonly failed: readonly Showtime[];
 }
 
 export type Phase = "resolving" | "searching" | "settled" | "unreachable";
@@ -73,7 +72,7 @@ export const openSearch = (deps: CatalogueDependencies) => {
       soldOut: [],
       started: [],
     };
-    const failed: ShowtimeId[] = [];
+    const failed: Showtime[] = [];
     let unidentified: readonly Unidentified[] = [];
     let candidates = 0;
     let checked = 0;
@@ -104,7 +103,7 @@ export const openSearch = (deps: CatalogueDependencies) => {
 
     const record = (showtime: Showtime, reading: Reading<readonly Seat[]>) => {
       if (!reading.ok) {
-        if (reading.reason === "unreachable") failed.push(showtime.id);
+        if (reading.reason === "unreachable") failed.push(showtime);
         else named[reading.reason].push(showtime);
         return;
       }
