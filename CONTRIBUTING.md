@@ -197,10 +197,12 @@ reaches the network.
 **The corpus is the contract.** The recorded vocabulary is derived from the 42 captured maps
 at the point of use rather than written down beside them: the top-level and seat key sets,
 the four seat statuses and the three seat types. Nothing has to be kept in step with a
-refresh, and a list written by hand cannot drift from what was measured. Six things are
+refresh, and a list written by hand cannot drift from what was measured. Eight things are
 reported: a body that is not JSON, a field the parse needs and the answer no longer carries,
-an answer that parses into nothing at all, a key never captured before, a seat status or a seat
-type outside the recorded vocabulary, and a neighbour link that disagrees with the geometry.
+an answer that parses into nothing at all, a key never captured before, a seat status outside
+the recorded vocabulary, a seat type outside it, a listed screening the catalogue did not
+refuse that carries no word for on sale, and a neighbour link that disagrees with the
+geometry.
 
 **An unrecognised seat type is why this exists at all.** The seat map adapter maps a type it
 does not recognise to `standard` rather than failing closed on it, deliberately, because
