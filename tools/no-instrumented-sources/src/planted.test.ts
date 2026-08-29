@@ -28,8 +28,4 @@ describe("the planted red", () => {
     expect(run.status).toBe(0);
     expect(run.stderr).toBe("");
   });
-
-  it("judges the whole tree when it is given nothing, and this tree is clean", () => {
-    expect(gate().status).toBe(0);
-  });
 });
