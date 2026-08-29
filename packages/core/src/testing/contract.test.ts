@@ -6,11 +6,13 @@ import {
   showtimeGroupingCaptures,
 } from "../corpus/captures.js";
 import type { CapturedSeat, CapturedSeatMap } from "../corpus/types.js";
+import { seatFrom } from "../source/seat-map.js";
 import {
   type Answer,
   areaDivergencesIn,
   divergencesIn,
   listingDivergencesIn,
+  SETTLED_STATUSES,
 } from "./contract.js";
 
 const FETCHED_AT = 1000;
@@ -101,15 +103,26 @@ describe("the contract the corpus recorded", () => {
     ).toEqual([]);
   });
 
-  it("recognises every seat status the corpus recorded and no other", () => {
+  it("recognises every seat status the corpus recorded, and every settled one", () => {
     expect(eachWord("status", ["A", "R", "O", "X", "H", "Z"])).toEqual({
       A: [],
       R: [],
       O: [],
       X: [],
-      H: [{ kind: "status", name: "H" }],
+      H: [],
       Z: [{ kind: "status", name: "Z" }],
     });
+  });
+
+  it("settles no seat status the seat map adapter reads differently", () => {
+    expect(
+      Object.fromEntries(
+        Object.keys(SETTLED_STATUSES).map((status) => [
+          status,
+          seatFrom({ ...ordinary().seat, status }, FETCHED_AT).bookable,
+        ]),
+      ),
+    ).toEqual(SETTLED_STATUSES);
   });
 
   it("recognises every seat type the corpus recorded and no other", () => {
