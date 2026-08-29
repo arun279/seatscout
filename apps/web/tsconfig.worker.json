@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2024", "WebWorker"],
+    "noEmit": true,
+    "rootDir": "src",
+    "tsBuildInfoFile": "tsconfig.worker.tsbuildinfo",
+    "types": []
+  },
+  "include": ["src/worker"]
+}

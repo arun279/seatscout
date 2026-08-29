@@ -1,0 +1,7 @@
+{
+  "name": "SeatScout",
+  "short_name": "SeatScout",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone"
+}
