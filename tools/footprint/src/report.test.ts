@@ -162,6 +162,11 @@ Comment load may not exceed the merge base. Within it.
 
 ### Bundle size
 
+Brotli, summed per file, over every script an application's own bundler
+emits, with the workspace packages it reaches inlined. Every emitted chunk
+counts, including one no page has loaded, so this is what a build publishes
+rather than what a page weighs.
+
 | Bundle | Brotli | Ratchet | Headroom |
 | --- | ---: | ---: | ---: |
 | web app | 15 B | 15 B | 0 B |

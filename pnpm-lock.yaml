@@ -81,6 +81,10 @@ importers:
       '@seatscout/client':
         specifier: workspace:*
         version: link:../../packages/client
+    devDependencies:
+      vite:
+        specifier: 8.2.2
+        version: 8.2.2(@types/node@24.13.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.1)(yaml@2.9.0)
 
   packages/client:
     dependencies:
