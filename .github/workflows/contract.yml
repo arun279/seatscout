@@ -31,9 +31,6 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Read the live Source
         id: reading
-        env:
-          SEATSCOUT_UPSTREAM_ORIGIN: ${{ secrets.SEATSCOUT_UPSTREAM_ORIGIN }}
-          SEATSCOUT_AREA: ${{ secrets.SEATSCOUT_AREA }}
         run: pnpm test:live
       - name: Say so where the maintainer will see it
         if: ${{ !cancelled() && steps.reading.outcome == 'failure' }}
@@ -57,5 +54,5 @@ jobs:
             gh issue comment "$open" --body-file issue.md
           else
             gh issue create --label upstream-contract --body-file issue.md \
-              --title "The live Source no longer answers as the corpus and the baseline recorded"
+              --title "The nightly contract check failed"
           fi

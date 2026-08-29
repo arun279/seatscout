@@ -208,7 +208,8 @@ remember ACCESS_AUD "$ACCESS_AUD"
 
 stage "Worker configuration"
 step "These three are what the worker reads. They live on the worker rather than in"
-step "GitHub, so the upstream origin never enters a repository or a build log."
+step "GitHub, so this deployment's own configuration stays yours rather than the"
+step "  repository's."
 say ""
 ask UPSTREAM_ORIGIN "Upstream origin the proxy forwards to:" '^https://[a-z0-9.-]+$'
 say ""
