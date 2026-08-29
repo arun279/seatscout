@@ -81,26 +81,6 @@ this gate: that decision governs a gate that needs a number, and the exact check
 one, the import ban and `pnpm live-injections` and `pnpm cache-storage`, sit outside it
 for the same reason. The two facts this one compares are both in the repository.
 
-**The gates are judged by the suite that judges everything else.** Each of the three written
-here is a package under `tools/<name>/src`, which is what the unit runner's include and the
-mutation gate's glob both reach, shaped the way `tools/footprint` is: a module that judges,
-a command layer over it, an adapter that touches the world, and an entry point holding
-wiring alone. Node runs the TypeScript from source, so nothing built stands between an edit
-and the gate that runs. Each also refuses an empty subject, because every one of them used
-to pass when handed nothing: no tracked file under a pathspec, no live test matched by a
-glob, no pair declared. The counts gate's table of pairs sits outside `src` beside
-`.size-limit.json` and `.footprint.json`, because it is that gate's configuration rather
-than its logic, and because a test holding it to the repository's own sources cannot run
-under a mutation runner that rewrites them.
-
-**And each carries a planted red the unit suite runs on every commit.** A fixture the gate
-must refuse sits beside one it must accept, so a gate that stops detecting its own fixture
-fails the build instead of waiting to be watched by hand. The fixtures live outside `src`
-under a `.txt` suffix, where they are neither product code, nor typechecked, nor mutated,
-nor reachable by another gate: the Cache Storage fixtures spell six escapes of the word, and
-its planted red builds a throwaway repository of its own and runs the entry point inside it,
-so it depends on no checkout but its own.
-
 The pre-commit hook runs six checks over staged files: it formats, lints and spell checks
 them, refuses a source carrying mutation-test instrumentation, refuses a reach for Cache
 Storage under `apps/`, and scans for secrets. The pre-push hook runs four over the whole
@@ -125,6 +105,26 @@ usual way. There is no figure to weigh and no exemption to grant. Suppressing th
 place would take a comment, and comment load is gated separately, so the way through is the
 refactor. Cyclomatic complexity is not measured at all;
 [ADR 6](docs/adr/0006-gates-cite-a-standard-or-measure-a-regression.md) says why.
+
+**The gates are judged by the suite that judges everything else.** Each of the three written
+here is a package under `tools/<name>/src`, which is what the unit runner's include and the
+mutation gate's glob both reach, shaped the way `tools/footprint` is: a module that judges,
+a command layer over it, an adapter that touches the world, and an entry point holding
+wiring alone. Node runs the TypeScript from source, so nothing built stands between an edit
+and the gate that runs. Each also refuses an empty subject, because every one of them used
+to pass when handed nothing: no tracked file under a pathspec, no live test matched by a
+glob, no pair declared. The counts gate's table of pairs sits outside `src` beside
+`.size-limit.json` and `.footprint.json`, because it is that gate's configuration rather
+than its logic, and because a test holding it to the repository's own sources cannot run
+under a mutation runner that rewrites them.
+
+**And each carries a planted red the unit suite runs on every commit.** A fixture the gate
+must refuse sits beside one it must accept, so a gate that stops detecting its own fixture
+fails the build instead of waiting to be watched by hand. The fixtures live outside `src`
+under a `.txt` suffix, where they are neither product code, nor typechecked, nor mutated,
+nor reachable by another gate: the Cache Storage fixtures spell six escapes of the word, and
+its planted red builds a throwaway repository of its own and runs the entry point inside it,
+so it depends on no checkout but its own.
 
 ## Footprint, comment load and bundle size
 
