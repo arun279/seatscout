@@ -40,7 +40,7 @@ const fieldsOf = (path, name) =>
       path,
       `interface ${name}`,
       new RegExp(`\\binterface ${name} \\{\\n([\\s\\S]*?)\\n\\}`),
-    ).matchAll(/^ {2}readonly ([A-Za-z]+)\??:/gm),
+    ).matchAll(/^ {2}(?:readonly )?([A-Za-z]+)\??:/gm),
   ].map((field) => field[1]);
 
 const alternativesOf = (path, name) =>
