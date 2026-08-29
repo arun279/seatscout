@@ -320,7 +320,7 @@ describe("the contract the corpus recorded", () => {
     ).toEqual([{ kind: "empty", name: "catalogue" }]);
   });
 
-  it("names a sellability word on a bookable Showtime that the corpus never recorded", () => {
+  it("names a Showtime a request would be spent on that does not say it is on sale", () => {
     expect({
       "the word the corpus recorded": listingDivergencesIn(
         sellingAs("available"),

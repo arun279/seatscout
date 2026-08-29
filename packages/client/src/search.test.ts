@@ -4,6 +4,7 @@ import {
   type Reading,
   type SeatProfile,
   type Showtime,
+  type UnbookableReason,
   narrowed,
   openSource,
 } from "@seatscout/core";
@@ -217,6 +218,13 @@ const withoutIdentity = (showtime: Showtime) => ({
   ticketing: showtime.ticketing,
 });
 
+const stoppedSelling = (
+  showtime: Showtime,
+): { readonly showtime: Showtime; readonly reason: UnbookableReason } => ({
+  showtime,
+  reason: "salesOff",
+});
+
 describe("a search", () => {
   it("answers the best Seat Group at every Showtime it could check, ranked best-first", async () => {
     const run = await searching({ at: [STONEBRIAR] });
@@ -421,9 +429,7 @@ describe("a search", () => {
           bookable: catalogue.bookable.slice(1),
           unbookable: [
             ...catalogue.unbookable,
-            ...catalogue.bookable
-              .slice(0, 1)
-              .map((showtime) => ({ showtime, reason: "salesOff" as const })),
+            ...catalogue.bookable.slice(0, 1).map(stoppedSelling),
           ],
           unidentified: catalogue.unidentified,
         },
@@ -449,9 +455,7 @@ describe("a search", () => {
           bookable: catalogue.bookable.slice(2),
           unbookable: [
             ...catalogue.unbookable,
-            ...catalogue.bookable
-              .slice(1, 2)
-              .map((showtime) => ({ showtime, reason: "salesOff" as const })),
+            ...catalogue.bookable.slice(1, 2).map(stoppedSelling),
           ],
           unidentified: catalogue.bookable.slice(0, 1).map(withoutIdentity),
         },
