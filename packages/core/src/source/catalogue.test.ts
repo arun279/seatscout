@@ -834,6 +834,27 @@ describe("the catalogue", () => {
     expect(refused).toEqual(fields);
   });
 
+  it("answers an area whose Theaters carry no chain code, and refuses one whose code is not one", async () => {
+    const area = async (body: unknown) =>
+      sourced(answering(NEARBY, body)).theatersNear(AREA);
+    const unnamed = payloadOf(
+      await area(without(nearbyCapture(), "chainCode")),
+    );
+    const codes: readonly unknown[] = [1, null, true];
+    const refused: unknown[] = [];
+    for (const code of codes)
+      if (!(await area(instead(nearbyCapture(), "chainCode", code))).ok)
+        refused.push(code);
+
+    expect(unnamed).toHaveLength(25);
+    expect(
+      [
+        ...new Set(unnamed.flatMap((theater) => Object.keys(theater))),
+      ].toSorted(),
+    ).toEqual(["id", "name"]);
+    expect(refused).toEqual(codes);
+  });
+
   it("gives a Theater one identity and one Chain whichever way it is reached", async () => {
     const discovered = payloadOf(await sourced().theatersNear(AREA));
     const catalogue = await catalogueOf(WIDE_RELEASE, TODAY);
