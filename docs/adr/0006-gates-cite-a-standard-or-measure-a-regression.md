@@ -51,9 +51,11 @@ understandability. Its diagnostic names the file, the function, its score, the l
 the remedy, which is the whole test of whether a number belongs in a gate.
 
 Choosing it over cyclomatic complexity is also the choice the body that publishes both has
-made. SonarSource ships a cyclomatic complexity rule, S1541, and leaves it out of every
-default quality profile; the cognitive complexity rule, S3776, is in the default Sonar way
-profile at a threshold of 15. Biome's rule is that rule, and that threshold.
+made. SonarSource ships a cyclomatic complexity rule, S1541, at a threshold of 10, and
+leaves it out of every default quality profile; the cognitive complexity rule, S3776, is in
+the default Sonar way profile at a threshold of 15. Their stated reason is that cognitive
+complexity is the preferred metric. Biome's rule is S3776 at that threshold, and Biome has
+no cyclomatic rule to enable in the first place.
 
 Keeping any complexity gate is nonetheless a choice against the grain, and worth naming as
 one. TypeScript, VS Code, Next.js, Node, Vue, Svelte, Astro, React Router and Biome itself
@@ -98,14 +100,29 @@ in 2018 against TypeScript 2.8, `typhonjs-escomplex` has been at 0.1.x since 201
 `complexity` rule is the maintained one, and taking it would mean running ESLint and
 typescript-eslint beside Biome for a single rule.
 
-There would also be no threshold to take from it. Its default of 20 is off unless switched
-on, is absent from `eslint:recommended`, and was settled in a 2015 issue thread as a
-ceiling on the obviously unreasonable rather than a measured limit. The older number it
+There would also be no threshold to take from it. ESLint's default of 20 is off unless
+switched on, is absent from `eslint:recommended`, and was settled in a 2015 issue thread as
+a ceiling on the obviously unreasonable rather than a measured limit. The older number it
 was weighed against is no firmer: NIST Special Publication 500-235, the document that
 established 10, says in the same breath that "limits as high as 15 have been used
 successfully as well" and that "an organization can pick a complexity limit greater than
-10, but only if it is sure it knows what it is doing". A gate here would have had to pick,
-and picking is what this decision forbids.
+10, but only if it is sure it knows what it is doing", and its recommended policy is to
+limit to 10 or write down why not. Every published figure is per function in any case, and
+the report's was per bucket, so none of them was even the right shape.
+
+The other door this decision usually leaves open is shut too. A regression gate needs a
+tool that measures new code separately, and none exists for this metric: SonarSource, who
+originated new-code gating, publish no `new_complexity`, and the delta linters that do
+exist gate lint findings rather than a complexity total.
+
+Which is fortunate, because an aggregate would have rewarded the wrong move. Shepperd
+derives that splitting a program *raises* its total cyclomatic complexity, "the bizarre
+result of increasing overall complexity as a program is divided into more, presumably
+simpler, modules". A bucket total gated on growth would therefore have gone red for the
+extract-method that Biome's rule asks for by name. NIST supplies the inverse trick in the
+same section that sets the limit, reducing a module from 90 to 10 by adding a ten-branch
+switch that does nothing. A measure that moves the wrong way under the refactor and the
+right way under a decoration is not one to fail a build on.
 
 One limit of what survives is worth stating here rather than discovering later. Cognitive
 complexity is defined per function, as ESLint's `complexity` rule and every other
@@ -174,6 +191,13 @@ that quietly stops meaning anything.
 A complexity finding is acted on where it is raised, by the author, before the branch
 leaves the machine: the same rule runs in the pre-commit hook over staged files. Nothing
 about it reaches a reviewer as a figure to weigh.
+
+What is given up is worth stating plainly rather than implying it was worthless. No
+cyclomatic complexity figure is produced anywhere now, by any job or hook, so a file's or a
+tree's branch count is no longer visible at all. What stands in its place is narrower and
+firmer: understandability, per function, from a syntax tree, at a published limit; and test
+adequacy, measured directly by the mutation gate rather than approximated by a branch
+count. Neither answers "how much branching does this file hold", and nothing here does.
 
 cloc is a prerequisite for running the report locally, alongside gitleaks. Neither is an
 npm package, so neither is installed by `pnpm install`.
