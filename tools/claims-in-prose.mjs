@@ -2,7 +2,8 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { exit, stderr, stdout } from "node:process";
 
-const ADRS = "docs/adr";
+const RECORDS = "docs/adr";
+const NARRATIVE = ["CONTEXT.md", "README.md"];
 const BIOME = "biome.json";
 const CORE = "packages/core";
 const PRODUCT = ["packages", ":!*.test.ts"];
@@ -13,7 +14,7 @@ const STRYKER = "stryker.config.json";
 const git = (...args) =>
   execFileSync("git", args, { encoding: "utf8", maxBuffer: Infinity });
 
-const DECLARING = "tools/claims-in-adrs.mjs";
+const DECLARING = "tools/claims-in-prose.mjs";
 
 const filesHolding = (pattern, paths) => {
   try {
@@ -40,6 +41,31 @@ const filesHolding = (pattern, paths) => {
 };
 
 const CLAIMS = [
+  {
+    adr: "0001-single-aggregating-source.md",
+    says: /The one chain with a public catalogue API is the second implementation whenever it is built\./,
+    holds: "modules that build a Source, tests aside",
+    pattern: "): Source =>",
+    paths: PRODUCT,
+    files: 1,
+  },
+  {
+    adr: "0004-booking-ends-at-a-deep-link.md",
+    says: /A result carries the showtime without its ticketing URL/,
+    holds: "the result view that drops the ticketing URL",
+    pattern: 'Omit<Showtime, "ticketing">',
+    paths: ["packages/client/src/ranking.ts"],
+    files: 1,
+  },
+  {
+    adr: "0005-build-numbers-come-from-the-run-counter.md",
+    says: /No release workflow exists yet/,
+    holds: "workflow files naming the release resolver",
+    pattern: "release-plan",
+    paths: [".github"],
+    files: 0,
+    witness: ["tools/release-plan"],
+  },
   {
     adr: "0001-single-aggregating-source.md",
     says: /Ship a single implementation of it: the aggregator\./,
@@ -112,7 +138,7 @@ const CLAIMS = [
     pattern: "scc",
     paths: ["package.json", ".github", "tools"],
     files: 0,
-    witness: [ADRS],
+    witness: [RECORDS],
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
@@ -141,23 +167,28 @@ const CLAIMS = [
 ];
 
 const UNCHECKED = {
-  "0004-booking-ends-at-a-deep-link.md":
-    "its operative rule is that a ticketing URL is never constructed, which is held by " +
-    "the type `TicketingUrl` and by `noUnsafeTypeAssertion`, not by a search; the rest " +
-    "is payment-scope reasoning the tree cannot disagree with",
+  "CONTEXT.md":
+    "it is the domain glossary, and the sets and counts it states are held term by term " +
+    "by tools/counts-in-prose.mjs, which is the right instrument for a count",
+  "README.md":
+    "it describes the product to a reader, and the one thing in it a command can hold, " +
+    "what the Reference profile penalises, is a count and is held by " +
+    "tools/counts-in-prose.mjs",
 };
 
-const adrs = () =>
-  git("ls-files", "--", `${ADRS}/*.md`)
+const documents = () => [
+  ...git("ls-files", "--", `${RECORDS}/*.md`)
     .split("\n")
     .filter(Boolean)
-    .map((path) => path.slice(ADRS.length + 1));
+    .map((path) => path.slice(RECORDS.length + 1)),
+  ...NARRATIVE,
+];
+
+const pathOf = (document) =>
+  NARRATIVE.includes(document) ? document : `${RECORDS}/${document}`;
 
 const sentenceIn = (claim) => {
-  const document = readFileSync(`${ADRS}/${claim.adr}`, "utf8").replace(
-    /\s+/g,
-    " ",
-  );
+  const document = readFileSync(pathOf(claim.adr), "utf8").replace(/\s+/g, " ");
   const matches = [...document.matchAll(new RegExp(claim.says, "g"))];
   if (matches.length !== 1)
     throw new Error(
@@ -197,14 +228,16 @@ const classified = new Set([
   ...CLAIMS.map((claim) => claim.adr),
   ...Object.keys(UNCHECKED),
 ]);
-for (const adr of adrs())
+for (const adr of documents())
   if (!classified.has(adr))
     structural.push(
-      `${adr} is neither paired with a search nor recorded as carrying no claim a search can hold; classify it in tools/claims-in-adrs.mjs`,
+      `${adr} is neither paired with a search nor recorded as carrying no claim a search can hold; classify it in tools/claims-in-prose.mjs`,
     );
 for (const adr of classified)
-  if (!adrs().includes(adr))
-    structural.push(`${adr} is classified here and is not an ADR`);
+  if (!documents().includes(adr))
+    structural.push(
+      `${adr} is classified here and is not a record this check reads`,
+    );
 
 const disagreements = structural.length
   ? structural
@@ -218,14 +251,14 @@ if (disagreements.length > 0) {
     `${disagreements.length} claim(s) about this repository could not be held to it:\n` +
       disagreements.map((disagreement) => `  ${disagreement}\n`).join("") +
       "\nCorrect the decision, or correct the repository. If a sentence has been reworded," +
-      "\nfollow it in tools/claims-in-adrs.mjs, where every pair is declared.\n",
+      "\nfollow it in tools/claims-in-prose.mjs, where every pair is declared.\n",
   );
   exit(1);
 }
 stdout.write(
-  `Every claim an ADR makes about this repository holds, over ${CLAIMS.length} declared pairs across ${
+  `Every claim this repository's own documents make about it holds, over ${CLAIMS.length} declared pairs across ${
     new Set(CLAIMS.map((claim) => claim.adr)).size
-  } of the ${adrs().length} ADRs:\n${[
+  } of the ${documents().length} records:\n${[
     ...new Set(CLAIMS.map((claim) => `  ${claim.holds}`)),
   ].join("\n")}\n`,
 );

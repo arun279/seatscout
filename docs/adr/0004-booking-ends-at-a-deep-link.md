@@ -41,8 +41,13 @@ payment is eventually warranted, it will use platform wallet APIs that yield a t
 the operator's own wallet. Storing a card number is not a security problem to be solved
 here; it is scope not worth taking on.
 
-Ticketing URLs are carried through the domain model from showtime to result. Constructing
-one is prohibited.
+Ticketing URLs are carried through the domain model and constructing one is prohibited.
+
+They do not reach a result. A result carries the showtime without its ticketing URL, and
+re-verifying the seats immediately before hand-off is the only thing that yields one, so a
+URL cannot be shown beside a seat that was found minutes ago and has since been taken. The
+listing a search reads still carries the URL, which is what re-verification looks the result
+up in.
 
 ## Consequences
 

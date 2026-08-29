@@ -118,6 +118,8 @@ const lighter = () => {
 
 const bands = () => alternativesOf(GROUP, "Gap");
 
+const formats = () => alternativesOf(CATALOGUE, "Format");
+
 const answers = () => alternativesOf(VERIFY, "Unverified");
 
 const succeeding = () => [
@@ -176,6 +178,18 @@ const CLAIMS = [
     says: /The pre-push hook runs (\w+) over the whole workspace/,
     about: `the commands under pre-push, in ${LEFTHOOK}`,
     count: () => hookCommands("pre-push").length,
+  },
+  {
+    document: "CONTEXT.md",
+    says: /The premium presentation type, one of (\w+):/,
+    about: `the alternatives of Format, in ${CATALOGUE}`,
+    count: () => formats().length,
+  },
+  {
+    document: "README.md",
+    says: /It penalises (\w+) things\./,
+    about: PROFILE_WEIGHTS,
+    count: () => weights().length,
   },
   {
     document: "CONTEXT.md",
