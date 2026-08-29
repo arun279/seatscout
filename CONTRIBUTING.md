@@ -82,9 +82,9 @@ for the same reason. The two facts this one compares are both in the repository.
 
 The pre-commit hook runs six checks over staged files: it formats, lints and spell checks
 them, refuses a source carrying mutation-test instrumentation, refuses a reach for Cache
-Storage under `apps/`, and scans for secrets. The pre-push hook runs
-four over the whole workspace: it type checks, runs unit tests, checks for dead code, and
-holds the counts stated in prose. `lefthook.yml` is where both are declared.
+Storage under `apps/`, and scans for secrets. The pre-push hook runs four over the whole
+workspace: it type checks, runs unit tests, checks for dead code, and holds the counts
+stated in prose. `lefthook.yml` is where both are declared.
 
 TypeScript uses strict checking, unchecked indexed access checks, and erasable syntax.
 Biome uses its recommended rules and names four besides, all four published. Two are
@@ -95,8 +95,8 @@ is the only complexity gate, and
 a type assertion, which is the widest way past the compile-time guarantees below. Two are
 inside it at a severity `biome lint` exits zero on, which is no gate at all, so `biome.json`
 raises both to errors: `useNodejsImportProtocol`, which the preset reports as information,
-and `noOctalEscape`, which it reports as a warning. Unknown
-words go in the `words` list in `cspell.json`.
+and `noOctalEscape`, which it reports as a warning. Unknown words go in the `words` list in
+`cspell.json`.
 
 A complexity failure names the file, the function, its score and the limit, and asks to
 refactor the function until the score is under the limit; extracting part of it is the
@@ -1101,8 +1101,8 @@ observed.** `apps/web/src/worker/cache.ts` is the only file the deployment ships
 name Cache Storage, and `tools/no-cache-storage-reach.mjs` is the whole of the gate: it
 takes the staged content of every tracked file under `apps/` and refuses any that carries
 the letters `caches`. It runs over that tree in `quality`, and again in the pre-commit hook
-whenever a file under it is staged. It reads source text rather
-than an AST, and that is the point: a member pattern sees only the spellings it enumerates,
+whenever a file under it is staged. It reads source text rather than an AST, and that is
+the point: a member pattern sees only the spellings it enumerates,
 and `self?.caches`, a key held in a variable, a template literal, `Reflect.get(self,
 "caches")` and a renaming destructure all reach Cache Storage without being one, and none of
 them can be written without the letters. It was watched refusing all twenty reaches planted
