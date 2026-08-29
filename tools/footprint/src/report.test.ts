@@ -167,9 +167,9 @@ emits, with the workspace packages it reaches inlined. Every emitted chunk
 counts, including one no page has loaded, so this is what a build publishes
 rather than what a page weighs.
 
-| Bundle | Brotli | Ratchet | Headroom |
-| --- | ---: | ---: | ---: |
-| web app | 15 B | 15 B | 0 B |
+| Bundle | Brotli | Ratchet |
+| --- | ---: | ---: |
+| web app | 15 B | 15 B |
 
 Bundle size may not exceed the ratchet in \`.size-limit.json\`. Within it.
 `);
@@ -346,9 +346,7 @@ Bundle size may not exceed the ratchet in \`.size-limit.json\`. Within it.
     });
 
     expect(report.passed).toBe(false);
-    expect(report.markdown).toContain(
-      "| web app | 2048 B | 1024 B | -1024 B |",
-    );
+    expect(report.markdown).toContain("| web app | 2048 B | 1024 B |");
   });
 });
 

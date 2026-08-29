@@ -190,12 +190,11 @@ export const render = (measurement: Measurement): Report => {
       "rather than what a page weighs.",
       "",
       ...table(
-        ["Bundle", "Brotli", "Ratchet", "Headroom"],
+        ["Bundle", "Brotli", "Ratchet"],
         measurement.bundles.map((bundle) => [
           bundle.name,
           `${bundle.size} B`,
           `${bundle.sizeLimit} B`,
-          `${bundle.sizeLimit - bundle.size} B`,
         ]),
       ),
       "",

@@ -174,8 +174,17 @@ Nothing measures `main` at review time: the recorded figure is whatever a review
 accepted, and the gate holds the branch to it. It is lowered as the build improves, and it
 rises only by editing the file, which is a reviewed line in a diff. The glob covers every
 emitted script rather than an entry point, so deferring bytes into a chunk that loads
-later does not move the number. Remaining headroom is reported, so a ratchet that has
-drifted above the real size is visible.
+later does not move the number. The measured size is printed beside the ratchet, so a
+ratchet that has drifted above the real size is visible from the two figures.
+
+Their difference is not printed as a third, and the reason is the one this decision opens
+with. A ratchet is a high-water mark a reviewer accepted, not a budget derived from a
+device, a network or a page, so the room left under it is distance to a number this
+project chose. No published standard sets a point on that distance, size-limit's own
+configuration has no notion of one, and a regression comparison would say nothing the
+ratchet's own line in the diff does not. What is left is a figure whose only use is a
+private opinion about how much slack is too much, formed by every reviewer on every run
+until they stop forming it.
 
 What the glob is pointed at has to be the output of the application's own bundler, and
 that is the load-bearing half of this gate. The web application had none at first: its
