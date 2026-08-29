@@ -103,10 +103,10 @@ one at the front row with no gaps. A Row also knows what separates each of its S
 the next: nothing, a pod divider, or an aisle, in the same three bands a Seat Group is
 built from.
 
-**Not the Source's row index.** That index skips values in 14 of the 42 captured
-Auditoriums, so it cannot say which row of how many this is, and it is not carried past
-the adapter at all. A Row's number is its place in the order, and its label is the initial
-its Seats agree on, or nothing where they agree on none.
+**Not the Source's row index.** That index skips values in 14 of the 42 captured seat
+maps, so it cannot say which row of how many this is, and it is not carried past the
+adapter at all. A Row's number is its place in the order, and its label is the initial its
+Seats agree on, or nothing where they agree on none.
 
 ## Designation
 

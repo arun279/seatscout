@@ -24,6 +24,7 @@ pnpm lint
 pnpm spell
 pnpm typecheck
 pnpm dead-code
+pnpm counts
 pnpm test:unit
 pnpm build
 pnpm test:e2e
@@ -33,8 +34,42 @@ Three further jobs run alongside them. `footprint` measures the change and is de
 below. `secrets` scans the pull request's commits with gitleaks. `dependencies` runs
 `pnpm audit` and scans the lockfile against the OSV database; both fail on any advisory.
 
+`pnpm counts` holds a count stated in prose to the structure that carries the items. Four
+times a sentence in this repository has counted something the code beside it had outgrown,
+and every one was found by a reader rather than by anything that runs. `CONTEXT.md` said
+Reference penalises three things and later four while the sum charged one more than
+either. `CONTRIBUTING.md` said the nightly contract test reports six things while
+`Divergence` carried eight, because the ticket that added the sellability kind stopped at
+the code.
+
+`tools/counts-in-prose.mjs` declares every such pair outright, the sentence and the
+declaration it counts. It reads the number word out of the one and counts the interface
+fields, union alternatives, object-literal weights or configuration keys of the other, and
+fails when they disagree. The pairs cover Coverage, the Seat Profile's weights and
+modelled distances, a Seat Group's bands, `UpstreamSeat`, `Catalogue`, the `Source` port,
+`Unverified`, the divergence kinds and the denied globals.
+
+It asserts nothing it was not told about, so it raises nothing a reader has to weigh and
+cannot go off for a sentence nobody declared. It fails just as loudly when the sentence
+has been reworded out from under it, when the declaration has been renamed, and when a
+declaration is spelled in a way it cannot read, because a pair that quietly stops matching
+is a pair that has stopped holding. Rewording one of those sentences therefore costs a
+line in the declaration too, which is the trade the bundle ratchet already makes: the
+number moves in a diff a reviewer reads.
+
+Two limits are worth having in front of you rather than discovering. A count written
+tomorrow is unguarded until it is declared, and nothing forces the declaration. And each
+pair compares the numeral and nothing else, so a sentence that states the right count over
+a list one item short still passes; the gate stops a count going stale and does not stop
+an enumeration going short. There is no figure to choose in either half, which is why
+[ADR 6](docs/adr/0006-gates-cite-a-standard-or-measure-a-regression.md) does not reach
+this gate: that decision governs a gate that needs a number, and the exact checks beside this
+one, the import ban and `pnpm live-injections` and `pnpm cache-storage`, sit outside it
+for the same reason. The two facts this one compares are both in the repository.
+
 The pre-commit hook formats, lints, spell checks, and secret scans staged files. The
-pre-push hook type checks the workspace, runs unit tests, and checks for dead code.
+pre-push hook type checks the workspace, runs unit tests, checks for dead code, and holds
+the counts stated in prose.
 
 TypeScript uses strict checking, unchecked indexed access checks, and erasable syntax.
 Biome uses its recommended rules plus two published ones. The standard limit of
@@ -176,10 +211,12 @@ reaches the network.
 **The corpus is the contract.** The recorded vocabulary is derived from the 42 captured maps
 at the point of use rather than written down beside them: the top-level and seat key sets,
 the four seat statuses and the three seat types. Nothing has to be kept in step with a
-refresh, and a list written by hand cannot drift from what was measured. Six things are
+refresh, and a list written by hand cannot drift from what was measured. Eight things are
 reported: a body that is not JSON, a field the parse needs and the answer no longer carries,
-an answer that parses into nothing at all, a key never captured before, a seat status or a seat
-type outside the recorded vocabulary, and a neighbour link that disagrees with the geometry.
+an answer that parses into nothing at all, a key never captured before, a seat status outside
+the recorded vocabulary, a seat type outside it, a listed screening the catalogue did not
+refuse that carries no word for on sale, and a neighbour link that disagrees with the
+geometry.
 
 **An unrecognised seat type is why this exists at all.** The seat map adapter maps a type it
 does not recognise to `standard` rather than failing closed on it, deliberately, because
@@ -535,7 +572,7 @@ at any of them would be presenting a seat as free on the strength of a code nobo
 established the meaning of.
 
 **Neither seat count is read, and neither can be.** The two count fields disagreed with the
-`seats` array in twenty seven of the forty two captured Auditoriums; one reports available
+`seats` array in twenty seven of the forty two captured seat maps; one reports available
 seats where another reports total ones, and one reports more available seats than its array
 holds. The parse narrows the answer to its `seats` array and to `UpstreamSeat`, neither of
 which declares a count, so reading one is a compile error rather than a convention. The test
@@ -733,10 +770,10 @@ centreline to +1.0 at the far right. It reads `x`, `y` and `width` off a Seat an
 else.
 
 **A row is a distinct `y`, and depth is that row's place in the order.** Every Seat of a row
-carries one `y` in all 42 captured Auditoriums, and the count of distinct `y` values equals
+carries one `y` in all 42 captured seat maps, and the count of distinct `y` values equals
 the count of rows in all 42, so rows need no clustering tolerance and no invented threshold.
 Depth is the row's rank over the last row's rank rather than its distance down the room,
-because rows are not evenly spaced: 41 of the 42 rooms draw at least two different row gaps,
+because rows are not evenly spaced: 41 of the 42 maps draw at least two different row gaps,
 14 of them draw their widest gap at least half again as wide as their narrowest, and one
 twelve row house draws one gap 2.11 times another. Under a depth measured in map units an
 aisle would push the row behind it further back than a row deserves, and "eighth row of
@@ -757,9 +794,9 @@ of a row of thirty two, which is the opposite of what a normalised position is f
 
 **No label is read, and none can be.** `normalised` is generic over anything carrying `x`,
 `y` and `width`, so a Seat's printed label is not nameable inside it and ordering by one is a
-compile error rather than a convention. The corpus is the reason: 14 of the 42 rooms skip a
+compile error rather than a convention. The corpus is the reason: 14 of the 42 maps skip a
 row index, one chain's four rooms label their Seats `101` to `919` with no letter anywhere, 6
-of the 376 rows carry no agreed label prefix, and 33 of the 42 rooms number the Seats of a
+of the 376 rows carry no agreed label prefix, and 33 of the 42 maps number the Seats of a
 row against the direction they are drawn in. A property test relabels every generated room
 with a generated function and holds every position unchanged.
 
@@ -810,7 +847,7 @@ be decidable and the room offers nothing further to decide it with.
 the row before the geometry is read, which would leave the Seats either side of an
 accessible space looking two aisles apart. A Query that asks for accessible seating admits
 them and then answers only with Seat Groups that carry one: over the corpus that turns 40
-of 42 Auditoriums into 40 that offer a pair including an accessible Seat, where merely
+of 42 seat maps into 40 that offer a pair including an accessible Seat, where merely
 lifting the exclusion offers ordinary pairs in two of them and leaves the barrier standing.
 
 **The neighbour links are held to the geometry rather than read.** All 10,974 the
@@ -819,8 +856,8 @@ and not one crosses a console or an aisle, while 279 contiguous gaps carry no li
 A test asserts the agreement over the corpus, the nightly contract test asserts it over
 today's rooms, and no code builds a run from a link.
 
-Two measurements are what this is judged by. All 42 captured Auditoriums have three free
-Seats in one row and all 42 seat a party of three. Five of them can only do it across a
+Two measurements are what this is judged by. All 42 captured seat maps have three free
+Seats in one row, and a party of three can be seated in all 42. Five of them can only do it across a
 console, which is what treating a console as an aisle would silently cost.
 
 ## The order the keyboard walks
@@ -843,7 +880,7 @@ mechanism that keeps `normalised` honest one layer down. A property test relabel
 generated room with a generated function and holds the order unchanged.
 
 **A Row's number is its place in the order, and it is contiguous by construction.** The
-Source's own row index is not, skipping a value in 14 of the 42 captured Auditoriums, and
+Source's own row index is not, skipping a value in 14 of the 42 captured seat maps, and
 Cinemark West Plano screen 28 holds 14 Rows while that index runs to 16. It is also
 unreachable: `UpstreamSeat` never declared it, so no Seat carries it and ordering by one
 would not compile. What the corpus test asserts instead is that the fourteen Rows are
@@ -1171,7 +1208,7 @@ Group sits, divided by how far it sits from the screen. The same sideways offset
 costs more the nearer the screen. A penalty on `|lateral|` alone is separable in depth and
 lateral: it applies the same lateral function in every row, so the only thing left to decide
 which row's side seats are punished hardest is which row is physically wider, and that
-varies by room. Of the 42 captured Auditoriums 25 widen toward the back, 15 narrow and 2 are
+varies by room. Of the 42 captured seat maps 25 widen toward the back, 15 narrow and 2 are
 equal. Stated as an invariant, at the same lateral offset the penalty must be larger in the
 front row than in the last. Over the 42 the angular form satisfies that in 42 at every
 screen gap from 6 to 48 seat widths; the separable form satisfies it in 0. The separable
@@ -1218,7 +1255,7 @@ delivered in a different order scores identically rather than within a rounding 
 its depth, so a Group of three in the eighth row of eleven is in row 8 and not in row
 7.999999999999998.
 
-Three measurements are what this is judged by. At Reference, all 42 captured Auditoriums put
+Three measurements are what this is judged by. At Reference, all 42 captured seat maps put
 their best Seat on the centreline of its row, within one row of the reference row, with the
 score falling away outward along both sides of every row. Across 144 weightings and modelled
 distances swept against five benchmark Auditoriums, one from each of five Chains, that holds
@@ -1471,8 +1508,8 @@ The one value carried across rather than re-read is how many consoles the Group 
 it is carried because it is part of what the caller is asking about rather than part of what
 the answer says: a Seat Group is its Seats and the consoles between them, and both are how
 the room is drawn rather than what is on sale in it. That it is load-bearing is checked in a
-room where the best Group at a party of three does cross one, because in the 42 captured
-Auditoriums a party of two never does and a suite that only asked about pairs could not tell
+room where the best Group at a party of three does cross one, because in the 42 captured seat
+maps a party of two never does and a suite that only asked about pairs could not tell
 a carried count from a zero.
 
 **Everything else fails closed.** A Group whose Seats have gone answers `taken`, and so does
