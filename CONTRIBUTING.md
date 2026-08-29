@@ -1216,15 +1216,17 @@ Recommendation](https://www.w3.org/TR/WCAG22/) rather than a bar this project in
 any violation fails `quality`. It was watched failing before it was trusted, on a colour
 contrast of 1.91:1 against the 4.5:1 success criterion 1.4.3 requires.
 
-The scan is the only one in the repository, and until this was fixed it was deletable with
-every gate green: `tests/e2e` is outside the unit runner's include and outside the mutation
-gate's scope, and the end-to-end run passed with no tests at all. So `pnpm test:e2e` now
-runs `playwright test --list --grep @accessibility` first, and Playwright's own answer to a
-filter that matches nothing is to exit non-zero, which is what makes deleting the scan fail
-the job. The flag that let an empty suite pass is gone with it. This is a name rather than a
-number: there is no floor on how many tests `tests/e2e` holds, because a count is a figure
+**The scan is named so that it cannot be deleted quietly.** It is the only one in the
+repository, and `tests/e2e` is outside the unit runner's include and outside the mutation
+gate's scope, so nothing judges what is in it. For one revision the end-to-end run also
+passed with no tests at all, which left the file deletable with every gate green. So
+`pnpm test:e2e` runs `playwright test --list --grep @accessibility` before it runs anything,
+and Playwright's own answer to a filter matching nothing is to exit non-zero. Deleting the
+scan, or untagging it, fails the job. What is asked for is a name and not a number: there is
+no floor on how many tests `tests/e2e` holds, because a count is a figure
 [ADR 6](docs/adr/0006-gates-cite-a-standard-or-measure-a-regression.md) would have to
-justify, and a count is not what protects a particular scan anyway.
+justify, it would calcify whatever the suite held on the day it was written, and a count
+does not protect a particular scan in any case.
 
 **What this does not govern is the browser's own HTTP cache**, which is a third mechanism
 beside Cache Storage and the catalogue's Web Storage. The proxy passes an upstream response's
