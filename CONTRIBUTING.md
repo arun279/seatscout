@@ -67,6 +67,20 @@ bundle may exceed its ratchet. Raising a ratchet means editing `.size-limit.json
 is a reviewed line in the diff. When either fails, the report names both ways through
 rather than only the verdict.
 
+The bundle figure is brotli, summed per file, over every script `apps/web`'s own Vite
+build emits. The slice of the workspace packages that build reaches is inside the bundle,
+so it is counted where a browser would receive it rather than named in an import statement
+the measurement never follows. While `apps/web` has no page the build is a library build
+of the module that application publishes, and the figure is not a page weight: nothing
+links to it, so the bytes a user downloads today are none. It will not become a page
+weight when the shell lands either, because the glob sums every chunk the build emits and
+a page loads the ones it reaches.
+
+`apps/web/vite.config.ts` is that build, and `pnpm build` runs `tsc --build` across the
+workspace before it, because a bundler transpiles without type information and the
+directory it writes is the one the deployment publishes. The minifier is Vite's own
+default: a bundle this small is not the evidence on which to pick another.
+
 The line counts gate nothing, and describe the change rather than judging it. Nothing else
 here is reported without a limit to read it against.
 
@@ -911,11 +925,15 @@ another caller is about to read, and would pass in Node what fails in a browser.
 
 The in-memory store runs it under vitest. The browser adapter runs the same clauses in a
 real browser: `tests/e2e/store-contract.spec.ts` serves the built
-`packages/client/dist/store-contract.js` and `apps/web/dist/store.js` from one origin and
-renders each clause's verdict onto a page, which is also what makes a headed run readable by
-a person. Both load straight out of `dist` with no bundler: the client's modules import
-nothing outside themselves, and the one bare specifier the web adapter emits is resolved by
-an import map on the page. A contract that passes only in Node proves
+`packages/client/dist/store-contract.js` and the bundle `apps/web` ships from one origin
+and renders each clause's verdict onto a page, which is also what makes a headed run
+readable by a person. The page carries no import map, and that is the point: the contract
+module imports nothing at run time, and the web bundle carries what it reaches inside it,
+so output the deployment could not resolve fails a test here rather than passing the
+bundle gate's weigh-in. The contract module is served by its own path rather than through
+the client's entry because most of the package does leave itself for Core, and an entry
+that grew to reach any of it would break this page for a reason that has nothing to do
+with the adapter under test. A contract that passes only in Node proves
 nothing about the adapter that ships, which is why the browser run exists; and because the
 mutation gate runs vitest and not Playwright, the adapter is judged by unit tests of its own
 as well.
@@ -942,6 +960,15 @@ checked either way.
 `packages/client` may not either: it runs unchanged in a native runtime, which has no Web
 Storage. Per-platform adapters belong to the per-platform unit, which is what ADR 3 already
 says about view layers.
+
+`apps/web/src/index.ts` publishes it, which is why the application's entry is not empty.
+An application is the top of its own graph, so nothing imports that entry, but it is what
+the bundler is given and what the deployment therefore holds; leaving it empty would drop
+the only browser module `apps/web` has out of both the built output and the browser test
+above. `apps/web` is one project rather than the emit-and-test pair `packages/` and
+`apps/proxy` use, because Vite does the emitting and `tsc` is left to type check the tests
+alongside everything else. Its build info sits beside the project rather than in `dist`,
+which the bundler empties on every run.
 
 Web Storage can be absent or refuse outright: a private window, cleared site data, storage
 disabled by policy. **Reaching it is attempted once, and where it refuses the adapter hands

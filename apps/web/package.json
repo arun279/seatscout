@@ -4,9 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc --build --pretty false"
+    "build": "vite build"
   },
   "dependencies": {
     "@seatscout/client": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "8.2.2"
   }
 }

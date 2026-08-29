@@ -184,6 +184,11 @@ export const render = (measurement: Measurement): Report => {
       "",
       "### Bundle size",
       "",
+      "Brotli, summed per file, over every script an application's own bundler",
+      "emits, with the workspace packages it reaches inlined. Every emitted chunk",
+      "counts, including one no page has loaded, so this is what a build publishes",
+      "rather than what a page weighs.",
+      "",
       ...table(
         ["Bundle", "Brotli", "Ratchet", "Headroom"],
         measurement.bundles.map((bundle) => [

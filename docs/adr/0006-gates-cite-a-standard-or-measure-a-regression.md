@@ -154,9 +154,35 @@ emitted script rather than an entry point, so deferring bytes into a chunk that 
 later does not move the number. Remaining headroom is reported, so a ratchet that has
 drifted above the real size is visible.
 
+What the glob is pointed at has to be the output of the application's own bundler, and
+that is the load-bearing half of this gate. The web application had none at first: its
+build was `tsc`, which emits a file per source file and rewrites no import specifier,
+so the directory being weighed held modules no browser could resolve, and the workspace
+packages those modules imported were named in an import statement rather than present in
+the measurement. The figure moved once in the twenty-three merges after this decision was
+taken, and it moved because a second file appeared in the directory, not because anything
+a browser would download had changed. A ratchet over a per-file transpile is a ratchet
+over a stand-in, which is the failure named at the top of this decision arriving one step
+earlier than the deferred chunk. The web application therefore builds with Vite, which
+ADR 3 already chose, from the first commit at which there is something to measure rather
+than from the first screen.
+
+The pairing that keeps that honest is in the end-to-end suite rather than in the gate. It
+serves the built output over HTTP with no import map and runs the store contract against
+it in a real browser, so output a browser cannot resolve fails a test instead of passing a
+weigh-in.
+
 size-limit signals a breach through its exit status while still printing its verdict, so
 the report reads `passed` out of its JSON rather than looking at the status. That is why
-it is the one subprocess here whose exit code is ignored.
+it is the one subprocess here whose exit code is ignored. It also exits non-zero when the
+glob matches nothing, so a build that emits no script fails the gate rather than passing
+it unmeasured. `@size-limit/file` compresses each matched file on its own and adds the
+results, so the figure is a sum of per-file brotli rather than the brotli of everything
+concatenated.
+
+The bundler's determinism is load-bearing for the same reason the counters' is, and was
+checked the same way rather than assumed: eight consecutive builds of one tree produced
+eight byte-identical bundles and one size.
 
 The line counter is [cloc](https://github.com/AlDanial/cloc), pinned to a released version
 and checked against its SHA-256 before use. scc and tokei were the alternatives for that
@@ -190,6 +216,15 @@ is a wall: make the code say what the comment was going to, or change this decis
 
 Raising the bundle ratchet is a line in a diff that a reviewer sees, rather than a number
 that quietly stops meaning anything.
+
+The web bundle is a library build for as long as the web application has no page. Its
+entry is the module that application publishes, so the figure is all of the JavaScript the
+application contributes plus the slice of the shared packages it reaches, compressed. It
+is not a page weight, and the report says so rather than leaving it to be inferred:
+nothing links to it yet, so the bytes a user downloads today are none. The entry becomes
+`index.html` when the shell lands, and the glob does not change, because it already covers
+every script the build emits. Nothing has to remember to re-set the ratchet then; the
+shell will not fit under 298 B, so the gate fails until that diff raises it.
 
 A complexity finding is acted on where it is raised, by the author, before the branch
 leaves the machine: the same rule runs in the pre-commit hook over staged files. Nothing
