@@ -31,3 +31,5 @@ pre-push:
       run: pnpm dead-code
     counts:
       run: pnpm counts
+    claims:
+      run: pnpm claims

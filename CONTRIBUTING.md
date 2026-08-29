@@ -34,6 +34,7 @@ pnpm live-injections
 git ls-files '*.ts' '*.tsx' | xargs pnpm -s instrumented
 pnpm cache-storage
 pnpm counts
+pnpm claims
 pnpm test:unit
 pnpm build
 pnpm --filter @seatscout/proxy exec wrangler deploy --dry-run
@@ -81,11 +82,39 @@ this gate: that decision governs a gate that needs a number, and the exact check
 one, the import ban and `pnpm live-injections` and `pnpm cache-storage`, sit outside it
 for the same reason. The two facts this one compares are both in the repository.
 
+`pnpm claims` holds a claim an ADR makes about this repository to the repository itself.
+A decision can be falsified by a later commit and keep its force, because nothing reads it
+against the tree again: the record that said this repository does not name its upstream was
+untrue from the commit that added the captured corpus, and stayed in force long enough to
+put a public hostname into a repository secret and stop the nightly contract check running.
+
+`tools/claims-in-adrs.mjs` declares every pair outright, the sentence and the search that
+holds it. A claim is one search, how many tracked files under these paths hold this fixed
+string, and the declared number is what the record says. Two rules keep it from being
+decoration. Every ADR is classified, with pairs or with a stated reason it can carry none,
+so a new one fails until somebody decides which it is. And a claim expecting no match names
+where the same pattern must still be found, because a search that finds nothing because the
+name is misspelled or the directory was renamed looks exactly like a search that finds
+nothing because the claim holds. Where no such place exists there is no pair, which is why
+[ADR 4](docs/adr/0004-booking-ends-at-a-deep-link.md) has none: its rule that a ticketing
+URL is never constructed is held by a type and by `noUnsafeTypeAssertion`, not by a search. Every
+search excludes `tools/claims-in-adrs.mjs` itself, because a pattern written down there in
+order to be searched for is not an occurrence of the thing; the gate found that on its own
+first run, having reported its own source as evidence that the toolchain still named `scc`.
+
+The same trap has a second form worth naming, because a reader will meet it outside this
+gate. An answer of "not found" is only evidence when the query could have found the thing.
+This repository's protected branch returns 404 from the legacy branch-protection endpoint
+and has been protected by a ruleset since the day the workspace was set up, so a check that
+asked the first endpoint would report the branch unprotected and be wrong. Ask an endpoint
+that returns the whole set, require it to be non-empty, and treat any non-2xx as a failure
+rather than as a zero.
+
 The pre-commit hook runs six checks over staged files: it formats, lints and spell checks
 them, refuses a source carrying mutation-test instrumentation, refuses a reach for Cache
-Storage under `apps/`, and scans for secrets. The pre-push hook runs four over the whole
-workspace: it type checks, runs unit tests, checks for dead code, and holds the counts
-stated in prose. `lefthook.yml` is where both are declared.
+Storage under `apps/`, and scans for secrets. The pre-push hook runs five over the whole
+workspace: it type checks, runs unit tests, checks for dead code, holds the counts stated
+in prose, and holds every claim an ADR makes about this repository to the repository. `lefthook.yml` is where both are declared.
 
 TypeScript uses strict checking, unchecked indexed access checks, and erasable syntax.
 Biome uses its recommended rules, and `biome.json` names the published ones this workspace

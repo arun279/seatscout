@@ -79,6 +79,14 @@ custom headers, and the proxy translates to and from the real headers on the ups
 side. A native runtime has no such restriction, which is one more reason this detail
 belongs in an adapter rather than in the core.
 
+It does not live there yet, and that is worth stating as a defect rather than as a nuance.
+Three files under `packages/core` name the proxy's own header constants, the single Source
+implementation among them, so the shared core speaks the web proxy's private vocabulary and
+a native runtime that needs none of it would have to impersonate the proxy to read anything.
+The detail belongs behind the transport function the adapter is handed, where a web caller
+and a native one can differ without the core knowing. Until it moves, the count is held
+where it stands so that it cannot spread without this paragraph being rewritten.
+
 ## Consequences
 
 The requirement that no user data is stored on a server is structural rather than a
