@@ -146,7 +146,7 @@ It proves:
   upstream admits, which is why a non-2xx answer is a failure here: the upstream refuses a
   missing `Referer` with a message that blames the session instead. And whether the proxy
   hands the merged session back as `X-Upstream-Set-Cookie`, which is the last of the five
-  failures `verify.sh` can report and the only one that can arrive on a 2xx.
+  this check can report and the only one that can arrive on a 2xx.
 
 It cannot prove that a non-allowlisted account is refused. Reaching the refusal means
 completing a Google login as somebody who is not on the list, which needs a browser and a

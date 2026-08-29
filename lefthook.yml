@@ -29,3 +29,5 @@ pre-push:
       run: pnpm test:unit
     dead-code:
       run: pnpm dead-code
+    counts:
+      run: pnpm counts

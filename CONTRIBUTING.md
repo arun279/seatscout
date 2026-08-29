@@ -34,30 +34,42 @@ Three further jobs run alongside them. `footprint` measures the change and is de
 below. `secrets` scans the pull request's commits with gitleaks. `dependencies` runs
 `pnpm audit` and scans the lockfile against the OSV database; both fail on any advisory.
 
-`pnpm counts` holds a count stated in prose to the structure that carries the items. Before
-this gate the same slip landed three times, each found by a reader rather than by anything
-that runs: Coverage was six outcomes in a spec whose own code block declared seven, and
-Reference penalised three things and then four while the sum charged one more than either. `tools/counts-in-prose.mjs` declares every such pair outright, the sentence and the
-declaration it counts, reads the number word out of the one and counts the fields, union
-alternatives or configuration keys of the other, and fails when they disagree. The pairs
-cover Coverage, the Seat Profile's weights and modelled distances, a Seat Group's bands,
-`UpstreamSeat`, `Catalogue`, the `Source` port, `Unverified`, the divergence kinds and the
-denied globals.
+`pnpm counts` holds a count stated in prose to the structure that carries the items. Four
+times a sentence in this repository has counted something the code beside it had outgrown,
+and every one was found by a reader rather than by anything that runs. `CONTEXT.md` said
+Reference penalises three things and later four while the sum charged one more than
+either. `CONTRIBUTING.md` said the nightly contract test reports six things while
+`Divergence` carried eight, because the ticket that added the sellability kind stopped at
+the code.
+
+`tools/counts-in-prose.mjs` declares every such pair outright, the sentence and the
+declaration it counts. It reads the number word out of the one and counts the interface
+fields, union alternatives, object-literal weights or configuration keys of the other, and
+fails when they disagree. The pairs cover Coverage, the Seat Profile's weights and
+modelled distances, a Seat Group's bands, `UpstreamSeat`, `Catalogue`, the `Source` port,
+`Unverified`, the divergence kinds and the denied globals.
 
 It asserts nothing it was not told about, so it raises nothing a reader has to weigh and
-cannot go off for a sentence nobody declared. That is also its limit: a count written
-tomorrow is unguarded until it is added. It fails just as loudly when the sentence has been
-reworded out from under it or the declaration renamed, because a pair that quietly stops
-matching is a pair that stops holding. Rewording one of those sentences therefore costs a
+cannot go off for a sentence nobody declared. It fails just as loudly when the sentence
+has been reworded out from under it, when the declaration has been renamed, and when a
+declaration is spelled in a way it cannot read, because a pair that quietly stops matching
+is a pair that has stopped holding. Rewording one of those sentences therefore costs a
 line in the declaration too, which is the trade the bundle ratchet already makes: the
-number moves in a diff a reviewer reads. There is no figure to choose here, which is why
-[ADR 6](docs/adr/0006-gates-cite-a-standard-or-measure-a-regression.md) does not reach it:
-that decision governs a gate that needs a number, and the exact checks beside this one, the
-import ban and `pnpm live-injections` and `pnpm cache-storage`, sit outside it for the same
-reason. The two facts this one compares are both in the repository.
+number moves in a diff a reviewer reads.
+
+Two limits are worth having in front of you rather than discovering. A count written
+tomorrow is unguarded until it is declared, and nothing forces the declaration. And each
+pair compares the numeral and nothing else, so a sentence that states the right count over
+a list one item short still passes; the gate stops a count going stale and does not stop
+an enumeration going short. There is no figure to choose in either half, which is why
+[ADR 6](docs/adr/0006-gates-cite-a-standard-or-measure-a-regression.md) does not reach
+this gate: that decision governs a gate that needs a number, and the exact checks beside this
+one, the import ban and `pnpm live-injections` and `pnpm cache-storage`, sit outside it
+for the same reason. The two facts this one compares are both in the repository.
 
 The pre-commit hook formats, lints, spell checks, and secret scans staged files. The
-pre-push hook type checks the workspace, runs unit tests, and checks for dead code.
+pre-push hook type checks the workspace, runs unit tests, checks for dead code, and holds
+the counts stated in prose.
 
 TypeScript uses strict checking, unchecked indexed access checks, and erasable syntax.
 Biome uses its recommended rules plus two published ones. The standard limit of
@@ -605,7 +617,7 @@ that, and `noUnsafeTypeAssertion` refuses one, so the workspace holds none.
 
 `Format` is a closed set. The aggregator names a premium presentation in free text among a
 screening's amenities, several names to a screening, and there is a structured format field
-beside them that carries three values across the whole corpus against the labels' forty five,
+beside them that carries four values across the whole corpus against the labels' forty five,
 so the labels are what the adapter reads. It maps the ones it recognises onto Formats and
 drops the rest, which leaves a screening standard rather than inventing a Format from a name
 nobody has classified. That is the fail-closed rule Availability follows, applied where the
@@ -845,7 +857,7 @@ A test asserts the agreement over the corpus, the nightly contract test asserts 
 today's rooms, and no code builds a run from a link.
 
 Two measurements are what this is judged by. All 42 captured seat maps have three free
-Seats in one row and all 42 seat a party of three. Five of them can only do it across a
+Seats in one row, and a party of three can be seated in all 42. Five of them can only do it across a
 console, which is what treating a console as an aisle would silently cost.
 
 ## The order the keyboard walks

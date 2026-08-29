@@ -34,20 +34,35 @@ const bodyOf = (path, declaration, pattern) => {
   return match[1];
 };
 
-const fieldsOf = (path, name) =>
-  [
-    ...bodyOf(
-      path,
-      `interface ${name}`,
-      new RegExp(`\\binterface ${name} \\{\\n([\\s\\S]*?)\\n\\}`),
-    ).matchAll(/^ {2}(?:readonly )?([A-Za-z]+)\??:/gm),
-  ].map((field) => field[1]);
+const fieldsOf = (path, name) => {
+  const body = bodyOf(
+    path,
+    `interface ${name}`,
+    new RegExp(`\\binterface ${name} \\{\\n([\\s\\S]*?)\\n\\}`),
+  );
+  const fields = [...body.matchAll(/^ {2}(?:readonly )?([\w$]+)\??:/gm)];
+  const members = [...body.matchAll(/^ {2}(?![)\]}])\S/gm)];
+  if (fields.length !== members.length)
+    throw new Error(
+      `interface ${name} in ${path} declares a member spelled in a way this check cannot read`,
+    );
+  return fields.map((field) => field[1]);
+};
 
-const alternativesOf = (path, name) =>
-  bodyOf(path, `type ${name}`, new RegExp(`\\btype ${name} =([\\s\\S]*?);`))
-    .split("|")
-    .map((alternative) => alternative.trim())
-    .filter((alternative) => alternative.length > 0);
+const alternativesOf = (path, name) => {
+  const body = bodyOf(
+    path,
+    `type ${name}`,
+    new RegExp(`\\btype ${name} =([\\s\\S]*?);`),
+  );
+  if (/[{<]/.test(body))
+    throw new Error(
+      `type ${name} in ${path} is no longer a union of literals this check can count`,
+    );
+  return [...body.matchAll(/"[^"]*"|[\w$]+/g)].map(
+    (alternative) => alternative[0],
+  );
+};
 
 const outcomes = () =>
   fieldsOf(SEARCH, "Coverage").filter((field) => field !== "candidates");
@@ -66,8 +81,15 @@ const charges = () =>
       PROFILE,
       "const REFERENCE",
       /\bconst REFERENCE: SeatProfile = \{\n([\s\S]*?)\n\};/,
-    ).matchAll(/^ {2}\w+Weight: ([\d.]+),$/gm),
-  ].map((charge) => Number(charge[1]));
+    ).matchAll(/^ {2}\w+Weight: ([^,]+),$/gm),
+  ].map((charge) => {
+    const weight = Number(charge[1]);
+    if (Number.isNaN(weight))
+      throw new Error(
+        `REFERENCE in ${PROFILE} weights something by "${charge[1]}"`,
+      );
+    return weight;
+  });
 
 const lighter = () => {
   const weighted = charges();
@@ -78,20 +100,26 @@ const bands = () => alternativesOf(GROUP, "Gap");
 
 const answers = () => alternativesOf(VERIFY, "Unverified");
 
+const succeeding = () => [
+  ...read(VERIFY).matchAll(/^ {6}readonly ok: true;$/gm),
+];
+
 const divergences = () => [
   ...bodyOf(
     CONTRACT,
-    "interface Divergence",
-    /\binterface Divergence \{\n([\s\S]*?)\n\}/,
-  ).matchAll(/^ {4}\| "(\w+)";?$/gm),
+    "the kind of a Divergence",
+    /\binterface Divergence \{\n {2}readonly kind:([\s\S]*?);\n/,
+  ).matchAll(/"[^"]*"/g),
 ];
 
 const globals = () => {
   const banning = JSON.parse(read(BIOME)).overrides.find(
-    (override) => override.linter?.rules?.style?.noRestrictedGlobals,
+    (override) =>
+      override.includes?.includes("packages/**") &&
+      override.linter?.rules?.style?.noRestrictedGlobals,
   );
   if (banning === undefined)
-    throw new Error(`${BIOME} configures no noRestrictedGlobals`);
+    throw new Error(`${BIOME} denies no global under packages/`);
   return Object.keys(
     banning.linter.rules.style.noRestrictedGlobals.options.deniedGlobals,
   );
@@ -124,8 +152,8 @@ const CLAIMS = [
   {
     document: "CONTEXT.md",
     says: /It answers one of (\w+) ways\./,
-    about: `${UNVERIFIED}, and the answer that succeeds`,
-    count: () => answers().length + 1,
+    about: `${UNVERIFIED}, and the arms of Verified that succeed`,
+    count: () => answers().length + succeeding().length,
   },
   {
     document: "CONTEXT.md",
@@ -159,7 +187,7 @@ const CLAIMS = [
   },
   {
     document: "CONTRIBUTING.md",
-    says: /charges for the depth it misses.*?(\w+) of its numbers are geometry/,
+    says: /(\w+) of its numbers are geometry/,
     about: `the modelled distances of SeatProfile, in ${PROFILE}`,
     count: () => distances().length,
   },
@@ -238,21 +266,26 @@ const disagreementIn = (claim) => {
   }
 };
 
-const failures = [];
-const holding = [];
-for (const claim of CLAIMS) {
-  const disagreement = disagreementIn(claim);
-  if (disagreement === null)
-    holding.push(`  ${claim.document}: ${claim.about}`);
-  else failures.push(`  ${claim.document}: ${disagreement}`);
-}
+const disagreements = CLAIMS.map((claim) => ({
+  claim,
+  disagreement: disagreementIn(claim),
+})).filter((checked) => checked.disagreement !== null);
 
-if (failures.length > 0) {
+if (disagreements.length > 0) {
   stderr.write(
-    `${failures.length} count(s) stated in prose disagree with the structure they count:\n${failures.join("\n")}\n\nCorrect the sentence, or the structure. If a sentence has moved or been reworded,\nfollow it in tools/counts-in-prose.mjs, where every pair is declared.\n`,
+    `${disagreements.length} count(s) stated in prose could not be held to the structure they count:\n` +
+      disagreements
+        .map(
+          ({ claim, disagreement }) => `  ${claim.document}: ${disagreement}\n`,
+        )
+        .join("") +
+      "\nCorrect the sentence, or the structure. If a sentence has moved or been reworded," +
+      "\nfollow it in tools/counts-in-prose.mjs, where every pair is declared.\n",
   );
   exit(1);
 }
 stdout.write(
-  `Every count stated in prose matches the structure it counts:\n${holding.join("\n")}\n`,
+  `Every count stated in prose matches the structure it counts, over ${CLAIMS.length} declared pairs:\n${[
+    ...new Set(CLAIMS.map((claim) => `  ${claim.about}`)),
+  ].join("\n")}\n`,
 );
