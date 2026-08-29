@@ -94,23 +94,22 @@ const within = (
   until: number | undefined,
 ) => (from === undefined || at >= from) && (until === undefined || at < until);
 
-const oneOf = <Term>(
+const admitted = <Term>(
   asked: readonly Term[] | undefined,
-  carried: Term | undefined,
-) => asked === undefined || (carried !== undefined && asked.includes(carried));
-
-const anyOf = <Term>(
-  asked: readonly Term[] | undefined,
-  carried: readonly Term[],
-) => asked === undefined || asked.some((term) => carried.includes(term));
+  matches: (term: Term) => boolean,
+) => asked === undefined || asked.some(matches);
 
 const admits =
   (terms: ShowtimeTerms) =>
   ({ presentation, startsAt }: Showtime | Unidentified) =>
-    oneOf(terms.theaters, presentation.theater.id) &&
-    oneOf(terms.chains, presentation.theater.chain) &&
-    anyOf(terms.formats, presentation.formats) &&
-    anyOf(terms.amenities, presentation.amenities) &&
+    admitted(terms.theaters, (id) => id === presentation.theater.id) &&
+    admitted(terms.chains, (chain) => chain === presentation.theater.chain) &&
+    admitted(terms.formats, (format) =>
+      presentation.formats.includes(format),
+    ) &&
+    admitted(terms.amenities, (amenity) =>
+      presentation.amenities.includes(amenity),
+    ) &&
     within(Date.parse(startsAt), terms.from, terms.until);
 
 export const narrowed = (

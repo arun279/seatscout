@@ -7,6 +7,7 @@ import {
 import type { CapturedShowtimeGrouping } from "../corpus/types.js";
 import {
   type Catalogue,
+  type Chain,
   narrowed,
   type Showtime,
   type TicketingUrl,
@@ -293,6 +294,11 @@ describe("the catalogue", () => {
   it("cannot be handed a ticketing URL that was assembled from parts", () => {
     expectTypeOf<string>().not.toExtend<TicketingUrl>();
     expectTypeOf<TicketingUrl>().toExtend<string>();
+  });
+
+  it("cannot be asked for a Chain the Source has never named", () => {
+    expectTypeOf<"Landmark">().toExtend<Chain>();
+    expectTypeOf<"Regal">().not.toExtend<Chain>();
   });
 
   it("cannot file a Showtime it did identify among the ones it did not", () => {
@@ -885,6 +891,7 @@ describe("the catalogue", () => {
     );
 
     expect(stated.size).toBe(9);
+    expect(new Set(listed.map((theater) => theater.chainCode)).size).toBe(12);
     expect(listed.map((theater) => chained.get(theater.formattedID))).toEqual(
       listed.map((theater) => stated.get(theater.chainCode)),
     );

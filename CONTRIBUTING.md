@@ -57,10 +57,11 @@ the code.
 
 `tools/counts-in-prose.mjs` declares every such pair outright, the sentence and the
 declaration it counts. It reads the number word out of the one and counts the interface
-fields, union alternatives, object-literal weights or configuration keys of the other, and
-fails when they disagree. The pairs cover Coverage, the Seat Profile's weights and
-modelled distances, a Seat Group's bands, `UpstreamSeat`, `Catalogue`, the `Source` port,
-`Unverified`, the divergence kinds and the denied globals.
+fields, union alternatives, object-literal weights, translation-table entries or
+configuration keys of the other, and fails when they disagree. The pairs cover Coverage, the
+Seat Profile's weights and modelled distances, a Seat Group's bands, `UpstreamSeat`,
+`Catalogue`, the `Source` port, `Unverified`, the divergence kinds, the denied globals, the
+Amenities and the Chain table.
 
 It asserts nothing it was not told about, so it raises nothing a reader has to weigh and
 cannot go off for a sentence nobody declared. It fails just as loudly when the sentence
@@ -645,32 +646,42 @@ nobody has classified. That is the fail-closed rule Availability follows, applie
 vocabulary is open. The table covers the labels the catalogue's own two answers carry.
 
 `Amenity` is a closed set of four read from those same labels, so no label yields both an
-Amenity and a Format and one nobody has classified yields neither. Reserved seating is
-labelled and is deliberately not among them: it is already the predicate that decides a
-Showtime is bookable, so a term restating it would ask for something every offered Showtime
-has. The theater-level amenities are a different vocabulary, coded venue facts rather than a
-screening's, and the adapter does not read them.
+Amenity and a Format and one nobody has classified yields neither. It is the four
+`CONTEXT.md` names and it can grow in a diff: the aggregator labels other comfort and service
+the application has not classified, and naming one is a reviewed line rather than a change of
+rule. Reserved seating is labelled and is deliberately not among them: it is already the
+predicate that decides a Showtime is bookable, so a term restating it would ask for something
+every offered Showtime has. A theater record carries its own list of what the venue offers, in
+a second and coded vocabulary; those describe an address rather than a screening and the
+adapter does not read them.
 
 `Chain` is a closed set on the same principle and no name in it is one this project invented.
 The listing names a Theater's chain by a code and never by a name, which is what an earlier
 phase read as leaving nothing behind a translation; the discovery answer names both, so the
 table's nine entries are each the name the Source itself states for that code and a test holds
-every one of them to that answer. Three of the twelve codes the captured listings carry are
-named by no answer in the corpus, so a Theater of theirs carries no Chain, and no Query can
-name that Chain at all, which is a type error rather than an answer that comes back short.
+every one of them to that answer. A Theater whose code the table does not hold carries no
+Chain, which is three of the twelve codes the captured listings carry. Naming a Chain and
+covering it are different things: such a Theater is listed, narrowed and handed off like any
+other, and the one thing nobody can do is ask for it by Chain, which is a type error rather
+than an answer that comes back short.
 
-**There is no Movie-less catalogue read, and the corpus is why.** The interface sketch has
-`catalog(area, date)` beside the search, and the aggregator's theater-centric route is the only
-captured answer that could serve it. That answer states no instant: its rows carry a wall-clock
-time and the date the request asked for, with no offset, no zone and no UTC time anywhere,
-while a `Showtime` carries the instant its listing states and the narrowing filter parses it. It
-states no Movie the way a Presentation is built from one either: `MovieId` is branded as the
-type of a field this route does not carry, and the identity it does carry sits at another level
-and is a number, so minting one would need the assertion `noUnsafeTypeAssertion` refuses. The
-route is per Theater and its request carries the chain code besides, so an area would cost one
-request per Theater and would need that code back out of the domain. `captures.test.ts` holds
-both absences against the capture, so a refresh that ever records either fails the suite rather
-than leaving the decision to be remembered.
+**There is no Movie-less catalogue read, and what it would cost is why.** The interface sketch
+has `catalog(area, date)` beside the search. The aggregator's theater-centric route is the only
+captured answer that could serve it directly, and it cannot. It states no instant: its rows
+carry a wall-clock time and the date the request asked for, with no offset, no zone and no UTC
+time anywhere, while a `Showtime` carries the instant its listing states and the narrowing
+filter parses it. And it states no Movie the way a Presentation is built from one, because
+`MovieId` is branded as the type of a field it does not carry and the movie identity it does
+carry is a number one level up, so minting one would need the assertion `noUnsafeTypeAssertion`
+refuses. `captures.test.ts` holds both absences against the capture, so a refresh that ever
+records either fails the suite rather than leaving the decision to be remembered.
+
+**What is left is a composition rather than a translation.** A theater list, then the movies at
+each theater, then the listing route this adapter already reads for each of those movies, would
+answer it in the vocabulary that already works. What that costs is a route the corpus does not
+hold, a request per Theater and then one per Movie against the single request a movie-centric
+read costs, and a Source operation that does not exist. That is a measurement and a decision,
+and neither is a thing this change is in a position to make.
 
 The boundary is then measured rather than asserted. One test walks every key name in the
 captured responses and every key name the domain emits, and holds their overlap to `id`,
@@ -969,14 +980,14 @@ packages along the seam ADR 3 draws.
 `packages/core/src/domain/catalogue.ts` narrows a Catalogue to `ShowtimeTerms`, which is the
 part of a Query a Showtime can answer by itself: the Theaters it may be at, the Chains that
 operate them, the Formats and the Amenities it must carry one of, and the window its start
-time falls in. The client's `CatalogueTerms`
-extends it with the three that name a listing rather than narrow it, which is the whole of
-the difference between the two. Narrowing a Catalogue yields a Catalogue, so all three of
-its lists are narrowed by one predicate and a Showtime the listing already knows to be
-unbookable, or could not give an identity, is still reported against the terms it satisfies.
+time falls in. The client's `CatalogueTerms` extends it with the three that name a listing
+rather than narrow it, which is the whole of the difference between the two. Narrowing a
+Catalogue yields a Catalogue, so all three of its lists are narrowed by one predicate and a
+Showtime the listing already knows to be unbookable, or could not give an identity, is still
+reported against the terms it satisfies.
 The predicate reads a Showtime's Presentation and start time and never its identity, which
 is what lets the third list exist at all. Absence of a term is what means "no constraint"; an
-empty list of Theaters or of Formats admits nothing, because a filter that accepts none accepts
+empty list of any of the four admits nothing, because a filter that accepts none accepts
 none.
 Chain and Amenity are terms like the rest, read from the Theater and from the Presentation.
 A Query naming a Chain the Source has never named is not a short answer but a compile error,

@@ -66,15 +66,22 @@ const alternativesOf = (path, name) => {
   );
 };
 
-const translations = (name) => [
-  ...bodyOf(
-    ADAPTER,
+const translations = (path, name) => {
+  const body = bodyOf(
+    path,
     `const ${name}`,
     new RegExp(
-      `\\bconst ${name}: Readonly<Record<string, \\w+>> = \\{\\n([\\s\\S]*?)\\n\\};`,
+      `\\bconst ${name}:[^=]*= new Map\\(\\[\\n([\\s\\S]*?)\\n\\]\\);`,
     ),
-  ).matchAll(/^ {2}(?:"[^"]*"|[\w$]+):/gm),
-];
+  );
+  const entries = [...body.matchAll(/^ {2}\["[^"]*", "[^"]*"\],$/gm)];
+  const members = [...body.matchAll(/^ {2}\S/gm)];
+  if (entries.length !== members.length)
+    throw new Error(
+      `const ${name} in ${path} holds an entry spelled in a way this check cannot read`,
+    );
+  return entries;
+};
 
 const outcomes = () =>
   fieldsOf(SEARCH, "Coverage").filter((field) => field !== "candidates");
@@ -261,7 +268,7 @@ const CLAIMS = [
     document: "CONTRIBUTING.md",
     says: /the table's (\w+) entries are each the name the Source itself states/,
     about: `the entries of CHAINS, in ${ADAPTER}`,
-    count: () => translations("CHAINS").length,
+    count: () => translations(ADAPTER, "CHAINS").length,
   },
 ];
 

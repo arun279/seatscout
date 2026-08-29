@@ -92,17 +92,17 @@ const SALES_OFF = "disabled";
 
 export const ON_SALE = "available";
 
-const CHAINS: Readonly<Record<string, Chain>> = {
-  AFC: "Angelika Film Center",
-  ALAM: "Alamo Drafthouse Cinemas",
-  AMC: "AMC",
-  CNMK: "Cinemark Theatres",
-  CPLS: "Cinepolis",
-  GLXY: "Galaxy Theatres",
-  HOOK: "Hooky Entertainment",
-  L: "Landmark",
-  SMG: "Studio Movie Grill",
-};
+const CHAINS: ReadonlyMap<string | undefined, Chain> = new Map([
+  ["AFC", "Angelika Film Center"],
+  ["ALAM", "Alamo Drafthouse Cinemas"],
+  ["AMC", "AMC"],
+  ["CNMK", "Cinemark Theatres"],
+  ["CPLS", "Cinepolis"],
+  ["GLXY", "Galaxy Theatres"],
+  ["HOOK", "Hooky Entertainment"],
+  ["L", "Landmark"],
+  ["SMG", "Studio Movie Grill"],
+]);
 
 const AMENITIES: Readonly<Record<string, Amenity>> = {
   "Accessibility devices available": "Accessibility Devices",
@@ -143,7 +143,7 @@ const carries = (
 const isAmenity = (value: unknown): value is UpstreamAmenity =>
   carries(value, AMENITY_FIELDS);
 
-const namesAChain = (value: Readonly<Record<string, unknown>>) =>
+const namesAChainOrNone = (value: Readonly<Record<string, unknown>>) =>
   value.chainCode === undefined || typeof value.chainCode === "string";
 
 const isShowtime = (value: unknown): value is UpstreamShowtime =>
@@ -165,7 +165,7 @@ const isVariant = (value: unknown): value is UpstreamVariant =>
 
 const isTheater = (value: unknown): value is UpstreamTheater =>
   carries(value, THEATER_FIELDS) &&
-  namesAChain(value) &&
+  namesAChainOrNone(value) &&
   Array.isArray(value.variants) &&
   value.variants.every(isVariant);
 
@@ -185,21 +185,20 @@ const carriesTheaters = (
   isRecord(value) &&
   Array.isArray(value.theaters) &&
   value.theaters.every(
-    (theater) => carries(theater, THEATER_FIELDS) && namesAChain(theater),
+    (theater) => carries(theater, THEATER_FIELDS) && namesAChainOrNone(theater),
   );
 
 const theaterOf = (upstream: UpstreamNamedTheater): Theater => {
   const named = { id: upstream.formattedID, name: upstream.name };
-  const chain =
-    upstream.chainCode === undefined ? undefined : CHAINS[upstream.chainCode];
+  const chain = CHAINS.get(upstream.chainCode);
   return chain === undefined ? named : { ...named, chain };
 };
 
 const labelled = <Named extends string>(
-  group: UpstreamAmenityGroup,
+  labels: readonly UpstreamAmenity[],
   known: Readonly<Record<string, Named>>,
 ): readonly Named[] =>
-  group.amenities.flatMap((amenity) => known[amenity.name] ?? []).toSorted();
+  labels.flatMap((label) => known[label.name] ?? []).toSorted();
 
 const presentationOf = (
   theater: UpstreamNamedTheater,
@@ -207,8 +206,8 @@ const presentationOf = (
 ): Presentation => ({
   movie: group.movieID,
   theater: theaterOf(theater),
-  formats: labelled(group, FORMATS),
-  amenities: labelled(group, AMENITIES),
+  formats: labelled(group.amenities, FORMATS),
+  amenities: labelled(group.amenities, AMENITIES),
 });
 
 const notBookable = (

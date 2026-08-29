@@ -23,6 +23,16 @@ const SEAT_MAP = "/napi/seatMap/";
 const TERMS: CatalogueTerms = { movie: WIDE_RELEASE, date: TODAY, area: AREA };
 const TWO_HOURS = 7_200_000;
 const EMPTY = { bookable: [], unbookable: [], unidentified: [] };
+const AS_AN_EARLIER_BUILD_WROTE_IT = {
+  id: 561682849,
+  startsAt: "2026-08-28T19:20:00-05:00",
+  presentation: {
+    movie: WIDE_RELEASE,
+    theater: { id: "a-theater", name: "Cinemark Dallas XD and IMAX" },
+    formats: ["XD"],
+  },
+  ticketing: "https://tickets.invalid/jump",
+};
 const FETCHED_AT = 1000;
 
 type Written = Parameters<KeyValueStore["write"]>[1];
@@ -283,6 +293,33 @@ describe("the catalogue phase", () => {
       { fetchedAt: FETCHED_AT, catalogue: { ...EMPTY, bookable: "none" } },
       { fetchedAt: FETCHED_AT, catalogue: { ...EMPTY, unbookable: "none" } },
       { fetchedAt: FETCHED_AT, catalogue: { ...EMPTY, unidentified: "none" } },
+      {
+        fetchedAt: FETCHED_AT,
+        catalogue: { ...EMPTY, bookable: ["a Showtime"] },
+      },
+      { fetchedAt: FETCHED_AT, catalogue: { ...EMPTY, bookable: [{}] } },
+      {
+        fetchedAt: FETCHED_AT,
+        catalogue: { ...EMPTY, unbookable: ["an entry"] },
+      },
+      { fetchedAt: FETCHED_AT, catalogue: { ...EMPTY, unbookable: [{}] } },
+      {
+        fetchedAt: FETCHED_AT,
+        catalogue: { ...EMPTY, bookable: [AS_AN_EARLIER_BUILD_WROTE_IT] },
+      },
+      {
+        fetchedAt: FETCHED_AT,
+        catalogue: { ...EMPTY, unidentified: [AS_AN_EARLIER_BUILD_WROTE_IT] },
+      },
+      {
+        fetchedAt: FETCHED_AT,
+        catalogue: {
+          ...EMPTY,
+          unbookable: [
+            { showtime: AS_AN_EARLIER_BUILD_WROTE_IT, reason: "soldOut" },
+          ],
+        },
+      },
     ];
     const reread: number[] = [];
     for (const value of unreadable) {
@@ -292,6 +329,19 @@ describe("the catalogue phase", () => {
     }
 
     expect(reread).toEqual(unreadable.map(() => 1));
+  });
+
+  it("answers an area the Source listed nothing in from the cache like any other", async () => {
+    const { resolve, listings } = opened({
+      store: answering({ fetchedAt: FETCHED_AT, catalogue: EMPTY }),
+    });
+
+    expect(counted(await resolve(TERMS))).toEqual({
+      bookable: 0,
+      unbookable: 0,
+      unidentified: 0,
+    });
+    expect(listings()).toBe(0);
   });
 
   it("does not remember a Source it could not read", async () => {
