@@ -434,6 +434,20 @@ describe("what was counted", () => {
     );
   });
 
+  it("names every unsorted file, in one order, whatever order they arrived in", () => {
+    const report = between(SOME_SOURCE, {
+      ...SOME_SOURCE,
+      "apps/web/src/view.svelte": counts(1, 0),
+      "apps/web/src/a.ts.bak": counts(1, 0),
+      "apps/proxy/wrangler.json.bak": counts(1, 0),
+    });
+
+    expect(report.passed).toBe(false);
+    expect(report.markdown).toContain(
+      "3 file(s) match nothing this report sorts by, so their lines are in no column: apps/proxy/wrangler.json.bak, apps/web/src/a.ts.bak, apps/web/src/view.svelte.",
+    );
+  });
+
   it("names an unsorted file on the merge base side too", () => {
     expect(
       between({ ...SOME_SOURCE, "old.svelte": counts(1, 0) }, SOME_SOURCE)

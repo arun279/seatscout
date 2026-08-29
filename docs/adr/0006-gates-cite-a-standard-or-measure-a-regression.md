@@ -25,6 +25,14 @@ Growth itself is the thing worth seeing. A repository does not usually acquire a
 comment-to-code ratio or an oversized bundle in one change; it acquires them a few lines
 at a time, in changes that each looked small.
 
+There is a failure below all of that, and it is the one that actually happened here. A gate
+can report a pass without having measured anything: an empty list every element of which
+satisfies a predicate, a glob matching no file, a filter matching no test, a score of `NaN`
+compared against a threshold, a tool signalling "nothing to weigh" and "over the limit"
+through the same exit status. A verdict has to entail a measurement. Where a tool's own
+output cannot say which of the two happened, the gate reads the shape of that output rather
+than its status; where a subject can be empty, an empty subject fails.
+
 A figure that gates nothing still has to earn its place, and the test is whether a reader
 can act on it without weighing it. A count of lines added and removed passes: it is a
 description of the change, and nobody has to decide anything about it. A total that has
@@ -154,20 +162,33 @@ One limit of what survives is worth stating here rather than discovering later. 
 complexity is defined per function, as ESLint's `complexity` rule and every other
 published complexity rule are, so branching written at the top level of a module is
 outside all of them. Nothing under `apps/` or `packages/` writes any. The scripts directly
-under `tools/` do, and they sit outside the mutation gate's scope for the same underlying
-reason: a script whose work happens as it loads is one nothing can call.
+under `tools/` used to, and that was the same shape as sitting outside the mutation gate's
+scope: work that happens as a module loads is work nothing can call, so nothing can judge it.
+Each of the three gates written here is now a package under `tools/<name>/src`, with its work
+in functions a test calls and an entry point that only wires them together, which puts them
+inside both the unit suite and the mutation gate. What is left directly under `tools/` is the
+corpus capture, the corpus indexer, the upstream constant and the live suite's setup, none of
+which gates a merge.
 
-**Comment load** is comments per line of first-party source, and it may not exceed the
-merge base. Only files with a JavaScript or TypeScript extension count, which keeps the
-version comments that pin action SHAs out of the measurement.
+**Comment load** is the number of comment lines in first-party source, and it may not
+exceed the ratchet recorded in `.footprint.json`. Only files with a JavaScript or
+TypeScript extension count, which keeps the version comments that pin action SHAs out of
+the measurement.
 
-The ratio form is what keeps the gate honest as the code grows, but it is worth being
-plain about what it means today. The merge base carries no comments, so the ratio there is
-zero and the gate is currently absolute: one comment fails it, and no amount of
-accompanying code rescues it. That is the intended reading of a norm of none rather than
-an accident of the arithmetic. It also means the first deliberate comment cannot be
-merged without changing this decision, which is the point at which the question of whether
-it belongs gets asked properly.
+It was a ratio until 2026-08-29, comments over code on the branch against the same ratio at
+the merge base, and the ratio was the wrong form twice over. It permits unbounded absolute
+growth: a hundred lines carrying ten comments becoming a thousand carrying a hundred holds
+the density and adds ninety comments, which is neither downward pressure nor a number any
+reviewer approved. And it passes over nothing when the merge base has no code, because the
+inequality then reads `comments * 0 <= 0 * code`, which holds for every branch there is.
+A count held to a committed number has neither property, and it is the form the bundle gate
+beside it already takes: the figure is what a reviewer last accepted, it stands in a file,
+and it rises only by a line in a diff.
+
+The ratchet stands at zero, which is what the tree holds, so the gate is absolute today: one
+comment fails it and no amount of accompanying code rescues it. That is the intended reading
+of a norm of none. The first deliberate comment is a line in `.footprint.json` in the same
+diff, where the question of whether it belongs gets asked by a reviewer looking at both.
 
 **Bundle size** is a ratchet recorded in `.size-limit.json` and enforced by size-limit.
 Nothing measures `main` at review time: the recorded figure is whatever a reviewer last
@@ -215,6 +236,16 @@ and refuses a run that weighed no bundle or weighed one against no ratchet.
 `@size-limit/file` compresses each matched file on its own and adds the results, so the
 figure is a sum of per-file brotli rather than the brotli of everything concatenated.
 
+The mutation gate has the same shape one tool along, and takes the same answer. Stryker
+computes its score as mutants detected over mutants valid, scores `NaN` when none was valid,
+and breaks on `score < threshold`, which `NaN` never satisfies: a run that weighed no mutant
+logs a score of `NaN`, calls it greater than or equal to a break threshold of 100, and exits
+zero. `pnpm test:mutation` therefore runs the gate and then a guard over the JSON report it
+wrote, which fails when no mutant in that report carries one of the four statuses the score
+counts. That is not a floor on how many mutants a run must weigh, which would be a number
+this project invented. It is the difference between a measurement and none, which is what a
+pass already claims.
+
 An earlier revision of this decision claimed that the non-zero exit alone made an empty
 glob fail the gate. It did not, because the code beside it discarded the status and
 `[].every()` is true, so the sentence asserted the opposite of what ran. A change to
@@ -252,9 +283,10 @@ rather than either side of the comparison.
 The gates exist before the code they judge, which is the only time a regression gate can
 be introduced honestly.
 
-A comment cannot be merged while the merge base has none. Both ways through are named in
+A comment cannot be merged while the ratchet stands at zero. Both ways through are named in
 the report itself when the gate fails, because a gate that fails without naming the remedy
-is a wall: make the code say what the comment was going to, or change this decision.
+is a wall: make the code say what the comment was going to, or raise the ratchet in the same
+diff, where a reviewer sees it beside the comment it pays for.
 
 Raising the bundle ratchet is a line in a diff that a reviewer sees, rather than a number
 that quietly stops meaning anything.
@@ -285,12 +317,26 @@ cloc is a prerequisite for running the report locally, alongside gitleaks. Neith
 npm package, so neither is installed by `pnpm install`.
 
 The line-count table carries no threshold, unlike the two sections beside it. It reports
-lines added, removed and changed, in four buckets: product code from `apps/` and
-`packages/`, test code, build tooling, and everything else, each split into code and
-comments.
+lines added, removed and changed, in five buckets: product code from `apps/` and
+`packages/`, test code, build tooling, prose, and data, each split into code and comments.
 
-Two of those boundaries are deliberate. Source outside `apps/` and `packages/` is tooling
+Three of those boundaries are deliberate. Source outside `apps/` and `packages/` is tooling
 rather than product, because ADR 5 already draws that line and blurring it would overstate
-what the application had grown by. And the total is over the first three buckets only,
-because the fourth holds generated files: a lock file rewrite is real footprint and is
-reported, but adding it to the total would drown the lines somebody actually wrote.
+what the application had grown by. The total is over the first three, because the last two
+hold generated and written-down lines: a lock file rewrite is real footprint and is
+reported, but adding it to the total would drown the lines somebody actually wrote. And
+prose is its own bucket rather than part of the data one, because the comment count sat at
+zero for the project's whole history while `CONTRIBUTING.md` grew past 1,800 lines, three
+fifths of the markdown in the repository, holding sections named for the domain rather than
+for how to contribute. Explanation did not stop being written; it moved somewhere no gate
+looked, and a comment gate that cannot see prose is measuring where the explaining is not.
+It is reported and not gated, because the number a ratchet would hold it to depends on where
+that prose ends up living.
+
+The sorting is total, and that is a gate rather than a presentation choice. Anything matching
+no rule used to fall into a catch-all, so a new extension or a moved directory took files out
+of the measurement and the report said nothing. The classifier now names source, prose and a
+listed set of data suffixes, and a path matching none of them fails the report and is printed
+by name. The report also prints the file count per bucket on both sides and fails when a
+bucket the merge base populated holds nothing on the branch, because a gate whose subject has
+quietly emptied is reporting a verdict over a tree it no longer covers.

@@ -63,6 +63,15 @@ describe("counting the fields of an interface", () => {
     ).toThrow("a.ts declares no interface Seat");
   });
 
+  it("reads a field only where an interface writes one, at the one indent", () => {
+    const source = `interface Seat {
+  readonly row: string;
+    readonly deep: string;
+}`;
+
+    expect(fieldsOf(reading(source), "a.ts", "Seat")).toStrictEqual(["row"]);
+  });
+
   it("reads only the interface it was asked for", () => {
     const source = `interface Row {
   readonly label: string;
@@ -95,6 +104,12 @@ describe("counting the alternatives of a union", () => {
     expect(() =>
       alternativesOf(reading("interface Gap { readonly a: 1 }"), "a.ts", "Gap"),
     ).toThrow("a.ts declares no type Gap");
+  });
+
+  it("reads a union of named types whole rather than letter by letter", () => {
+    expect(
+      alternativesOf(reading("type Gap = Narrow | Wide;"), "a.ts", "Gap"),
+    ).toStrictEqual(["Narrow", "Wide"]);
   });
 
   it("refuses a type that has stopped being a union of literals", () => {
@@ -258,6 +273,9 @@ describe("counting the globals a linter denies under a tree", () => {
   const config = JSON.stringify({
     overrides: [
       { includes: ["apps/**"], linter: { rules: { style: {} } } },
+      { includes: ["packages/**"] },
+      { includes: ["packages/**"], linter: {} },
+      { includes: ["packages/**"], linter: { rules: {} } },
       { includes: ["packages/**"], linter: { rules: { style: {} } } },
       {
         includes: ["packages/**"],
@@ -314,12 +332,27 @@ describe("counting the globals a linter denies under a tree", () => {
     ).toThrow("a.json denies no global under packages");
   });
 
-  it("refuses an override that names the tree but has no linter block", () => {
-    const bare = JSON.stringify({ overrides: [{ includes: ["packages/**"] }] });
+  it("takes an override that names the tree beside another, not only alone", () => {
+    const paired = JSON.stringify({
+      overrides: [
+        {
+          includes: ["apps/**", "packages/**"],
+          linter: {
+            rules: {
+              style: {
+                noRestrictedGlobals: {
+                  options: { deniedGlobals: { a: "no" } },
+                },
+              },
+            },
+          },
+        },
+      ],
+    });
 
-    expect(() =>
-      deniedGlobalsOf(reading(bare, "a.json"), "a.json", "packages"),
-    ).toThrow("a.json denies no global under packages");
+    expect(
+      deniedGlobalsOf(reading(paired, "a.json"), "a.json", "packages"),
+    ).toStrictEqual(["a"]);
   });
 
   it("does not take an override for a tree whose name only starts the same", () => {

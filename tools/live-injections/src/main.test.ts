@@ -71,7 +71,9 @@ describe("the command line", () => {
     );
 
     expect(status).toBe(0);
-    expect(said).toContain("provides every value the live suite injects");
+    expect(said).toBe(
+      `${SETUP} provides every value the live suite injects: liveArea\n`,
+    );
   });
 
   it("fails and names the injection nothing provides", async () => {

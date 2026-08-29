@@ -55,7 +55,7 @@ either. `CONTRIBUTING.md` said the nightly contract test reports six things whil
 `Divergence` carried eight, because the ticket that added the sellability kind stopped at
 the code.
 
-`tools/counts-in-prose.mjs` declares every such pair outright, the sentence and the
+`tools/counts-in-prose/claims.ts` declares every such pair outright, the sentence and the
 declaration it counts. It reads the number word out of the one and counts the interface
 fields, union alternatives, object-literal weights, translation-table entries or
 configuration keys of the other, and fails when they disagree. The pairs cover Coverage, the
@@ -80,6 +80,26 @@ an enumeration going short. There is no figure to choose in either half, which i
 this gate: that decision governs a gate that needs a number, and the exact checks beside this
 one, the import ban and `pnpm live-injections` and `pnpm cache-storage`, sit outside it
 for the same reason. The two facts this one compares are both in the repository.
+
+**The gates are judged by the suite that judges everything else.** Each of the three written
+here is a package under `tools/<name>/src`, which is what the unit runner's include and the
+mutation gate's glob both reach, shaped the way `tools/footprint` is: a module that judges,
+a command layer over it, an adapter that touches the world, and an entry point holding
+wiring alone. Node runs the TypeScript from source, so nothing built stands between an edit
+and the gate that runs. Each also refuses an empty subject, because every one of them used
+to pass when handed nothing: no tracked file under a pathspec, no live test matched by a
+glob, no pair declared. The counts gate's table of pairs sits outside `src` beside
+`.size-limit.json` and `.footprint.json`, because it is that gate's configuration rather
+than its logic, and because a test holding it to the repository's own sources cannot run
+under a mutation runner that rewrites them.
+
+**And each carries a planted red the unit suite runs on every commit.** A fixture the gate
+must refuse sits beside one it must accept, so a gate that stops detecting its own fixture
+fails the build instead of waiting to be watched by hand. The fixtures live outside `src`
+under a `.txt` suffix, where they are neither product code, nor typechecked, nor mutated,
+nor reachable by another gate: the Cache Storage fixtures spell six escapes of the word, and
+its planted red builds a throwaway repository of its own and runs the entry point inside it,
+so it depends on no checkout but its own.
 
 The pre-commit hook runs six checks over staged files: it formats, lints and spell checks
 them, refuses a source carrying mutation-test instrumentation, refuses a reach for Cache
@@ -108,24 +128,31 @@ refactor. Cyclomatic complexity is not measured at all;
 
 ## Footprint, comment load and bundle size
 
-The `footprint` job reports lines added, removed and changed in four buckets, each split
+The `footprint` job reports lines added, removed and changed in five buckets, each split
 into code and comments: product code from `apps/` and `packages/`, test code, build
-tooling, and everything else, which is where configuration, documentation and the lock
-file land. The total covers the first three, so a lock file rewrite is reported without
-drowning the lines somebody wrote. The same report carries the comment-to-code ratio
-against the merge base, and the absolute bundle size against the ratchet in
+tooling, prose, and data, which is where configuration and the lock file land. The total
+covers the first three, so a lock file rewrite is reported without drowning the lines
+somebody wrote. The same report carries the comment count on both sides against the ratchet
+in `.footprint.json`, the prose volume on both sides against nothing, the file count per
+bucket on both sides, and the absolute bundle size against the ratchet in
 `.size-limit.json`.
+
+Prose is counted rather than swept in with the data because the two figures are read
+together. The comment count has been zero for the project's whole history while
+`CONTRIBUTING.md` grew past 1,800 lines; a gate on comments alone measures where the
+explaining is not.
 
 It goes to the run summary of every pull request, and to one pull request comment that is
 updated in place as commits land. A pull request from a fork gets the run summary only,
 because its token cannot write comments.
 
-Two of the figures gate the merge. Comment load may not exceed the merge base, and no
-bundle may exceed its ratchet. Raising a ratchet means editing `.size-limit.json`, which
-is a reviewed line in the diff. When either fails, the report names both ways through
-rather than only the verdict. A run that weighed no bundle at all, which is what a glob
-matching no file produces, fails the job outright rather than reporting a verdict over a
-measurement that did not happen.
+Three things gate the merge. Comments may not exceed the ratchet in `.footprint.json`, no
+bundle may exceed its ratchet in `.size-limit.json`, and every file on both sides has to
+sort into one of the five buckets. Raising either ratchet is a reviewed line in the diff.
+When any of the three fails, the report names the way through rather than only the verdict.
+A run that weighed no bundle at all, which is what a glob matching no file produces, fails
+the job outright rather than reporting a verdict over a measurement that did not happen, and
+so does a branch whose product, test or tooling bucket has emptied since the merge base.
 
 The bundle figure is brotli, summed per file, over every script `apps/web`'s own Vite
 build emits. The slice of the workspace packages that build reaches is inside the bundle,
@@ -150,10 +177,10 @@ No figure here is an absolute this project invented. See
 shaped the way it is, why the counter is cloc rather than scc or tokei, and what the
 comment-load gate means while the merge base still carries no comments.
 
-The tool is four modules and a wiring line. `report.ts` renders the Markdown and reaches
+The tool is five modules and a wiring line. `report.ts` renders the Markdown and reaches
 the verdicts, `measure.ts` decides which commands the counter gets, `shell.ts` is the only
-thing that starts a subprocess, and `main.ts` reads the
-arguments and turns the verdict into an exit code. `index.ts` holds the wiring and nothing
+thing that starts a subprocess, `file.ts` is the only thing that reads one, and `main.ts`
+reads the arguments and turns the verdict into an exit code. `index.ts` holds the wiring and nothing
 else, because the mutation gate judges every file under `src` and a composition root is
 the one place a test cannot reach: any logic left there would be logic nothing checks.
 
@@ -175,6 +202,19 @@ it changes the code and asks whether the suite notices. `stryker.config.json` mu
 `src` of every workspace package, and `.github/workflows/nightly.yml` fails on any mutant
 no test kills. A file the unit suite does not judge shows up as an uncovered mutant and
 fails the run just as a survivor does.
+
+A run that weighs no mutant fails as well, and it takes a second step to say so. Stryker's
+score is mutants detected over mutants valid, so a run with no valid mutant scores `NaN`,
+`NaN < 100` is false, and the run passes its own break threshold. `pnpm test:mutation` is
+therefore `stryker run` followed by a guard over the JSON report it writes, which refuses a
+report holding no mutant with a status the score counts. A source carrying
+`// Stryker disable all` is exactly the case: the run is real, the tests execute, and
+nothing was weighed.
+
+One consequence worth knowing before it bites: a test cannot read the repository's own
+sources, because the runner hands the suite instrumented copies of everything it mutates.
+The counts gate is held to the tree by `pnpm counts` in `quality` and on pre-push rather
+than by a unit test, for that reason.
 
 One thing is carved out: `apps/native`. ADR 3 puts everything correctness critical in
 `packages`, and that application is a shell, so what is left in it is screens, and the only
@@ -1148,9 +1188,9 @@ side effect and can therefore be imported by a test page as well as by the shell
 
 **The service worker cannot cache seat Availability, and that is structural rather than
 observed.** `apps/web/src/worker/cache.ts` is the only file the deployment ships that may
-name Cache Storage, and `tools/no-cache-storage-reach.mjs` is the whole of the gate: it
-takes the staged content of every tracked file under `apps/` and refuses any that carries
-the letters `caches`. It runs over that tree in `quality`, and again in the pre-commit hook
+name Cache Storage, and `tools/no-cache-storage-reach/` is the whole of the gate: it takes
+the staged content of every tracked file under `apps/`, refuses any that carries the letters
+`caches`, and refuses a pathspec that matched no tracked file at all. It runs over that tree in `quality`, and again in the pre-commit hook
 whenever a file under it is staged. It reads source text rather than an AST, and that is
 the point: a member pattern sees only the spellings it enumerates,
 and `self?.caches`, a key held in a variable, a template literal, `Reflect.get(self,
