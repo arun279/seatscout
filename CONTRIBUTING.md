@@ -76,8 +76,8 @@ shaped the way it is, why the counter is cloc rather than scc or tokei, and what
 comment-load gate means while the merge base still carries no comments.
 
 The tool is four modules and a wiring line. `report.ts` renders the Markdown and reaches
-the verdicts, `measure.ts` decides which commands the counters get, `shell.ts` is the only
-thing that starts a subprocess or touches the filesystem, and `main.ts` reads the
+the verdicts, `measure.ts` decides which commands the counter gets, `shell.ts` is the only
+thing that starts a subprocess, and `main.ts` reads the
 arguments and turns the verdict into an exit code. `index.ts` holds the wiring and nothing
 else, because the mutation gate judges every file under `src` and a composition root is
 the one place a test cannot reach: any logic left there would be logic nothing checks.
