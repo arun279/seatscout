@@ -29,11 +29,11 @@ const failing = async (store: ReturnType<typeof browserStore>) =>
     .filter((check) => check.failure !== null)
     .map((check) => check.failure);
 
-describe("the browser store", () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
+describe("the browser store", () => {
   it("satisfies the store contract against Web Storage, and writes through to it", async () => {
     const storage = webStorage();
 
@@ -90,10 +90,6 @@ describe("the browser store", () => {
 });
 
 describe("the browser session", () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
   it("reads back the session it was given, under a key of its own", async () => {
     const storage = webStorage();
     const session = browserSession(() => storage);
@@ -115,7 +111,7 @@ describe("the browser session", () => {
     expect(storage.held.get("session")).toBe("AKA_SESSION=held");
   });
 
-  it("keeps answering where storage is refused, for as long as the page lives", async () => {
+  it("keeps answering where storage is refused, for as long as the accessor lives", async () => {
     const session = browserSession(() => {
       throw new Error("storage is disabled");
     });

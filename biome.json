@@ -11,7 +11,10 @@
   "formatter": {
     "indentStyle": "space"
   },
-  "plugins": ["./tools/lint/no-collected-responses.grit"],
+  "plugins": [
+    "./tools/lint/no-cache-storage-detour.grit",
+    "./tools/lint/no-collected-responses.grit"
+  ],
   "linter": {
     "enabled": true,
     "rules": {

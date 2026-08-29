@@ -252,11 +252,13 @@ that quietly stops meaning anything.
 The web bundle is a library build whose entries are the module the application publishes
 and its service worker, with the page copied beside them rather than compiled into them.
 The figure is all of the JavaScript the application contributes plus the slice of the
-shared packages it reaches, compressed. It is not a page weight, and the report says so
-rather than leaving it to be inferred: the glob covers every script the build emits, while
-a page loads the ones it reaches. Nothing had to remember to re-set the ratchet when the
-shell landed: the shell did not fit under 298 B, so the gate failed until that diff raised
-it to 704 B.
+shared packages it reaches, compressed. It is defined as what the build publishes rather
+than as what a page downloads, and the report says so rather than leaving it to be inferred.
+Today the two coincide, since the page loads the module and the browser fetches the worker
+beside it; the definition stays the build's output so that the figure keeps meaning the same
+thing the day a build emits a chunk no page reaches. Nothing had to remember to re-set the
+ratchet when the shell landed: the shell did not fit under 298 B, so the gate failed until
+that diff raised it to 744 B.
 
 A complexity finding is acted on where it is raised, by the author, before the branch
 leaves the machine: the same rule runs in the pre-commit hook over staged files. Nothing

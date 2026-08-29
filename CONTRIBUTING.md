@@ -73,10 +73,11 @@ rather than only the verdict.
 The bundle figure is brotli, summed per file, over every script `apps/web`'s own Vite
 build emits. The slice of the workspace packages that build reaches is inside the bundle,
 so it is counted where a browser would receive it rather than named in an import statement
-the measurement never follows. It is not a page weight: the glob sums every script the
-build emits, which is the page's module and the service worker together, and a page loads
-the ones it reaches. Neither the page nor its manifest is a script, so neither is in the
-figure.
+the measurement never follows. It is defined as what the build publishes rather than as what
+a page downloads. Today the two coincide, since the page loads the module and the browser
+fetches the worker beside it, but the definition stays the build's output so that the figure
+keeps meaning the same thing the day a build emits a chunk no page reaches. The page itself
+and its manifest are not scripts, so neither is in it.
 
 `apps/web/vite.config.ts` is that build, and `pnpm build` runs `tsc --build` across the
 workspace before it, because a bundler transpiles without type information and the
@@ -981,7 +982,7 @@ rather than a rewrite.
 
 Web Storage can be absent or refuse outright: a private window, cleared site data, storage
 disabled by policy. **Reaching it is attempted once, and where it refuses the adapter falls
-back to memory, which lives as long as the page.** That is the honest answer rather than a
+back to memory, which lives as long as the accessor that made it.** That is the honest answer rather than a
 failure, because the port never promised durability, memory is still on the device, and a
 search that cannot cache is one that reads the Source again rather than one that breaks. A write the
 storage refuses, which is what an exhausted quota looks like, is dropped rather than raised,
@@ -999,25 +1000,37 @@ side effect and can therefore be imported by a test page as well as by the shell
 
 **The service worker cannot cache seat Availability, and that is structural rather than
 observed.** `apps/web/src/worker/cache.ts` is the only file in `apps/web/src` allowed to
-name `caches`, which a Biome rule enforces the way ADR 3's platform ban is enforced. It
+name `caches`, which a Biome rule enforces the way ADR 3's platform ban is enforced.
+`noRestrictedGlobals` only sees the bare identifier, so `self.caches` and
+`globalThis.caches` would walk straight past it; `tools/lint/no-cache-storage-detour.grit`
+refuses those, and the computed form, everywhere in the workspace. Both halves were watched
+firing before either was relied on. It
 exports one writer, `precacheShell`, which **takes no argument**: what it caches is that
-module's own constant list of the files the build publishes, so no caller can choose. The
-worker's request path reaches Cache Storage only through `cachedShell`, which reads. There
-is no code anywhere that can put a response the network answered into a cache, so a seat
-map cannot arrive in one, and a request outside the shell is not answered by the worker at
-all: it never calls `respondWith`, so the response never enters the worker.
+module's own constant list of the files the build publishes, so no caller can choose, and
+nothing outside that list can be written. The worker's request path reaches Cache Storage
+only through `cachedShell`, which reads, and it reads through `CacheStorage.match` rather
+than through the cache's own, so no writable handle exists outside the writer. Nothing the
+fetch handler sees can therefore be cached, and a request outside the shell is not answered
+by the worker at all: it never calls `respondWith`, so the response never enters the worker.
+
+A shell request is one the worker can answer correctly and nothing else: same origin, a
+`GET`, and a path on the list. Everything else is left to the network untouched, because a
+path alone is not an identity: another origin's `/index.js` is not this one's, and a write is
+not a read.
 
 A shell request is answered from the network while there is one, and from the cache when
 the network fails. Cache-first would pin a device to the shell it first installed, because
 the worker only re-caches while it installs and it only installs again when its own script
 changes. Network-first costs a request that was going to be made anyway and keeps the
 device on the shell the deployment is serving; the copy the cache holds is a fallback for
-having no network, which is the only thing this ticket promised it.
+having no network, which is the only thing asked of it.
 
 `tests/e2e/shell.spec.ts` drives all of it in a real browser against the built output,
 served by `vite preview` from `playwright.config.ts`'s `webServer`. The server is
-configured `appType: "mpa"`, so a path that matches no file answers 404 exactly as the
-deployment does rather than falling back to the page. The suite watches the worker take
+configured `appType: "mpa"`, because its default answers any unmatched path with the page,
+which would make the pass-through assertion below vacuous: a seat map route would come back
+as the shell rather than as a miss. It is a stand-in and not a replica: it answers 404 where
+the deployment sends the same request to the proxy. The suite watches the worker take
 control, reads Cache Storage back and asserts it holds the shell and nothing else, requests
 a seat map route and a published file the shell does not list and asserts neither is added,
 reloads with the network disabled, and writes a session through the shipped module and
@@ -1026,8 +1039,18 @@ reads it back after a reload.
 **Accessibility is checked here, on every pull request.** `@axe-core/playwright` scans the
 shell against WCAG 2.2 at levels A and AA, which is the [W3C
 Recommendation](https://www.w3.org/TR/WCAG22/) rather than a bar this project invented, and
-any violation fails `quality`. It was watched failing before it was trusted: removing
-`lang` from `<html>` fails it on `html-has-lang`.
+any violation fails `quality`. It was watched failing before it was trusted, on a colour
+contrast of 1.91:1 against the 4.5:1 success criterion 1.4.3 requires.
+
+**What this does not govern is the browser's own HTTP cache**, which is a third mechanism
+beside Cache Storage and the catalogue's Web Storage. The proxy passes an upstream response's
+headers through unchanged, so what the browser is entitled to hold for a seat map is decided
+upstream and has not been measured. Nothing here weakens that; nothing here fixes it either.
+
+**Biome lints the page for accessibility too, and gets there first.** A missing or invalid
+`lang` fails `lint/a11y/useHtmlLang` or `useValidLang` before the browser is even installed.
+The two gates overlap deliberately: what is only axe's is everything a static reader cannot
+compute, which is contrast, computed roles, and anything a script renders.
 
 ## The Seat Profile
 

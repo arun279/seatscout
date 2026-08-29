@@ -2,11 +2,22 @@ import { cachedShell, isShellPath, precacheShell } from "./cache.js";
 
 declare const self: ServiceWorkerGlobalScope;
 
-const shellFor = async (path: string) => {
+const isShellRequest = (request: Request) => {
+  const { origin, pathname } = new URL(request.url);
+  return (
+    request.method === "GET" &&
+    origin === self.location.origin &&
+    isShellPath(pathname)
+  );
+};
+
+const shellFor = async (request: Request) => {
   try {
-    return await fetch(path);
+    return await fetch(request);
   } catch {
-    return (await cachedShell(path)) ?? Response.error();
+    return (
+      (await cachedShell(new URL(request.url).pathname)) ?? Response.error()
+    );
   }
 };
 
@@ -15,6 +26,5 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  const { pathname } = new URL(event.request.url);
-  if (isShellPath(pathname)) event.respondWith(shellFor(pathname));
+  if (isShellRequest(event.request)) event.respondWith(shellFor(event.request));
 });

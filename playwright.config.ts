@@ -1,13 +1,13 @@
 import { defineConfig } from "@playwright/test";
 
-const SHELL_ORIGIN = "http://localhost:4173";
+const PORT = 4173;
 
 export default defineConfig({
   testDir: "tests/e2e",
-  use: { baseURL: SHELL_ORIGIN },
+  use: { baseURL: `http://localhost:${PORT}` },
   webServer: {
-    command: "pnpm exec vite preview --port 4173 --strictPort",
+    command: `pnpm exec vite preview --port ${PORT} --strictPort`,
     cwd: "apps/web",
-    url: SHELL_ORIGIN,
+    url: `http://localhost:${PORT}`,
   },
 });

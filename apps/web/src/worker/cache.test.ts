@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cachedShell, isShellPath, precacheShell } from "./cache.js";
 
-const AVAILABILITY = "/napi/seatMap/561478479";
+const SEAT_MAP = "/napi/seatMap/561478479";
 
 const cacheStorage = () => {
   const opened: string[] = [];
@@ -48,13 +48,13 @@ describe("the shell cache", () => {
     cacheStorage();
     await precacheShell();
 
-    expect(await cachedShell(AVAILABILITY)).toBeUndefined();
+    expect(await cachedShell(SEAT_MAP)).toBeUndefined();
   });
 
-  it("calls the page, its module and its manifest the shell, and a seat map not", () => {
+  it("counts the page, its module and its manifest as the shell, and a seat map not", () => {
     expect(
       ["/", "/index.js", "/manifest.webmanifest"].map(isShellPath),
     ).toEqual([true, true, true]);
-    expect(isShellPath(AVAILABILITY)).toBe(false);
+    expect(isShellPath(SEAT_MAP)).toBe(false);
   });
 });
