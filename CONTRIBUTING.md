@@ -61,7 +61,7 @@ fields, union alternatives, object-literal weights, translation-table entries or
 configuration keys of the other, and fails when they disagree. The pairs cover Coverage, the
 Seat Profile's weights and modelled distances, a Seat Group's bands, `UpstreamSeat`,
 `Catalogue`, the `Source` port, `Unverified`, the divergence kinds, the denied globals, the
-Amenities and the Chain table.
+Amenities and the Chain table. Two documents count the Amenities, so both are declared.
 
 It asserts nothing it was not told about, so it raises nothing a reader has to weigh and
 cannot go off for a sentence nobody declared. It fails just as loudly when the sentence

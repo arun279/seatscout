@@ -259,6 +259,12 @@ const CLAIMS = [
     count: () => fieldsOf(PORT, "Source").length,
   },
   {
+    document: "CONTEXT.md",
+    says: /It is the (\w+) above, and it grows in a diff/,
+    about: `the alternatives of Amenity, in ${CATALOGUE}`,
+    count: () => alternativesOf(CATALOGUE, "Amenity").length,
+  },
+  {
     document: "CONTRIBUTING.md",
     says: /`Amenity` is a closed set of (\w+) read from those same labels/,
     about: `the alternatives of Amenity, in ${CATALOGUE}`,
