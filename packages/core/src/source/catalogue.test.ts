@@ -19,7 +19,7 @@ import {
   fakeUpstream,
 } from "../testing/fake-upstream.js";
 import { openSource } from "./aggregator.js";
-import { listedIn } from "./catalogue.js";
+import { sellabilityFrom } from "./catalogue.js";
 import type { Reading, Source, Unreadable } from "./port.js";
 
 const BOOTSTRAP = "/napi/preferences/themes";
@@ -166,58 +166,49 @@ const THEATERS_THE_SOURCE_STOPPED_IDENTIFYING = [
   "Cinemark West Plano and XD",
 ];
 
-const withoutRowIds = (theater: CapturedTheaters[number]) => ({
+const rowsRewritten = (
+  theater: CapturedTheaters[number],
+  change: (showtimes: unknown) => unknown,
+) => ({
   ...theater,
   variants: theater.variants.map((variant) => ({
     ...variant,
     amenityGroups: variant.amenityGroups.map((group) => ({
       ...group,
-      showtimes: without(group.showtimes, "id"),
+      showtimes: change(group.showtimes),
     })),
   })),
 });
 
-const asTheSourceAnsweredIt = () => {
+const asTheSourceAnswersFor = (
+  theaters: readonly string[],
+  change: (showtimes: unknown) => unknown,
+) => {
   const capture = groupingCapture(WIDE_RELEASE, TODAY);
   return {
     theaterShowtimes: {
       ...capture.theaterShowtimes,
       theaters: capture.theaterShowtimes.theaters.map((theater) =>
-        THEATERS_THE_SOURCE_STOPPED_IDENTIFYING.includes(theater.name)
-          ? withoutRowIds(theater)
+        theaters.includes(theater.name)
+          ? rowsRewritten(theater, change)
           : theater,
       ),
     },
   };
 };
+
+const asTheSourceAnsweredIt = () =>
+  asTheSourceAnswersFor(THEATERS_THE_SOURCE_STOPPED_IDENTIFYING, (showtimes) =>
+    without(showtimes, "id"),
+  );
 
 const THEATER_THE_SOURCE_STOPPED_SELLING = "Cinemark Dallas XD and IMAX";
 const A_THEATER_STILL_SELLING = "AMC Village on the Parkway 9";
 
-const notSelling = (theater: CapturedTheaters[number]) => ({
-  ...theater,
-  variants: theater.variants.map((variant) => ({
-    ...variant,
-    amenityGroups: variant.amenityGroups.map((group) => ({
-      ...group,
-      showtimes: instead(group.showtimes, "type", "disabled"),
-    })),
-  })),
-});
-
-const withOneTheaterOffSale = () => {
-  const capture = groupingCapture(WIDE_RELEASE, TODAY);
-  return {
-    theaterShowtimes: {
-      ...capture.theaterShowtimes,
-      theaters: capture.theaterShowtimes.theaters.map((theater) =>
-        theater.name === THEATER_THE_SOURCE_STOPPED_SELLING
-          ? notSelling(theater)
-          : theater,
-      ),
-    },
-  };
-};
+const withOneTheaterOffSale = () =>
+  asTheSourceAnswersFor([THEATER_THE_SOURCE_STOPPED_SELLING], (showtimes) =>
+    instead(showtimes, "type", "disabled"),
+  );
 
 const rowsAt = (name: string) =>
   capturedRows(
@@ -428,10 +419,10 @@ describe("the catalogue", () => {
       bookable: 172,
       salesOff: 0,
     });
-    expect(await tally("disabled")).toEqual({ bookable: 0, salesOff: 172 });
+    expect(await tally("disabled")).toEqual({ bookable: 0, salesOff: 173 });
   });
 
-  it("keeps the reason a Showtime already had when its Theater stops selling", async () => {
+  it("keeps the reason that outlives sales being off, and takes the one that does not", async () => {
     const yesterday = "2026-08-27";
     const offSaleOn = async (date: string) => {
       const catalogue = payloadOf(
@@ -453,8 +444,8 @@ describe("the catalogue", () => {
     expect(await offSaleOn(TODAY)).toEqual({
       noSeatMap: 3,
       started: 0,
-      soldOut: 1,
-      salesOff: 172,
+      soldOut: 0,
+      salesOff: 173,
     });
     expect(await offSaleOn(yesterday)).toEqual({
       noSeatMap: 3,
@@ -492,23 +483,23 @@ describe("the catalogue", () => {
     expectTypeOf<"soldOut">().toExtend<Unreadable>();
   });
 
-  it("reads the words the Source put on the rows a request would be spent on", () => {
+  it("reads the word the Source put on every row it gave no reason to refuse", () => {
     const capture = groupingCapture(WIDE_RELEASE, TODAY);
-    const listed = (body: unknown) => listedIn(JSON.stringify(body));
+    const listed = (body: unknown) => sellabilityFrom(JSON.stringify(body));
 
     expect(listed(capture)).toEqual({
       rows: 176,
-      sellabilityOfBookable: new Array(172).fill("available"),
+      notRefused: new Array(172).fill("available"),
     });
     expect(listed(withOneTheaterOffSale())).toEqual({
       rows: 176,
-      sellabilityOfBookable: new Array(158).fill("available"),
+      notRefused: new Array(158).fill("available"),
     });
     expect(listed(without(capture, "type"))).toEqual({
       rows: 176,
-      sellabilityOfBookable: new Array(172).fill(undefined),
+      notRefused: new Array(172).fill(undefined),
     });
-    expect(listedIn("not a listing at all")).toBeNull();
+    expect(sellabilityFrom("not a listing at all")).toBeNull();
   });
 
   it("spends no request on a Theater whose sales are off, and leaves the circuit closed for the rest of the area", async () => {

@@ -190,19 +190,26 @@ for what it tolerates: it carries a listing row whose identity the aggregator dr
 than refusing the answer, and a tolerance nobody watches is how the next field leaves without
 anyone noticing. What is not judged is how many rows arrive without an identity, because a
 threshold on that is an invented number that would go red on a day nobody can act on. Nor is
-that missing field named, the way a missing seat field is: naming it would mean exporting the
-aggregator's listing shapes out of the adapter, and keeping them where no module above can name
-one is the first of the four mechanisms that hold the vocabulary boundary.
+that missing field named, the way a missing seat field is: a listing short of any of the five
+is one refusal with no way to say which, and giving it one would mean exporting the aggregator's
+listing shapes out of the adapter, where keeping them is the first of the four mechanisms that
+hold the vocabulary boundary. The sellability word below is named because the adapter hands its
+absence over as a fact, not because the test knows the shape it went missing from.
 
 **The sellability word is judged, and it is the one word this half reads.** The catalogue reads
 one value of it and takes every other value to say nothing the three flags do not already say.
-The premise stated as an invariant is that a row the flags call bookable carries the word for
-on sale, and that is what goes red: a bookable row carrying any other word, or none. It is the
-same argument as the unrecognised seat type. Reading the word for one value is only safe while
-something notices a second value arriving, and a further word meaning "not on sale" would
-otherwise reach a maintainer as a Theater quietly spending the retry budget, which is how this
-one reached one. The adapter hands over the words of its own bookable rows rather than its listing
-shapes, so the boundary holds and there is no second declaration of the listing to drift.
+The premise stated as an invariant is that a row the catalogue found no reason to refuse
+carries the word for on sale, and that is what goes red: such a row carrying any other word, or
+none. A row it did refuse is outside the invariant, including one refused for that very word,
+so a Theater that stays off sale is not a nightly that stays red. It is the same argument as the
+unrecognised seat type. Reading the word for one value is only safe while something notices a
+second value arriving, and a further word meaning "not on sale" would otherwise reach a
+maintainer as a Theater quietly spending the retry budget, which is how this one reached one.
+The adapter hands over the word on each of those rows rather than its listing shapes, so the
+boundary holds and there is no second declaration of the listing to drift. The word for on sale
+is written down in the adapter rather than derived from the corpus, which is the opposite of how
+the seat vocabularies are known, and deliberately: a refresh must not carry a renamed word into
+the contract silently, because a rename is exactly what this check is strongest against.
 
 **What the setup provides is checked on every pull request.** A live test asks for its answer
 by name and gets `undefined` if the setup stopped providing it, which reaches a maintainer as a
@@ -544,15 +551,26 @@ vocabulary out of the program.
 are switched off carries the same flags as one that is selling, on every row, so the whole
 listing reads as bookable while the Source's own word for those rows does not; the seat map
 route then refuses each of them with a status the adapter reads as a transport failure, which
-spends the retry budget and can open a circuit the whole area shares. It is asked last, after
-the three flags, so no row that already had a reason changes, and it is asked about exactly
+spends the retry budget and can open a circuit the whole area shares. It is asked about exactly
 one value: every other word, recorded or not, leaves the row where the flags put it. The first
 three reasons are also what a seat map refusal comes back with; this one is not, and the
 reading type says so, so no status code can be mapped to it.
 
-That tolerance is what the nightly contract test watches: a row the catalogue would spend a
-request on that does not carry the word for on sale, whether it carries a different one or
-none, is a divergence.
+**Where it is asked is decided by which remedy survives it.** A room that never has a seat map
+and a screening that has already begun both keep their reason, because neither is undone by a
+Theater switching sales off and the Source's own listing agrees: the rows already past at such a
+Theater carry the word for past, not the word for off sale. Sold out does not keep it. Its
+remedy is another time at that Theater, and there is no buyable time at a Theater that is not
+selling, so a row that is both is named for the Theater. The order is reserved seating, begun,
+sales off, sold out.
+
+That tolerance is what the nightly contract test watches: a row the catalogue found no reason
+to refuse that does not carry the word for on sale, whether it carries a different one or none,
+is a divergence. A row the catalogue *did* refuse is not one, so a Theater that stays off sale
+does not turn the nightly red for as long as it stays off sale. What that watch can see is
+bounded by what it reads, which is one area's widest release once a night: near-total against
+the word being renamed or the field disappearing, since both hit nearly every row, and weak
+against a further rare word at a rare Theater, which is the shape this case had.
 
 An answer missing anything a Showtime or a Theater is built from is refused whole rather than
 read into a listing with holes in it, for the reason a partial seat map is refused: a listing
@@ -577,13 +595,13 @@ partition the rows the answer held, and a test holds their total to the number o
 Source sent, so a row can move between them and cannot be dropped.
 
 None of this weakens Availability. No Seat is presented as bookable on thinner evidence; a
-Showtime that cannot be checked is reported as one that cannot be checked. And an identity
-that is present and is not a number is not this case at all: that is a change of shape rather
-than a missing datum, and the answer is refused whole for it as for every other field.
-`SHOWTIME_FIELDS` is keyed by `keyof UpstreamShowtime` less the identity, so a field added to
-the declaration and not to the table still does not compile, and the identity's own kind is
-asserted in the predicate beside it because it is the only one of the five that may be
-absent.
+Showtime that cannot be checked is reported as one that cannot be checked. And a field that is
+present and is not what it was is not this case at all: that is a change of shape rather than a
+missing datum, and the answer is refused whole for it as for every other field.
+`SHOWTIME_FIELDS` is keyed by `keyof UpstreamShowtime` less the two that may be absent, the
+identity and the sellability word, so a field added to the declaration and not to the table
+still does not compile, and the kind of each of those two is asserted in the predicate beside
+it.
 
 ### The session
 
@@ -1082,6 +1100,13 @@ is the operator's own page: retrying can never work while sales are off, and the
 reaches it, because the listing gave its reason before a request was spent. Only the listing
 ever puts a Showtime there. No seat map refusal does, and the reading type the port hands back
 excludes the reason, so a status code cannot be mapped to it by accident.
+
+That holds for as long as the listing a search reads knows. A Theater that switches sales off
+inside the two hours its listing is cached for is still described as selling by the entry the
+search reads, so those Showtimes are fanned out, exhaust their retries and land in `failed`
+until the entry expires. Only a fresh listing can say otherwise, and the alternative would be
+a status code meaning "this will never work" sitting in a table beside the ones that mean "try
+again".
 
 A Showtime the listing could not identify is the one candidate no request can be spent on,
 so its shortfall stands for the life of the cache entry: only a fresh listing can restore an

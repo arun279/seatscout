@@ -1,6 +1,6 @@
 import { seatMapCaptures } from "../corpus/captures.js";
 import { gapBetween, rowsOf } from "../domain/seat-group.js";
-import { ON_SALE, listedIn, theatersFrom } from "../source/catalogue.js";
+import { ON_SALE, sellabilityFrom, theatersFrom } from "../source/catalogue.js";
 import { decoded, isRecord } from "../source/json.js";
 import {
   fieldsMissingFrom,
@@ -140,17 +140,17 @@ export const areaDivergencesIn = (answer: Answer): readonly Divergence[] => {
 
 export const listingDivergencesIn = (answer: Answer): readonly Divergence[] => {
   if (decoded(answer.body) === null) return diverging("unreadable", ["json"]);
-  const listed = listedIn(answer.body);
+  const listed = sellabilityFrom(answer.body);
   if (listed === null) return diverging("missing", ["catalogue"]);
   if (listed.rows === 0) return diverging("empty", ["catalogue"]);
   return [
     ...diverging(
       "missing",
-      listed.sellabilityOfBookable.includes(undefined) ? ["type"] : [],
+      listed.notRefused.includes(undefined) ? ["type"] : [],
     ),
     ...diverging(
       "sellability",
-      listed.sellabilityOfBookable.flatMap((word) =>
+      listed.notRefused.flatMap((word) =>
         word !== undefined && word !== ON_SALE ? [word] : [],
       ),
     ),

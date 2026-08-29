@@ -53,9 +53,9 @@ interface Listing {
   readonly sellability: string | undefined;
 }
 
-export interface Listed {
+export interface Sellability {
   readonly rows: number;
-  readonly sellabilityOfBookable: readonly (string | undefined)[];
+  readonly notRefused: readonly (string | undefined)[];
 }
 
 type Kind = "boolean" | "number" | "string";
@@ -178,8 +178,8 @@ const notBookable = (
 ): UnbookableReason | null => {
   if (!group.hasReservedSeating) return "noSeatMap";
   if (row.expired) return "started";
-  if (row.isSoldOut) return "soldOut";
   if (row.type === SALES_OFF) return "salesOff";
+  if (row.isSoldOut) return "soldOut";
   return null;
 };
 
@@ -226,13 +226,13 @@ export const catalogueFrom = (body: string): Catalogue | null => {
   return listings === null ? null : catalogued(listings);
 };
 
-export const listedIn = (body: string): Listed | null => {
+export const sellabilityFrom = (body: string): Sellability | null => {
   const listings = listingsIn(body);
   return listings === null
     ? null
     : {
         rows: listings.length,
-        sellabilityOfBookable: listings.flatMap((listing) =>
+        notRefused: listings.flatMap((listing) =>
           listing.reason === null ? [listing.sellability] : [],
         ),
       };
