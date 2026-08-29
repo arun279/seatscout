@@ -14,7 +14,9 @@ Run `pnpm install` after cloning. The install registers the lefthook Git hooks.
 Pull requests run formatting, linting, spelling, type checking, dead-code analysis, unit
 tests, the build, and the end-to-end suite. The end-to-end suite drives a real browser, so
 the `quality` job installs Chromium before it runs, and it runs after the build because
-what it loads is the built output. Run the same gates locally with:
+what it loads is the built output. The accessibility gate lives there too: axe-core scans
+the shell against WCAG 2.2 at levels A and AA and a violation fails the job. Run the same
+gates locally with:
 
 ```sh
 pnpm format:check
@@ -71,11 +73,10 @@ rather than only the verdict.
 The bundle figure is brotli, summed per file, over every script `apps/web`'s own Vite
 build emits. The slice of the workspace packages that build reaches is inside the bundle,
 so it is counted where a browser would receive it rather than named in an import statement
-the measurement never follows. While `apps/web` has no page the build is a library build
-of the module that application publishes, and the figure is not a page weight: nothing
-links to it, so the bytes a user downloads today are none. It will not become a page
-weight when the shell lands either, because the glob sums every chunk the build emits and
-a page loads the ones it reaches.
+the measurement never follows. It is not a page weight: the glob sums every script the
+build emits, which is the page's module and the service worker together, and a page loads
+the ones it reaches. Neither the page nor its manifest is a script, so neither is in the
+figure.
 
 `apps/web/vite.config.ts` is that build, and `pnpm build` runs `tsc --build` across the
 workspace before it, because a bundler transpiles without type information and the
@@ -963,23 +964,70 @@ checked either way.
 Storage. Per-platform adapters belong to the per-platform unit, which is what ADR 3 already
 says about view layers.
 
-`apps/web/src/index.ts` publishes it, which is why the application's entry is not empty.
-An application is the top of its own graph, so nothing imports that entry, but it is what
-the bundler is given and what the deployment therefore holds; leaving it empty would drop
-the only browser module `apps/web` has out of both the built output and the browser test
-above. `apps/web` is one project rather than the emit-and-test pair `packages/` and
-`apps/proxy` use, because Vite does the emitting and `tsc` is left to type check the tests
-alongside everything else. Its build info sits beside the project rather than in `dist`,
-which the bundler empties on every run.
+`apps/web/src/index.ts` publishes it, alongside the shell's own start function, and that
+entry is what the bundler is given and what the deployment therefore holds. `tsc` type
+checks `apps/web` twice rather than once, because a service worker and a page cannot share
+a library: `tsconfig.json` covers the page under the DOM, and `tsconfig.worker.json` covers
+the worker and its cache under `WebWorker`, which is the split `apps/proxy` already makes
+for the same reason. Neither emits; Vite does that. Their build info sits beside the
+project rather than in `dist`, which the bundler empties on every run.
+
+The same adapter file holds the upstream session, because it is the same Web Storage and
+the same two failure modes. It is a second accessor rather than a second key on
+`KeyValueStore`, whose write takes a `CachedCatalogue` and must keep taking only that; the
+session is a string the transport carries, under a key of its own, and it is asynchronous
+for the reason the store is, so a native runtime with no synchronous storage is a drop-in
+rather than a rewrite.
 
 Web Storage can be absent or refuse outright: a private window, cleared site data, storage
-disabled by policy. **Reaching it is attempted once, and where it refuses the adapter hands
-back the in-memory store, which lives as long as the page.** That is the honest answer rather than a
+disabled by policy. **Reaching it is attempted once, and where it refuses the adapter falls
+back to memory, which lives as long as the page.** That is the honest answer rather than a
 failure, because the port never promised durability, memory is still on the device, and a
 search that cannot cache is one that reads the Source again rather than one that breaks. A write the
 storage refuses, which is what an exhausted quota looks like, is dropped rather than raised,
 because a write that did not land is a miss and a miss costs one request. A value that comes
 back as something other than what was written reads as absent for the same reason.
+
+### The shell, and what its service worker may cache
+
+`apps/web/public/index.html` is the page the deployment serves at `/`. It is provisional
+and says so on its face: a heading, a sentence, and one line reporting whether this device
+holds an upstream session. It is copied into the build output rather than compiled, so the
+two scripts beside it keep the names the worker and the page refer to. Its only inline
+script imports the entry and calls `startShell`, which is why that entry has no import-time
+side effect and can therefore be imported by a test page as well as by the shell.
+
+**The service worker cannot cache seat Availability, and that is structural rather than
+observed.** `apps/web/src/shell-cache.ts` is the only file in `apps/web/src` allowed to
+name `caches`, which a Biome rule enforces the way ADR 3's platform ban is enforced. It
+exports one writer, `precacheShell`, which **takes no argument**: what it caches is that
+module's own constant list of the files the build publishes, so no caller can choose. The
+worker's request path reaches Cache Storage only through `cachedShell`, which reads. There
+is no code anywhere that can put a response the network answered into a cache, so a seat
+map cannot arrive in one, and a request outside the shell is not answered by the worker at
+all: it never calls `respondWith`, so the response never enters the worker.
+
+A shell request is answered from the network while there is one, and from the cache when
+the network fails. Cache-first would pin a device to the shell it first installed, because
+the worker only re-caches while it installs and it only installs again when its own script
+changes. Network-first costs a request that was going to be made anyway and keeps the
+device on the shell the deployment is serving; the copy the cache holds is a fallback for
+having no network, which is the only thing this ticket promised it.
+
+`tests/e2e/shell.spec.ts` drives all of it in a real browser against the built output,
+served by `vite preview` from `playwright.config.ts`'s `webServer`. The server is
+configured `appType: "mpa"`, so a path that matches no file answers 404 exactly as the
+deployment does rather than falling back to the page. The suite watches the worker take
+control, reads Cache Storage back and asserts it holds the shell and nothing else, requests
+a seat map route and a published file the shell does not list and asserts neither is added,
+reloads with the network disabled, and writes a session through the shipped module and
+reads it back after a reload.
+
+**Accessibility is checked here, on every pull request.** `@axe-core/playwright` scans the
+shell against WCAG 2.2 at levels A and AA, which is the [W3C
+Recommendation](https://www.w3.org/TR/WCAG22/) rather than a bar this project invented, and
+any violation fails `quality`. It was watched failing before it was trusted: removing
+`lang` from `<html>` fails it on `html-has-lang`.
 
 ## The Seat Profile
 
@@ -1432,9 +1480,9 @@ knowing. Asset requests are free and outside the daily request quota, which is w
 the free tier sufficient rather than a compromise. And the assertion the proxy verifies is
 therefore checked on proxy requests and not on asset requests, which is correct: the
 access layer is what gates what `apps/web` builds, and that is this repository's own
-compiled source, with no user data in it and no reach upstream. `apps/web` builds no page
-yet, so today every path including `/` reaches the proxy; the shell arrives with the
-installable shell.
+compiled source, with no user data in it and no reach upstream. `/` is served from
+`index.html` by that same default routing, which is what closed it as a path into the
+proxy; no key of the configuration changed to do it.
 
 `assets` declares a directory and nothing else. Naming a binding would hand the Worker a
 reader for what it publishes, and `run_worker_first` would put the Worker in front of

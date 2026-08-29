@@ -26,6 +26,7 @@
     "typecheck": "tsc --build --pretty false --noEmit"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@biomejs/biome": "2.5.10",
     "@playwright/test": "1.62.1",
     "@size-limit/file": "13.0.3",

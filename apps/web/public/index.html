@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SeatScout</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <script type="module">
+      import { startShell } from "/index.js";
+      await startShell();
+    </script>
+  </head>
+  <body>
+    <main>
+      <h1>SeatScout</h1>
+      <p>
+        This is the application shell. It installs to a home screen and opens
+        without a network. The interface is not built yet.
+      </p>
+      <p id="session"></p>
+    </main>
+  </body>
+</html>

@@ -249,14 +249,14 @@ is a wall: make the code say what the comment was going to, or change this decis
 Raising the bundle ratchet is a line in a diff that a reviewer sees, rather than a number
 that quietly stops meaning anything.
 
-The web bundle is a library build for as long as the web application has no page. Its
-entry is the module that application publishes, so the figure is all of the JavaScript the
-application contributes plus the slice of the shared packages it reaches, compressed. It
-is not a page weight, and the report says so rather than leaving it to be inferred:
-nothing links to it yet, so the bytes a user downloads today are none. The entry becomes
-`index.html` when the shell lands, and the glob does not change, because it already covers
-every script the build emits. Nothing has to remember to re-set the ratchet then; the
-shell will not fit under 298 B, so the gate fails until that diff raises it.
+The web bundle is a library build whose entries are the module the application publishes
+and its service worker, with the page copied beside them rather than compiled into them.
+The figure is all of the JavaScript the application contributes plus the slice of the
+shared packages it reaches, compressed. It is not a page weight, and the report says so
+rather than leaving it to be inferred: the glob covers every script the build emits, while
+a page loads the ones it reaches. Nothing had to remember to re-set the ratchet when the
+shell landed: the shell did not fit under 298 B, so the gate failed until that diff raised
+it to 703 B.
 
 A complexity finding is acted on where it is raised, by the author, before the branch
 leaves the machine: the same rule runs in the pre-commit hook over staged files. Nothing

@@ -1,6 +1,6 @@
 import { type CachedCatalogue, storeContract } from "@seatscout/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { browserStore } from "./store.js";
+import { browserSession, browserStore } from "./store.js";
 
 const REMEMBERED: CachedCatalogue = {
   fetchedAt: 1,
@@ -86,5 +86,58 @@ describe("the browser store", () => {
     storage.setItem("mangled", "half a catalo");
 
     expect(await store.read("mangled")).toBeUndefined();
+  });
+});
+
+describe("the browser session", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("reads back the session it was given, under a key of its own", async () => {
+    const storage = webStorage();
+    const session = browserSession(() => storage);
+    await session.write("AKA_SESSION=held");
+
+    expect(await session.read()).toBe("AKA_SESSION=held");
+    expect(storage.held.get("session")).toBe("AKA_SESSION=held");
+  });
+
+  it("reads a device holding no session as holding none", async () => {
+    expect(await browserSession(webStorage).read()).toBeUndefined();
+  });
+
+  it("reaches the browser's own Web Storage when it is given no other", async () => {
+    const storage = webStorage();
+    vi.stubGlobal("localStorage", storage);
+    await browserSession().write("AKA_SESSION=held");
+
+    expect(storage.held.get("session")).toBe("AKA_SESSION=held");
+  });
+
+  it("keeps answering where storage is refused, for as long as the page lives", async () => {
+    const session = browserSession(() => {
+      throw new Error("storage is disabled");
+    });
+    await session.write("AKA_SESSION=held");
+
+    expect(await session.read()).toBe("AKA_SESSION=held");
+  });
+
+  it("drops a write the storage refuses and keeps answering", async () => {
+    const storage = webStorage();
+    let full = false;
+    const session = browserSession(() => ({
+      getItem: storage.getItem,
+      setItem: (key: string, value: string) => {
+        if (full) throw new Error("the quota is exhausted");
+        storage.setItem(key, value);
+      },
+    }));
+    await session.write("AKA_SESSION=held");
+    full = true;
+    await session.write("AKA_SESSION=replaced");
+
+    expect(await session.read()).toBe("AKA_SESSION=held");
   });
 });

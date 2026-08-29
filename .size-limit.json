@@ -2,6 +2,6 @@
   {
     "name": "web app",
     "path": "apps/web/dist/**/*.js",
-    "limit": "298 B"
+    "limit": "703 B"
   }
 ]
