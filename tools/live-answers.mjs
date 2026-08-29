@@ -140,4 +140,11 @@ export default async function readTheLiveSource(project) {
   project.provide("liveSeatMaps", seatMaps);
   project.provide("liveArea", area);
   project.provide("liveListing", listing);
+  project.provide("liveSearch", {
+    origin: HOST,
+    area: AREA,
+    movie: `${widest.id}`,
+    date: today,
+    headers: { "User-Agent": UA, Referer: `${HOST}/` },
+  });
 }

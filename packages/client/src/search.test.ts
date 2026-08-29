@@ -4,6 +4,7 @@ import {
   type Reading,
   type SeatProfile,
   type Showtime,
+  type UnbookableReason,
   narrowed,
   openSource,
 } from "@seatscout/core";
@@ -31,6 +32,7 @@ const WIDE_RELEASE = "245569";
 const AT = 1000;
 const STONEBRIAR = "AMC Stonebriar 24";
 const INWOOD = "Landmark Inwood Theatre";
+const VILLAGE = "AMC Village on the Parkway 9";
 const WIDTH = 24;
 const SEED = 4;
 
@@ -203,6 +205,7 @@ const namedIn = (coverage: Coverage) => [
   ...coverage.soldOut,
   ...coverage.noSeatMap,
   ...coverage.started,
+  ...coverage.salesOff,
   ...coverage.unidentified,
 ];
 
@@ -213,6 +216,13 @@ const withoutIdentity = (showtime: Showtime) => ({
   startsAt: showtime.startsAt,
   presentation: showtime.presentation,
   ticketing: showtime.ticketing,
+});
+
+const stoppedSelling = (
+  showtime: Showtime,
+): { readonly showtime: Showtime; readonly reason: UnbookableReason } => ({
+  showtime,
+  reason: "salesOff",
 });
 
 describe("a search", () => {
@@ -227,6 +237,7 @@ describe("a search", () => {
       soldOut: [expect.objectContaining({ id: 561549583 })],
       noSeatMap: [],
       started: [],
+      salesOff: [],
       unidentified: [],
       failed: [],
     });
@@ -292,6 +303,7 @@ describe("a search", () => {
       snapshot.coverage.soldOut.length,
       snapshot.coverage.noSeatMap.length,
       snapshot.coverage.started.length,
+      snapshot.coverage.salesOff.length,
       snapshot.coverage.unidentified.length,
       snapshot.coverage.failed.length,
     ]);
@@ -408,20 +420,49 @@ describe("a search", () => {
     expect(accountedIn(settled.coverage)).toBe(8);
   });
 
-  it("closes the ledger with every outcome in it at once", async () => {
+  it("names a Theater that has stopped selling and offers it neither a request nor a retry", async () => {
     const run = await searching({
       at: [INWOOD, STONEBRIAR],
       cached: (catalogue) => ({
         fetchedAt: AT,
         catalogue: {
           bookable: catalogue.bookable.slice(1),
-          unbookable: catalogue.unbookable,
+          unbookable: [
+            ...catalogue.unbookable,
+            ...catalogue.bookable.slice(0, 1).map(stoppedSelling),
+          ],
+          unidentified: catalogue.unidentified,
+        },
+      }),
+    });
+    const settled = await run.search.done;
+    const stopped = run.candidates.bookable[0];
+
+    expect(settled.coverage.candidates).toBe(8);
+    expect(settled.coverage.salesOff).toEqual([stopped]);
+    expect(settled.coverage.failed).toEqual([]);
+    expect(run.requested()).toHaveLength(3);
+    expect(run.requested()).not.toContain(stopped?.id);
+    expect(accountedIn(settled.coverage)).toBe(8);
+  });
+
+  it("closes the ledger with every outcome in it at once", async () => {
+    const run = await searching({
+      at: [INWOOD, STONEBRIAR, VILLAGE],
+      cached: (catalogue) => ({
+        fetchedAt: AT,
+        catalogue: {
+          bookable: catalogue.bookable.slice(2),
+          unbookable: [
+            ...catalogue.unbookable,
+            ...catalogue.bookable.slice(1, 2).map(stoppedSelling),
+          ],
           unidentified: catalogue.bookable.slice(0, 1).map(withoutIdentity),
         },
       }),
       answers: (bookable) => ({
-        ...routesTo(bookable.slice(1, 2), refusalNamed("ExpiredPerformance")),
-        ...routesTo(bookable.slice(2, 3), { status: 500, body: "" }),
+        ...routesTo(bookable.slice(2, 3), refusalNamed("ExpiredPerformance")),
+        ...routesTo(bookable.slice(3, 4), { status: 500, body: "" }),
       }),
     });
     const settled = await run.search.done;
@@ -432,19 +473,21 @@ describe("a search", () => {
       soldOut: settled.coverage.soldOut.length,
       noSeatMap: settled.coverage.noSeatMap.length,
       started: settled.coverage.started.length,
+      salesOff: settled.coverage.salesOff.length,
       unidentified: settled.coverage.unidentified.length,
       failed: settled.coverage.failed.length,
     }).toEqual({
-      candidates: 8,
-      checked: 1,
+      candidates: 12,
+      checked: 4,
       soldOut: 1,
       noSeatMap: 3,
       started: 1,
+      salesOff: 1,
       unidentified: 1,
       failed: 1,
     });
-    expect(accountedIn(settled.coverage)).toBe(8);
-    expect(settled.results).toHaveLength(1);
+    expect(accountedIn(settled.coverage)).toBe(12);
+    expect(settled.results).toHaveLength(4);
     expect(
       run.snapshots.filter(
         (snapshot) =>
@@ -519,6 +562,7 @@ describe("a search", () => {
         soldOut: [],
         noSeatMap: [],
         started: [],
+        salesOff: [],
         unidentified: [],
         failed: [],
       },
@@ -647,6 +691,7 @@ describe("a search", () => {
         soldOut: [],
         noSeatMap: [],
         started: [],
+        salesOff: [],
         unidentified: [],
         failed: [],
       },

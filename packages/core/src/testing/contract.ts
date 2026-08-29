@@ -1,6 +1,6 @@
 import { seatMapCaptures } from "../corpus/captures.js";
 import { gapBetween, rowsOf } from "../domain/seat-group.js";
-import { catalogueFrom, theatersFrom } from "../source/catalogue.js";
+import { ON_SALE, sellabilityFrom, theatersFrom } from "../source/catalogue.js";
 import { decoded, isRecord } from "../source/json.js";
 import {
   fieldsMissingFrom,
@@ -24,6 +24,7 @@ export interface Divergence {
     | "unexpected"
     | "status"
     | "type"
+    | "sellability"
     | "link";
   readonly name: string;
 }
@@ -130,35 +131,28 @@ export const divergencesIn = (answer: Answer): readonly Divergence[] => {
   ];
 };
 
-const readingDivergences = <Found>(
-  answer: Answer,
-  read: (body: string) => Found | null,
-  name: string,
-  counted: (found: Found) => number,
-): readonly Divergence[] => {
+export const areaDivergencesIn = (answer: Answer): readonly Divergence[] => {
   if (decoded(answer.body) === null) return diverging("unreadable", ["json"]);
-  const found = read(answer.body);
-  if (found === null) return diverging("missing", [name]);
-  return counted(found) === 0 ? diverging("empty", [name]) : [];
+  const theaters = theatersFrom(answer.body);
+  if (theaters === null) return diverging("missing", ["theaters"]);
+  return theaters.length === 0 ? diverging("empty", ["theaters"]) : [];
 };
 
-export const areaDivergencesIn = (answer: Answer): readonly Divergence[] =>
-  readingDivergences(
-    answer,
-    theatersFrom,
-    "theaters",
-    (theaters) => theaters.length,
-  );
-
-export const listingDivergencesIn = (answer: Answer): readonly Divergence[] =>
-  readingDivergences(
-    answer,
-    catalogueFrom,
-    "catalogue",
-    (catalogue) =>
-      [
-        ...catalogue.bookable,
-        ...catalogue.unbookable,
-        ...catalogue.unidentified,
-      ].length,
-  );
+export const listingDivergencesIn = (answer: Answer): readonly Divergence[] => {
+  if (decoded(answer.body) === null) return diverging("unreadable", ["json"]);
+  const listed = sellabilityFrom(answer.body);
+  if (listed === null) return diverging("missing", ["catalogue"]);
+  if (listed.rows === 0) return diverging("empty", ["catalogue"]);
+  return [
+    ...diverging(
+      "missing",
+      listed.notRefused.includes(undefined) ? ["type"] : [],
+    ),
+    ...diverging(
+      "sellability",
+      listed.notRefused.flatMap((word) =>
+        word !== undefined && word !== ON_SALE ? [word] : [],
+      ),
+    ),
+  ];
+};

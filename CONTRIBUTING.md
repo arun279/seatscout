@@ -182,18 +182,40 @@ first live run met a reason the corpus never captured. What guards against a who
 refusal is coverage: at least one answer must read as an Auditorium with Seats in it, so an
 upstream that refuses everything fails rather than passing vacantly.
 
-**The catalogue is judged the same way and no further.** A live area must read into Theaters and
-a live listing into a Catalogue, and neither may arrive empty, which is the same vacuity guard
-the seat map half has: an area of no Theaters and a listing of no Showtimes both parse perfectly
-and mean the upstream stopped answering. That is the pairing the adapter owes for what it
-tolerates: it now carries a listing row whose identity the aggregator dropped rather than
-refusing the answer, and a tolerance nobody watches is how the next field leaves without anyone
-noticing. What is not
-judged is how many rows arrive without an identity, because a threshold on that is an invented
-number that would go red on a day nobody can act on. Nor is the missing field named, the way a
-missing seat field is: naming it would mean exporting the aggregator's listing shapes out of the
-adapter, and keeping them where no module above can name one is the first of the four
-mechanisms that hold the vocabulary boundary.
+**The catalogue is judged the same way, and on one word further.** A live area must read into
+Theaters and a live listing into a Catalogue, and neither may arrive empty, which is the same
+vacuity guard the seat map half has: an area of no Theaters and a listing of no Showtimes both
+parse perfectly and mean the upstream stopped answering. That is the pairing the adapter owes
+for what it tolerates: it carries a listing row whose identity the aggregator dropped rather
+than refusing the answer, and a tolerance nobody watches is how the next field leaves without
+anyone noticing. What is not judged is how many rows arrive without an identity, because a
+threshold on that is an invented number that would go red on a day nobody can act on. Nor is
+that missing field named, the way a missing seat field is: a listing short of any of the five
+is one refusal with no way to say which, and giving it one would mean exporting the aggregator's
+listing shapes out of the adapter, where keeping them is the first of the four mechanisms that
+hold the vocabulary boundary. The sellability word below is named because the adapter hands its
+absence over as a fact, not because the test knows the shape it went missing from.
+
+**The sellability word is judged, and it is the one word this half reads.** The catalogue reads
+one value of it and takes every other value to say nothing the three flags do not already say.
+The premise stated as an invariant is that a row the catalogue found no reason to refuse
+carries the word for on sale, and that is what goes red: such a row carrying any other word, or
+none. A row it did refuse is outside the invariant, including one refused for that very word,
+so a Theater that stays off sale is not a nightly that stays red. It is the same argument as the
+unrecognised seat type. Reading the word for one value is only safe while something notices a
+second value arriving, and a further word meaning "not on sale" would otherwise reach a
+maintainer as a Theater quietly spending the retry budget, which is how this one reached one.
+The adapter hands over the word on each of those rows rather than its listing shapes, so the
+boundary holds and there is no second declaration of the listing to drift. The word for on sale
+is written down in the adapter rather than derived from the corpus, which is the opposite of how
+the seat vocabularies are known, and deliberately: a refresh must not carry a renamed word into
+the contract silently, because a rename is exactly what this check is strongest against.
+
+**What the setup provides is checked on every pull request.** A live test asks for its answer
+by name and gets `undefined` if the setup stopped providing it, which reaches a maintainer as a
+type error inside a nightly that then blames the upstream. `pnpm live-injections` holds every
+name the live suite injects to a name the setup provides, and it is a step in `quality`, so a
+rebase that drops one fails the pull request instead of the night.
 
 **The answers come from a global setup rather than from the test.** `tools/live-answers.mjs`
 opens a session, reads an area, takes the day's widest release, and asks for one seat map per
@@ -517,12 +539,38 @@ are general admission and have no seat map to fetch. The predicate that decides 
 reserved seating on the enclosing group of amenities, and it is asked first, because a room
 that never has a seat map is a more durable fact about a Showtime than the time of day.
 
-A Showtime is bookable when its Presentation has reserved seating, has not begun, and is not
-sold out. Anything else is carried with the reason it is not, in the same words a seat map
-refusal would come back with, so a Showtime the catalogue already knows to be unbookable
-costs no request to find out. Those flags are read rather than the word itself: they agreed
-with it in all 928 captured rows, they are total where a word is open, and reading them keeps
-one more piece of upstream vocabulary out of the program.
+A Showtime is bookable when its Presentation has reserved seating, has not begun, is not sold
+out, and the listing does not say the Theater has stopped selling. Anything else is carried
+with the reason it is not, so a Showtime the catalogue already knows to be unbookable costs no
+request to find out. The first three are decided by flags rather than by the Source's own word
+for whether a screening is on sale: the flags agreed with the word in all 928 captured rows,
+they are total where a word is open, and reading them keeps one more piece of upstream
+vocabulary out of the program.
+
+**The fourth is decided by the word, because no flag can express it.** A Theater whose sales
+are switched off carries the same flags as one that is selling, on every row, so the whole
+listing reads as bookable while the Source's own word for those rows does not; the seat map
+route then refuses each of them with a status the adapter reads as a transport failure, which
+spends the retry budget and can open a circuit the whole area shares. It is asked about exactly
+one value: every other word, recorded or not, leaves the row where the flags put it. The first
+three reasons are also what a seat map refusal comes back with; this one is not, and the
+reading type says so, so no status code can be mapped to it.
+
+**Where it is asked is decided by which remedy survives it.** A room that never has a seat map
+and a screening that has already begun both keep their reason, because neither is undone by a
+Theater switching sales off and the Source's own listing agrees: the rows already past at such a
+Theater carry the word for past, not the word for off sale. Sold out does not keep it. Its
+remedy is another time at that Theater, and there is no buyable time at a Theater that is not
+selling, so a row that is both is named for the Theater. The order is reserved seating, begun,
+sales off, sold out.
+
+That tolerance is what the nightly contract test watches: a row the catalogue found no reason
+to refuse that does not carry the word for on sale, whether it carries a different one or none,
+is a divergence. A row the catalogue *did* refuse is not one, so a Theater that stays off sale
+does not turn the nightly red for as long as it stays off sale. What that watch can see is
+bounded by what it reads, which is one area's widest release once a night: near-total against
+the word being renamed or the field disappearing, since both hit nearly every row, and weak
+against a further rare word at a rare Theater, which is the shape this case had.
 
 An answer missing anything a Showtime or a Theater is built from is refused whole rather than
 read into a listing with holes in it, for the reason a partial seat map is refused: a listing
@@ -547,13 +595,13 @@ partition the rows the answer held, and a test holds their total to the number o
 Source sent, so a row can move between them and cannot be dropped.
 
 None of this weakens Availability. No Seat is presented as bookable on thinner evidence; a
-Showtime that cannot be checked is reported as one that cannot be checked. And an identity
-that is present and is not a number is not this case at all: that is a change of shape rather
-than a missing datum, and the answer is refused whole for it as for every other field.
-`SHOWTIME_FIELDS` is keyed by `keyof UpstreamShowtime` less the identity, so a field added to
-the declaration and not to the table still does not compile, and the identity's own kind is
-asserted in the predicate beside it because it is the only one of the five that may be
-absent.
+Showtime that cannot be checked is reported as one that cannot be checked. And a field that is
+present and is not what it was is not this case at all: that is a change of shape rather than a
+missing datum, and the answer is refused whole for it as for every other field.
+`SHOWTIME_FIELDS` is keyed by `keyof UpstreamShowtime` less the two that may be absent, the
+identity and the sellability word, so a field added to the declaration and not to the table
+still does not compile, and the kind of each of those two is asserted in the predicate beside
+it.
 
 ### The session
 
@@ -1037,15 +1085,28 @@ ones among what is left. The two counts are disjoint in that order, so no Seat i
 twice. A Query that asks for accessible seating removes none on that ground and says so with
 a zero.
 
-**Coverage has six outcomes and its ledger closes in every snapshot.** Checked, sold out,
-no seat map, already started, never identified and could not be reached; not reached yet is
-the remainder rather than a field, so the six and the remainder add to `candidates` in every
-snapshot and not only in the last. Four of them are populated by the listing before a
-request is spent; the fan-out adds to three of those four from what a seat map refusal says,
-and to `failed`. An expired screening is `started` and never `failed`, because a cached
-listing routinely offers screenings that have begun and a retry cannot help one; `failed`
-stays the only retryable set, and it carries identities rather than Showtimes because a
-retry is the one remedy that has to name what it retries.
+**Coverage has seven outcomes and its ledger closes in every snapshot.** Checked, sold out,
+no seat map, already started, sales switched off, never identified and could not be reached;
+not reached yet is the remainder rather than a field, so the seven and the remainder add to
+`candidates` in every snapshot and not only in the last. Five of them are populated by the
+listing before a request is spent; the fan-out adds to three of those five from what a seat
+map refusal says, and to `failed`. An expired screening is `started` and never `failed`,
+because a cached listing routinely offers screenings that have begun and a retry cannot help
+one; `failed` stays the only retryable set, and it carries identities rather than Showtimes
+because a retry is the one remedy that has to name what it retries.
+
+A Showtime at a Theater that has stopped selling is named rather than counted, and its remedy
+is the operator's own page: retrying can never work while sales are off, and the fan-out never
+reaches it, because the listing gave its reason before a request was spent. Only the listing
+ever puts a Showtime there. No seat map refusal does, and the reading type the port hands back
+excludes the reason, so a status code cannot be mapped to it by accident.
+
+That holds for as long as the listing a search reads knows. A Theater that switches sales off
+inside the two hours its listing is cached for is still described as selling by the entry the
+search reads, so those Showtimes are fanned out, exhaust their retries and land in `failed`
+until the entry expires. Only a fresh listing can say otherwise, and the alternative would be
+a status code meaning "this will never work" sitting in a table beside the ones that mean "try
+again".
 
 A Showtime the listing could not identify is the one candidate no request can be spent on,
 so its shortfall stands for the life of the cache entry: only a fresh listing can restore an

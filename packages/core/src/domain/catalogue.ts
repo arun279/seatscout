@@ -47,7 +47,7 @@ export interface Showtime {
 
 export type Unidentified = Omit<Showtime, "id"> & { readonly id?: never };
 
-export type UnbookableReason = "noSeatMap" | "started" | "soldOut";
+export type UnbookableReason = "noSeatMap" | "started" | "soldOut" | "salesOff";
 
 export interface Unbookable {
   readonly showtime: Showtime | Unidentified;

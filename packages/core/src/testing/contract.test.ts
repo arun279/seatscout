@@ -70,6 +70,14 @@ const identifiedNowhere = (body: unknown): Answer => ({
   fetchedAt: FETCHED_AT,
 });
 
+const sellingAs = (word: string | undefined): Answer => ({
+  status: 200,
+  body: JSON.stringify(listingCapture(), (key, value) =>
+    key === "type" ? word : value,
+  ),
+  fetchedAt: FETCHED_AT,
+});
+
 const areaCapture = () => {
   const capture = nearbyTheatersCaptures.get("theaters/nearby-theaters.json");
   if (capture === undefined) throw new Error("the area was never captured");
@@ -310,6 +318,24 @@ describe("the contract the corpus recorded", () => {
         answerOf({ theaterShowtimes: { theaters: [] } }, 200),
       ),
     ).toEqual([{ kind: "empty", name: "catalogue" }]);
+  });
+
+  it("names a Showtime a request would be spent on that does not say it is on sale", () => {
+    expect({
+      "the word the corpus recorded": listingDivergencesIn(
+        sellingAs("available"),
+      ),
+      "the word for a Theater that has stopped selling": listingDivergencesIn(
+        sellingAs("disabled"),
+      ),
+      "a word nobody has met": listingDivergencesIn(sellingAs("reopening")),
+      "no word at all": listingDivergencesIn(sellingAs(undefined)),
+    }).toEqual({
+      "the word the corpus recorded": [],
+      "the word for a Theater that has stopped selling": [],
+      "a word nobody has met": [{ kind: "sellability", name: "reopening" }],
+      "no word at all": [{ kind: "missing", name: "type" }],
+    });
   });
 
   it("counts a Showtime a listing holds whether or not it was identified", () => {
