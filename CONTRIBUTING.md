@@ -42,11 +42,12 @@ is the only complexity gate, and
 a type assertion, which is the widest way past the compile-time guarantees below. Unknown
 words go in the `words` list in `cspell.json`.
 
-A complexity failure names the file, the function, its score and the limit, and asks for
-one thing: extract part of the function. There is no figure to weigh and no exemption to
-grant. Suppressing the rule in place would take a comment, and comment load is gated
-separately, so the way through is the refactor. Cyclomatic complexity is not measured at
-all; [ADR 6](docs/adr/0006-gates-cite-a-standard-or-measure-a-regression.md) says why.
+A complexity failure names the file, the function, its score and the limit, and asks to
+refactor the function until the score is under the limit; extracting part of it is the
+usual way. There is no figure to weigh and no exemption to grant. Suppressing the rule in
+place would take a comment, and comment load is gated separately, so the way through is the
+refactor. Cyclomatic complexity is not measured at all;
+[ADR 6](docs/adr/0006-gates-cite-a-standard-or-measure-a-regression.md) says why.
 
 ## Footprint, comment load and bundle size
 
@@ -81,8 +82,9 @@ workspace before it, because a bundler transpiles without type information and t
 directory it writes is the one the deployment publishes. The minifier is Vite's own
 default: a bundle this small is not the evidence on which to pick another.
 
-The line counts gate nothing, and describe the change rather than judging it. Nothing else
-here is reported without a limit to read it against.
+The line counts gate nothing, and describe the change rather than judging it. The other
+figures are either a gate's verdict or the operands it is computed from, so nothing here is
+a bare total left for a reader to form a private opinion about.
 
 No figure here is an absolute this project invented. See
 [ADR 6](docs/adr/0006-gates-cite-a-standard-or-measure-a-regression.md) for why each is

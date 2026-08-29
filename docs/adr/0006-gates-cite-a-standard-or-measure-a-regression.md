@@ -41,31 +41,38 @@ with `main`. The absolute figure is reported either way.
 [`noExcessiveCognitiveComplexity`](https://biomejs.dev/linter/rules/no-excessive-cognitive-complexity/)
 at its documented default limit of 15, and it fails the build. The rule and the limit are
 both published, so neither is this project's invention, and the limit stays where the tool
-sets it because no better one exists to move it to: the metric's independent validation
+sets it because no better cognitive one exists to move it to: the metric's own validation
 says outright that a meaningful threshold value has yet to be identified (Muñoz Barón,
 Wyrich and Wagner, *An Empirical Validation of Cognitive Complexity as a Measure of Source
 Code Understandability*, ESEM 2020). That study is also why the measure is trusted at all.
 Pooling about 24,000 human judgements of 427 snippets across ten earlier studies, it
 concluded that cognitive complexity is "the first validated and solely code-based metric
 which is able to reflect at least some aspects of code understandability". That is a
-careful claim rather than a strong one, and it is more than any other complexity metric can
-show. Its diagnostic names the file, the function, its score, the limit and the remedy,
-which is the whole test of whether a number belongs in a gate.
+careful claim rather than a strong one, and it is contested: Lavazza, Abualkishik, Liu and
+Morasca (*Journal of Systems and Software* 197:111561, 2023), reanalysing the same data,
+found lines of code and Halstead's measure performed marginally better. What survives is
+narrower than "the best measure" and enough for this purpose: a per-function score with a
+published limit, validated against human judgement rather than asserted. Its diagnostic
+names the file, the function, its score, the limit and the remedy, which is the whole test
+of whether a number belongs in a gate.
 
 Choosing it over cyclomatic complexity is also the choice the body that publishes both has
-made. SonarSource ships a cyclomatic complexity rule, S1541, at a threshold of 10, and
-leaves it out of every default quality profile; the cognitive complexity rule, S3776, is in
-the default Sonar way profile at a threshold of 15. Their stated reason is that cognitive
-complexity is the preferred metric. Biome's rule is S3776 at that threshold, and Biome has
-no cyclomatic rule to enable in the first place.
+made. SonarSource ships a cyclomatic complexity rule, S1541, defaulting to 10 in
+JavaScript and TypeScript, and leaves it out of the default Sonar way profile; the
+cognitive complexity rule, S3776, is in that profile, at 15 for the same languages. A
+SonarSource engineer gives the reason on their community forum rather than in the rule's
+documentation: "only the rule using Cognitive Complexity is enabled by default, as we
+believe it is best suited for the purpose of having clean code." Biome's rule is the same
+measure at the same threshold, and Biome ships no cyclomatic rule at all.
 
 Keeping any complexity gate is nonetheless a choice against the grain, and worth naming as
-one. TypeScript, VS Code, Next.js, Node, Vue, Svelte, Astro, React Router and Biome itself
-enable no complexity rule of any kind, and React's configuration turns ESLint's off by
-name. That is a reasonable position for a large codebase with many hands and a long
-history, where a limit introduced late grandfathers whatever preceded it. It is the wrong
-position here for the reason this decision opens with: the gate is in place before the
-code, so it costs nothing to keep and cannot be honestly added later.
+one. Of the well-known JavaScript and TypeScript repositories whose lint configuration was
+read for this decision, none enables a cyclomatic or a cognitive complexity rule, and
+React's `.eslintrc.js` turns ESLint's off by name with `complexity: OFF`. That is a
+reasonable position for a large codebase with many hands and a long history, where a limit
+introduced late grandfathers whatever preceded it. It is the wrong position here for the
+reason this decision opens with: the gate is in place before the code, so it costs nothing
+to keep and cannot be honestly added later.
 
 **Cyclomatic complexity is not measured.** An earlier revision of this decision reported
 it per bucket and gated nothing on it, on the argument that complexity growth is the kind
@@ -83,8 +90,8 @@ already say. SonarSource's cognitive complexity paper puts it flatly: "Cyclomati
 Complexity is of little use above the method level." Landman, Serebrenik, Bouwers and
 Vinju (*Journal of Software: Evolution and Process* 28(7), 2016), defending the metric
 against the charge that it is redundant with lines of code, found the correlation only
-moderate per method but strong once aggregated to file level. The report already prints
-the line counts.
+moderate per method and stronger once aggregated to file level, though that held for their
+Java corpus and not their C one. The report already prints the line counts.
 
 And the one thing McCabe's measure does well is already measured here, directly. Its
 critics and its defenders agree that it counts the test cases a function needs for full
@@ -92,40 +99,56 @@ coverage and disagree about everything else, from Shepperd (*Software Engineerin
 Journal*, 1988), who found it "no more than a proxy for, and in many cases is outperformed
 by, lines of code", to SonarSource, whose reason for formulating cognitive complexity was
 that cyclomatic complexity excels at testability and not at maintainability. This
-workspace does not need a proxy for test adequacy. The nightly mutation run measures it,
-and breaks below 100 per cent.
+workspace does not need a proxy for test adequacy. The mutation run measures it directly
+and breaks below 100 per cent. It runs nightly rather than per pull request, so the honest
+statement is that test adequacy is measured every day rather than at every merge, and a
+branch can sit green for a few hours before it is checked.
 
-Measuring it properly instead was considered and is not available. No maintained tool
-computes cyclomatic complexity from a TypeScript syntax tree: `ts-complex` last published
-in 2018 against TypeScript 2.8, `typhonjs-escomplex` has been at 0.1.x since 2018, and
-`escomplex` and `complexity-report` have been at a 2016 alpha ever since. ESLint's
-`complexity` rule is the maintained one, and taking it would mean running ESLint and
-typescript-eslint beside Biome for a single rule.
+Measuring it properly instead is possible, and costs a second analyser. The standalone
+packages are all dead: `ts-complex` last published in 2018 against TypeScript 2.8,
+`typhonjs-escomplex` at 0.1.x since 2018, `escomplex` and `complexity-report` at a 2016
+alpha ever since. But `eslint-plugin-sonarjs` is maintained, and version 4.2.0 ships S1541
+as `cyclomatic-complexity` with a default threshold of 10; ESLint's own `complexity` rule
+is the other live option. Either means running ESLint and typescript-eslint beside Biome
+for one rule.
 
-There would also be no threshold to take from it. ESLint's default of 20 is off unless
-switched on, is absent from `eslint:recommended`, and was settled in a 2015 issue thread as
-a ceiling on the obviously unreasonable rather than a measured limit. The older number it
-was weighed against is no firmer: NIST Special Publication 500-235, the document that
-established 10, says in the same breath that "limits as high as 15 have been used
-successfully as well" and that "an organization can pick a complexity limit greater than
-10, but only if it is sure it knows what it is doing", and its recommended policy is to
-limit to 10 or write down why not. Every published figure is per function in any case, and
-the report's was per bucket, so none of them was even the right shape.
+That package is worth reading for what it does with the two rules rather than only for
+what it contains. In its own metadata S1541 is `recommended: false` and S3776, cognitive
+complexity, is `recommended: true`. So the same body chooses the same way three times over:
+in the rule's default quality profile, in the linter plugin's recommended set, and in what
+Biome inherited from it.
+
+There is a threshold that could be taken, and it is fair to say so plainly. NIST Special
+Publication 500-235 records that "the original limit of 10 as proposed by McCabe has
+significant supporting evidence", and its recommended policy is to limit each module to 10
+or write down why not. That is a published standard with an exception process, which is
+exactly the shape this decision accepts elsewhere. ESLint's competing default of 20 is
+weaker ground: off unless switched on, absent from `eslint:recommended`, and settled in a
+2015 issue thread as a ceiling on the obviously unreasonable.
+
+So the reason not to gate on 10 is not that the number is arbitrary. It is that the number
+is sound for a purpose this workspace already serves another way. NIST is explicit that
+cyclomatic complexity "gives the number of tests", and qualifies its own limit: an
+organisation may exceed 10 "only if it is sure it knows what it is doing and is willing to
+devote the additional testing effort required by more complex modules". The limit exists to
+bound testing effort, and the mutation gate bounds that directly. Every published figure is
+per function besides, and the report's was per bucket, so none of them was even the shape
+the report needed.
 
 The other door this decision usually leaves open is shut too. A regression gate needs a
 tool that measures new code separately, and none exists for this metric: SonarSource, who
 originated new-code gating, publish no `new_complexity`, and the delta linters that do
 exist gate lint findings rather than a complexity total.
 
-Which is fortunate, because an aggregate would have charged for the remedy. Under McCabe's
-own definition each extracted function is an unconnected component, so it adds one to the
-program's total; Shepperd calls this "the bizarre result of increasing overall complexity
-as a program is divided into more, presumably simpler, modules", and notes the total only
-falls where the extraction also removes duplication. So a bucket total gated on growth
-would have gone red for exactly the extract-method that Biome's rule asks for by name. NIST
-supplies the inverse in the same section that sets the limit, reducing a module from 90 to
-10 by adding a ten-branch switch that does nothing. A measure that moves the wrong way
-under the remedy and the right way under a decoration is not one to fail a build on.
+Which is fortunate, because a true McCabe aggregate would have charged for the remedy.
+Under McCabe's own definition each extracted function is an unconnected component, so it
+adds one to the program's total; Shepperd calls this "the bizarre result of increasing
+overall complexity as a program is divided into more, presumably simpler, modules", and
+notes the total only falls where the extraction also removes duplication. A program-level
+total gated on growth would therefore go red for the very refactor an over-complex function
+calls for. The figure this report actually carried had the opposite defect and was no
+better for it: scc counts branch keywords per file, so extracting a function moves it not
+at all, and it would have sat still through exactly the change worth seeing.
 
 One limit of what survives is worth stating here rather than discovering later. Cognitive
 complexity is defined per function, as ESLint's `complexity` rule and every other
@@ -240,9 +263,10 @@ count. Neither answers "how much branching does this file hold", and nothing her
 cloc is a prerequisite for running the report locally, alongside gitleaks. Neither is an
 npm package, so neither is installed by `pnpm install`.
 
-The footprint report itself carries no threshold. It reports lines added, removed and
-changed, in four buckets: product code from `apps/` and `packages/`, test code, build
-tooling, and everything else, each split into code and comments.
+The line-count table carries no threshold, unlike the two sections beside it. It reports
+lines added, removed and changed, in four buckets: product code from `apps/` and
+`packages/`, test code, build tooling, and everything else, each split into code and
+comments.
 
 Two of those boundaries are deliberate. Source outside `apps/` and `packages/` is tooling
 rather than product, because ADR 5 already draws that line and blurring it would overstate
