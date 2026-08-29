@@ -2,11 +2,11 @@ pre-commit:
   parallel: true
   commands:
     format:
-      glob: "*.{css,js,json,jsonc,jsx,md,ts,tsx,yaml,yml}"
+      glob: "*.{cjs,css,cts,js,json,jsonc,jsx,md,mjs,mts,ts,tsx,yaml,yml}"
       run: pnpm exec biome format --write --no-errors-on-unmatched {staged_files}
       stage_fixed: true
     lint:
-      glob: "*.{css,js,json,jsonc,jsx,ts,tsx,yaml,yml}"
+      glob: "*.{cjs,css,cts,html,js,json,jsonc,jsx,mjs,mts,ts,tsx,yaml,yml}"
       run: pnpm exec biome lint --no-errors-on-unmatched {staged_files}
     spell:
       run: pnpm exec cspell lint --no-must-find-files {staged_files}
@@ -14,7 +14,7 @@ pre-commit:
       glob: "*.{ts,tsx}"
       run: node tools/no-instrumented-sources.mjs {staged_files}
     cache-storage:
-      glob: "{apps/web,apps/proxy}/**"
+      glob: "apps/**"
       run: node tools/no-cache-storage-reach.mjs
     secrets:
       run: gitleaks git --pre-commit --staged --no-banner --redact --verbose

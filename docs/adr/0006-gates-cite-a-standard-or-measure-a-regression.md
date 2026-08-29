@@ -206,11 +206,21 @@ weigh-in.
 
 size-limit signals a breach through its exit status while still printing its verdict, so
 the report reads `passed` out of its JSON rather than looking at the status. That is why
-it is the one subprocess here whose exit code is ignored. It also exits non-zero when the
-glob matches nothing, so a build that emits no script fails the gate rather than passing
-it unmeasured. `@size-limit/file` compresses each matched file on its own and adds the
-results, so the figure is a sum of per-file brotli rather than the brotli of everything
-concatenated.
+it is the one subprocess here whose exit code is ignored. The status cannot say which of
+two things happened, because size-limit exits non-zero both for a breach and for a glob
+that matched no file. In that second case it prints `passed: true` at a size of zero and
+omits `sizeLimit` entirely, since a check whose glob matched nothing has its limit cleared
+before the verdict is printed. The report therefore reads the shape rather than the status,
+and refuses a run that weighed no bundle or weighed one against no ratchet.
+`@size-limit/file` compresses each matched file on its own and adds the results, so the
+figure is a sum of per-file brotli rather than the brotli of everything concatenated.
+
+An earlier revision of this decision claimed that the non-zero exit alone made an empty
+glob fail the gate. It did not, because the code beside it discarded the status and
+`[].every()` is true, so the sentence asserted the opposite of what ran. A change to
+`outDir`, to a file extension, or to where `apps/web` lives would have gone green over a
+measurement that never happened, which is the failure this decision opens with arriving
+through the gate meant to catch it.
 
 The bundler's determinism is load-bearing for the same reason the counters' is, and was
 checked the same way rather than assumed: eight consecutive builds of one tree produced
