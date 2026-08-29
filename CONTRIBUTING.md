@@ -18,8 +18,9 @@ Pull requests run the `quality` job, which is the list below in the order it run
 and three further jobs described after it. The end-to-end suite drives a real browser, so the
 `quality` job installs Chromium before it runs, and it runs after the build because what it
 loads is the built output. The accessibility gate lives there too: axe-core scans the shell
-against WCAG 2.2 at levels A and AA and a violation fails the job. Run the same gates
-locally with:
+against WCAG 2.2 at levels A and AA and a violation fails the job. `pnpm test:e2e` lists the
+tests tagged `@accessibility` before it runs anything, so the suite has to still hold that
+scan for the run to start. Run the same gates locally with:
 
 ```sh
 pnpm format:check
@@ -117,7 +118,9 @@ because its token cannot write comments.
 Two of the figures gate the merge. Comment load may not exceed the merge base, and no
 bundle may exceed its ratchet. Raising a ratchet means editing `.size-limit.json`, which
 is a reviewed line in the diff. When either fails, the report names both ways through
-rather than only the verdict.
+rather than only the verdict. A run that weighed no bundle at all, which is what a glob
+matching no file produces, fails the job outright rather than reporting a verdict over a
+measurement that did not happen.
 
 The bundle figure is brotli, summed per file, over every script `apps/web`'s own Vite
 build emits. The slice of the workspace packages that build reaches is inside the bundle,
@@ -1092,9 +1095,9 @@ side effect and can therefore be imported by a test page as well as by the shell
 **The service worker cannot cache seat Availability, and that is structural rather than
 observed.** `apps/web/src/worker/cache.ts` is the only file the deployment ships that may
 name Cache Storage, and `tools/no-cache-storage-reach.mjs` is the whole of the gate: it
-takes the staged content of every tracked file under `apps/web` and `apps/proxy` and refuses
-any that carries the letters `caches`. It runs over both directories in `quality`, and again
-in the pre-commit hook whenever a file under either is staged. It reads source text rather
+takes the staged content of every tracked file under `apps/` and refuses any that carries
+the letters `caches`. It runs over that tree in `quality`, and again in the pre-commit hook
+whenever a file under it is staged. It reads source text rather
 than an AST, and that is the point: a member pattern sees only the spellings it enumerates,
 and `self?.caches`, a key held in a variable, a template literal, `Reflect.get(self,
 "caches")` and a renaming destructure all reach Cache Storage without being one, and none of
@@ -1117,30 +1120,46 @@ idiom in *every* file let any file declare its own `vi` whose `stubGlobal` retur
 reach. Naming the two files closes both: the idiom is struck only where the runner really puts
 it.
 
-**The surface is the two deployed directories rather than `apps/web/src`.** `public/index.html`
+**The surface is every application rather than `apps/web/src`.** `public/index.html`
 carries an inline module script that ships to every device, and the `noRestrictedGlobals` ban
 on `caches` was scoped `apps/web/src/**`, so a bare `caches.open("shell")` there was refused by
 nothing. Biome does lint JavaScript inside an HTML `<script>`, which is worth stating because
 it is the opposite of what it looks like: the deleted plugin fired there on the member forms,
-and only the scoped rule missed. `apps/proxy` is included because it is the Worker that serves
+and only the scoped rule missed. `apps/proxy` is in it because it is the Worker that serves
 seat maps, `caches.default` is the Cloudflare idiom for holding a response, and that proxy
 holds nothing about anybody, which `deploy/README.md` states as a property of what it
 publishes. The deleted plugin covered neither surface's real risk: it matched a member *named*
 `caches`, and `caches.default` is a member *of* it.
 
-**It reads through a unicode escape, because otherwise it does not hold at all.**
-`\u0063aches` is a lawful identifier that a bundler emits as `caches`, and `self["\u0063aches"]`
-is a lawful key, so an escape is a two-character edit to any reach. `\uXXXX` and `\u{...}` are decoded before the letters are
-looked for. Neither Biome rule this replaced normalised them either, so it closes a route
-that was open the whole time rather than one this check created.
+**It names `apps/` and no application inside it**, because `pnpm-workspace.yaml` declares
+every application as `apps/*` and a gate that lists its subjects one by one governs the
+applications that existed when it was written. Naming `apps/web` and `apps/proxy` left
+`apps/native` outside it and would have left a fourth application outside it too, with
+nothing failing on the day one appeared. The directory is the workspace's own answer to
+which packages are applications, so a new one is governed from its first commit.
 
-**The cost was measured rather than assumed, and it is zero.** Of the 22 tracked files across
-those directories, one carries the letters once the idiom is struck, and it is the writer. The
+**It decodes every escape, because otherwise it does not hold at all.**
+`\u0063aches` is a lawful identifier that a bundler emits as `caches`, and `self["\u0063aches"]`
+is a lawful key, so an escape is a two-character edit to any reach. Enumerating the forms one
+at a time is how this half was got wrong once already: reading `\uXXXX` and `\u{...}` and
+nothing else left `self["\x63aches"]` walking past, and left the two cheapest routes open
+besides, a line continuation inside the string and the identity escape `"\c\a\c\h\e\s"`,
+which needs no digits at all and which every engine reads as `caches`. So the decoder is
+general rather than a list: `\u{...}`, `\uXXXX` and `\xXX` become their code point, a
+backslash before a line terminator takes the line terminator with it, and every other
+backslash is dropped, which is what a string literal does with one. The one form that
+escapes that reading is a legacy octal escape, which is a syntax error in a module, and
+Biome's own `noOctalEscape` now refuses it as an error rather than as the warning its
+recommended preset makes it. Neither Biome rule this check replaced normalised any of it, so
+it closes routes that were open the whole time rather than ones this check created.
+
+**The cost was measured rather than assumed, and it is zero.** Across every tracked file
+under `apps/`, one carries the letters once the idiom is struck, and it is the writer. The
 word does appear elsewhere in the workspace, which is what decided the surface rather than a
 wider one: `packages/client/src/catalogue.test.ts` has `it("caches for two hours...")` in a test
 name, and `tests/e2e/shell.spec.ts` reads Cache Storage back on purpose to assert what the
 worker holds. Both would be refused by a workspace-wide check and neither is a reach. What this
-does cost is prose: a Markdown file under either directory could not use the word and would have
+does cost is prose: a Markdown file under `apps/` could not use the word and would have
 to write Cache Storage instead, and `deploy/README.md` is the nearest thing to one.
 
 **What it surrenders and what stays open, stated rather than implied.** The deleted plugin was a
@@ -1191,6 +1210,16 @@ shell against WCAG 2.2 at levels A and AA, which is the [W3C
 Recommendation](https://www.w3.org/TR/WCAG22/) rather than a bar this project invented, and
 any violation fails `quality`. It was watched failing before it was trusted, on a colour
 contrast of 1.91:1 against the 4.5:1 success criterion 1.4.3 requires.
+
+The scan is the only one in the repository, and until this was fixed it was deletable with
+every gate green: `tests/e2e` is outside the unit runner's include and outside the mutation
+gate's scope, and the end-to-end run passed with no tests at all. So `pnpm test:e2e` now
+runs `playwright test --list --grep @accessibility` first, and Playwright's own answer to a
+filter that matches nothing is to exit non-zero, which is what makes deleting the scan fail
+the job. The flag that let an empty suite pass is gone with it. This is a name rather than a
+number: there is no floor on how many tests `tests/e2e` holds, because a count is a figure
+[ADR 6](docs/adr/0006-gates-cite-a-standard-or-measure-a-regression.md) would have to
+justify, and a count is not what protects a particular scan anyway.
 
 **What this does not govern is the browser's own HTTP cache**, which is a third mechanism
 beside Cache Storage and the catalogue's Web Storage. The proxy passes an upstream response's

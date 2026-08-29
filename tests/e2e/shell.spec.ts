@@ -43,9 +43,9 @@ test("the root serves the shell page", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("SeatScout");
 });
 
-test("the shell carries no violation of WCAG 2.2 at level AA that axe can detect", async ({
-  page,
-}) => {
+test("the shell carries no violation of WCAG 2.2 at level AA that axe can detect", {
+  tag: "@accessibility",
+}, async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("#session")).not.toBeEmpty();
 
