@@ -45,10 +45,12 @@ sets it because no better one exists to move it to: the metric's independent val
 says outright that a meaningful threshold value has yet to be identified (Muñoz Barón,
 Wyrich and Wagner, *An Empirical Validation of Cognitive Complexity as a Measure of Source
 Code Understandability*, ESEM 2020). That study is also why the measure is trusted at all.
-Pooling about 24,000 human judgements of 427 snippets across ten earlier studies, it found
-cognitive complexity to be the first validated, purely code-based measure of
-understandability. Its diagnostic names the file, the function, its score, the limit and
-the remedy, which is the whole test of whether a number belongs in a gate.
+Pooling about 24,000 human judgements of 427 snippets across ten earlier studies, it
+concluded that cognitive complexity is "the first validated and solely code-based metric
+which is able to reflect at least some aspects of code understandability". That is a
+careful claim rather than a strong one, and it is more than any other complexity metric can
+show. Its diagnostic names the file, the function, its score, the limit and the remedy,
+which is the whole test of whether a number belongs in a gate.
 
 Choosing it over cyclomatic complexity is also the choice the body that publishes both has
 made. SonarSource ships a cyclomatic complexity rule, S1541, at a threshold of 10, and
@@ -115,14 +117,15 @@ tool that measures new code separately, and none exists for this metric: SonarSo
 originated new-code gating, publish no `new_complexity`, and the delta linters that do
 exist gate lint findings rather than a complexity total.
 
-Which is fortunate, because an aggregate would have rewarded the wrong move. Shepperd
-derives that splitting a program *raises* its total cyclomatic complexity, "the bizarre
-result of increasing overall complexity as a program is divided into more, presumably
-simpler, modules". A bucket total gated on growth would therefore have gone red for the
-extract-method that Biome's rule asks for by name. NIST supplies the inverse trick in the
-same section that sets the limit, reducing a module from 90 to 10 by adding a ten-branch
-switch that does nothing. A measure that moves the wrong way under the refactor and the
-right way under a decoration is not one to fail a build on.
+Which is fortunate, because an aggregate would have charged for the remedy. Under McCabe's
+own definition each extracted function is an unconnected component, so it adds one to the
+program's total; Shepperd calls this "the bizarre result of increasing overall complexity
+as a program is divided into more, presumably simpler, modules", and notes the total only
+falls where the extraction also removes duplication. So a bucket total gated on growth
+would have gone red for exactly the extract-method that Biome's rule asks for by name. NIST
+supplies the inverse in the same section that sets the limit, reducing a module from 90 to
+10 by adding a ten-branch switch that does nothing. A measure that moves the wrong way
+under the remedy and the right way under a decoration is not one to fail a build on.
 
 One limit of what survives is worth stating here rather than discovering later. Cognitive
 complexity is defined per function, as ESLint's `complexity` rule and every other
