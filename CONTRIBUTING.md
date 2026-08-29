@@ -87,16 +87,16 @@ workspace: it type checks, runs unit tests, checks for dead code, and holds the 
 stated in prose. `lefthook.yml` is where both are declared.
 
 TypeScript uses strict checking, unchecked indexed access checks, and erasable syntax.
-Biome uses its recommended rules and names four besides, all four published. Two are
-outside the preset: the standard limit of
+Biome uses its recommended rules, and `biome.json` names the published ones this workspace
+asks more of than the preset does. Outside the preset: the standard limit of
 [`noExcessiveCognitiveComplexity`](https://biomejs.dev/linter/rules/no-excessive-cognitive-complexity/)
 is the only complexity gate, and
 [`noUnsafeTypeAssertion`](https://biomejs.dev/linter/rules/no-unsafe-type-assertion/) refuses
-a type assertion, which is the widest way past the compile-time guarantees below. Two are
-inside it at a severity `biome lint` exits zero on, which is no gate at all, so `biome.json`
-raises both to errors: `useNodejsImportProtocol`, which the preset reports as information,
-and `noOctalEscape`, which it reports as a warning. Unknown words go in the `words` list in
-`cspell.json`.
+a type assertion, which is the widest way past the compile-time guarantees below. Inside it,
+but at severities `biome lint` exits zero on, which is no gate at all:
+`useNodejsImportProtocol`, which the preset reports as information, and `noOctalEscape`,
+which it reports as a warning. Both are raised to errors. Unknown words go in the `words`
+list in `cspell.json`.
 
 A complexity failure names the file, the function, its score and the limit, and asks to
 refactor the function until the score is under the limit; extracting part of it is the
@@ -1105,10 +1105,13 @@ whenever a file under it is staged. It reads source text rather than an AST, and
 the point: a member pattern sees only the spellings it enumerates,
 and `self?.caches`, a key held in a variable, a template literal, `Reflect.get(self,
 "caches")` and a renaming destructure all reach Cache Storage without being one, and none of
-them can be written without the letters. It was watched refusing all twenty reaches planted
-across those surfaces, and staying silent on the three that have to pass. On the gates it
+them can be written without the letters. It was watched refusing every reach planted across
+those surfaces, and staying silent on the ones that have to pass. On the gates it
 replaces, seven of twelve spellings walked past in a source file and eight of twelve in the
-shipped page.
+shipped page. It was watched again when the decoder below was made general: a hex escape,
+an identity escape and a line continuation under `apps/proxy`, and a fourth spelling under
+`apps/native`, which the check did not read at all until the surface widened. The check as
+it stood before that admits all four.
 
 **It names three files and trusts none of them further than it has to.** `cache.ts` is exempt
 because it is the writer. `worker/cache.test.ts` and `worker/sw.test.ts` are allowed the single
@@ -1163,8 +1166,10 @@ word does appear elsewhere in the workspace, which is what decided the surface r
 wider one: `packages/client/src/catalogue.test.ts` has `it("caches for two hours...")` in a test
 name, and `tests/e2e/shell.spec.ts` reads Cache Storage back on purpose to assert what the
 worker holds. Both would be refused by a workspace-wide check and neither is a reach. What this
-does cost is prose: a Markdown file under `apps/` could not use the word and would have
-to write Cache Storage instead, and `deploy/README.md` is the nearest thing to one.
+does cost is prose: the check reads file text rather than string literals, so a Markdown file
+under `apps/` could not use the word, nor spell it in any of the escaped forms the decoder
+reads, and would have to write Cache Storage instead. `deploy/README.md` is the nearest thing
+to one.
 
 **What it surrenders and what stays open, stated rather than implied.** The deleted plugin was a
 workspace-wide member rule, so `self.caches` under `tools/` or `tests/` is now refused by
@@ -1172,11 +1177,18 @@ nothing; that is a real loss and a small one, since neither ships and the end-to
 Cache Storage there on purpose. The check reads the index, so it judges what is staged rather
 than what is in the editor, which is right for a commit gate and is the one thing to know
 about running `pnpm cache-storage` from the list above: it reports on the last `git add`
-rather than on the edit in front of you. And two routes remain open: a name assembled at runtime,
-which no source-text check can see, and a reach written inside one of the three files named
-above. Both need a deliberate decoy rather than a slip, both are plain in review, and the second
-would also have to be exported into the build past a bundle ratchet that a test file's imports
-would break by two orders of magnitude. They stand on the same
+rather than on the edit in front of you. Three routes remain open, and they are listed here
+rather than implied because an enumeration that is short by one is worth less than no
+enumeration at all. A name assembled at runtime, which no source-text check can see. A reach
+written inside one of the three files named above, which would also have to be exported into
+the build past a bundle ratchet that a test file's imports would break by two orders of
+magnitude. And a spelling that is not a JavaScript escape: an HTML character reference in an
+event handler attribute, `onload="&#99;aches.open('shell')"`, which the HTML parser decodes
+and this check does not, and which Biome does not reach either, since it lints the contents
+of a `<script>` and not the value of an `on*` attribute. That one is closed by the page
+having no such attribute and no reason to grow one; the shell's only script is the module in
+`public/index.html`. All three need a deliberate decoy rather than a slip, all three are
+plain in review, and they stand on the same
 footing as the import ban's own known-open routes. `cache.ts` exports one writer,
 `precacheShell`, which **takes
 no argument**: what it caches is that module's own constant list of the files the build

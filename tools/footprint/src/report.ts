@@ -144,9 +144,7 @@ export const render = (measurement: Measurement): Report => {
   const head = authored(measurement.head.tree);
   const withinCommentLoad =
     head.comment * base.code <= base.comment * head.code;
-  const withinRatchet =
-    measurement.bundles.length > 0 &&
-    measurement.bundles.every((bundle) => bundle.passed);
+  const withinRatchet = measurement.bundles.every((bundle) => bundle.passed);
   const verdict = (within: boolean, remedy: string) =>
     within ? "Within it." : `Above it. ${remedy}`;
 

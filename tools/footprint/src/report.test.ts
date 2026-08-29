@@ -338,10 +338,6 @@ Bundle size may not exceed the ratchet in \`.size-limit.json\`. Within it.
     expect(report.passed).toBe(false);
   });
 
-  it("fails over no bundle at all, rather than reaching a verdict about nothing", () => {
-    expect(reportOn({ bundles: [] }).passed).toBe(false);
-  });
-
   it("fails when a bundle breaks its ratchet", () => {
     const report = reportOn({
       bundles: [

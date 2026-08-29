@@ -24,7 +24,7 @@
     "test:e2e": "playwright test --list --grep @accessibility && playwright test",
     "test:live": "vitest run --config vitest.live.config.ts",
     "test:mutation": "stryker run",
-    "test:unit": "vitest run --passWithNoTests",
+    "test:unit": "vitest run",
     "typecheck": "tsc --build --pretty false --noEmit"
   },
   "devDependencies": {

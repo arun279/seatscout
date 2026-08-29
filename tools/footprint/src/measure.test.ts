@@ -48,7 +48,7 @@ const recorder = (
 const lines = (commands: readonly Command[]): readonly string[] =>
   commands.map(({ command, args }) => [command, ...args].join(" "));
 
-const sizeLimitAnswering = (stdout: string): Run =>
+const sizeLimitExitingNonZero = (stdout: string): Run =>
   recorder((command) =>
     command.command === "pnpm" ? { ok: false, stdout, stderr: "" } : undefined,
   ).run;
@@ -120,7 +120,7 @@ describe("measuring a change", () => {
   });
 
   it("reads the bundle verdict from size-limit even when it exits non-zero", () => {
-    const run = sizeLimitAnswering(
+    const run = sizeLimitExitingNonZero(
       JSON.stringify([
         { name: "web app", size: 90, sizeLimit: 15, passed: false },
       ]),
@@ -132,7 +132,7 @@ describe("measuring a change", () => {
   });
 
   it("refuses the verdict a glob matching nothing reports, which passes at no ratchet", () => {
-    const run = sizeLimitAnswering(
+    const run = sizeLimitExitingNonZero(
       JSON.stringify([{ name: "web app", passed: true, size: 0 }]),
     );
 
@@ -142,7 +142,7 @@ describe("measuring a change", () => {
   });
 
   it("refuses a list where one bundle was weighed and another was not", () => {
-    const run = sizeLimitAnswering(
+    const run = sizeLimitExitingNonZero(
       JSON.stringify([
         { name: "web app", size: 15, sizeLimit: 15, passed: true },
         { name: "proxy", passed: true, size: 0 },
@@ -155,7 +155,7 @@ describe("measuring a change", () => {
   });
 
   it("refuses a run that weighed no bundle at all", () => {
-    const run = sizeLimitAnswering("[]");
+    const run = sizeLimitExitingNonZero("[]");
 
     expect(() => measureWith(run)("origin/main", "HEAD")).toThrow(
       "size-limit weighed no bundle against a ratchet",
@@ -163,7 +163,7 @@ describe("measuring a change", () => {
   });
 
   it("refuses size-limit's error object, which is not a list of bundles", () => {
-    const run = sizeLimitAnswering(
+    const run = sizeLimitExitingNonZero(
       '{"error":"SizeLimitError: config is empty"}',
     );
 
