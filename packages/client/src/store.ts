@@ -18,7 +18,10 @@ export const inMemoryStore = (): KeyValueStore => {
       return text === undefined ? undefined : JSON.parse(text);
     },
     write: async (key, value) => {
-      held.set(key, JSON.stringify(value));
+      const encoded = JSON.stringify(value);
+      const previouslyHeldUnderThisExactKey = held.get(key);
+      if (previouslyHeldUnderThisExactKey === encoded) return;
+      held.set(key, encoded);
     },
   };
 };
