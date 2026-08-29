@@ -6,11 +6,11 @@ import {
   type Side,
   type Tree,
 } from "./report.js";
-import type { Shell } from "./shell.js";
+import type { Run } from "./shell.js";
 
-export const measureWith = (shell: Shell) => {
+export const measureWith = (run: Run) => {
   const output = (command: string, args: readonly string[]): string => {
-    const completed = shell.run(command, args);
+    const completed = run(command, args);
     if (!completed.ok) {
       throw new Error(`${command} ${args.join(" ")}\n${completed.stderr}`);
     }
@@ -31,7 +31,7 @@ export const measureWith = (shell: Shell) => {
   const sideOf = (ref: string): Side => ({ ref, tree: treeOf(ref) });
 
   const bundles = (): readonly Bundle[] =>
-    JSON.parse(shell.run("pnpm", ["exec", "size-limit", "--json"]).stdout);
+    JSON.parse(run("pnpm", ["exec", "size-limit", "--json"]).stdout);
 
   return (baseRef: string, headRef: string): Measurement => {
     const head = git("rev-parse", headRef);

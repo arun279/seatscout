@@ -6,15 +6,11 @@ export interface Completed {
   readonly stderr: string;
 }
 
-export interface Shell {
-  readonly run: (command: string, args: readonly string[]) => Completed;
-}
+export type Run = (command: string, args: readonly string[]) => Completed;
 
-export const shell: Shell = {
-  run: (command, args) => {
-    const { status, stdout, stderr } = spawnSync(command, args, {
-      encoding: "utf8",
-    });
-    return { ok: status === 0, stdout, stderr };
-  },
+export const run: Run = (command, args) => {
+  const { status, stdout, stderr } = spawnSync(command, args, {
+    encoding: "utf8",
+  });
+  return { ok: status === 0, stdout, stderr };
 };

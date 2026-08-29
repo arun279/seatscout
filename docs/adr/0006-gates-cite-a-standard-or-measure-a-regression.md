@@ -174,8 +174,17 @@ Nothing measures `main` at review time: the recorded figure is whatever a review
 accepted, and the gate holds the branch to it. It is lowered as the build improves, and it
 rises only by editing the file, which is a reviewed line in a diff. The glob covers every
 emitted script rather than an entry point, so deferring bytes into a chunk that loads
-later does not move the number. Remaining headroom is reported, so a ratchet that has
-drifted above the real size is visible.
+later does not move the number. The measured size is printed beside the ratchet, so a
+ratchet that has drifted above the real size is visible from the two figures.
+
+Their difference is not printed as a third. The ratchet is not a budget derived from a
+device, a network or a page, so the room left under it is distance to a number this
+project chose rather than a quantity about the world: no published standard sets a point
+on that distance, and size-limit's own configuration has no notion of one. The regression
+form is closed for the reason given above, that nothing measures `main` at review time, so
+there is no earlier headroom to compare a branch's against. What is left is a figure a
+reader cannot act on without weighing it, which is the test this decision sets for
+anything it does not gate.
 
 What the glob is pointed at has to be the output of the application's own bundler, and
 that is the load-bearing half of this gate. The web application had none at first: its
