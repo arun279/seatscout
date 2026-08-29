@@ -25,13 +25,24 @@ export interface CatalogueDependencies {
 const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
   value instanceof Object;
 
+const carriesAmenities = (showtime: unknown) =>
+  isRecord(showtime) &&
+  isRecord(showtime.presentation) &&
+  Array.isArray(showtime.presentation.amenities);
+
+const carriesAShowtime = (entry: unknown) =>
+  isRecord(entry) && carriesAmenities(entry.showtime);
+
 const isCached = (value: unknown): value is CachedCatalogue =>
   isRecord(value) &&
   typeof value.fetchedAt === "number" &&
   isRecord(value.catalogue) &&
   Array.isArray(value.catalogue.bookable) &&
   Array.isArray(value.catalogue.unbookable) &&
-  Array.isArray(value.catalogue.unidentified);
+  Array.isArray(value.catalogue.unidentified) &&
+  value.catalogue.bookable.every(carriesAmenities) &&
+  value.catalogue.unidentified.every(carriesAmenities) &&
+  value.catalogue.unbookable.every(carriesAShowtime);
 
 const keyOf = (terms: CatalogueTerms) =>
   `seatscout.catalogue.${JSON.stringify([terms.movie, terms.date, terms.area])}`;

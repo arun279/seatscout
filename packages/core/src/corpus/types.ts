@@ -90,6 +90,7 @@ export interface CapturedNearbyTheaters {
     readonly formattedID: string;
     readonly name: string;
     readonly chainCode: string;
+    readonly chainName: string;
     readonly isTicketing: boolean;
     readonly hasReservedSeating: boolean;
   }[];

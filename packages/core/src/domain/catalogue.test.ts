@@ -93,6 +93,13 @@ describe("narrowing a catalogue", () => {
       unidentified: 1,
     });
     expect(
+      counted(narrowed(catalogue, { chains: ["Cinemark Theatres"] })),
+    ).toEqual({ ...none, unidentified: 63 });
+    expect(counted(narrowed(catalogue, { amenities: ["Dine-In"] }))).toEqual({
+      ...none,
+      unidentified: 16,
+    });
+    expect(
       counted(
         narrowed(catalogue, {
           from: Date.parse("2026-08-28T19:00:00-05:00"),
@@ -124,6 +131,56 @@ describe("narrowing a catalogue", () => {
 
   it("admits nothing when the Theaters asked for are none", () => {
     expect(counted(narrowed(captured(), { theaters: [] }))).toEqual({
+      bookable: 0,
+      unbookable: 0,
+      unidentified: 0,
+    });
+  });
+
+  it("narrows to the Chains asked for, and admits no Theater the Source has never named one for", () => {
+    const catalogue = captured();
+
+    expect(
+      counted(narrowed(catalogue, { chains: ["Cinemark Theatres"] })),
+    ).toEqual({ bookable: 63, unbookable: 0, unidentified: 0 });
+    expect(
+      counted(narrowed(catalogue, { chains: ["AMC", "Landmark"] })),
+    ).toEqual({ bookable: 26, unbookable: 4, unidentified: 0 });
+    expect(
+      everyShowtime(catalogue).filter(
+        (showtime) => showtime.presentation.theater.chain === undefined,
+      ),
+    ).toHaveLength(17);
+  });
+
+  it("admits nothing when the Chains asked for are none", () => {
+    expect(counted(narrowed(captured(), { chains: [] }))).toEqual({
+      bookable: 0,
+      unbookable: 0,
+      unidentified: 0,
+    });
+  });
+
+  it("admits a Showtime carrying any one of the Amenities asked for", () => {
+    const catalogue = captured();
+
+    expect(counted(narrowed(catalogue, { amenities: ["Dine-In"] }))).toEqual({
+      bookable: 16,
+      unbookable: 0,
+      unidentified: 0,
+    });
+    expect(
+      counted(narrowed(catalogue, { amenities: ["Closed Captioning"] })),
+    ).toEqual({ bookable: 43, unbookable: 1, unidentified: 0 });
+    expect(
+      counted(
+        narrowed(catalogue, { amenities: ["Dine-In", "Closed Captioning"] }),
+      ),
+    ).toEqual({ bookable: 59, unbookable: 1, unidentified: 0 });
+  });
+
+  it("admits nothing when the Amenities asked for are none", () => {
+    expect(counted(narrowed(captured(), { amenities: [] }))).toEqual({
       bookable: 0,
       unbookable: 0,
       unidentified: 0,
@@ -216,5 +273,13 @@ describe("narrowing a catalogue", () => {
         }),
       ),
     ).toEqual({ bookable: 2, unbookable: 0, unidentified: 0 });
+    expect(
+      counted(
+        narrowed(catalogue, {
+          chains: ["Cinemark Theatres"],
+          amenities: ["Recliners"],
+        }),
+      ),
+    ).toEqual({ bookable: 57, unbookable: 0, unidentified: 0 });
   });
 });

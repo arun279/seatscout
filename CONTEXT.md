@@ -11,10 +11,20 @@ Provider names are translated at the adapter boundary and never leak inward.
 
 ## Chain
 
-The brand that operates venues. AMC, Cinemark, Alamo Drafthouse, Regal.
+The brand that operates venues, among them AMC, Cinemark Theatres, Alamo Drafthouse Cinemas
+and Landmark.
 
 **Not a Source.** A single Source can supply data for many Chains, and one Chain may be
 reachable through several Sources.
+
+The set of them is closed and every member is spelled the way the Source spells it, so no
+name here is one this application invented and a test holds each one to an answer that states
+it. A Theater whose Chain the set does not hold carries none, which is the rule Format follows
+and for the same reason.
+
+Naming a Chain and covering it are different things. A Theater with no Chain is listed, ranked
+and handed off like any other; the one thing nobody can do is ask for it by Chain, and that is
+a Query that does not compile rather than one that quietly comes back empty.
 
 ## Source
 
@@ -27,7 +37,8 @@ having a Source of its own.
 
 ## Theater
 
-One physical venue at one address, operated by a Chain.
+One physical venue at one address, operated by a Chain, whether or not this application has a
+name for that Chain.
 
 Spelled `theater` throughout. Upstream providers disagree with each other on this
 (`theaterId` in one, `theatreNumber` in another); adapters normalise to `theater`.
@@ -53,7 +64,9 @@ reads as a code artifact rather than something a moviegoer would recognise.
 
 A Presentation carries every Format that applies to it rather than one, because a premium
 projection and motion seating are both Formats and apply to the same screening at once. A
-Presentation with no Format is a standard screening.
+Presentation with no Format is a standard screening. It carries its Amenities the same way,
+read from the same labels, and a Presentation with no Amenity is one the Source labelled with
+none this application has named.
 
 ## Showtime
 
@@ -76,8 +89,23 @@ invented from the label, which is the rule Availability follows for the same rea
 
 ## Amenity
 
-Everything else a Showtime or Auditorium offers that is not a Format: recliner seats,
-reserved seating, dine-in service, closed captioning, accessibility devices.
+What a Showtime or an Auditorium offers that is neither a Format nor a reason it can be booked
+at all: recliner seats, dine-in service, closed captioning, accessibility devices.
+
+The set of them is closed, for Format's reason and in Format's words: a label outside it is
+not an Amenity, and a screening labelled with one the application does not know carries no
+Amenity rather than one invented from the label. Both are read from the same labels the
+Source puts on a screening, and no label yields both. It is the four above, and it grows in a
+diff: the Source labels other comfort and service nobody here has named, and naming one is a
+reviewed line rather than a change of rule.
+
+Reserved seating is labelled and is deliberately not among them. It is the predicate that
+decides whether a Showtime is bookable at all, so every Showtime a search can offer already
+has it, and a Query term restating it would ask for something no answer lacks.
+
+**Not a Theater's own list.** A Theater carries a second and separate list of what the venue
+offers, from stadium seating to a games room. Those describe an address rather than a
+screening, and none of them is read.
 
 **Not a Format.** Amenities describe comfort and service.
 

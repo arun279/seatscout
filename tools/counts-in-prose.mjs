@@ -18,6 +18,7 @@ const NUMBERS = [
 
 const BIOME = "biome.json";
 const PACKAGES = "packages";
+const ADAPTER = "packages/core/src/source/catalogue.ts";
 const CATALOGUE = "packages/core/src/domain/catalogue.ts";
 const CONTRACT = "packages/core/src/testing/contract.ts";
 const GROUP = "packages/core/src/domain/seat-group.ts";
@@ -63,6 +64,23 @@ const alternativesOf = (path, name) => {
   return [...body.matchAll(/"[^"]*"|[\w$]+/g)].map(
     (alternative) => alternative[0],
   );
+};
+
+const translations = (path, name) => {
+  const body = bodyOf(
+    path,
+    `const ${name}`,
+    new RegExp(
+      `\\bconst ${name}:[^=]*= new Map\\(\\[\\n([\\s\\S]*?)\\n\\]\\);`,
+    ),
+  );
+  const entries = [...body.matchAll(/^ {2}\["[^"]*", "[^"]*"\],$/gm)];
+  const members = [...body.matchAll(/^ {2}\S/gm)];
+  if (entries.length !== members.length)
+    throw new Error(
+      `const ${name} in ${path} holds an entry spelled in a way this check cannot read`,
+    );
+  return entries;
 };
 
 const outcomes = () =>
@@ -239,6 +257,24 @@ const CLAIMS = [
     says: /Its (\w+) operations are domain questions rather than upstream routes/,
     about: `the fields of Source, in ${PORT}`,
     count: () => fieldsOf(PORT, "Source").length,
+  },
+  {
+    document: "CONTEXT.md",
+    says: /It is the (\w+) above, and it grows in a diff/,
+    about: `the alternatives of Amenity, in ${CATALOGUE}`,
+    count: () => alternativesOf(CATALOGUE, "Amenity").length,
+  },
+  {
+    document: "CONTRIBUTING.md",
+    says: /`Amenity` is a closed set of (\w+) read from those same labels/,
+    about: `the alternatives of Amenity, in ${CATALOGUE}`,
+    count: () => alternativesOf(CATALOGUE, "Amenity").length,
+  },
+  {
+    document: "CONTRIBUTING.md",
+    says: /the table's (\w+) entries are each the name the Source itself states/,
+    about: `the entries of CHAINS, in ${ADAPTER}`,
+    count: () => translations(ADAPTER, "CHAINS").length,
   },
 ];
 

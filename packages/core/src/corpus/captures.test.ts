@@ -23,15 +23,18 @@ const indexedFiles = () => [
   ...nearbyTheatersCaptures.keys(),
 ];
 
+const theaterCentricPresentations = () =>
+  [...theaterMovieShowtimesCaptures.values()].flatMap((capture) =>
+    capture.body.viewModel.movies.flatMap((movie) => movie.variants),
+  );
+
 const capturedPresentations = () => [
   ...[...showtimeGroupingCaptures.values()].flatMap((capture) =>
     capture.body.theaterShowtimes.theaters.flatMap(
       (theater) => theater.variants,
     ),
   ),
-  ...[...theaterMovieShowtimesCaptures.values()].flatMap((capture) =>
-    capture.body.viewModel.movies.flatMap((movie) => movie.variants),
-  ),
+  ...theaterCentricPresentations(),
 ];
 
 const capturedShowtimes = () =>
@@ -144,6 +147,26 @@ describe("the captured corpus", () => {
       expect(capture?.body[0]?.id).toMatch(/\S/);
       expect(capture?.body[0]?.message).toMatch(/\S/);
     }
+  });
+
+  it("holds a theater-centric answer that names no start instant and no Movie", () => {
+    const groups = theaterCentricPresentations().flatMap(
+      (presentation) => presentation.amenityGroups,
+    );
+    const named = new Set([
+      ...groups.flatMap((group) => Object.keys(group)),
+      ...groups.flatMap((group) =>
+        group.showtimes.flatMap((showtime) => Object.keys(showtime)),
+      ),
+    ]);
+
+    expect(groups).toHaveLength(37);
+    expect(
+      ["id", "ticketingJumpPageURL"].filter((key) => named.has(key)),
+    ).toEqual(["id", "ticketingJumpPageURL"]);
+    expect(
+      ["dateLocal", "dateUtc", "movieID"].filter((key) => named.has(key)),
+    ).toEqual([]);
   });
 
   it("holds a ticketing URL on every captured Showtime", () => {
