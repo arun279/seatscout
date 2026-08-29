@@ -11,9 +11,71 @@ import {
 
 const counts = (code: number, comment: number): Counts => ({ code, comment });
 
+const RENDERED = `### Code footprint
+
+\`0123456\` to \`fedcba9\`, blank lines excluded.
+
+| Lines | Added | Removed | Changed |
+| --- | ---: | ---: | ---: |
+| Product code | 20 | 5 | 0 |
+| Product comments | 0 | 1 | 0 |
+| Test code | 30 | 0 | 0 |
+| Test comments | 0 | 0 | 0 |
+| Tooling code | 0 | 0 | 2 |
+| Tooling comments | 0 | 0 | 0 |
+| Authored total | 50 | 6 | 2 |
+| Prose code | 200 | 0 | 0 |
+| Prose comments | 0 | 0 | 0 |
+| Other code | 40 | 0 | 0 |
+| Other comments | 0 | 0 | 0 |
+
+### Comment load
+
+| Source | Code | Comments | Prose |
+| --- | ---: | ---: | ---: |
+| Merge base | 170 | 2 | 1000 |
+| This branch | 220 | 2 | 1200 |
+
+Comments may not exceed the ratchet in \`.footprint.json\`, which is 2. Within it.
+
+Prose is reported and not gated. Explanation that leaves a comment and lands in
+markdown keeps the comment count flat, so the two are read together.
+
+### What was counted
+
+| Files | Merge base | This branch |
+| --- | ---: | ---: |
+| Product | 1 | 1 |
+| Test | 1 | 1 |
+| Tooling | 1 | 1 |
+| Prose | 1 | 1 |
+| Other | 0 | 0 |
+
+Every bucket the merge base held still holds a file. Holds.
+
+### Bundle size
+
+Brotli, summed per file, over every script an application's own bundler
+emits, with the workspace packages it reaches inlined. Every emitted chunk
+counts, including one no page has loaded, so this is what a build publishes
+rather than what a page weighs.
+
+| Bundle | Brotli | Ratchet |
+| --- | ---: | ---: |
+| web app | 15 B | 15 B |
+
+Bundle size may not exceed the ratchet in \`.size-limit.json\`. Within it.
+`;
+
+const SOME_SOURCE: Tree = {
+  "packages/core/src/seat.ts": counts(40, 0),
+  "packages/core/src/seat.test.ts": counts(20, 0),
+  "tools/footprint/src/report.ts": counts(30, 0),
+};
+
 const side = (ref: string, over: Partial<Side> = {}): Side => ({
   ref,
-  tree: {},
+  tree: SOME_SOURCE,
   ...over,
 });
 
@@ -23,7 +85,15 @@ const reportOn = (over: Partial<Measurement>) =>
     head: side("fedcba9876543210fedcba9876543210fedcba98"),
     diff: { added: {}, removed: {}, modified: {} },
     bundles: [{ name: "web app", size: 15, sizeLimit: 15, passed: true }],
+    commentRatchet: 0,
     ...over,
+  });
+
+const between = (base: Tree, head: Tree, commentRatchet = 0) =>
+  reportOn({
+    base: side("b", { tree: base }),
+    head: side("h", { tree: head }),
+    commentRatchet,
   });
 
 describe("the footprint report", () => {
@@ -71,10 +141,6 @@ describe("the footprint report", () => {
     expect(reportOn({}).markdown).toContain("`0123456` to `fedcba9`");
   });
 
-  it("reads zero comment load from a tree with no source at all", () => {
-    expect(reportOn({}).markdown).toContain("| Merge base | 0 | 0 | 0.00 |");
-  });
-
   it("counts a directory of tests as test code", () => {
     const { markdown } = reportOn({
       diff: {
@@ -86,93 +152,6 @@ describe("the footprint report", () => {
 
     expect(markdown).toContain("| Test code | 30 | 0 | 0 |");
     expect(markdown).toContain("| Product code | 0 | 0 | 0 |");
-  });
-
-  it("reads the same however the counter orders its output", () => {
-    const entries: [string, Counts][] = [
-      ["packages/core/src/seat.ts", counts(40, 3)],
-      ["packages/core/src/seat.test.ts", counts(25, 1)],
-      ["apps/web/tsconfig.json", counts(6, 0)],
-      ["README.md", counts(12, 0)],
-    ];
-    const shuffled = fc.shuffledSubarray(entries, {
-      minLength: entries.length,
-    });
-    const markdownFor = (tree: Tree) =>
-      reportOn({
-        head: side("h", { tree }),
-        diff: { added: tree, removed: {}, modified: {} },
-      }).markdown;
-
-    fc.assert(
-      fc.property(shuffled, shuffled, (one, other) => {
-        expect(markdownFor(Object.fromEntries(one))).toBe(
-          markdownFor(Object.fromEntries(other)),
-        );
-      }),
-    );
-  });
-
-  it("renders exactly this, so one measurement is always the same bytes", () => {
-    const { markdown } = reportOn({
-      base: side("0123456789abcdef0123456789abcdef01234567", {
-        tree: { "packages/core/src/seat.ts": counts(100, 2) },
-      }),
-      head: side("fedcba9876543210fedcba9876543210fedcba98", {
-        tree: {
-          "packages/core/src/seat.ts": counts(120, 2),
-          "packages/core/src/seat.test.ts": counts(30, 0),
-        },
-      }),
-      diff: {
-        added: {
-          "packages/core/src/seat.ts": counts(20, 0),
-          "packages/core/src/seat.test.ts": counts(30, 0),
-          "pnpm-lock.yaml": counts(40, 0),
-        },
-        removed: { "packages/core/src/label.ts": counts(5, 1) },
-        modified: { "vitest.config.ts": counts(2, 0) },
-      },
-    });
-
-    expect(markdown).toBe(`### Code footprint
-
-\`0123456\` to \`fedcba9\`, blank lines excluded.
-
-| Lines | Added | Removed | Changed |
-| --- | ---: | ---: | ---: |
-| Product code | 20 | 5 | 0 |
-| Product comments | 0 | 1 | 0 |
-| Test code | 30 | 0 | 0 |
-| Test comments | 0 | 0 | 0 |
-| Tooling code | 0 | 0 | 2 |
-| Tooling comments | 0 | 0 | 0 |
-| Authored total | 50 | 6 | 2 |
-| Other code | 40 | 0 | 0 |
-| Other comments | 0 | 0 | 0 |
-
-### Comment load
-
-| Source | Code | Comments | Per 100 lines |
-| --- | ---: | ---: | ---: |
-| Merge base | 100 | 2 | 2.00 |
-| This branch | 150 | 2 | 1.33 |
-
-Comment load may not exceed the merge base. Within it.
-
-### Bundle size
-
-Brotli, summed per file, over every script an application's own bundler
-emits, with the workspace packages it reaches inlined. Every emitted chunk
-counts, including one no page has loaded, so this is what a build publishes
-rather than what a page weighs.
-
-| Bundle | Brotli | Ratchet |
-| --- | ---: | ---: |
-| web app | 15 B | 15 B |
-
-Bundle size may not exceed the ratchet in \`.size-limit.json\`. Within it.
-`);
   });
 
   it("counts every extension the workspace can hold as source", () => {
@@ -228,10 +207,10 @@ Bundle size may not exceed the ratchet in \`.size-limit.json\`. Within it.
     expect(markdown).toContain("| Product code | 0 | 0 | 0 |");
   });
 
-  it("keeps a file with no source extension out of the authored total", () => {
+  it("keeps a file that is neither source nor prose out of the authored total", () => {
     const { markdown } = reportOn({
       diff: {
-        added: { "docs/adr/0006-gates.md": counts(50, 0) },
+        added: { "apps/proxy/wrangler.json": counts(50, 0) },
         removed: {},
         modified: {},
       },
@@ -241,80 +220,205 @@ Bundle size may not exceed the ratchet in \`.size-limit.json\`. Within it.
     expect(markdown).toContain("| Authored total | 0 | 0 | 0 |");
   });
 
-  it("fails when comments grow faster than the code they explain", () => {
-    const report = reportOn({
-      base: side("b", {
-        tree: { "packages/core/src/seat.ts": counts(100, 1) },
+  it("reads the same however the counter orders its output", () => {
+    const entries: [string, Counts][] = [
+      ["packages/core/src/seat.ts", counts(40, 3)],
+      ["packages/core/src/seat.test.ts", counts(25, 1)],
+      ["tools/footprint/src/report.ts", counts(9, 0)],
+      ["apps/web/tsconfig.json", counts(6, 0)],
+      ["README.md", counts(12, 0)],
+    ];
+    const shuffled = fc.shuffledSubarray(entries, {
+      minLength: entries.length,
+    });
+    const markdownFor = (tree: Tree) =>
+      reportOn({
+        head: side("h", { tree }),
+        diff: { added: tree, removed: {}, modified: {} },
+      }).markdown;
+
+    fc.assert(
+      fc.property(shuffled, shuffled, (one, other) => {
+        expect(markdownFor(Object.fromEntries(one))).toBe(
+          markdownFor(Object.fromEntries(other)),
+        );
       }),
-      head: side("h", {
-        tree: { "packages/core/src/seat.ts": counts(100, 2) },
-      }),
+    );
+  });
+});
+
+describe("prose", () => {
+  it("counts markdown as prose rather than as something uncounted", () => {
+    const { markdown } = reportOn({
+      diff: {
+        added: {
+          "CONTRIBUTING.md": counts(1775, 0),
+          "docs/adr/0006-gates.mdx": counts(50, 0),
+        },
+        removed: {},
+        modified: {},
+      },
+    });
+
+    expect(markdown).toContain("| Prose code | 1825 | 0 | 0 |");
+    expect(markdown).toContain("| Other code | 0 | 0 | 0 |");
+    expect(markdown).toContain("| Authored total | 0 | 0 | 0 |");
+  });
+
+  it("reports how much prose each side carries, beside the comments", () => {
+    const { markdown } = between(
+      { ...SOME_SOURCE, "CONTRIBUTING.md": counts(1000, 0) },
+      { ...SOME_SOURCE, "CONTRIBUTING.md": counts(1775, 0) },
+    );
+
+    expect(markdown).toContain("| Merge base | 90 | 0 | 1000 |");
+    expect(markdown).toContain("| This branch | 90 | 0 | 1775 |");
+  });
+
+  it("reports prose without gating it, so growing it alone still passes", () => {
+    expect(
+      between(SOME_SOURCE, {
+        ...SOME_SOURCE,
+        "CONTRIBUTING.md": counts(9000, 0),
+      }).passed,
+    ).toBe(true);
+  });
+
+  it("says why prose is reported beside the comment count", () => {
+    expect(reportOn({}).markdown).toContain(
+      "Prose is reported and not gated. Explanation that leaves a comment and lands in\nmarkdown keeps the comment count flat, so the two are read together.",
+    );
+  });
+});
+
+describe("the comment ratchet", () => {
+  it("passes a tree whose comments sit at the ratchet", () => {
+    const report = between(
+      SOME_SOURCE,
+      { ...SOME_SOURCE, "packages/core/src/seat.ts": counts(40, 2) },
+      2,
+    );
+
+    expect(report.passed).toBe(true);
+    expect(report.markdown).toContain(
+      "Comments may not exceed the ratchet in `.footprint.json`, which is 2. Within it.",
+    );
+  });
+
+  it("fails a tree one comment above the ratchet", () => {
+    expect(
+      between(
+        SOME_SOURCE,
+        { ...SOME_SOURCE, "packages/core/src/seat.ts": counts(40, 1) },
+        0,
+      ).passed,
+    ).toBe(false);
+  });
+
+  it("refuses comments that grow with the code, which a density would have allowed", () => {
+    const report = between(
+      { "packages/core/src/seat.ts": counts(100, 1) },
+      { "packages/core/src/seat.ts": counts(1000, 10) },
+      1,
+    );
+
+    expect(report.passed).toBe(false);
+    expect(report.markdown).toContain("| This branch | 1000 | 10 | 0 |");
+  });
+
+  it("holds build tooling to the same ratchet as the product", () => {
+    expect(
+      between(SOME_SOURCE, {
+        ...SOME_SOURCE,
+        "tools/footprint/src/report.ts": counts(100, 1),
+      }).passed,
+    ).toBe(false);
+  });
+
+  it("ignores comments outside source files, so pinning an action stays free", () => {
+    expect(
+      between(SOME_SOURCE, {
+        ...SOME_SOURCE,
+        ".github/workflows/ci.yml": counts(30, 5),
+      }).passed,
+    ).toBe(true);
+  });
+
+  it("names both ways through when the comment ratchet is broken", () => {
+    expect(
+      between(SOME_SOURCE, {
+        ...SOME_SOURCE,
+        "packages/core/src/seat.ts": counts(40, 1),
+      }).markdown,
+    ).toContain(
+      "Above it. Either make the code say what the comment would have said, or raise the ratchet in this diff, where a reviewer sees it.",
+    );
+  });
+});
+
+describe("what was counted", () => {
+  it("reports how many files each bucket holds on each side", () => {
+    const { markdown } = between(SOME_SOURCE, {
+      ...SOME_SOURCE,
+      "CONTRIBUTING.md": counts(10, 0),
+      "pnpm-lock.yaml": counts(900, 0),
+    });
+
+    expect(markdown).toContain("| Product | 1 | 1 |");
+    expect(markdown).toContain("| Test | 1 | 1 |");
+    expect(markdown).toContain("| Tooling | 1 | 1 |");
+    expect(markdown).toContain("| Prose | 0 | 1 |");
+    expect(markdown).toContain("| Other | 0 | 1 |");
+  });
+
+  it("holds when every bucket the merge base held still holds a file", () => {
+    const report = between(SOME_SOURCE, SOME_SOURCE);
+
+    expect(report.passed).toBe(true);
+    expect(report.markdown).toContain(
+      "Every bucket the merge base held still holds a file. Holds.",
+    );
+  });
+
+  it("fails when a bucket the merge base held has emptied, and names it", () => {
+    const report = between(SOME_SOURCE, {
+      "packages/core/src/seat.ts": counts(40, 0),
+      "packages/core/src/seat.test.ts": counts(20, 0),
     });
 
     expect(report.passed).toBe(false);
     expect(report.markdown).toContain(
-      "Comment load may not exceed the merge base. Above it.",
+      "Tooling held files at the merge base and holds none here. A bucket empties when a path stops matching how this report sorts it. Either put the files back, or teach bucketOf the new layout in tools/footprint/src/report.ts.",
     );
   });
 
-  it("allows comments that keep pace with the code", () => {
-    const report = reportOn({
-      base: side("b", {
-        tree: { "packages/core/src/seat.ts": counts(100, 1) },
-      }),
-      head: side("h", {
-        tree: { "packages/core/src/seat.ts": counts(200, 2) },
-      }),
-    });
-
-    expect(report.passed).toBe(true);
-    expect(report.markdown).toContain("| This branch | 200 | 2 | 1.00 |");
-  });
-
-  it("holds build tooling to the same comment load as the product", () => {
-    const report = reportOn({
-      base: side("b", {
-        tree: { "tools/footprint/src/report.ts": counts(100, 0) },
-      }),
-      head: side("h", {
-        tree: { "tools/footprint/src/report.ts": counts(100, 1) },
-      }),
+  it("fails when a renamed tree drops every authored file out of the measurement", () => {
+    const report = between(SOME_SOURCE, {
+      "sources/core/seat.svelte": counts(40, 0),
     });
 
     expect(report.passed).toBe(false);
-  });
-
-  it("ignores comments outside source files, so pinning an action stays free", () => {
-    const report = reportOn({
-      base: side("b", {
-        tree: { "packages/core/src/seat.ts": counts(100, 0) },
-      }),
-      head: side("h", {
-        tree: {
-          "packages/core/src/seat.ts": counts(100, 0),
-          ".github/workflows/ci.yml": counts(30, 5),
-        },
-      }),
-    });
-
-    expect(report.passed).toBe(true);
-  });
-
-  it("names both ways through when comment load fails", () => {
-    const { markdown } = reportOn({
-      base: side("b", {
-        tree: { "packages/core/src/seat.ts": counts(100, 0) },
-      }),
-      head: side("h", {
-        tree: { "packages/core/src/seat.ts": counts(100, 1) },
-      }),
-    });
-
-    expect(markdown).toContain(
-      "Above it. Either make the code say what the comment would have said, or raise the baseline by a reviewed change to ADR 6.",
+    expect(report.markdown).toContain(
+      "Nothing under product, test, tooling was counted at all, so there is no measurement to report.",
     );
   });
 
+  it("fails a head holding nothing at all rather than passing over it", () => {
+    expect(between(SOME_SOURCE, {}).passed).toBe(false);
+  });
+
+  it("does not mind a bucket that was empty at the merge base staying empty", () => {
+    const tree = {
+      "packages/core/src/seat.ts": counts(40, 0),
+      "packages/core/src/seat.test.ts": counts(20, 0),
+      "tools/footprint/src/report.ts": counts(30, 0),
+    };
+
+    expect(between(tree, tree).passed).toBe(true);
+  });
+});
+
+describe("the bundle ratchet", () => {
   it("names both ways through when a bundle breaks its ratchet", () => {
     const { markdown } = reportOn({
       bundles: [
@@ -359,5 +463,44 @@ describe("reading a counter report", () => {
         SUM: counts(40, 0),
       }),
     ).toStrictEqual({ "packages/core/src/seat.ts": counts(40, 0) });
+  });
+});
+
+describe("one measurement, always the same bytes", () => {
+  it("renders exactly this", () => {
+    const { markdown } = render({
+      base: {
+        ref: "0123456789abcdef0123456789abcdef01234567",
+        tree: {
+          "packages/core/src/seat.ts": counts(100, 2),
+          "packages/core/src/seat.test.ts": counts(30, 0),
+          "tools/footprint/src/report.ts": counts(40, 0),
+          "CONTRIBUTING.md": counts(1000, 0),
+        },
+      },
+      head: {
+        ref: "fedcba9876543210fedcba9876543210fedcba98",
+        tree: {
+          "packages/core/src/seat.ts": counts(120, 2),
+          "packages/core/src/seat.test.ts": counts(60, 0),
+          "tools/footprint/src/report.ts": counts(40, 0),
+          "CONTRIBUTING.md": counts(1200, 0),
+        },
+      },
+      diff: {
+        added: {
+          "packages/core/src/seat.ts": counts(20, 0),
+          "packages/core/src/seat.test.ts": counts(30, 0),
+          "CONTRIBUTING.md": counts(200, 0),
+          "pnpm-lock.yaml": counts(40, 0),
+        },
+        removed: { "packages/core/src/label.ts": counts(5, 1) },
+        modified: { "vitest.config.ts": counts(2, 0) },
+      },
+      bundles: [{ name: "web app", size: 15, sizeLimit: 15, passed: true }],
+      commentRatchet: 2,
+    });
+
+    expect(markdown).toBe(RENDERED);
   });
 });
