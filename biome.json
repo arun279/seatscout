@@ -11,10 +11,7 @@
   "formatter": {
     "indentStyle": "space"
   },
-  "plugins": [
-    "./tools/lint/no-cache-storage-detour.grit",
-    "./tools/lint/no-collected-responses.grit"
-  ],
+  "plugins": ["./tools/lint/no-collected-responses.grit"],
   "linter": {
     "enabled": true,
     "rules": {
@@ -121,23 +118,6 @@
                     "message": "packages/core stays platform free, and reaches no sibling package. See ADR 3."
                   }
                 ]
-              }
-            }
-          }
-        }
-      }
-    },
-    {
-      "includes": ["apps/web/src/**", "!apps/web/src/worker/cache.ts"],
-      "linter": {
-        "rules": {
-          "style": {
-            "noRestrictedGlobals": {
-              "level": "error",
-              "options": {
-                "deniedGlobals": {
-                  "caches": "Cache Storage is reached only through apps/web/src/worker/cache.ts, whose write takes no argument and caches the shell alone."
-                }
               }
             }
           }

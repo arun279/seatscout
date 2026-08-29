@@ -13,6 +13,9 @@ pre-commit:
     instrumented:
       glob: "*.{ts,tsx}"
       run: node tools/no-instrumented-sources.mjs {staged_files}
+    cache-storage:
+      glob: "{apps/web,apps/proxy}/**"
+      run: node tools/no-cache-storage-reach.mjs
     secrets:
       run: gitleaks git --pre-commit --staged --no-banner --redact --verbose
       fail_text: Install gitleaks, or run git commit --no-verify to skip the scan
