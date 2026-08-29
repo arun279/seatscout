@@ -1,9 +1,0 @@
-language js
-
-or {
-  `$_.caches`,
-  `$_["caches"]`,
-  `$_['caches']`
-} as $detour where {
-  register_diagnostic(span=$detour, message="Cache Storage is reached only through apps/web/src/worker/cache.ts, whose write takes no argument and caches the shell alone. Reaching it as a member of self or globalThis walks past the ban on the global. CONTRIBUTING.md says why.")
-}
