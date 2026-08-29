@@ -1,0 +1,4 @@
+export const total = (a: number, b: number): number => {
+  stryCov_9fa48("41");
+  return a + b;
+};

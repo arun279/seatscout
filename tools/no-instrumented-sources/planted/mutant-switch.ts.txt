@@ -1,0 +1,2 @@
+export const total = (a: number, b: number): number =>
+  stryMutAct_9fa48("41") ? 0 : a + b;

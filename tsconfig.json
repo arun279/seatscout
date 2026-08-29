@@ -10,6 +10,11 @@
     { "path": "apps/web/tsconfig.worker.json" },
     { "path": "apps/proxy" },
     { "path": "apps/proxy/tsconfig.test.json" },
+    { "path": "tools/counts-in-prose" },
+    { "path": "tools/live-injections" },
+    { "path": "tools/no-cache-storage-reach" },
+    { "path": "tools/no-empty-mutation-run" },
+    { "path": "tools/no-instrumented-sources" },
     { "path": "tools/release-plan" },
     { "path": "tools/footprint" },
     { "path": "tests/e2e" }
