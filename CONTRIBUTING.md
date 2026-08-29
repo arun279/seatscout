@@ -87,11 +87,15 @@ four over the whole workspace: it type checks, runs unit tests, checks for dead 
 holds the counts stated in prose. `lefthook.yml` is where both are declared.
 
 TypeScript uses strict checking, unchecked indexed access checks, and erasable syntax.
-Biome uses its recommended rules plus two published ones. The standard limit of
+Biome uses its recommended rules and names four besides, all four published. Two are
+outside the preset: the standard limit of
 [`noExcessiveCognitiveComplexity`](https://biomejs.dev/linter/rules/no-excessive-cognitive-complexity/)
 is the only complexity gate, and
 [`noUnsafeTypeAssertion`](https://biomejs.dev/linter/rules/no-unsafe-type-assertion/) refuses
-a type assertion, which is the widest way past the compile-time guarantees below. Unknown
+a type assertion, which is the widest way past the compile-time guarantees below. Two are
+inside it at a severity `biome lint` exits zero on, which is no gate at all, so `biome.json`
+raises both to errors: `useNodejsImportProtocol`, which the preset reports as information,
+and `noOctalEscape`, which it reports as a warning. Unknown
 words go in the `words` list in `cspell.json`.
 
 A complexity failure names the file, the function, its score and the limit, and asks to
