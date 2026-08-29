@@ -17,6 +17,7 @@ const NUMBERS = [
 ];
 
 const BIOME = "biome.json";
+const PACKAGES = "packages";
 const CATALOGUE = "packages/core/src/domain/catalogue.ts";
 const CONTRACT = "packages/core/src/testing/contract.ts";
 const GROUP = "packages/core/src/domain/seat-group.ts";
@@ -115,11 +116,11 @@ const divergences = () => [
 const globals = () => {
   const banning = JSON.parse(read(BIOME)).overrides.find(
     (override) =>
-      override.includes?.includes("packages/**") &&
+      override.includes?.some((path) => path.startsWith(`${PACKAGES}/`)) &&
       override.linter?.rules?.style?.noRestrictedGlobals,
   );
   if (banning === undefined)
-    throw new Error(`${BIOME} denies no global under packages/`);
+    throw new Error(`${BIOME} denies no global under ${PACKAGES}`);
   return Object.keys(
     banning.linter.rules.style.noRestrictedGlobals.options.deniedGlobals,
   );
@@ -230,7 +231,7 @@ const CLAIMS = [
   {
     document: "CONTRIBUTING.md",
     says: /A ban on the ([\w ]+?) names would therefore have needed/,
-    about: `the globals ${BIOME} denies under packages/`,
+    about: `the globals ${BIOME} denies under ${PACKAGES}`,
     count: () => globals().length,
   },
   {
