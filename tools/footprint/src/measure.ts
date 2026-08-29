@@ -30,8 +30,20 @@ export const measureWith = (run: Run) => {
 
   const sideOf = (ref: string): Side => ({ ref, tree: treeOf(ref) });
 
-  const bundles = (): readonly Bundle[] =>
-    JSON.parse(run("pnpm", ["exec", "size-limit", "--json"]).stdout);
+  const bundles = (): readonly Bundle[] => {
+    const weighed = JSON.parse(
+      run("pnpm", ["exec", "size-limit", "--json"]).stdout,
+    );
+    if (
+      !Array.isArray(weighed) ||
+      weighed.length === 0 ||
+      weighed.some((bundle) => typeof bundle.sizeLimit !== "number")
+    )
+      throw new Error(
+        `size-limit weighed no bundle against a ratchet:\n${JSON.stringify(weighed)}`,
+      );
+    return weighed;
+  };
 
   return (baseRef: string, headRef: string): Measurement => {
     const head = git("rev-parse", headRef);

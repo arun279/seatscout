@@ -48,6 +48,11 @@ const recorder = (
 const lines = (commands: readonly Command[]): readonly string[] =>
   commands.map(({ command, args }) => [command, ...args].join(" "));
 
+const sizeLimitAnswering = (stdout: string): Run =>
+  recorder((command) =>
+    command.command === "pnpm" ? { ok: false, stdout, stderr: "" } : undefined,
+  ).run;
+
 describe("measuring a change", () => {
   it("resolves the head first, then the merge base against it", () => {
     const { run, commands } = recorder();
@@ -115,20 +120,42 @@ describe("measuring a change", () => {
   });
 
   it("reads the bundle verdict from size-limit even when it exits non-zero", () => {
-    const { run } = recorder((command) =>
-      command.command === "pnpm"
-        ? {
-            ok: false,
-            stdout: JSON.stringify([
-              { name: "web app", size: 90, sizeLimit: 15, passed: false },
-            ]),
-            stderr: "",
-          }
-        : undefined,
+    const run = sizeLimitAnswering(
+      JSON.stringify([
+        { name: "web app", size: 90, sizeLimit: 15, passed: false },
+      ]),
     );
 
     expect(measureWith(run)("origin/main", "HEAD").bundles).toStrictEqual([
       { name: "web app", size: 90, sizeLimit: 15, passed: false },
     ]);
+  });
+
+  it("refuses the verdict a glob matching nothing reports, which passes at no ratchet", () => {
+    const run = sizeLimitAnswering(
+      JSON.stringify([{ name: "web app", passed: true, size: 0 }]),
+    );
+
+    expect(() => measureWith(run)("origin/main", "HEAD")).toThrow(
+      'size-limit weighed no bundle against a ratchet:\n[{"name":"web app","passed":true,"size":0}]',
+    );
+  });
+
+  it("refuses a run that weighed no bundle at all", () => {
+    const run = sizeLimitAnswering("[]");
+
+    expect(() => measureWith(run)("origin/main", "HEAD")).toThrow(
+      "size-limit weighed no bundle against a ratchet",
+    );
+  });
+
+  it("refuses size-limit's error object, which is not a list of bundles", () => {
+    const run = sizeLimitAnswering(
+      '{"error":"SizeLimitError: config is empty"}',
+    );
+
+    expect(() => measureWith(run)("origin/main", "HEAD")).toThrow(
+      "size-limit weighed no bundle against a ratchet",
+    );
   });
 });
