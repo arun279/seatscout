@@ -224,11 +224,16 @@ question asked of the same Source, and the run log names which of them it was.
 
 It states an assumption about the world rather than behaviour of this code, so it is not a
 required check and never gates a pull request. The mutation gate is off that list for a
-different reason, cost, and the two arguments are not interchangeable. `pnpm test:live` runs it against
-`SEATSCOUT_UPSTREAM_ORIGIN` and `SEATSCOUT_AREA`, neither of which has a default for the
-reason `corpus:refresh` has none. It has a vitest configuration of its own, and the root
-configuration excludes `*.live.test.ts`, so neither the unit suite nor the mutation run ever
-reaches the network.
+different reason, cost, and the two arguments are not interchangeable. `pnpm test:live`
+needs nothing configured. The area it reads is a constant in `tools/live-answers.mjs`,
+beside the user agent that was always one, and the origin comes from `tools/upstream.mjs`,
+which `capture-corpus.mjs` reads too: the tool that records the corpus and the tool that
+checks it have to name the same aggregator for the check to mean anything, so they name it
+once. The area is the postal code of the theater the corpus is anchored on, which
+`packages/core/src/corpus/theaters/nearby-theaters.json` already carries in the address of
+its first result. It has a vitest configuration of its own, and the root configuration
+excludes `*.live.test.ts`, so neither the unit suite nor the mutation run ever reaches the
+network.
 
 **The corpus is the contract.** The recorded vocabulary is derived from the 42 captured maps
 at the point of use rather than written down beside them: the top-level and seat key sets,
@@ -424,11 +429,14 @@ The corpus is not part of Core's compiled product. `tsconfig.json` excludes it a
 `tsconfig.test.json` takes it, so `pnpm build` does not copy five megabytes of fixtures
 into `dist`, and product code reaching for a fixture would have to put it back.
 
-`pnpm corpus:refresh` replaces the captures, rewrites the index and formats it. It needs
-`SEATSCOUT_UPSTREAM_ORIGIN` set to the aggregator's origin and `--zip` for the area to
-capture. Neither has a default: the origin is deliberately not committed, and a committed
-area would state where the operator searched from. It makes about fifty requests half a
-second apart, so it never runs in CI or in a test.
+`pnpm corpus:refresh` replaces the captures, rewrites the index and formats it. It takes the
+origin from `tools/upstream.mjs` and needs `--zip` for the area to capture. That has no
+default because the area decides *what the corpus contains*: a refresh replaces every
+fixture, so a silent default would let someone re-anchor the corpus on another metropolitan
+area without noticing they had. The live check's own area would in any case be a broken
+default here, because the anchor theater's postal code appears in its committed address and
+the redaction check below refuses any area that reaches a written file. It makes about fifty
+requests half a second apart, so it never runs in CI or in a test.
 
 It writes no response header, replaces every location query parameter in the recorded
 request path, replaces every bootstrap cookie value wherever it appears, nulls the
@@ -1569,8 +1577,7 @@ The width is written out in the test rather than imported: if the fan-out's own 
 changed, the recorded bound would catch it, so the two do not have to be the same constant
 to be comparable.
 
-It needs `SEATSCOUT_UPSTREAM_ORIGIN` and `SEATSCOUT_AREA` like everything else in that
-lane, and it spends roughly two searches' worth of requests: one raw pass and one real one.
+It spends roughly two searches' worth of requests: one raw pass and one real one.
 
 ## Re-verifying before hand-off
 
