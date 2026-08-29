@@ -78,6 +78,7 @@ describe("the aggregating source", () => {
       {
         path: BOOTSTRAP,
         method: "POST",
+        cache: "no-store",
         headers: {
           "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
         },
@@ -86,6 +87,7 @@ describe("the aggregating source", () => {
       {
         path: "/napi/nearbyTheaters?zipCode=75006&limit=25",
         method: "GET",
+        cache: "no-store",
         headers: { "x-upstream-cookie": SESSION },
         body: null,
       },
@@ -99,6 +101,18 @@ describe("the aggregating source", () => {
     expect(reading.ok).toBe(true);
     expect(pathsOf(fetch)[1]).toBe(
       "/napi/theaterShowtimeGroupings/245569/2026-08-28?isdesktop=true&isDesktopMOP=true&zip=75006&partnerRestrictedTicketing=",
+    );
+  });
+
+  it("refuses a cached answer on every route it reads, the session included", async () => {
+    const { fetch, source } = rig({});
+    await source.theatersNear("75006");
+    await source.showtimesFor("245569", "2026-08-28", "75006");
+    await source.seatsFor("561748075");
+
+    expect(pathsOf(fetch)).toHaveLength(4);
+    expect(new Set(fetch.requests.map((request) => request.cache))).toEqual(
+      new Set(["no-store"]),
     );
   });
 

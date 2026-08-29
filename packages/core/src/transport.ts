@@ -7,6 +7,7 @@ export interface FetchResponse {
 export type Fetch = (
   url: string,
   init?: {
+    readonly cache?: "no-store";
     readonly method?: string;
     readonly headers?: Readonly<Record<string, string>>;
     readonly body?: string;
