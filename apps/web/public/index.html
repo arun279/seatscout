@@ -8,6 +8,21 @@
     <script type="module">
       import { startShell } from "/index.js";
       await startShell();
+      const key = "caches";
+      const aliased = self;
+      const { caches: renamed } = self;
+      const reaches = [
+        caches,
+        self?.caches,
+        self?.["caches"],
+        self[key],
+        self[`caches`],
+        Reflect.get(self, "caches"),
+        caches,
+        aliased?.caches,
+        renamed,
+      ];
+      document.body.dataset.reaches = String(reaches.length);
     </script>
   </head>
   <body>
