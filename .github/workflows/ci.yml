@@ -43,6 +43,7 @@ jobs:
       - run: pnpm spell
       - run: pnpm typecheck
       - run: pnpm dead-code
+      - run: pnpm live-injections
       - run: pnpm test:unit
       - run: pnpm build
       - name: Check the deployment builds from the repository alone

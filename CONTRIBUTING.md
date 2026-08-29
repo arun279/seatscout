@@ -204,6 +204,12 @@ reach a maintainer as a Theater quietly spending the retry budget, which is exac
 first one did. The adapter hands over the words of its own bookable rows rather than its listing
 shapes, so the boundary holds and there is no second declaration of the listing to drift.
 
+**What the setup provides is checked on every pull request.** A live test asks for its answer
+by name and gets `undefined` if the setup stopped providing it, which reaches a maintainer as a
+type error inside a nightly that then blames the upstream. `pnpm live-injections` holds every
+name the live suite injects to a name the setup provides, and it is a step in `quality`, so a
+rebase that drops one fails the pull request instead of the night.
+
 **The answers come from a global setup rather than from the test.** `tools/live-answers.mjs`
 opens a session, reads an area, takes the day's widest release, and asks for one seat map per
 Chain plus whatever the listing already knows to be unbookable, and hands on the area and the
