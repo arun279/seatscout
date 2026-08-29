@@ -29,7 +29,7 @@ describe("the planted red", () => {
     expect(run.stderr).toBe("");
   });
 
-  it("refuses a run handed nothing, which is how an empty file list arrives", () => {
-    expect(gate().status).toBe(1);
+  it("judges the whole tree when it is given nothing, and this tree is clean", () => {
+    expect(gate().status).toBe(0);
   });
 });

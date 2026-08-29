@@ -5,14 +5,19 @@ export interface Writer {
 }
 
 export const NOTHING =
-  "Refusing a run handed no file to judge. This check reads the paths it is given,\nso an empty list is a verdict over a file nobody looked at.\n";
+  "Refusing a run with no file to judge. Given paths this check reads those, and given\nnone it reads every tracked source, so an empty list is a verdict over nothing.\n";
+
+export const tracked = (listing: string): readonly string[] =>
+  listing.split("\n").filter((path) => path !== "");
 
 export const main = (
   argv: readonly string[],
+  listing: () => string,
   read: Read,
   err: Writer,
 ): number => {
-  const paths = argv.slice(2);
+  const given = argv.slice(2);
+  const paths = given.length === 0 ? tracked(listing()) : given;
   if (paths.length === 0) {
     err.write(NOTHING);
     return 1;

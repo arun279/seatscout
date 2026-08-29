@@ -1,8 +1,5 @@
-import { readFileSync } from "node:fs";
+import { listing } from "./git.ts";
+import { read } from "./file.ts";
 import { main } from "./main.ts";
 
-process.exitCode = main(
-  process.argv,
-  (path) => readFileSync(path, "utf8"),
-  process.stderr,
-);
+process.exitCode = main(process.argv, listing, read, process.stderr);
