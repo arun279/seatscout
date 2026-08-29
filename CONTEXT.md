@@ -240,6 +240,6 @@ not this: it keeps that reason and the remedy that goes with it.
 A screening at a Theater the Source says has **stopped selling** is on the same footing, and
 it is the one thing a listing says that its own flags do not. Such a row has not begun, is
 not sold out, and sits in a room with reserved seating, so every flag calls it bookable while
-the Source's own word for it does not, and every seat map request for one is refused. It is
+the Source's own word for it does not, and the seat map route refuses it. It is
 counted among the candidates and named with its Theater and time, and its remedy is the
 operator's own page rather than a retry, because no retry can succeed while sales are off.

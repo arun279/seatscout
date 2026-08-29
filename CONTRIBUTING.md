@@ -199,9 +199,9 @@ one value of it and takes every other value to say nothing the three flags do no
 The premise stated as an invariant is that a row the flags call bookable carries the word for
 on sale, and that is what goes red: a bookable row carrying any other word, or none. It is the
 same argument as the unrecognised seat type. Reading the word for one value is only safe while
-something notices a second value arriving, and a word that means "not on sale" would otherwise
-reach a maintainer as a Theater quietly spending the retry budget, which is exactly how the
-first one did. The adapter hands over the words of its own bookable rows rather than its listing
+something notices a second value arriving, and a further word meaning "not on sale" would
+otherwise reach a maintainer as a Theater quietly spending the retry budget, which is how this
+one reached one. The adapter hands over the words of its own bookable rows rather than its listing
 shapes, so the boundary holds and there is no second declaration of the listing to drift.
 
 **What the setup provides is checked on every pull request.** A live test asks for its answer
