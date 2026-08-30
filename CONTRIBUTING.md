@@ -31,7 +31,6 @@ pnpm spell
 pnpm typecheck
 pnpm dead-code
 pnpm live-injections
-git ls-files '*.ts' '*.tsx' | xargs pnpm -s instrumented
 pnpm cache-storage
 pnpm counts
 pnpm test:unit
@@ -81,11 +80,10 @@ this gate: that decision governs a gate that needs a number, and the exact check
 one, the import ban and `pnpm live-injections` and `pnpm cache-storage`, sit outside it
 for the same reason. The two facts this one compares are both in the repository.
 
-The pre-commit hook runs six checks over staged files: it formats, lints and spell checks
-them, refuses a source carrying mutation-test instrumentation, refuses a reach for Cache
-Storage under `apps/`, and scans for secrets. The pre-push hook runs four over the whole
-workspace: it type checks, runs unit tests, checks for dead code, and holds the counts
-stated in prose. `lefthook.yml` is where both are declared.
+The pre-commit hook formats, lints and spell checks staged files, refuses a reach for Cache
+Storage under `apps/`, and scans for secrets. The pre-push hook type checks the whole
+workspace, runs unit tests, checks for dead code, and holds the counts stated in prose.
+`lefthook.yml` is where both are declared.
 
 TypeScript uses strict checking, unchecked indexed access checks, and erasable syntax.
 Biome uses its recommended rules, and `biome.json` names the published ones this workspace
@@ -97,7 +95,11 @@ a type assertion, which is the widest way past the compile-time guarantees below
 but at severities `biome lint` exits zero on, which is no gate at all:
 `useNodejsImportProtocol`, which the preset reports as information, and `noOctalEscape`,
 which it reports as a warning. Both are raised to errors. Unknown words go in the `words`
-list in `cspell.json`.
+list in `cspell.json`, and its `flagWords` list refuses the file-wide TypeScript suppression
+directive, which switches a whole file's checking off and is wider than anything
+`noUnsafeTypeAssertion` refuses. `noTsIgnore` refuses the line-wide one; use
+`@ts-expect-error`, which fails once the error it names is gone. Spelling is checked over
+every tracked file, so the ban reaches build tooling as well as sources.
 
 A complexity failure names the file, the function, its score and the limit, and asks to
 refactor the function until the score is under the limit; extracting part of it is the
@@ -198,10 +200,11 @@ earlier run.
 Run it locally with `pnpm test:mutation`. Two of its settings are less redundant than they
 look. The vitest runner is named in `plugins` because Stryker resolves its own plugin
 search against its package directory, which under pnpm holds no siblings to find. And
-`inPlace` mutates the working tree for the length of the run rather than a copy of it,
-because the copy is prepared by rewriting `tsconfig.json` through a TypeScript API that
-TypeScript 7 no longer exposes. A run killed part way leaves the mutated files behind;
-`git restore .` puts them back.
+`ignorePatterns` keeps the root `tsconfig.json` out of the sandbox, because Stryker rewrites
+whatever it finds there through `ts.parseConfigFileTextToJson`, which TypeScript 7 no longer
+exposes. Nothing needs it to run the tests: esbuild reads each package's own `tsconfig.json`,
+and the root file only lists project references. With it out of the way the run works in a
+copy, so a run killed part way leaves the working tree exactly as it found it.
 
 Do the work of a test inside the test. A mutant that stops a test file loading at all
 produces no failing test, and the runner scores that as a survivor rather than a kill, so
@@ -224,11 +227,16 @@ question asked of the same Source, and the run log names which of them it was.
 
 It states an assumption about the world rather than behaviour of this code, so it is not a
 required check and never gates a pull request. The mutation gate is off that list for a
-different reason, cost, and the two arguments are not interchangeable. `pnpm test:live` runs it against
-`SEATSCOUT_UPSTREAM_ORIGIN` and `SEATSCOUT_AREA`, neither of which has a default for the
-reason `corpus:refresh` has none. It has a vitest configuration of its own, and the root
-configuration excludes `*.live.test.ts`, so neither the unit suite nor the mutation run ever
-reaches the network.
+different reason, cost, and the two arguments are not interchangeable. `pnpm test:live`
+needs nothing configured. The area it reads is a constant in `tools/live-answers.mjs`,
+beside the user agent that was always one, and the origin comes from `tools/upstream.mjs`,
+which `capture-corpus.mjs` reads too: the tool that records the corpus and the tool that
+checks it have to name the same aggregator for the check to mean anything, so they name it
+once. The area is the postal code of the theater the corpus is anchored on, which
+`packages/core/src/corpus/theaters/nearby-theaters.json` already carries in the address of
+its first result. It has a vitest configuration of its own, and the root configuration
+excludes `*.live.test.ts`, so neither the unit suite nor the mutation run ever reaches the
+network.
 
 **The corpus is the contract.** The recorded vocabulary is derived from the 42 captured maps
 at the point of use rather than written down beside them: the top-level and seat key sets,
@@ -424,11 +432,14 @@ The corpus is not part of Core's compiled product. `tsconfig.json` excludes it a
 `tsconfig.test.json` takes it, so `pnpm build` does not copy five megabytes of fixtures
 into `dist`, and product code reaching for a fixture would have to put it back.
 
-`pnpm corpus:refresh` replaces the captures, rewrites the index and formats it. It needs
-`SEATSCOUT_UPSTREAM_ORIGIN` set to the aggregator's origin and `--zip` for the area to
-capture. Neither has a default: the origin is deliberately not committed, and a committed
-area would state where the operator searched from. It makes about fifty requests half a
-second apart, so it never runs in CI or in a test.
+`pnpm corpus:refresh` replaces the captures, rewrites the index and formats it. It takes the
+origin from `tools/upstream.mjs` and needs `--zip` for the area to capture. That has no
+default because the area decides *what the corpus contains*: a refresh replaces every
+fixture, so a silent default would let someone re-anchor the corpus on another metropolitan
+area without noticing they had. The live check's own area would in any case be a broken
+default here, because the anchor theater's postal code appears in its committed address and
+the redaction check below refuses any area that reaches a written file. It makes about fifty
+requests half a second apart, so it never runs in CI or in a test.
 
 It writes no response header, replaces every location query parameter in the recorded
 request path, replaces every bootstrap cookie value wherever it appears, nulls the
@@ -1582,8 +1593,7 @@ The width is written out in the test rather than imported: if the fan-out's own 
 changed, the recorded bound would catch it, so the two do not have to be the same constant
 to be comparable.
 
-It needs `SEATSCOUT_UPSTREAM_ORIGIN` and `SEATSCOUT_AREA` like everything else in that
-lane, and it spends roughly two searches' worth of requests: one raw pass and one real one.
+It spends roughly two searches' worth of requests: one raw pass and one real one.
 
 ## Re-verifying before hand-off
 

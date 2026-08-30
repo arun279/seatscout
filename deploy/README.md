@@ -52,8 +52,8 @@ secrets from those logs while doing nothing of the kind for anything else.
 | `UPSTREAM_ORIGIN` | Worker secret | `apps/proxy`, as the forwarding target and as the `Referer` it sends |
 
 The three the Worker reads never enter GitHub. They are configuration of one deployment
-rather than of one repository, they survive a deploy untouched, and keeping them out means
-the upstream origin is in no log anywhere.
+rather than of one repository, and they survive a deploy untouched, so whoever runs one sets
+them once against their own account and a redeploy does not ask again.
 
 The email allowlist is not on this list because it is not configuration. It lives in a
 Cloudflare Access policy, which is the whole point of gating there rather than in the
@@ -103,8 +103,10 @@ application.
    It is 64 hexadecimal characters and it changes only if the application is deleted and
    recreated.
 9. **Set the three Worker secrets.** `setup.sh` does this with `wrangler secret put`
-   using the token from step 4. `UPSTREAM_ORIGIN` is the origin the proxy forwards to;
-   this repository does not name it and neither does the deployment configuration.
+   using the token from step 4. `UPSTREAM_ORIGIN` is the origin the proxy forwards to. It
+   is a Worker secret so that one deployment's target is not the repository's to decide,
+   not to keep the origin private: the captured corpus names it in every ticketing URL and
+   `tools/upstream.mjs` names it outright.
 10. **Create a service token** so a script can prove an admitted identity gets in without
     a browser. Zero Trust > Access controls > Service credentials > Service Tokens >
     Create. Then add a second policy on the application with action **Service Auth** and
