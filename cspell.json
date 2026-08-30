@@ -5,10 +5,12 @@
   "useGitignore": true,
   "ignorePaths": [
     ".git",
+    "cspell.json",
     "pnpm-lock.yaml",
     "packages/core/src/corpus/**/*.json",
     "packages/core/src/corpus/captures.ts"
   ],
+  "flagWords": ["ts-nocheck"],
   "words": [
     "ALAM",
     "Abualkishik",
@@ -62,7 +64,6 @@
     "showtimehashcode",
     "showtimes",
     "soldout",
-    "stry",
     "subrequest",
     "subrequests",
     "tokei",
