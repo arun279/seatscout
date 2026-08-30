@@ -10,7 +10,6 @@ playwright-report/
 reports/
 test-results/
 .stryker-tmp/
-stryker-setup-*.js
 *.tsbuildinfo
 .env
 .env.*

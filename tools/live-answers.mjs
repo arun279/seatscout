@@ -1,5 +1,6 @@
-const HOST = process.env.SEATSCOUT_UPSTREAM_ORIGIN;
-const AREA = process.env.SEATSCOUT_AREA;
+import { UPSTREAM_ORIGIN as HOST } from "./upstream.mjs";
+
+const ANCHOR_THEATER_ZIP = "75234";
 
 const UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36";
@@ -108,15 +109,10 @@ const unbookableAmong = (showtimes) =>
   ].filter((showtime) => showtime !== undefined);
 
 export default async function readTheLiveSource(project) {
-  if (!HOST || !AREA)
-    throw new Error(
-      "Set SEATSCOUT_UPSTREAM_ORIGIN to the upstream aggregator's origin and SEATSCOUT_AREA to the area to read.",
-    );
-
   await bootstrap();
   const today = new Date().toLocaleDateString("en-CA");
 
-  const nearby = `/napi/nearbyTheaters?zipCode=${encodeURIComponent(AREA)}&limit=25`;
+  const nearby = `/napi/nearbyTheaters?zipCode=${encodeURIComponent(ANCHOR_THEATER_ZIP)}&limit=25`;
   const area = await answer(nearby);
   const anchor = bodyOf(area, nearby).theaters[0];
 
@@ -126,7 +122,7 @@ export default async function readTheLiveSource(project) {
     showtimeCountOf(movie) > showtimeCountOf(most) ? movie : most,
   );
 
-  const grouping = `/napi/theaterShowtimeGroupings/${widest.id}/${today}?isdesktop=true&isDesktopMOP=true&zip=${encodeURIComponent(AREA)}&partnerRestrictedTicketing=`;
+  const grouping = `/napi/theaterShowtimeGroupings/${widest.id}/${today}?isdesktop=true&isDesktopMOP=true&zip=${encodeURIComponent(ANCHOR_THEATER_ZIP)}&partnerRestrictedTicketing=`;
   const listing = await answer(grouping);
   const showtimes = seatMapTargetsIn(bodyOf(listing, grouping));
 
@@ -142,7 +138,7 @@ export default async function readTheLiveSource(project) {
   project.provide("liveListing", listing);
   project.provide("liveSearch", {
     origin: HOST,
-    area: AREA,
+    area: ANCHOR_THEATER_ZIP,
     movie: `${widest.id}`,
     date: today,
     headers: { "User-Agent": UA, Referer: `${HOST}/` },
