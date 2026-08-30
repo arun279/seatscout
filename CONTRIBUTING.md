@@ -31,7 +31,6 @@ pnpm spell
 pnpm typecheck
 pnpm dead-code
 pnpm live-injections
-git ls-files '*.ts' '*.tsx' | xargs pnpm -s instrumented
 pnpm cache-storage
 pnpm counts
 pnpm test:unit
@@ -81,11 +80,10 @@ this gate: that decision governs a gate that needs a number, and the exact check
 one, the import ban and `pnpm live-injections` and `pnpm cache-storage`, sit outside it
 for the same reason. The two facts this one compares are both in the repository.
 
-The pre-commit hook runs six checks over staged files: it formats, lints and spell checks
-them, refuses a source carrying mutation-test instrumentation, refuses a reach for Cache
-Storage under `apps/`, and scans for secrets. The pre-push hook runs four over the whole
-workspace: it type checks, runs unit tests, checks for dead code, and holds the counts
-stated in prose. `lefthook.yml` is where both are declared.
+The pre-commit hook formats, lints and spell checks staged files, refuses a reach for Cache
+Storage under `apps/`, and scans for secrets. The pre-push hook type checks the whole
+workspace, runs unit tests, checks for dead code, and holds the counts stated in prose.
+`lefthook.yml` is where both are declared.
 
 TypeScript uses strict checking, unchecked indexed access checks, and erasable syntax.
 Biome uses its recommended rules, and `biome.json` names the published ones this workspace
@@ -97,7 +95,11 @@ a type assertion, which is the widest way past the compile-time guarantees below
 but at severities `biome lint` exits zero on, which is no gate at all:
 `useNodejsImportProtocol`, which the preset reports as information, and `noOctalEscape`,
 which it reports as a warning. Both are raised to errors. Unknown words go in the `words`
-list in `cspell.json`.
+list in `cspell.json`, and its `flagWords` list refuses the file-wide TypeScript suppression
+directive, which switches a whole file's checking off and is wider than anything
+`noUnsafeTypeAssertion` refuses. `noTsIgnore` refuses the line-wide one; use
+`@ts-expect-error`, which fails once the error it names is gone. Spelling is checked over
+every tracked file, so the ban reaches build tooling as well as sources.
 
 A complexity failure names the file, the function, its score and the limit, and asks to
 refactor the function until the score is under the limit; extracting part of it is the
@@ -198,10 +200,11 @@ earlier run.
 Run it locally with `pnpm test:mutation`. Two of its settings are less redundant than they
 look. The vitest runner is named in `plugins` because Stryker resolves its own plugin
 search against its package directory, which under pnpm holds no siblings to find. And
-`inPlace` mutates the working tree for the length of the run rather than a copy of it,
-because the copy is prepared by rewriting `tsconfig.json` through a TypeScript API that
-TypeScript 7 no longer exposes. A run killed part way leaves the mutated files behind;
-`git restore .` puts them back.
+`ignorePatterns` keeps the root `tsconfig.json` out of the sandbox, because Stryker rewrites
+whatever it finds there through `ts.parseConfigFileTextToJson`, which TypeScript 7 no longer
+exposes. Nothing needs it to run the tests: esbuild reads each package's own `tsconfig.json`,
+and the root file only lists project references. With it out of the way the run works in a
+copy, so a run killed part way leaves the working tree exactly as it found it.
 
 Do the work of a test inside the test. A mutant that stops a test file loading at all
 produces no failing test, and the runner scores that as a survivor rather than a kill, so
