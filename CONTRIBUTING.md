@@ -256,7 +256,7 @@ aggregator to that, and `.github/workflows/contract.yml` runs it nightly.
 
 The same lane carries one more reading of the world: the live search timing described under
 Running a search. A failure there opens the same issue, because the two are the same
-question asked of the same Source, and the run log names which of them it was.
+question asked of the same Source, and the issue names which of them it was.
 
 It states an assumption about the world rather than behaviour of this code, so it is not a
 required check and never gates a pull request. The mutation gate is off that list for a
@@ -273,13 +273,28 @@ network.
 
 **The corpus is the contract.** The recorded vocabulary is derived from the 42 captured maps
 at the point of use rather than written down beside them: the top-level and seat key sets,
-the four seat statuses and the three seat types. Nothing has to be kept in step with a
-refresh, and a list written by hand cannot drift from what was measured. Eight things are
+the four seat statuses the corpus holds and the three seat types. Nothing has to be kept in
+step with a refresh, and a list written by hand cannot drift from what was measured. Eight things are
 reported: a body that is not JSON, a field the parse needs and the answer no longer carries,
 an answer that parses into nothing at all, a key never captured before, a seat status outside
 the recorded vocabulary, a seat type outside it, a listed screening the catalogue did not
 refuse that carries no word for on sale, and a neighbour link that disagrees with the
 geometry.
+
+**One list stands beside the corpus, for a status the corpus cannot hold.**
+`SETTLED_STATUSES` names a seat status that has been measured against the live Source and
+settled as bookable or not, and the known statuses are the corpus's plus those. It
+holds `H` alone: a seat held in another shopper's checkout, 84 seats among the 75,591 read
+across 492 live maps on 2026-08-29, 0.111% of them, left out of the upstream's own available
+counts, refused by its booking interface, and resolving within minutes to `R` when the
+purchase completes or back to `A` when it lapses. A state that rare and that short-lived does
+not land in a capture: three passes over about 42,000 seats had already missed it, and
+refreshing the corpus until one caught an `H` would freeze one shopper's abandoned cart into
+the fixtures as though it were a property of the room. A word nobody has measured still turns
+the check red on the first night, which is the whole of what the check is for. The list is
+not a free pass either: the unit suite reads every status on it through the seat map adapter
+and fails unless the adapter agrees with what the list declares, so it cannot drift from
+`BOOKABLE_STATUSES` in either direction.
 
 **An unrecognised seat type is why this exists at all.** The seat map adapter maps a type it
 does not recognise to `standard` rather than failing closed on it, deliberately, because
@@ -349,20 +364,49 @@ function the mutation gate can reach. It is a second client of the aggregator ra
 share of `capture-corpus.mjs`, because that tool's session exists to harvest the values it has
 to redact and its getter exists to keep a request ledger, and neither belongs here.
 
-**Nothing it writes may name the aggregator or the area.** A failure message that quotes a URL
-would put both into a public run log and, worse, into a public issue, which is what the corpus
-redaction exists to prevent. So a message names a route with its query string dropped, and a
-transport failure is re-raised without the cause that carries the host. The workflow follows
-the same rule: the issue it opens carries a link to the run and no captured output at all,
-because the runner masks its secrets in the log and masks nothing in an issue body.
+**Nothing is withheld from the issue, and what the first version withheld was not secret.**
+That version posted a link and no reading at all, on the grounds that the run log "is redacted
+where this issue would not be". Both of the things it was protecting are committed constants
+anyone can open: the origin is `tools/upstream.mjs` and the area is `ANCHOR_THEATER_ZIP` in
+`tools/live-answers.mjs`, the captures name the aggregator throughout, and the upstream needs
+no credential, so there is nothing a public issue could give away that the repository does not
+already state. The issue therefore carries the finding: which status, which key, which field,
+which Seat, or the milliseconds measured against the budget. What it still does not carry is a
+captured payload, and that is a judgement about noise rather than about secrets, since a
+maintainer who wants the bodies has the run log. The message shapes stay as they are, a route
+with its query string dropped and a transport failure re-raised without the cause, because a
+message that is safe to publish anywhere is easier to keep safe than one redacted on the way
+out.
 
-**A failed run opens an issue.** A scheduled run's own notification reaches one person, and
-which person is a rule rather than a choice: whoever created the workflow, unless someone
-later changed its cron line, unless someone later re-enabled it. That is neither discoverable
-nor stable under editing, so the workflow labels and opens one issue instead, and comments on
-it while it stays open rather than opening another. It closes nothing: whether the contract
-question is settled is a judgement about the code, not about how the world happened to look
-last night.
+**A failed scheduled run says so on an issue; a dispatched one says so in the run summary.**
+A scheduled run's own notification reaches one person, and which person is a rule rather than
+a choice: whoever created the workflow, unless someone later changed its cron line, unless
+someone later re-enabled it. That is neither discoverable nor stable under editing, so the
+workflow labels and opens one issue instead. A hand-dispatched run writes the same finding
+into `$GITHUB_STEP_SUMMARY` and touches no issue, because a dispatch is someone testing and
+that someone is already looking at the run. What the alternative cost was eight identical
+comments in eleven minutes, from agents dispatching the workflow while investigating it.
+
+**A repeat updates its own comment; a new reason gets a new one.** Each comment ends in the
+fingerprint of what the run found and the number of scheduled runs that have ended that way.
+A run whose fingerprint is already on the thread edits that comment and raises the count; a
+run carrying a fingerprint nobody has seen posts a new one, so a second thing going wrong is
+as loud as the first was. Digits are dropped before the fingerprint is taken, so a timing that
+misses its budget by a different number of milliseconds is the same reason rather than a new
+one every night. `marocchino/sticky-pull-request-comment` does this for the footprint report
+and was the obvious thing to reuse, and it does not fit: it finds the comment it owns through
+a GraphQL `repository.pullRequest(number:)`, which answers null for an issue number, so every
+run would have posted a new comment anyway.
+
+**A green scheduled run closes the issue.** The first version closed nothing, on the argument
+that whether the contract question is settled is a judgement about the code rather than about
+how the world happened to look last night. The argument holds; the conclusion does not follow
+from it. That judgement is made in the repository, and the only way it reaches this check is
+as a change to the repository, which is the same change that turns the next scheduled run
+green. Green therefore says one of two things, that the world came back or that the project
+answered, and both of them close the loop. A person can reopen an issue, and a failure that
+returns opens its own comment with its own reason. An alarm that only ever escalates is one
+people stop reading, which is the same argument as the red nobody can act on.
 
 ## The import ban
 
