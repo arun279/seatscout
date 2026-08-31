@@ -38,7 +38,9 @@ single implementation of it: the aggregator.
 
 Add a second implementation only where an independent source genuinely exists, and add it
 for verification and fallback rather than for coverage. The one chain with a public
-catalogue API is that second implementation.
+catalogue API is the second implementation whenever it is built. Nothing has built it: the
+tree carries one module that builds a `Source` and no adapter for that chain, so the
+cross-source verification this decision promises is not available for any chain today.
 
 Coverage of a chain and the number of sources are separate concerns. Adding chains is not
 a reason to add adapters.

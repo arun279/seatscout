@@ -23,7 +23,6 @@ import {
 } from "./search.js";
 import { type CachedCatalogue, inMemoryStore } from "./store.js";
 
-const BOOTSTRAP = "/napi/preferences/themes";
 const SEAT_MAP = "/napi/seatMap/";
 const LISTING = "/napi/theaterShowtimeGroupings/245569/2026-08-28";
 const AREA = "75006";
@@ -124,10 +123,7 @@ const routesTo = (
 
 const listing = async () => {
   const source = openSource({
-    fetch: fakeUpstream({
-      seed: 1,
-      routes: { [BOOTSTRAP]: { status: 200, body: "{}" } },
-    }),
+    fetch: fakeUpstream({ seed: 1 }),
     now: () => AT,
     wait: () => Promise.resolve(),
     random: () => 0.5,
@@ -151,7 +147,6 @@ const searching = async (options: Options = {}) => {
     seed: SEED,
     ...options.script,
     routes: {
-      [BOOTSTRAP]: { status: 200, body: "{}" },
       ...roomsFor(candidates.bookable, options.rooms),
       ...options.answers?.(candidates.bookable),
     },
@@ -262,7 +257,7 @@ describe("a search", () => {
       558117351, 558782900, 558782901, 557985744,
     ]);
     expect(arrivalIn(run.snapshots)).toEqual([
-      558782901, 558782900, 558117351, 557985744,
+      558117351, 557985744, 558782901, 558782900,
     ]);
     expect(idsIn(settled)).not.toEqual(arrivalIn(run.snapshots));
     for (const snapshot of run.snapshots)
