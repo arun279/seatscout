@@ -17,6 +17,7 @@ const NUMBERS = [
 ];
 
 const BIOME = "biome.json";
+const LEFTHOOK = "lefthook.yml";
 const PACKAGES = "packages";
 const ADAPTER = "packages/core/src/source/catalogue.ts";
 const CATALOGUE = "packages/core/src/domain/catalogue.ts";
@@ -117,6 +118,8 @@ const lighter = () => {
 
 const bands = () => alternativesOf(GROUP, "Gap");
 
+const formats = () => alternativesOf(CATALOGUE, "Format");
+
 const answers = () => alternativesOf(VERIFY, "Unverified");
 
 const succeeding = () => [
@@ -144,12 +147,50 @@ const globals = () => {
   );
 };
 
+const hookCommands = (hook) => {
+  const body = bodyOf(
+    LEFTHOOK,
+    `a ${hook} hook`,
+    new RegExp(`^${hook}:\\n((?:[ \\t].*\\n?)*)`, "m"),
+  );
+  const commands = [...body.matchAll(/^ {4}([\w-]+):$/gm)];
+  if (commands.length === 0)
+    throw new Error(
+      `${hook} in ${LEFTHOOK} declares no command this check can read`,
+    );
+  return commands.map((command) => command[1]);
+};
+
 const COVERAGE_OUTCOMES = `every field of Coverage but candidates, in ${SEARCH}`;
 const PROFILE_WEIGHTS = `the weights of SeatProfile, in ${PROFILE}`;
 const SEAT_GROUP_BANDS = `the alternatives of Gap, in ${GROUP}`;
 const UNVERIFIED = `the alternatives of Unverified, in ${VERIFY}`;
 
 const CLAIMS = [
+  {
+    document: "CONTRIBUTING.md",
+    says: /The pre-commit hook runs (\w+) checks over staged files/,
+    about: `the commands under pre-commit, in ${LEFTHOOK}`,
+    count: () => hookCommands("pre-commit").length,
+  },
+  {
+    document: "CONTRIBUTING.md",
+    says: /The pre-push hook runs (\w+) over the whole workspace/,
+    about: `the commands under pre-push, in ${LEFTHOOK}`,
+    count: () => hookCommands("pre-push").length,
+  },
+  {
+    document: "CONTEXT.md",
+    says: /The premium presentation type, one of (\w+):/,
+    about: `the alternatives of Format, in ${CATALOGUE}`,
+    count: () => formats().length,
+  },
+  {
+    document: "README.md",
+    says: /It penalises (\w+) things\./,
+    about: PROFILE_WEIGHTS,
+    count: () => weights().length,
+  },
   {
     document: "CONTEXT.md",
     says: /It penalises (\w+) things\./,

@@ -2,7 +2,7 @@
   "$schema": "https://unpkg.com/@stryker-mutator/core@10.0.0/schema/stryker-schema.json",
   "testRunner": "vitest",
   "plugins": ["@stryker-mutator/vitest-runner"],
-  "inPlace": true,
+  "ignorePatterns": ["/tsconfig.json"],
   "mutate": [
     "{apps,packages,tools}/*/src/**/*.{ts,tsx}",
     "!apps/native/src/**",

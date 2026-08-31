@@ -44,10 +44,9 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm dead-code
       - run: pnpm live-injections
-      - name: Refuse instrumented sources
-        run: git ls-files '*.ts' '*.tsx' | xargs pnpm -s instrumented
       - run: pnpm cache-storage
       - run: pnpm counts
+      - run: pnpm claims
       - run: pnpm test:unit
       - run: pnpm build
       - name: Check the deployment builds from the repository alone

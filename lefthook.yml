@@ -10,9 +10,6 @@ pre-commit:
       run: pnpm exec biome lint --no-errors-on-unmatched {staged_files}
     spell:
       run: pnpm exec cspell lint --no-must-find-files {staged_files}
-    instrumented:
-      glob: "*.{ts,tsx}"
-      run: node tools/no-instrumented-sources.mjs {staged_files}
     cache-storage:
       glob: "apps/**"
       run: node tools/no-cache-storage-reach.mjs
@@ -31,3 +28,5 @@ pre-push:
       run: pnpm dead-code
     counts:
       run: pnpm counts
+    claims:
+      run: pnpm claims

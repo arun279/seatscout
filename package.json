@@ -10,6 +10,7 @@
   "scripts": {
     "build": "tsc --build --pretty false && pnpm --filter @seatscout/web build",
     "cache-storage": "node tools/no-cache-storage-reach.mjs",
+    "claims": "node tools/claims-in-prose.mjs",
     "contract:alarm": "node tools/contract-alarm.mjs",
     "corpus:refresh": "node tools/capture-corpus.mjs && node tools/corpus-index.mjs && biome format --write packages/core/src/corpus/captures.ts",
     "counts": "node tools/counts-in-prose.mjs",
@@ -17,7 +18,6 @@
     "footprint": "node tools/footprint/dist/index.js",
     "format": "biome format --write .",
     "format:check": "biome format .",
-    "instrumented": "node tools/no-instrumented-sources.mjs",
     "lint": "biome lint .",
     "live-injections": "node tools/live-injections.mjs",
     "prepare": "lefthook install",

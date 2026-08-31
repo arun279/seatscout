@@ -21,18 +21,14 @@ declare module "vitest" {
 const SEAT_MAP = "/napi/seatMap/";
 const CONCURRENCY = 24;
 const MAPS_MEASURED = 48;
-const BOOTSTRAP_MS = 209;
 const LISTING_MS = 375;
 const AT_TWENTY_FOUR_MS = 670;
 const AT_TWELVE_MS = 960;
 const READING_LIMIT_MS = 120_000;
 
-const reaching = (
-  origin: string,
-  headers: Readonly<Record<string, string>>,
-) => {
-  let session = "";
-  return async (
+const reaching =
+  (origin: string, headers: Readonly<Record<string, string>>) =>
+  (
     path: string,
     init?: {
       readonly cache?: "no-store";
@@ -40,24 +36,13 @@ const reaching = (
       readonly headers?: Readonly<Record<string, string>>;
       readonly body?: string;
     },
-  ) => {
-    const response = await fetch(`${origin}${path}`, {
+  ) =>
+    fetch(`${origin}${path}`, {
       cache: init?.cache,
       method: init?.method,
-      headers: {
-        ...headers,
-        ...init?.headers,
-        ...(session === "" ? {} : { Cookie: session }),
-      },
+      headers: { ...headers, ...init?.headers },
       body: init?.body,
     });
-    const opened = response.headers
-      .getSetCookie()
-      .map((raw) => raw.split(";")[0] ?? raw);
-    if (opened.length > 0) session = opened.join("; ");
-    return response;
-  };
-};
 
 const sourceOn = (reach: ReturnType<typeof reaching>) =>
   openSource({
@@ -123,6 +108,6 @@ describe("a full search against the live Source", () => {
     expect(settled.results.length).toBeGreaterThan(0);
     expect(maps.length).toBeGreaterThan(0);
     expect(fanOut).toBeLessThan(allowed);
-    expect(whole).toBeLessThan(BOOTSTRAP_MS + LISTING_MS + allowed);
+    expect(whole).toBeLessThan(LISTING_MS + allowed);
   });
 });
