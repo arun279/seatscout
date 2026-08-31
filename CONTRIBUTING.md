@@ -33,6 +33,7 @@ pnpm dead-code
 pnpm live-injections
 pnpm cache-storage
 pnpm counts
+pnpm claims
 pnpm test:unit
 pnpm build
 pnpm --filter @seatscout/proxy exec wrangler deploy --dry-run
@@ -56,11 +57,13 @@ the code.
 
 `tools/counts-in-prose.mjs` declares every such pair outright, the sentence and the
 declaration it counts. It reads the number word out of the one and counts the interface
-fields, union alternatives, object-literal weights, translation-table entries or
-configuration keys of the other, and fails when they disagree. The pairs cover Coverage, the
+fields, union alternatives, object-literal weights, translation-table entries, hook commands
+or configuration keys of the other, and fails when they disagree. The pairs cover Coverage, the
 Seat Profile's weights and modelled distances, a Seat Group's bands, `UpstreamSeat`,
 `Catalogue`, the `Source` port, `Unverified`, the divergence kinds, the denied globals, the
-Amenities and the Chain table. Two documents count the Amenities, so both are declared.
+Amenities, the Chain table, the Formats and the commands each git hook runs. `Format` is
+worth naming: it was the one closed set in the domain with no pair, and it is the one that
+went stale, at five names in `CONTEXT.md` against fifteen in the union. Two documents count the Amenities, so both are declared.
 
 It asserts nothing it was not told about, so it raises nothing a reader has to weigh and
 cannot go off for a sentence nobody declared. It fails just as loudly when the sentence
@@ -80,10 +83,40 @@ this gate: that decision governs a gate that needs a number, and the exact check
 one, the import ban and `pnpm live-injections` and `pnpm cache-storage`, sit outside it
 for the same reason. The two facts this one compares are both in the repository.
 
-The pre-commit hook formats, lints and spell checks staged files, refuses a reach for Cache
-Storage under `apps/`, and scans for secrets. The pre-push hook type checks the whole
-workspace, runs unit tests, checks for dead code, and holds the counts stated in prose.
-`lefthook.yml` is where both are declared.
+`pnpm claims` holds a claim this repository's own documents make about it to the repository
+itself, over `docs/adr/`, `CONTEXT.md` and `README.md`.
+A decision can be falsified by a later commit and keep its force, because nothing reads it
+against the tree again: the record that said this repository does not name its upstream was
+untrue from the commit that added the captured corpus, and stayed in force long enough to
+put a public hostname into a repository secret and stop the nightly contract check running.
+
+`tools/claims-in-prose.mjs` declares every pair outright, the sentence and the search that
+holds it. A claim is one search, how many tracked files under these paths hold this fixed
+string, and the declared number is what the record says. Two rules keep it from being
+decoration. Every ADR is classified, with pairs or with a stated reason it can carry none,
+so a new one fails until somebody decides which it is. And a claim expecting no match names
+where the same pattern must still be found, because a search that finds nothing because the
+name is misspelled or the directory was renamed looks exactly like a search that finds
+nothing because the claim holds. Where no such place exists there is no pair, which is why
+`CONTEXT.md` and `README.md` carry none: what a command can hold in either is a count, and a
+count belongs to `pnpm counts`, which is the instrument built for one. Every
+search excludes `tools/claims-in-prose.mjs` itself, because a pattern written down there in
+order to be searched for is not an occurrence of the thing; the gate found that on its own
+first run, having reported its own source as evidence that the toolchain still named `scc`.
+
+The same trap has a second form worth naming, because a reader will meet it outside this
+gate. An answer of "not found" is only evidence when the query could have found the thing.
+This repository's protected branch returns 404 from the legacy branch-protection endpoint
+and has been protected by a ruleset since the day the workspace was set up, so a check that
+asked the first endpoint would report the branch unprotected and be wrong. Ask an endpoint
+that returns the whole set, require it to be non-empty, and treat any non-2xx as a failure
+rather than as a zero.
+
+The pre-commit hook runs five checks over staged files: it formats, lints and spell checks
+them, refuses a reach for Cache Storage under `apps/`, and scans for secrets. The pre-push
+hook runs five over the whole workspace: it type checks, runs unit tests, checks for dead
+code, holds the counts stated in prose, and holds every claim an ADR makes about this
+repository to the repository. `lefthook.yml` is where both are declared.
 
 TypeScript uses strict checking, unchecked indexed access checks, and erasable syntax.
 Biome uses its recommended rules, and `biome.json` names the published ones this workspace

@@ -78,8 +78,9 @@ This is the thing a ticket is for. Some providers call it a "performance".
 
 ## Format
 
-The premium presentation type: IMAX, Dolby Cinema, D-BOX, ScreenX, XD. Absent for a
-standard screening.
+The premium presentation type, one of fifteen: IMAX, IMAX with Laser, Dolby Cinema, Dolby
+Atmos, D-BOX, ScreenX, XD, XL, SDX, DFX, Laser, HDR by Barco, Sony Digital, The Big Show and
+3D. Absent for a standard screening.
 
 The set of them is closed, and a premium name outside it is not a Format. A screening
 labelled with one the application does not know reads as standard rather than as a Format

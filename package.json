@@ -10,6 +10,7 @@
   "scripts": {
     "build": "tsc --build --pretty false && pnpm --filter @seatscout/web build",
     "cache-storage": "node tools/no-cache-storage-reach.mjs",
+    "claims": "node tools/claims-in-prose.mjs",
     "corpus:refresh": "node tools/capture-corpus.mjs && node tools/corpus-index.mjs && biome format --write packages/core/src/corpus/captures.ts",
     "counts": "node tools/counts-in-prose.mjs",
     "dead-code": "knip",

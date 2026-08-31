@@ -74,6 +74,13 @@ script from reading `Set-Cookie` or setting `Cookie`. Measurement retired the wh
 mechanism: reads from an address that has never bootstrapped succeed, so the cookies gated
 nothing and the translation had nothing to translate.
 
+It lives there now. For a time it did not: three files under `packages/core` named the
+proxy's own header constants, the single Source implementation among them, so the shared
+core spoke the web proxy's private vocabulary and a native runtime that needed none of it
+would have had to impersonate the proxy to read anything. The measurement that retired the
+session took those constants with it, because they existed only to carry a session cookie
+across the proxy. No file under `packages/core` names them.
+
 ## Consequences
 
 The requirement that no user data is stored on a server is structural rather than a

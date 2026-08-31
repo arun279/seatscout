@@ -46,6 +46,7 @@ jobs:
       - run: pnpm live-injections
       - run: pnpm cache-storage
       - run: pnpm counts
+      - run: pnpm claims
       - run: pnpm test:unit
       - run: pnpm build
       - name: Check the deployment builds from the repository alone
