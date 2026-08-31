@@ -5,7 +5,6 @@ import { exit, stderr, stdout } from "node:process";
 const RECORDS = "docs/adr";
 const NARRATIVE = ["CONTEXT.md", "README.md"];
 const BIOME = "biome.json";
-const CORE = "packages/core";
 const PRODUCT = ["packages", ":!*.test.ts"];
 const RATCHET = ".size-limit.json";
 const RELEASE = "tools/release-plan/src/index.ts";

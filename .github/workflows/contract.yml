@@ -12,6 +12,11 @@ concurrency:
   group: contract-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  GH_REPO: ${{ github.repository }}
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
 jobs:
   contract:
     runs-on: ubuntu-24.04
@@ -31,28 +36,65 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Read the live Source
         id: reading
-        run: pnpm test:live
-      - name: Say so where the maintainer will see it
-        if: ${{ !cancelled() && steps.reading.outcome == 'failure' }}
-        env:
-          GH_REPO: ${{ github.repository }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: bash
         run: |
-          {
-            echo "The nightly contract check failed. Either the upstream answers something"
-            echo "the corpus never recorded, a full search fanned out slower than the"
-            echo "recorded baseline, or the Source could not be read at all. The reading is"
-            echo "in the run log, which is redacted where this issue would not be."
-            echo
-            echo "$RUN"
-          } > issue.md
+          pnpm test:live --reporter=default \
+            --reporter=json --outputFile.json=live.json 2>&1 | tee live.log
+      - name: Say what diverged, in the run summary a dispatch reads
+        id: alarm
+        if: ${{ !cancelled() && steps.reading.outcome == 'failure' }}
+        run: |
+          fingerprint=$(pnpm -s contract:alarm --report live.json --log live.log --out alarm.md)
+          echo "fingerprint=$fingerprint" >> "$GITHUB_OUTPUT"
+          cat alarm.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Say it again where the maintainer will see it
+        if: ${{ !cancelled() && github.event_name == 'schedule' && steps.reading.outcome == 'failure' }}
+        env:
+          FINGERPRINT: ${{ steps.alarm.outputs.fingerprint }}
+        run: |
           gh label create upstream-contract --color B60205 --force \
-            --description "The live Source stopped answering as the corpus and the baseline recorded"
-          open=$(gh issue list --label upstream-contract --state open --limit 1 --json number --jq '.[0].number // empty')
+            --description "The nightly contract check is red, and its comments say what diverged"
+          open=$(gh issue list --label upstream-contract --state open --limit 1 \
+            --json number --jq '.[0].number // empty')
+          said=""
           if [ -n "$open" ]; then
+            said=$(gh api "repos/$GH_REPO/issues/$open/comments?per_page=100" --paginate --jq \
+              '.[] | select(.user.login == "github-actions[bot]"
+                 and (.body | contains("fingerprint=" + env.FINGERPRINT))) | .id' | tail -1)
+          fi
+          nights=1
+          if [ -n "$said" ]; then
+            before=$(gh api "repos/$GH_REPO/issues/comments/$said" --jq .body \
+              | sed -n 's/.*nights=\([0-9][0-9]*\).*/\1/p' | tail -1)
+            nights=$(( ${before:-1} + 1 ))
+          fi
+          {
+            cat alarm.md
+            echo
+            if [ "$nights" -gt 1 ]; then
+              echo "This is how the last $nights scheduled runs ended. The latest is $RUN"
+            else
+              echo "$RUN"
+            fi
+            echo
+            echo "<!-- contract-alarm fingerprint=$FINGERPRINT nights=$nights -->"
+          } > issue.md
+          if [ -n "$said" ]; then
+            jq -n --rawfile body issue.md '{body: $body}' \
+              | gh api --method PATCH "repos/$GH_REPO/issues/comments/$said" --input - --silent
+          elif [ -n "$open" ]; then
             gh issue comment "$open" --body-file issue.md
           else
             gh issue create --label upstream-contract --body-file issue.md \
               --title "The nightly contract check failed"
+          fi
+      - name: Close what a green run answers
+        if: ${{ github.event_name == 'schedule' && steps.reading.outcome == 'success' }}
+        run: |
+          open=$(gh issue list --label upstream-contract --state open --limit 1 \
+            --json number --jq '.[0].number // empty')
+          if [ -n "$open" ]; then
+            gh issue comment "$open" --body \
+              "The nightly contract check read the live Source and found nothing diverging. $RUN"
+            gh issue close "$open" --reason completed
           fi
