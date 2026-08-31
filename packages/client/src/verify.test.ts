@@ -44,6 +44,7 @@ type Script = Omit<UpstreamScript, "seed" | "routes">;
 
 interface Options {
   readonly accessibleSeating?: boolean;
+  readonly formats?: SearchTerms["formats"];
   readonly partySize?: number;
   readonly profile?: SeatProfile;
   readonly room?: string;
@@ -155,6 +156,7 @@ const verifying = async (options: Options = {}) => {
     accessibleSeating: options.accessibleSeating ?? false,
     profile: options.profile,
     theaters: [theaterIn(listed, STONEBRIAR)],
+    formats: options.formats,
   };
   const candidates = narrowed(listed, terms);
   const room = options.room ?? ROOM;
@@ -196,7 +198,7 @@ const verifying = async (options: Options = {}) => {
   return {
     listed,
     result,
-    verify: () => verify(result, terms),
+    verify: () => verify(result),
     requested: () => upstream.requests.map((request) => request.path),
     auditoriumsRead: () =>
       upstream.requests.filter((request) => request.path.startsWith(SEAT_MAP)),
@@ -348,6 +350,51 @@ describe("re-verifying a Seat Group", () => {
     expect(verified.ok || verified.reason).toBe("taken");
     expect(alternativesIn(verified)).toEqual([]);
     expect(run.auditoriumsRead()).toEqual([]);
+  });
+
+  it("carries on a result the terms a re-verification needs, and none the listing was narrowed by", async () => {
+    const run = await verifying({ formats: ["Dolby Cinema"] });
+
+    expect(Object.keys(run.result.terms).toSorted()).toEqual([
+      "accessibleSeating",
+      "area",
+      "date",
+      "movie",
+      "partySize",
+      "profile",
+    ]);
+    expect(run.result.terms).toEqual({
+      movie: WIDE_RELEASE,
+      date: TODAY,
+      area: AREA,
+      partySize: 2,
+      accessibleSeating: false,
+      profile: undefined,
+    });
+    expectTypeOf<
+      Parameters<ReturnType<typeof openVerification>>
+    >().toEqualTypeOf<[SeatGroupResult]>();
+  });
+
+  it("re-reads the Auditorium when the listing has since dropped the Format the Query named", async () => {
+    const run = await verifying({
+      formats: ["Dolby Cinema"],
+      store: (listed) =>
+        holding({
+          fetchedAt: SEARCHED_AT,
+          catalogue: {
+            ...listed,
+            bookable: listed.bookable.map((showtime) => ({
+              ...showtime,
+              presentation: { ...showtime.presentation, formats: [] },
+            })),
+          },
+        }),
+    });
+    const verified = await run.verify();
+
+    expect(verified.ok).toBe(true);
+    expect(run.auditoriumsRead()).toHaveLength(1);
   });
 
   it("ranks the alternatives against the Seat Profile the Query carried", async () => {

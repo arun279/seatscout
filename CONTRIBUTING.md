@@ -907,6 +907,12 @@ else.
 **A row is a distinct `y`, and depth is that row's place in the order.** Every Seat of a row
 carries one `y` in all 42 captured seat maps, and the count of distinct `y` values equals
 the count of rows in all 42, so rows need no clustering tolerance and no invented threshold.
+One function partitions Seats into rows, `rowsOf` in `seat-group.ts`, and the Seat Groups a
+search offers, the map a screen draws and the neighbour links the contract test walks all use
+it, so "y grows toward the back" is written in one comparator rather than in three. It answers
+rows that are non-empty by type, which is what lets the map read a row's depth off its first
+Seat. `normalised` keeps its own pass over the distinct `y` values, because that pass is what
+`depth` is derived from and `seat-group.ts` is built on top of it.
 Depth is the row's rank over the last row's rank rather than its distance down the room,
 because rows are not evenly spaced: 41 of the 42 maps draw at least two different row gaps,
 14 of them draw their widest gap at least half again as wide as their narrowest, and one
@@ -1113,30 +1119,34 @@ and so is `store.write(key, JSON.stringify(seats))`, which is the way round that
 strings would have left open. It is the technique `corpus/types.ts` and the catalogue
 adapter already use for what may be *read*, pointed at what may be written.
 
-What comes back is checked before it is used: a numeric fetch moment, a catalogue carrying
-its three arrays, and a Presentation carrying its Amenities on every Showtime in them. All
-three arrays are checked rather than the two the reader will obviously touch, because an entry
-written by an older build is a real thing a device holds and a missing array would reach a
-search as an absent Coverage outcome. The Amenities are checked for the same reason one level
-down: the narrowing filter reads them, so an entry written before a Presentation carried them
-would answer nothing at all against a Chain term and raise against an Amenity one. Anything
-else is a miss and the Source is read again.
+**An entry another build wrote is not found, rather than found and tested.** The key carries
+the shape it stores, `seatscout.catalogue.v1.[...]`, so the lookup answers the question that
+decides: did this build write this. The alternative, a predicate that walks down into a stored
+Showtime field by field, is what this replaced. It has to be extended every time a reader reaches
+one field further, nothing reminds anyone to extend it, and the version that shipped checked a
+Presentation's Amenities while the same narrowing line reads its Formats too, so an entry
+carrying the one and not the other passed the check and raised inside the filter. A version moves
+once per stored shape; a probe moves once per field a reader touches, by hand.
 
-**The rule is the fields the reader touches, and the check stops there.** It is not the
-adapter's own parse restated against data the adapter wrote, and it does not go looking for a
-Showtime's identity or a Theater's name, because the store it came from is the reader's own
-device rather than a third party's answer. When the reader reaches further, this reaches with
-it, and that is the only thing that moves it.
+What comes back is still checked, because `read` answers `unknown` and something has to make a
+value of it: a numeric fetch moment and a catalogue carrying its three arrays. It stops there.
+Going deeper would be the adapter's own parse restated against data the adapter wrote, and the
+store it came from is the reader's own device rather than a third party's answer. Anything that
+fails is a miss and the Source is read again.
+
+**What moves the version is a test rather than a memory.** `catalogue.test.ts` holds
+`ENTRY_SHAPE` to the field paths a written entry actually carries, so a `Catalogue` that grows a
+field or moves one fails the suite beside the version that has to move with it.
 
 Nothing is read back as absent that a store answered with `null`, because absent is
 `undefined`. `read` answers `unknown`, so `null` is a value a store might hold like any
 other, and conflating the two would make a store that lost an entry indistinguishable from
 one that held a null.
 
-A cache entry is named after the three terms that identify it, encoded as a JSON array, so
-an area holding the separator cannot collide with another entry. Terms that only narrow the
-answer are not part of the name, so changing a Format filter re-reads the cache rather than
-the Source.
+A cache entry is named after the shape it stores and the three terms that identify it, those
+encoded as a JSON array so an area holding the separator cannot collide with another entry.
+Terms that only narrow the answer are not part of the name, so changing a Format filter re-reads
+the cache rather than the Source.
 
 ### The store contract, run twice
 
@@ -1513,8 +1523,11 @@ not reached yet is the remainder rather than a field, so the seven and the remai
 listing before a request is spent; the fan-out adds to three of those five from what a seat
 map refusal says, and to `failed`. An expired screening is `started` and never `failed`,
 because a cached listing routinely offers screenings that have begun and a retry cannot help
-one; `failed` stays the only retryable set, and it carries identities rather than Showtimes
-because a retry is the one remedy that has to name what it retries.
+one; `failed` stays the only retryable set, and it is the one outcome keyed by `Showtime` alone
+rather than by `Showtime | Unidentified`, because only an identified row is ever fanned out and
+so only an identified row can exhaust its retries. It carries the Showtime rather than only its
+identity, because the rule that names an outcome is that the user can act on it, and the screen
+offering the retry has to say which Theater and which time it is offering to retry.
 
 A Showtime at a Theater that has stopped selling is named rather than counted, and its remedy
 is the operator's own page: retrying can never work while sales are off, and the fan-out never
@@ -1641,13 +1654,21 @@ than a comment asking for one ([ADR 4](docs/adr/0004-booking-ends-at-a-deep-link
 reason is that a Seat can go between being shown and being bought). `CONTEXT.md` defines
 Re-verification and its two ways of answering no.
 
-**It takes the result and the Query the result came from.** The result cannot name its own
-listing, and the listing is the only thing that carries a ticketing URL: a seat map answer
-holds an Auditorium's Seats and nothing else, so nothing about the Showtime a Seat belongs
-to is recoverable from it. The Query's three listing terms are what find the Showtime again,
-and its party size, accessible seating and Seat Profile are what rank the alternatives on
-the same yardstick the search ranked on. Passing them is what makes a verification answer
-about the search it belongs to instead of about a default.
+**It takes the result, and the result carries the Query terms it answers.** The listing is the
+only thing that carries a ticketing URL, a seat map answer holds an Auditorium's Seats and
+nothing about the Showtime they belong to, and a result cannot *name* its own listing. It can
+carry one. `SeatGroupResult.terms` holds six fields: the Movie, the date and the area that find
+the Showtime again, and the party size, the accessible-seating flag and the Seat Profile that
+rank the alternatives on the yardstick the search ranked on. There is no second argument, so
+there is no way to verify a result against a Query it did not come from.
+
+**The terms that only narrowed the listing are not among those six, and that is the point.**
+`openCatalogue` narrows what it answers to the terms it is handed, so a verification handed a
+Format, a Theater or a time window the Showtime no longer satisfies would find nothing in
+`bookable` and answer `taken` with no alternatives and no seat map read at all: a wrong answer
+that fails safe, which is the kind that lasts. `ranking.ts` copies the six onto a result field by
+field rather than keeping the object the search was called with, so a listing read cannot be
+narrowed a second time, and a test holds the key set of `terms` to exactly those six.
 
 **It asks the Source for the Auditorium and nothing else.** The listing is read through the
 same on-device cache a search reads, so a hand-off moments after a search spends no request
