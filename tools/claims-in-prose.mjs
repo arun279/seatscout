@@ -76,15 +76,7 @@ const CLAIMS = [
   },
   {
     adr: "0002-computation-on-the-client.md",
-    says: /Three files under `packages\/core` name the proxy's own header constants/,
-    holds: "files under packages/core naming the proxy's header dialect",
-    pattern: "x-upstream",
-    paths: [CORE],
-    files: 3,
-  },
-  {
-    adr: "0002-computation-on-the-client.md",
-    says: /forwards the request upstream with the caller's own session cookies/,
+    says: /forwards the request upstream, and streams/,
     holds: "the header allowlist the proxy forwards",
     pattern: 'const FORWARDED = ["accept", "content-type", "user-agent"]',
     paths: ["apps/proxy/src/index.ts"],
