@@ -1,0 +1,2 @@
+const area = inject("liveArea");
+const showtime = inject("liveShowtime");

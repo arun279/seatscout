@@ -8,7 +8,9 @@ import {
 } from "./report.js";
 import type { Run } from "./shell.js";
 
-export const measureWith = (run: Run) => {
+export const RATCHET = ".footprint.json";
+
+export const measureWith = (run: Run, read: (path: string) => string) => {
   const output = (command: string, args: readonly string[]): string => {
     const completed = run(command, args);
     if (!completed.ok) {
@@ -45,6 +47,15 @@ export const measureWith = (run: Run) => {
     return weighed;
   };
 
+  const commentRatchet = (): number => {
+    const configured = JSON.parse(read(RATCHET)).comments;
+    if (typeof configured !== "number")
+      throw new Error(
+        `${RATCHET} sets no number of comments to hold the tree to:\n${JSON.stringify(configured)}`,
+      );
+    return configured;
+  };
+
   return (baseRef: string, headRef: string): Measurement => {
     const head = git("rev-parse", headRef);
     const base = git("merge-base", baseRef, head);
@@ -53,6 +64,7 @@ export const measureWith = (run: Run) => {
       head: sideOf(head),
       diff: diffOf(base, head),
       bundles: bundles(),
+      commentRatchet: commentRatchet(),
     };
   };
 };

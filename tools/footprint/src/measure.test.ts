@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { measureWith } from "./measure.js";
+import { measureWith, RATCHET } from "./measure.js";
 import type { Completed, Run } from "./shell.js";
 
 interface Command {
@@ -45,6 +45,18 @@ const recorder = (
   return { run, commands };
 };
 
+const reading = (ratchet: string = JSON.stringify({ comments: 0 })) => {
+  const asked: string[] = [];
+  const read = (path: string) => {
+    asked.push(path);
+    return ratchet;
+  };
+  return { read, asked };
+};
+
+const measuring = (run: Run, ratchet?: string) =>
+  measureWith(run, reading(ratchet).read);
+
 const lines = (commands: readonly Command[]): readonly string[] =>
   commands.map(({ command, args }) => [command, ...args].join(" "));
 
@@ -54,10 +66,14 @@ const sizeLimitExitingNonZero = (stdout: string): Run =>
   ).run;
 
 describe("measuring a change", () => {
+  it("reads the comment ratchet out of the file that holds it", () => {
+    expect(RATCHET).toBe(".footprint.json");
+  });
+
   it("resolves the head first, then the merge base against it", () => {
     const { run, commands } = recorder();
 
-    measureWith(run)("origin/main", "HEAD");
+    measuring(run)("origin/main", "HEAD");
 
     expect(lines(commands).slice(0, 2)).toStrictEqual([
       "git rev-parse HEAD",
@@ -68,7 +84,7 @@ describe("measuring a change", () => {
   it("counts each side and the diff between them", () => {
     const { run, commands } = recorder();
 
-    measureWith(run)("origin/main", "HEAD");
+    measuring(run)("origin/main", "HEAD");
 
     expect(lines(commands)).toContain(
       "cloc --git base-sha --by-file --json --hide-rate --quiet",
@@ -84,7 +100,7 @@ describe("measuring a change", () => {
   it("asks size-limit for its verdict as machine readable output", () => {
     const { run, commands } = recorder();
 
-    measureWith(run)("origin/main", "HEAD");
+    measuring(run)("origin/main", "HEAD");
 
     expect(lines(commands)).toContain("pnpm exec size-limit --json");
   });
@@ -92,7 +108,7 @@ describe("measuring a change", () => {
   it("carries the counter's numbers into the measurement", () => {
     const { run } = recorder();
 
-    const measurement = measureWith(run)("origin/main", "HEAD");
+    const measurement = measuring(run)("origin/main", "HEAD");
 
     expect(measurement.base.ref).toBe("base-sha");
     expect(measurement.head.ref).toBe("head-sha");
@@ -114,7 +130,7 @@ describe("measuring a change", () => {
         : undefined,
     );
 
-    expect(() => measureWith(run)("origin/main", "HEAD")).toThrow(
+    expect(() => measuring(run)("origin/main", "HEAD")).toThrow(
       "git rev-parse HEAD\nunknown revision",
     );
   });
@@ -126,7 +142,7 @@ describe("measuring a change", () => {
       ]),
     );
 
-    expect(measureWith(run)("origin/main", "HEAD").bundles).toStrictEqual([
+    expect(measuring(run)("origin/main", "HEAD").bundles).toStrictEqual([
       { name: "web app", size: 90, sizeLimit: 15, passed: false },
     ]);
   });
@@ -136,7 +152,7 @@ describe("measuring a change", () => {
       JSON.stringify([{ name: "web app", passed: true, size: 0 }]),
     );
 
-    expect(() => measureWith(run)("origin/main", "HEAD")).toThrow(
+    expect(() => measuring(run)("origin/main", "HEAD")).toThrow(
       'size-limit weighed no bundle against a ratchet:\n[{"name":"web app","passed":true,"size":0}]',
     );
   });
@@ -149,7 +165,7 @@ describe("measuring a change", () => {
       ]),
     );
 
-    expect(() => measureWith(run)("origin/main", "HEAD")).toThrow(
+    expect(() => measuring(run)("origin/main", "HEAD")).toThrow(
       "size-limit weighed no bundle against a ratchet",
     );
   });
@@ -157,7 +173,7 @@ describe("measuring a change", () => {
   it("refuses a run that weighed no bundle at all", () => {
     const run = sizeLimitExitingNonZero("[]");
 
-    expect(() => measureWith(run)("origin/main", "HEAD")).toThrow(
+    expect(() => measuring(run)("origin/main", "HEAD")).toThrow(
       "size-limit weighed no bundle against a ratchet",
     );
   });
@@ -167,8 +183,37 @@ describe("measuring a change", () => {
       '{"error":"SizeLimitError: config is empty"}',
     );
 
-    expect(() => measureWith(run)("origin/main", "HEAD")).toThrow(
+    expect(() => measuring(run)("origin/main", "HEAD")).toThrow(
       "size-limit weighed no bundle against a ratchet",
     );
+  });
+
+  it("reads the number of comments the tree is held to", () => {
+    const { run } = recorder();
+    const { read, asked } = reading(JSON.stringify({ comments: 7 }));
+
+    expect(measureWith(run, read)("origin/main", "HEAD").commentRatchet).toBe(
+      7,
+    );
+    expect(asked).toStrictEqual([RATCHET]);
+  });
+
+  it("refuses a ratchet file that sets no number of comments", () => {
+    const { run } = recorder();
+
+    expect(() =>
+      measuring(run, JSON.stringify({}))("origin/main", "HEAD"),
+    ).toThrow(`${RATCHET} sets no number of comments to hold the tree to`);
+  });
+
+  it("refuses a comment ratchet that is not a number", () => {
+    const { run } = recorder();
+
+    expect(() =>
+      measuring(run, JSON.stringify({ comments: "none" }))(
+        "origin/main",
+        "HEAD",
+      ),
+    ).toThrow(`${RATCHET} sets no number of comments to hold the tree to`);
   });
 });

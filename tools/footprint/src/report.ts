@@ -28,6 +28,7 @@ export interface Measurement {
   readonly head: Side;
   readonly diff: Diff;
   readonly bundles: readonly Bundle[];
+  readonly commentRatchet: number;
 }
 
 export interface Report {
@@ -36,28 +37,39 @@ export interface Report {
 }
 
 const SOURCE = /\.[cm]?[jt]sx?$/;
+const PROSE = /\.mdx?$/;
+const DATA = /\.(html|jsonc?|sh|toml|txt|webmanifest|ya?ml)$/;
 const TEST = /(^|\/)tests?\/|\.(test|spec)\./;
 const APPLICATION = /^(apps|packages)\//;
 const NOT_A_FILE = new Set(["header", "SUM"]);
 
-type Bucket = "product" | "test" | "tooling" | "other";
+type Bucket = "product" | "test" | "tooling" | "prose" | "data";
 type Kind = keyof Counts;
-type Split = Record<Bucket, Record<Kind, number>>;
+type Volume = Counts & { readonly files: number };
+type Split = Record<Bucket, { code: number; comment: number; files: number }>;
 type Row = readonly [string, Bucket, Kind];
 
 const AUTHORED: readonly Bucket[] = ["product", "test", "tooling"];
+const EVERY: readonly Bucket[] = [...AUTHORED, "prose", "data"];
 
 const COMMENT_REMEDY =
-  "Either make the code say what the comment would have said, or raise the baseline by a reviewed change to ADR 6.";
+  "Either make the code say what the comment would have said, or raise the ratchet in this diff, where a reviewer sees it.";
+
+const COUNTED_REMEDY =
+  "A file leaves the measurement when its path stops matching how this report sorts it. Either put it back, or sort it in tools/footprint/src/report.ts, where a reviewer sees which side of the count it landed on.";
 
 const BUNDLE_REMEDY =
   "Either make the bundle smaller, or raise the ratchet in this diff, where a reviewer sees it.";
+
+const PROSE_NOTE =
+  "Prose is reported and not gated. Explanation that leaves a comment and lands in\nmarkdown keeps the comment count flat, so the two are read together.";
 
 const LABELS: Record<Bucket, string> = {
   product: "Product",
   test: "Test",
   tooling: "Tooling",
-  other: "Other",
+  prose: "Prose",
+  data: "Data",
 };
 
 const rowsFor = (buckets: readonly Bucket[]): readonly Row[] =>
@@ -73,36 +85,65 @@ export const filesOf = <T>(
     Object.entries(report).filter(([key]) => !NOT_A_FILE.has(key)),
   );
 
-const bucketOf = (path: string): Bucket => {
-  if (!SOURCE.test(path)) return "other";
+const bucketOf = (path: string): Bucket | null => {
+  if (PROSE.test(path)) return "prose";
+  if (DATA.test(path)) return "data";
+  if (!SOURCE.test(path)) return null;
   if (TEST.test(path)) return "test";
   return APPLICATION.test(path) ? "product" : "tooling";
 };
 
+const unsorted = (tree: Tree): readonly string[] =>
+  Object.keys(tree)
+    .filter((path) => bucketOf(path) === null)
+    .sort();
+
 const split = (tree: Tree): Split => {
   const totals: Split = {
-    product: { code: 0, comment: 0 },
-    test: { code: 0, comment: 0 },
-    tooling: { code: 0, comment: 0 },
-    other: { code: 0, comment: 0 },
+    product: { code: 0, comment: 0, files: 0 },
+    test: { code: 0, comment: 0, files: 0 },
+    tooling: { code: 0, comment: 0, files: 0 },
+    prose: { code: 0, comment: 0, files: 0 },
+    data: { code: 0, comment: 0, files: 0 },
   };
   for (const [path, counts] of Object.entries(tree)) {
-    const bucket = totals[bucketOf(path)];
+    const sorted = bucketOf(path);
+    if (sorted === null) continue;
+    const bucket = totals[sorted];
     bucket.code += counts.code;
     bucket.comment += counts.comment;
+    bucket.files += 1;
   }
   return totals;
 };
 
-const authored = (tree: Tree): Counts => {
-  const totals = split(tree);
-  const sum = (kind: Kind) =>
+const authored = (totals: Split): Volume => {
+  const sum = (kind: keyof Volume) =>
     AUTHORED.reduce((total, bucket) => total + totals[bucket][kind], 0);
-  return { code: sum("code"), comment: sum("comment") };
+  return { code: sum("code"), comment: sum("comment"), files: sum("files") };
 };
 
-const perHundred = (counts: Counts): string =>
-  (counts.code === 0 ? 0 : (counts.comment / counts.code) * 100).toFixed(2);
+const emptied = (base: Split, head: Split): readonly Bucket[] =>
+  AUTHORED.filter(
+    (bucket) => base[bucket].files > 0 && head[bucket].files === 0,
+  );
+
+const COUNTED =
+  "Every file on both sides is sorted into one of these, and every bucket the merge base\nheld still holds a file. Holds.";
+
+const uncounted = (
+  base: Split,
+  head: Split,
+  strays: readonly string[],
+): string | null => {
+  if (strays.length > 0)
+    return `${strays.length} file(s) match nothing this report sorts by, so their lines are in no column: ${strays.join(", ")}. ${COUNTED_REMEDY}`;
+  if (authored(head).files === 0)
+    return `Nothing under ${AUTHORED.join(", ")} was counted at all, so there is no measurement to report. ${COUNTED_REMEDY}`;
+  const gone = emptied(base, head);
+  if (gone.length === 0) return null;
+  return `${gone.map((bucket) => LABELS[bucket]).join(", ")} held files at the merge base and holds none here. ${COUNTED_REMEDY}`;
+};
 
 const table = (
   headings: readonly string[],
@@ -124,32 +165,38 @@ const lineRows = (diff: Diff): readonly (readonly string[])[] => {
       label,
       ...columns.map((column) => String(column[bucket][kind])),
     ]);
-  const authoredTotal = columns.map((column) =>
-    String(
-      AUTHORED.reduce(
-        (total, bucket) => total + column[bucket].code + column[bucket].comment,
-        0,
-      ),
-    ),
-  );
+  const authoredTotal = columns.map((column) => {
+    const total = authored(column);
+    return String(total.code + total.comment);
+  });
   return [
     ...cellsFor(rowsFor(AUTHORED)),
     ["Authored total", ...authoredTotal],
-    ...cellsFor(rowsFor(["other"])),
+    ...cellsFor(rowsFor(["prose", "data"])),
   ];
 };
 
 export const render = (measurement: Measurement): Report => {
-  const base = authored(measurement.base.tree);
-  const head = authored(measurement.head.tree);
-  const withinCommentLoad =
-    head.comment * base.code <= base.comment * head.code;
+  const base = split(measurement.base.tree);
+  const head = split(measurement.head.tree);
+  const withinCommentRatchet =
+    authored(head).comment <= measurement.commentRatchet;
+  const missed = uncounted(base, head, [
+    ...unsorted(measurement.base.tree),
+    ...unsorted(measurement.head.tree),
+  ]);
   const withinRatchet = measurement.bundles.every((bundle) => bundle.passed);
   const verdict = (within: boolean, remedy: string) =>
     within ? "Within it." : `Above it. ${remedy}`;
+  const volumes = (label: string, totals: Split) => [
+    label,
+    String(authored(totals).code),
+    String(authored(totals).comment),
+    String(totals.prose.code),
+  ];
 
   return {
-    passed: withinCommentLoad && withinRatchet,
+    passed: withinCommentRatchet && missed === null && withinRatchet,
     markdown: [
       "### Code footprint",
       "",
@@ -163,24 +210,26 @@ export const render = (measurement: Measurement): Report => {
       "### Comment load",
       "",
       ...table(
-        ["Source", "Code", "Comments", "Per 100 lines"],
-        [
-          [
-            "Merge base",
-            String(base.code),
-            String(base.comment),
-            perHundred(base),
-          ],
-          [
-            "This branch",
-            String(head.code),
-            String(head.comment),
-            perHundred(head),
-          ],
-        ],
+        ["Source", "Code", "Comments", "Prose"],
+        [volumes("Merge base", base), volumes("This branch", head)],
       ),
       "",
-      `Comment load may not exceed the merge base. ${verdict(withinCommentLoad, COMMENT_REMEDY)}`,
+      `Comments may not exceed the ratchet in \`.footprint.json\`, which is ${measurement.commentRatchet}. ${verdict(withinCommentRatchet, COMMENT_REMEDY)}`,
+      "",
+      PROSE_NOTE,
+      "",
+      "### What was counted",
+      "",
+      ...table(
+        ["Files", "Merge base", "This branch"],
+        EVERY.map((bucket) => [
+          LABELS[bucket],
+          String(base[bucket].files),
+          String(head[bucket].files),
+        ]),
+      ),
+      "",
+      missed === null ? COUNTED : missed,
       "",
       "### Bundle size",
       "",

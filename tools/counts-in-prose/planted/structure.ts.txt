@@ -1,0 +1,7 @@
+export interface PlantedSeat {
+  readonly row: string;
+  readonly number: number;
+  readonly status: string;
+}
+
+export type PlantedGap = "narrow" | "wide" | "aisle";

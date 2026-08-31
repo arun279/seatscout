@@ -12,7 +12,7 @@ pre-commit:
       run: pnpm exec cspell lint --no-must-find-files {staged_files}
     cache-storage:
       glob: "apps/**"
-      run: node tools/no-cache-storage-reach.mjs
+      run: node tools/no-cache-storage-reach/src/index.ts
     secrets:
       run: gitleaks git --pre-commit --staged --no-banner --redact --verbose
       fail_text: Install gitleaks, or run git commit --no-verify to skip the scan

@@ -2,11 +2,14 @@ import { describe, expect, it } from "vitest";
 import { main, type Measure } from "./main.js";
 import type { Bundle, Measurement } from "./report.js";
 
+const TREE = { "packages/core/src/seat.ts": { code: 40, comment: 0 } };
+
 const measurement = (bundle: Bundle): Measurement => ({
-  base: { ref: "base-sha", tree: {} },
-  head: { ref: "head-sha", tree: {} },
+  base: { ref: "base-sha", tree: TREE },
+  head: { ref: "head-sha", tree: TREE },
   diff: { added: {}, removed: {}, modified: {} },
   bundles: [bundle],
+  commentRatchet: 0,
 });
 
 const WITHIN: Bundle = {

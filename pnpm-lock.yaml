@@ -101,7 +101,31 @@ importers:
         specifier: 8.4.2
         version: 8.4.2
 
+  tools/counts-in-prose:
+    devDependencies:
+      '@types/node':
+        specifier: 24.13.3
+        version: 24.13.3
+
   tools/footprint:
+    devDependencies:
+      '@types/node':
+        specifier: 24.13.3
+        version: 24.13.3
+
+  tools/live-injections:
+    devDependencies:
+      '@types/node':
+        specifier: 24.13.3
+        version: 24.13.3
+
+  tools/no-cache-storage-reach:
+    devDependencies:
+      '@types/node':
+        specifier: 24.13.3
+        version: 24.13.3
+
+  tools/no-empty-mutation-run:
     devDependencies:
       '@types/node':
         specifier: 24.13.3

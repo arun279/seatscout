@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "2.0",
+  "thresholds": { "high": 100, "low": 100, "break": 100 },
+  "files": {
+    "packages/core/src/index.ts": {
+      "language": "typescript",
+      "source": "export {};\n",
+      "mutants": [
+        { "id": "0", "mutatorName": "BlockStatement", "status": "Ignored" },
+        { "id": "1", "mutatorName": "StringLiteral", "status": "CompileError" }
+      ]
+    }
+  }
+}

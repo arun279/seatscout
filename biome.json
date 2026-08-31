@@ -26,7 +26,8 @@
         "useNodejsImportProtocol": "error"
       },
       "suspicious": {
-        "noOctalEscape": "error"
+        "noOctalEscape": "error",
+        "noTsIgnore": "error"
       },
       "correctness": {
         "noUnusedVariables": "error"
