@@ -1,6 +1,5 @@
 export interface FetchResponse {
   readonly status: number;
-  readonly headers: { readonly get: (name: string) => string | null };
   readonly text: () => Promise<string>;
 }
 

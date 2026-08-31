@@ -8,9 +8,7 @@ import {
 import { type SourcePolicy, openSource } from "./aggregator.js";
 import type { Source } from "./port.js";
 
-const BOOTSTRAP = "/napi/preferences/themes";
 const SEAT_MAP = "/napi/seatMap/561748075";
-const SESSION = "userlocation=here; usercountry=there";
 
 interface Rig {
   readonly fetch: FakeUpstream;
@@ -23,18 +21,7 @@ const rig = (
   script: Omit<UpstreamScript, "seed">,
   policy?: SourcePolicy,
 ): Rig => {
-  const fetch = fakeUpstream({
-    seed: 4,
-    ...script,
-    routes: {
-      [BOOTSTRAP]: {
-        status: 200,
-        headers: { "X-Upstream-Set-Cookie": SESSION },
-        body: "{}",
-      },
-      ...script.routes,
-    },
-  });
+  const fetch = fakeUpstream({ seed: 4, ...script });
   const waits: number[] = [];
   let clock = 1000;
   return {
@@ -60,7 +47,7 @@ const pathsOf = (fetch: FakeUpstream) =>
   fetch.requests.map((request) => request.path);
 
 describe("the aggregating source", () => {
-  it("opens a session, then reads the route it was asked for", async () => {
+  it("reads the route it was asked for, and asks for nothing else first", async () => {
     const { fetch, source } = rig({});
     const [capture] = [...nearbyTheatersCaptures.values()];
     const reading = await source.theatersNear("75006");
@@ -77,19 +64,10 @@ describe("the aggregating source", () => {
     });
     expect(fetch.requests).toEqual([
       {
-        path: BOOTSTRAP,
-        method: "POST",
-        cache: "no-store",
-        headers: {
-          "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-        },
-        body: "_expiry=1000",
-      },
-      {
         path: "/napi/nearbyTheaters?zipCode=75006&limit=25",
         method: "GET",
         cache: "no-store",
-        headers: { "x-upstream-cookie": SESSION },
+        headers: {},
         body: null,
       },
     ]);
@@ -100,12 +78,12 @@ describe("the aggregating source", () => {
     const reading = await source.showtimesFor("245569", "2026-08-28", "75006");
 
     expect(reading.ok).toBe(true);
-    expect(pathsOf(fetch)[1]).toBe(
+    expect(pathsOf(fetch)[0]).toBe(
       "/napi/theaterShowtimeGroupings/245569/2026-08-28?isdesktop=true&isDesktopMOP=true&zip=75006&partnerRestrictedTicketing=",
     );
   });
 
-  it("refuses a cached answer on every route it reads, the session included", async () => {
+  it("refuses a cached answer on every route it reads", async () => {
     const { fetch, source } = rig({});
     await source.theatersNear("75006");
     await source.showtimesFor("245569", "2026-08-28", "75006");
@@ -115,25 +93,7 @@ describe("the aggregating source", () => {
       "no-store",
       "no-store",
       "no-store",
-      "no-store",
     ]);
-  });
-
-  it("opens one session for a whole fan-out rather than one for each request", async () => {
-    const { fetch, source } = rig({});
-    const readings = await Promise.all(
-      ["561748075", "561882799", "561565820", "561462741"].map((showtime) =>
-        source.seatsFor(showtime),
-      ),
-    );
-
-    expect(readings.map((reading) => reading.ok)).toEqual([
-      true,
-      true,
-      true,
-      true,
-    ]);
-    expect(pathsOf(fetch).filter((path) => path === BOOTSTRAP)).toHaveLength(1);
   });
 
   it("names each upstream refusal in domain terms and spends no retry on it", async () => {
@@ -146,24 +106,11 @@ describe("the aggregating source", () => {
     );
 
     expect(reasons).toEqual(["noSeatMap", "started", "soldOut"]);
-    expect(fetch.requests).toHaveLength(4);
+    expect(fetch.requests).toHaveLength(3);
   });
 
-  it("refreshes the session once when a request is rejected, and the read then succeeds", async () => {
-    const { fetch, source, waits } = rig({ sequences: { [SEAT_MAP]: [403] } });
-    const reading = await source.seatsFor("561748075");
-
-    expect(reading.ok).toBe(true);
-    expect(reading.attempts).toBe(2);
-    expect(pathsOf(fetch)).toEqual([BOOTSTRAP, SEAT_MAP, BOOTSTRAP, SEAT_MAP]);
-    expect(fetch.requests[3]?.headers).toEqual({
-      "x-upstream-cookie": SESSION,
-    });
-    expect(waits).toEqual([]);
-  });
-
-  it("refreshes no second time when the session is rejected again", async () => {
-    const { fetch, source } = rig({
+  it("reads a rejection as a refusal like any other rather than as a session to re-open", async () => {
+    const { fetch, source, waits } = rig({
       sequences: { [SEAT_MAP]: [403, 403, 403] },
     });
     const reading = await source.seatsFor("561748075");
@@ -174,7 +121,8 @@ describe("the aggregating source", () => {
       fetchedAt: 1000,
       attempts: 3,
     });
-    expect(pathsOf(fetch).filter((path) => path === BOOTSTRAP)).toHaveLength(2);
+    expect(pathsOf(fetch)).toEqual([SEAT_MAP, SEAT_MAP, SEAT_MAP]);
+    expect(waits).toEqual([250, 500]);
   });
 
   it("exhausts retry over a growing backoff and says so rather than reading nothing", async () => {
@@ -274,49 +222,9 @@ describe("the aggregating source", () => {
 
     await source.theatersNear("75006&limit=1");
 
-    expect(pathsOf(fetch)[1]).toBe(
+    expect(pathsOf(fetch)[0]).toBe(
       "/napi/nearbyTheaters?zipCode=75006%26limit%3D1&limit=25",
     );
-  });
-
-  it("replaces the session whenever a read returns a new one", async () => {
-    const { fetch, source } = rig({
-      routes: {
-        "/napi/nearbyTheaters": {
-          status: 200,
-          headers: { "x-upstream-set-cookie": "userlocation=moved" },
-          body: '{"theaters":[]}',
-        },
-      },
-    });
-
-    await source.theatersNear("75006");
-    await source.seatsFor("561748075");
-    await source.seatsFor("561565820");
-
-    expect(fetch.requests[1]?.headers).toEqual({
-      "x-upstream-cookie": SESSION,
-    });
-    expect(fetch.requests[2]?.headers).toEqual({
-      "x-upstream-cookie": "userlocation=moved",
-    });
-    expect(fetch.requests[3]?.headers).toEqual({
-      "x-upstream-cookie": "userlocation=moved",
-    });
-  });
-
-  it("fails the read when the bootstrap is refused rather than reading on regardless", async () => {
-    const { fetch, source } = rig({
-      sequences: { [BOOTSTRAP]: [500, 500, 500] },
-    });
-
-    expect(await source.seatsFor("561748075")).toEqual({
-      ok: false,
-      reason: "unreachable",
-      fetchedAt: 1000,
-      attempts: 3,
-    });
-    expect(pathsOf(fetch)).toEqual([BOOTSTRAP, BOOTSTRAP, BOOTSTRAP]);
   });
 
   it("opens the circuit on the default policy's own threshold and break", async () => {
@@ -363,36 +271,5 @@ describe("the aggregating source", () => {
 
     expect(reading.attempts).toBe(2);
     expect(waits).toEqual([20]);
-  });
-
-  it("reads without a session header when the bootstrap opens no session, and asks once", async () => {
-    const { fetch, source } = rig({
-      routes: { [BOOTSTRAP]: { status: 200, body: "{}" } },
-    });
-    const reading = await source.seatsFor("561748075");
-    await source.seatsFor("561882799");
-
-    expect(reading.ok).toBe(true);
-    expect(fetch.requests[1]?.headers).toEqual({});
-    expect(pathsOf(fetch).filter((path) => path === BOOTSTRAP)).toHaveLength(1);
-  });
-
-  it("fails the read when no session can be opened rather than reading on regardless", async () => {
-    const fetch = fakeUpstream({ seed: 4 });
-    const source = openSource({
-      fetch,
-      now: () => 1000,
-      wait: () => Promise.resolve(),
-      random: () => 1,
-    });
-    const reading = await source.theatersNear("75006");
-
-    expect(reading).toEqual({
-      ok: false,
-      reason: "unreachable",
-      fetchedAt: 1000,
-      attempts: 3,
-    });
-    expect(pathsOf(fetch)).toEqual([BOOTSTRAP, BOOTSTRAP, BOOTSTRAP]);
   });
 });

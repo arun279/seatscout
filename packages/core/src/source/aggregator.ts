@@ -5,10 +5,6 @@ import { catalogueFrom, theatersFrom } from "./catalogue.js";
 import type { Reading, Source, Unreadable } from "./port.js";
 import { seatsFrom } from "./seat-map.js";
 
-const BOOTSTRAP = "/napi/preferences/themes";
-const BOOTSTRAP_FORM = "application/x-www-form-urlencoded; charset=UTF-8";
-const UPSTREAM_COOKIE = "x-upstream-cookie";
-const UPSTREAM_SET_COOKIE = "x-upstream-set-cookie";
 const THEATERS_ASKED_FOR = 25;
 
 type Refusals = Readonly<Record<number, Unreadable>>;
@@ -43,61 +39,17 @@ interface Answer {
   readonly body: string;
 }
 
-const rejected = (answer: Answer | null) =>
-  answer !== null && answer.status === 403;
-
 export const openSource = (deps: SourceDependencies): Source => {
   const policy = deps.policy ?? defaultPolicy;
   const breaker = circuitBreaker(policy, deps.now);
-  let session: string | null = null;
-  let sessionOpened = false;
-  let openingSession: Promise<void> | null = null;
-
-  const bootstrap = async () => {
-    const response = await deps.fetch(BOOTSTRAP, {
-      cache: "no-store",
-      method: "POST",
-      headers: { "content-type": BOOTSTRAP_FORM },
-      body: `_expiry=${deps.now()}`,
-    });
-    await response.text();
-    if (response.status !== 200) return;
-    session = response.headers.get(UPSTREAM_SET_COOKIE);
-    sessionOpened = true;
-  };
-
-  const held = async (): Promise<string | null> => {
-    if (sessionOpened) return session;
-    if (openingSession === null)
-      openingSession = bootstrap().finally(() => {
-        openingSession = null;
-      });
-    await openingSession;
-    return session;
-  };
 
   const send = async (path: string): Promise<Answer | null> => {
     try {
-      const carried = await held();
-      if (!sessionOpened) return null;
-      const response = await deps.fetch(path, {
-        cache: "no-store",
-        headers: carried === null ? {} : { [UPSTREAM_COOKIE]: carried },
-      });
-      const reopened = response.headers.get(UPSTREAM_SET_COOKIE);
-      if (reopened !== null) session = reopened;
+      const response = await deps.fetch(path, { cache: "no-store" });
       return { status: response.status, body: await response.text() };
     } catch {
       return null;
     }
-  };
-
-  const dropRejectedSession = (answer: Answer | null, refreshable: boolean) => {
-    if (refreshable && rejected(answer)) {
-      sessionOpened = false;
-      return true;
-    }
-    return false;
   };
 
   const unreachable = (attempts: number): Reading<never> => ({
@@ -130,7 +82,6 @@ export const openSource = (deps: SourceDependencies): Source => {
     translate: Translate<Payload>,
     refusals: Refusals = {},
   ) => {
-    let refreshable = true;
     for (let attempt = 1; attempt <= policy.attempts; attempt += 1) {
       if (breaker.refuses()) return unreachable(attempt - 1);
       const answer = await send(path);
@@ -139,8 +90,7 @@ export const openSource = (deps: SourceDependencies): Source => {
         breaker.succeeded();
         return reading;
       }
-      if (dropRejectedSession(answer, refreshable)) refreshable = false;
-      else if (attempt < policy.attempts)
+      if (attempt < policy.attempts)
         await deps.wait(delayAfter(attempt, policy.firstDelayMs, deps.random));
     }
     breaker.failed();

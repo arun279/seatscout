@@ -56,12 +56,6 @@ describe("the fake upstream", () => {
     expect(new Set(routes).size).toBe(routes.length);
   });
 
-  it("carries no response header, because the capture recorded none", async () => {
-    const response = await fakeUpstream({ seed: 1 })("/napi/nearbyTheaters");
-
-    expect(response.headers.get("x-upstream-set-cookie")).toBeNull();
-  });
-
   it("refuses a route the corpus never recorded", async () => {
     const fetch = fakeUpstream({ seed: 1 });
 
@@ -156,24 +150,16 @@ describe("the fake upstream", () => {
     const fetch = fakeUpstream({
       seed: 1,
       routes: {
-        "/napi/preferences/themes": {
-          status: 201,
-          headers: { "X-Upstream-Set-Cookie": "userlocation=here" },
-          body: '{"ok":true}',
-        },
-        "/napi/preferences/plain": { status: 204 },
+        "/napi/scripted": { status: 201, body: '{"ok":true}' },
+        "/napi/plain": { status: 204 },
       },
     });
-    const scripted = await fetch("/napi/preferences/themes");
-    const plain = await fetch("/napi/preferences/plain?ignored=1");
+    const scripted = await fetch("/napi/scripted");
+    const plain = await fetch("/napi/plain?ignored=1");
 
     expect(scripted.status).toBe(201);
-    expect(scripted.headers.get("x-upstream-set-cookie")).toBe(
-      "userlocation=here",
-    );
     expect(await scripted.text()).toBe('{"ok":true}');
     expect(plain.status).toBe(204);
-    expect(plain.headers.get("X-Upstream-Set-Cookie")).toBeNull();
     expect(await plain.text()).toBe("");
   });
 
@@ -217,22 +203,15 @@ describe("the fake upstream", () => {
     ).toEqual([403, 500]);
   });
 
-  it("strips the body and the headers a faulted route would otherwise have carried", async () => {
+  it("strips the body a faulted route would otherwise have carried", async () => {
     const fetch = fakeUpstream({
       seed: 1,
-      routes: {
-        "/napi/preferences/themes": {
-          status: 200,
-          headers: { "x-upstream-set-cookie": "userlocation=here" },
-          body: '{"ok":true}',
-        },
-      },
-      sequences: { "/napi/preferences/themes": [500] },
+      routes: { "/napi/scripted": { status: 200, body: '{"ok":true}' } },
+      sequences: { "/napi/scripted": [500] },
     });
-    const response = await fetch("/napi/preferences/themes");
+    const response = await fetch("/napi/scripted");
 
     expect(response.status).toBe(500);
-    expect(response.headers.get("x-upstream-set-cookie")).toBeNull();
     expect(await response.text()).toBe("");
   });
 
@@ -240,11 +219,11 @@ describe("the fake upstream", () => {
     const fetch = fakeUpstream({ seed: 1 });
 
     await fetch("/napi/nearbyTheaters?zipCode=75006&limit=25");
-    await fetch("/napi/preferences/themes", {
+    await fetch("/napi/unrecorded", {
       cache: "no-store",
       method: "POST",
-      headers: { "Content-Type": "text/plain", "X-Upstream-Cookie": "a=b" },
-      body: "_expiry=1",
+      headers: { "Content-Type": "text/plain", Accept: "text/plain" },
+      body: "asked=1",
     }).catch(() => undefined);
 
     expect(fetch.requests).toEqual([
@@ -256,11 +235,11 @@ describe("the fake upstream", () => {
         body: null,
       },
       {
-        path: "/napi/preferences/themes",
+        path: "/napi/unrecorded",
         method: "POST",
         cache: "no-store",
-        headers: { "content-type": "text/plain", "x-upstream-cookie": "a=b" },
-        body: "_expiry=1",
+        headers: { "content-type": "text/plain", accept: "text/plain" },
+        body: "asked=1",
       },
     ]);
   });
