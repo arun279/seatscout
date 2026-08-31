@@ -4,7 +4,6 @@ export {
   type Catalogue,
   narrowed,
   type Showtime,
-  type ShowtimeId,
   type ShowtimeTerms,
   type TicketingUrl,
   type UnbookableReason,

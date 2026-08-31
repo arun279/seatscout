@@ -13,23 +13,22 @@ declare module "vitest" {
       readonly headers: Readonly<Record<string, string>>;
     };
   }
+  interface TaskMeta {
+    contract?: readonly string[];
+  }
 }
 
 const SEAT_MAP = "/napi/seatMap/";
 const CONCURRENCY = 24;
 const MAPS_MEASURED = 48;
-const BOOTSTRAP_MS = 209;
 const LISTING_MS = 375;
 const AT_TWENTY_FOUR_MS = 670;
 const AT_TWELVE_MS = 960;
 const READING_LIMIT_MS = 120_000;
 
-const reaching = (
-  origin: string,
-  headers: Readonly<Record<string, string>>,
-) => {
-  let session = "";
-  return async (
+const reaching =
+  (origin: string, headers: Readonly<Record<string, string>>) =>
+  (
     path: string,
     init?: {
       readonly cache?: "no-store";
@@ -37,24 +36,13 @@ const reaching = (
       readonly headers?: Readonly<Record<string, string>>;
       readonly body?: string;
     },
-  ) => {
-    const response = await fetch(`${origin}${path}`, {
+  ) =>
+    fetch(`${origin}${path}`, {
       cache: init?.cache,
       method: init?.method,
-      headers: {
-        ...headers,
-        ...init?.headers,
-        ...(session === "" ? {} : { Cookie: session }),
-      },
+      headers: { ...headers, ...init?.headers },
       body: init?.body,
     });
-    const opened = response.headers
-      .getSetCookie()
-      .map((raw) => raw.split(";")[0] ?? raw);
-    if (opened.length > 0) session = opened.join("; ");
-    return response;
-  };
-};
 
 const sourceOn = (reach: ReturnType<typeof reaching>) =>
   openSource({
@@ -86,7 +74,7 @@ const rawly = async (
 describe("a full search against the live Source", () => {
   it("fans out no slower than the recorded baseline, or than the same responses read raw today", {
     timeout: READING_LIMIT_MS,
-  }, async () => {
+  }, async ({ task }) => {
     const live = inject("liveSearch");
     const terms = { movie: live.movie, date: live.date, area: live.area };
     const warm = reaching(live.origin, live.headers);
@@ -112,10 +100,14 @@ describe("a full search against the live Source", () => {
       (raw * AT_TWELVE_MS) / AT_TWENTY_FOUR_MS,
     );
 
+    task.meta.contract = [
+      `a full search over ${maps.length} seat maps ${settled.phase} with ${settled.results.length} ranked results, fanning out in ${fanOut} ms and finishing in ${whole} ms, against a fan-out budget of ${Math.round(allowed)} ms`,
+    ];
+
     expect(settled.phase).toBe("settled");
     expect(settled.results.length).toBeGreaterThan(0);
     expect(maps.length).toBeGreaterThan(0);
     expect(fanOut).toBeLessThan(allowed);
-    expect(whole).toBeLessThan(BOOTSTRAP_MS + LISTING_MS + allowed);
+    expect(whole).toBeLessThan(LISTING_MS + allowed);
   });
 });

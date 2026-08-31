@@ -5,13 +5,6 @@ interface WebStorage {
   readonly setItem: (key: string, value: string) => void;
 }
 
-interface SessionStore {
-  readonly read: () => Promise<string | undefined>;
-  readonly write: (session: string) => Promise<void>;
-}
-
-const SESSION = "session";
-
 const attempted = <Value>(act: () => Value): Value | undefined => {
   try {
     return act();
@@ -41,17 +34,6 @@ const storeOver = (storage: WebStorage): KeyValueStore => ({
   },
 });
 
-const sessionOver = (storage: WebStorage): SessionStore => ({
-  read: async () => storage.getItem(SESSION) ?? undefined,
-  write: async (session) => {
-    attempted(() => storage.setItem(SESSION, session));
-  },
-});
-
 export const browserStore = (
   open: () => WebStorage = () => localStorage,
 ): KeyValueStore => storeOver(deviceStorage(open));
-
-export const browserSession = (
-  open: () => WebStorage = () => localStorage,
-): SessionStore => sessionOver(deviceStorage(open));

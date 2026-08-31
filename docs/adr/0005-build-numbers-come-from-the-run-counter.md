@@ -37,8 +37,13 @@ upper bound on it.
 ## Decision
 
 One resolver turns a trigger and the run counters into a plan or a refusal. Every trigger
-is meant to reach the platform jobs through it, so that no trigger carries release logic of
-its own.
+is to reach the platform jobs through it, so that no trigger carries release logic of its
+own.
+
+No release workflow exists yet, and this decision is the design for one rather than a
+description of one. The resolver and its property tests are built and nothing calls them;
+the workflows that will are a separate piece of work, blocked on account setup no automated
+step can perform. Everything below describes what that workflow must do when it is written.
 
 The build number is the attempt's position in run history: one less than the run number,
 multiplied by a hundred, plus the attempt. Ordering it that way makes it strictly

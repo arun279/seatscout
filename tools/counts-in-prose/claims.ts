@@ -11,6 +11,7 @@ import {
 } from "./src/structures.ts";
 
 const BIOME = "biome.json";
+const LEFTHOOK = "lefthook.yml";
 const PACKAGES = "packages";
 const ADAPTER = "packages/core/src/source/catalogue.ts";
 const CATALOGUE = "packages/core/src/domain/catalogue.ts";
@@ -21,6 +22,17 @@ const PROFILE = "packages/core/src/domain/seat-profile.ts";
 const SEARCH = "packages/client/src/search.ts";
 const SEAT_MAP = "packages/core/src/source/seat-map.ts";
 const VERIFY = "packages/client/src/verify.ts";
+
+const hookCommands = (read: Read, hook: string) => {
+  const lines = read(LEFTHOOK).split("\n");
+  const start = lines.indexOf(`${hook}:`);
+  const rest = lines.slice(start + 1);
+  const under = rest.slice(
+    0,
+    rest.findIndex((line) => /^\S/.test(line)) + 1 || rest.length,
+  );
+  return under.filter((line) => /^ {4}[a-z][\w:-]*:$/.test(line));
+};
 
 const outcomes = (read: Read) =>
   fieldsOf(read, SEARCH, "Coverage").filter((field) => field !== "candidates");
@@ -51,6 +63,36 @@ const SEAT_GROUP_BANDS = `the alternatives of Gap, in ${GROUP}`;
 const UNVERIFIED = `the alternatives of Unverified, in ${VERIFY}`;
 
 export const CLAIMS: readonly Claim[] = [
+  {
+    document: "CONTRIBUTING.md",
+    says: /The pre-commit hook runs (\w+) checks over staged files/,
+    about: `the commands under pre-commit, in ${LEFTHOOK}`,
+    count: (read) => hookCommands(read, "pre-commit").length,
+  },
+  {
+    document: "CONTRIBUTING.md",
+    says: /The pre-push hook runs (\w+) over the whole workspace/,
+    about: `the commands under pre-push, in ${LEFTHOOK}`,
+    count: (read) => hookCommands(read, "pre-push").length,
+  },
+  {
+    document: "CONTEXT.md",
+    says: /The premium presentation type, one of (\w+):/,
+    about: `the alternatives of Format, in ${CATALOGUE}`,
+    count: (read) => alternativesOf(read, CATALOGUE, "Format").length,
+  },
+  {
+    document: "CONTEXT.md",
+    says: /It is the (\w+) above, and it grows in a diff/,
+    about: `the alternatives of Amenity, in ${CATALOGUE}`,
+    count: (read) => alternativesOf(read, CATALOGUE, "Amenity").length,
+  },
+  {
+    document: "CONTRIBUTING.md",
+    says: /`Amenity` is a closed set of (\w+) read from those same labels/,
+    about: `the alternatives of Amenity, in ${CATALOGUE}`,
+    count: (read) => alternativesOf(read, CATALOGUE, "Amenity").length,
+  },
   {
     document: "CONTEXT.md",
     says: /It penalises (\w+) things\./,

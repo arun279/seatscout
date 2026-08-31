@@ -14,7 +14,6 @@ export { seatMapCaptures };
 
 interface ScriptedRoute {
   readonly status: number;
-  readonly headers?: Readonly<Record<string, string>>;
   readonly body?: string;
 }
 
@@ -41,7 +40,6 @@ export type FakeUpstream = Fetch & {
 };
 
 interface Content {
-  readonly headers: Readonly<Record<string, string>>;
   readonly body: () => string;
 }
 
@@ -55,7 +53,7 @@ interface Arrival {
   readonly response: FetchResponse;
 }
 
-const OVERRIDDEN: Content = { headers: {}, body: () => "" };
+const OVERRIDDEN: Content = { body: () => "" };
 
 const lowercased = (headers: Readonly<Record<string, string>>) =>
   Object.fromEntries(
@@ -78,17 +76,12 @@ export const fakeUpstream = (script: UpstreamScript): FakeUpstream => {
   const replays = new Map<string, Replay>(
     recordedCaptures().map((capture) => [
       routeOf(capture.request.path),
-      {
-        status: capture.status,
-        headers: {},
-        body: () => JSON.stringify(capture.body),
-      },
+      { status: capture.status, body: () => JSON.stringify(capture.body) },
     ]),
   );
   for (const [path, route] of Object.entries(script.routes ?? {}))
     replays.set(routeOf(path), {
       status: route.status,
-      headers: lowercased(route.headers ?? {}),
       body: () => route.body ?? "",
     });
 
@@ -140,9 +133,6 @@ export const fakeUpstream = (script: UpstreamScript): FakeUpstream => {
       resolve,
       response: {
         status: overridden ?? replay.status,
-        headers: {
-          get: (name) => answer.headers[name.toLowerCase()] ?? null,
-        },
         text: () => Promise.resolve(answer.body()),
       },
     });

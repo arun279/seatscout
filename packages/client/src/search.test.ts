@@ -23,7 +23,6 @@ import {
 } from "./search.js";
 import { type CachedCatalogue, inMemoryStore } from "./store.js";
 
-const BOOTSTRAP = "/napi/preferences/themes";
 const SEAT_MAP = "/napi/seatMap/";
 const LISTING = "/napi/theaterShowtimeGroupings/245569/2026-08-28";
 const AREA = "75006";
@@ -124,10 +123,7 @@ const routesTo = (
 
 const listing = async () => {
   const source = openSource({
-    fetch: fakeUpstream({
-      seed: 1,
-      routes: { [BOOTSTRAP]: { status: 200, body: "{}" } },
-    }),
+    fetch: fakeUpstream({ seed: 1 }),
     now: () => AT,
     wait: () => Promise.resolve(),
     random: () => 0.5,
@@ -151,7 +147,6 @@ const searching = async (options: Options = {}) => {
     seed: SEED,
     ...options.script,
     routes: {
-      [BOOTSTRAP]: { status: 200, body: "{}" },
       ...roomsFor(candidates.bookable, options.rooms),
       ...options.answers?.(candidates.bookable),
     },
@@ -262,7 +257,7 @@ describe("a search", () => {
       558117351, 558782900, 558782901, 557985744,
     ]);
     expect(arrivalIn(run.snapshots)).toEqual([
-      558782901, 558782900, 558117351, 557985744,
+      558117351, 557985744, 558782901, 558782900,
     ]);
     expect(idsIn(settled)).not.toEqual(arrivalIn(run.snapshots));
     for (const snapshot of run.snapshots)
@@ -496,17 +491,20 @@ describe("a search", () => {
     ).toEqual([]);
   });
 
-  it("lists the Showtimes it could not reach, and reaches them once the fault is gone", async () => {
+  it("names the Showtimes it could not reach with their Theater and time, and reaches them once the fault is gone", async () => {
     const listed = await listing();
     const stonebriar = narrowed(listed, {
       theaters: [theaterIn(listed, STONEBRIAR)],
     }).bookable;
-    const refused = stonebriar.slice(0, 2).map((showtime) => showtime.id);
+    const refused = stonebriar.slice(0, 2);
     const run = await searching({
       at: [STONEBRIAR],
       script: {
         sequences: Object.fromEntries(
-          refused.map((id) => [`${SEAT_MAP}${id}`, [500, 500, 500]]),
+          refused.map((showtime) => [
+            `${SEAT_MAP}${showtime.id}`,
+            [500, 500, 500],
+          ]),
         ),
       },
     });
@@ -514,6 +512,15 @@ describe("a search", () => {
     const again = await searching({ at: [STONEBRIAR] });
 
     expect(settled.coverage.failed).toEqual(refused);
+    expect(
+      settled.coverage.failed.map((showtime) => [
+        showtime.presentation.theater.name,
+        showtime.startsAt,
+      ]),
+    ).toEqual([
+      [STONEBRIAR, "2026-08-28T16:20:00-05:00"],
+      [STONEBRIAR, "2026-08-28T18:00:00-05:00"],
+    ]);
     expect(
       namedIn(settled.coverage).map((showtime) => showtime.startsAt),
     ).not.toContain(stonebriar[0]?.startsAt);

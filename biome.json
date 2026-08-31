@@ -28,6 +28,9 @@
       "suspicious": {
         "noOctalEscape": "error",
         "noTsIgnore": "error"
+      },
+      "correctness": {
+        "noUnusedVariables": "error"
       }
     }
   },

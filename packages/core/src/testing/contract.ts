@@ -16,6 +16,8 @@ export interface Answer {
   readonly fetchedAt: number;
 }
 
+export const SETTLED_STATUSES: Readonly<Record<string, boolean>> = { H: false };
+
 export interface Divergence {
   readonly kind:
     | "unreadable"
@@ -47,7 +49,10 @@ const recorded = (): Recorded => {
   return {
     mapKeys: new Set(maps.flatMap((body) => Object.keys(body))),
     seatKeys: new Set(seats.flatMap((seat) => Object.keys(seat))),
-    statuses: new Set(seats.map((seat) => seat.status)),
+    statuses: new Set([
+      ...seats.map((seat) => seat.status),
+      ...Object.keys(SETTLED_STATUSES),
+    ]),
     types: new Set(seats.map((seat) => seat.type)),
   };
 };
@@ -146,7 +151,7 @@ export const listingDivergencesIn = (answer: Answer): readonly Divergence[] => {
   return [
     ...diverging(
       "missing",
-      listed.notRefused.includes(undefined) ? ["type"] : [],
+      listed.notRefused.includes(undefined) ? ["sellability"] : [],
     ),
     ...diverging(
       "sellability",

@@ -34,8 +34,8 @@ export const gapBetween = (left: Seat, right: Seat): Gap => {
 
 export const rowsOf = <T extends Seat>(
   seats: readonly T[],
-): readonly (readonly T[])[] => {
-  const rows = new Map<number, T[]>();
+): readonly (readonly [T, ...T[]])[] => {
+  const rows = new Map<number, [T, ...T[]]>();
   for (const seat of seats) {
     const row = rows.get(seat.y);
     if (row === undefined) rows.set(seat.y, [seat]);
@@ -44,7 +44,7 @@ export const rowsOf = <T extends Seat>(
   return [...rows.entries()]
     .sort(([above], [below]) => above - below)
     .map(([, row]) =>
-      row.toSorted((left, right) => centreOf(left) - centreOf(right)),
+      row.sort((left, right) => centreOf(left) - centreOf(right)),
     );
 };
 

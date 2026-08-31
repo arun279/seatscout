@@ -1,7 +1,6 @@
 import type { TicketingUrl } from "@seatscout/core";
 import { type CatalogueDependencies, openCatalogue } from "./catalogue.js";
 import { type SeatGroupResult, rankingIn } from "./ranking.js";
-import type { SearchTerms } from "./search.js";
 
 type Unverified = "taken" | "unreachable";
 
@@ -25,11 +24,8 @@ const gone = (
 export const openVerification = (deps: CatalogueDependencies) => {
   const resolve = openCatalogue(deps);
 
-  return async (
-    result: SeatGroupResult,
-    terms: SearchTerms,
-  ): Promise<Verified> => {
-    const listing = await resolve(terms);
+  return async (result: SeatGroupResult): Promise<Verified> => {
+    const listing = await resolve(result.terms);
     if (!listing.ok) return gone("unreachable");
     const showtime = listing.payload.bookable.find(
       (candidate) => candidate.id === result.showtime.id,
@@ -38,7 +34,7 @@ export const openVerification = (deps: CatalogueDependencies) => {
     const reading = await deps.source.seatsFor(`${showtime.id}`);
     if (!reading.ok)
       return gone(reading.reason === "unreachable" ? "unreachable" : "taken");
-    const ranking = rankingIn(reading, terms);
+    const ranking = rankingIn(reading, result.terms);
     const held = ranking.holding(result);
     return held === null
       ? gone(

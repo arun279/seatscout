@@ -21,7 +21,6 @@ import { type SearchTerms, openSearch } from "./search.js";
 import { type KeyValueStore, inMemoryStore } from "./store.js";
 import { type Verified, openVerification } from "./verify.js";
 
-const BOOTSTRAP = "/napi/preferences/themes";
 const SEAT_MAP = "/napi/seatMap/";
 const LISTING = "/napi/theaterShowtimeGroupings/245569/2026-08-28";
 const AREA = "75006";
@@ -45,6 +44,7 @@ type Script = Omit<UpstreamScript, "seed" | "routes">;
 
 interface Options {
   readonly accessibleSeating?: boolean;
+  readonly formats?: SearchTerms["formats"];
   readonly partySize?: number;
   readonly profile?: SeatProfile;
   readonly room?: string;
@@ -54,8 +54,6 @@ interface Options {
   readonly at?: number;
   readonly store?: (listed: Catalogue) => KeyValueStore;
 }
-
-const SESSION: Answer = { status: 200, body: "{}" };
 
 const payloadOf = <Found>(reading: Reading<Found>): Found => {
   if (!reading.ok) throw new Error(`the read answered ${reading.reason}`);
@@ -116,10 +114,7 @@ const refusing = (bookable: readonly Showtime[]): Script => ({
 });
 
 const listing = async () => {
-  const source = sourceAt(
-    fakeUpstream({ seed: 1, routes: { [BOOTSTRAP]: SESSION } }),
-    SEARCHED_AT,
-  );
+  const source = sourceAt(fakeUpstream({ seed: 1 }), SEARCHED_AT);
   return payloadOf(await source.showtimesFor(WIDE_RELEASE, TODAY, AREA));
 };
 
@@ -161,6 +156,7 @@ const verifying = async (options: Options = {}) => {
     accessibleSeating: options.accessibleSeating ?? false,
     profile: options.profile,
     theaters: [theaterIn(listed, STONEBRIAR)],
+    formats: options.formats,
   };
   const candidates = narrowed(listed, terms);
   const room = options.room ?? ROOM;
@@ -170,7 +166,6 @@ const verifying = async (options: Options = {}) => {
       fakeUpstream({
         seed: SEED,
         routes: {
-          [BOOTSTRAP]: SESSION,
           ...roomsFor(
             candidates.bookable,
             options.searchedIn?.(room) ?? roomWhere(room),
@@ -188,7 +183,6 @@ const verifying = async (options: Options = {}) => {
     seed: SEED,
     ...options.script?.(candidates.bookable),
     routes: {
-      [BOOTSTRAP]: SESSION,
       ...roomsFor(
         candidates.bookable,
         options.answer?.(result, room) ?? roomWhere(room),
@@ -204,7 +198,7 @@ const verifying = async (options: Options = {}) => {
   return {
     listed,
     result,
-    verify: () => verify(result, terms),
+    verify: () => verify(result),
     requested: () => upstream.requests.map((request) => request.path),
     auditoriumsRead: () =>
       upstream.requests.filter((request) => request.path.startsWith(SEAT_MAP)),
@@ -240,11 +234,9 @@ describe("re-verifying a Seat Group", () => {
     expect((await fresh.verify()).ok).toBe(true);
     expect((await stale.verify()).ok).toBe(true);
     expect(fresh.requested()).toEqual([
-      BOOTSTRAP,
       `${SEAT_MAP}${fresh.result.showtime.id}`,
     ]);
     expect(stale.requested()).toEqual([
-      BOOTSTRAP,
       `${SEAT_MAP}${stale.result.showtime.id}`,
     ]);
 
@@ -358,6 +350,51 @@ describe("re-verifying a Seat Group", () => {
     expect(verified.ok || verified.reason).toBe("taken");
     expect(alternativesIn(verified)).toEqual([]);
     expect(run.auditoriumsRead()).toEqual([]);
+  });
+
+  it("carries on a result the terms a re-verification needs, and none the listing was narrowed by", async () => {
+    const run = await verifying({ formats: ["Dolby Cinema"] });
+
+    expect(Object.keys(run.result.terms).toSorted()).toEqual([
+      "accessibleSeating",
+      "area",
+      "date",
+      "movie",
+      "partySize",
+      "profile",
+    ]);
+    expect(run.result.terms).toEqual({
+      movie: WIDE_RELEASE,
+      date: TODAY,
+      area: AREA,
+      partySize: 2,
+      accessibleSeating: false,
+      profile: undefined,
+    });
+    expectTypeOf<
+      Parameters<ReturnType<typeof openVerification>>
+    >().toEqualTypeOf<[SeatGroupResult]>();
+  });
+
+  it("re-reads the Auditorium when the listing has since dropped the Format the Query named", async () => {
+    const run = await verifying({
+      formats: ["Dolby Cinema"],
+      store: (listed) =>
+        holding({
+          fetchedAt: SEARCHED_AT,
+          catalogue: {
+            ...listed,
+            bookable: listed.bookable.map((showtime) => ({
+              ...showtime,
+              presentation: { ...showtime.presentation, formats: [] },
+            })),
+          },
+        }),
+    });
+    const verified = await run.verify();
+
+    expect(verified.ok).toBe(true);
+    expect(run.auditoriumsRead()).toHaveLength(1);
   });
 
   it("ranks the alternatives against the Seat Profile the Query carried", async () => {

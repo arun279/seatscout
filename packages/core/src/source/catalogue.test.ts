@@ -23,7 +23,6 @@ import { openSource } from "./aggregator.js";
 import { sellabilityFrom } from "./catalogue.js";
 import type { Reading, Source, Unreadable } from "./port.js";
 
-const BOOTSTRAP = "/napi/preferences/themes";
 const NEARBY = "/napi/nearbyTheaters";
 const SEAT_MAP = "/napi/seatMap/";
 const AREA = "75006";
@@ -43,7 +42,7 @@ const rig = (
   const fetch = fakeUpstream({
     seed: 4,
     ...script,
-    routes: { [BOOTSTRAP]: { status: 200, body: "{}" }, ...script.routes },
+    routes: script.routes,
   });
   return {
     fetch,
