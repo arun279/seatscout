@@ -44,9 +44,8 @@ three is the harness answering a request the worker refuses immediately.
 
 ## Decision
 
-The server verifies the caller's access token, forwards the request upstream with the
-caller's own session cookies, and streams the response back without parsing it. It holds
-no database, no cache, and no user state.
+The server verifies the caller's access token, forwards the request upstream, and streams
+the response back without parsing it. It holds no database, no cache, and no user state.
 
 It supplies one header of its own, which measurement established after this decision was
 accepted. The upstream admits a request on its `Referer` and refuses one without it, whatever
@@ -68,16 +67,12 @@ Any code that fans out consumes each response body as its headers arrive. Collec
 response objects and reading their bodies afterwards holds connections open and can stall,
 which is a documented failure mode on this platform.
 
-The upstream session belongs to the client. It performs the session bootstrap once
-through the proxy, stores the resulting cookies on device, and sends them with subsequent
-requests.
-
-On the web this cannot use the cookie headers themselves. The Fetch specification makes
-`Set-Cookie` a forbidden response header name that is filtered out of any response exposed
-to page scripts, and `Cookie` cannot be set by script. The session therefore travels in
-custom headers, and the proxy translates to and from the real headers on the upstream
-side. A native runtime has no such restriction, which is one more reason this detail
-belongs in an adapter rather than in the core.
+No session is carried at all. An earlier version of this decision had the client bootstrap
+one through the proxy and hold the cookies on device, which on the web obliged the proxy to
+translate them to and from custom headers because the Fetch specification forbids page
+script from reading `Set-Cookie` or setting `Cookie`. Measurement retired the whole
+mechanism: reads from an address that has never bootstrapped succeed, so the cookies gated
+nothing and the translation had nothing to translate.
 
 It does not live there yet, and that is worth stating as a defect rather than as a nuance.
 Three files under `packages/core` name the proxy's own header constants, the single Source
@@ -101,14 +96,12 @@ no server involved, which removes an entire class of availability failure for th
 The client is heavy. Seat map parsing and scoring for a wide search is real work on a
 phone, and it has to be scheduled so it does not block interaction.
 
-Because each user holds their own upstream session, no shared session is rate limited on
-everyone's behalf. What it does not buy is better regional results, which an earlier
-version of this decision claimed: measured against the upstream, the location in those
-cookies is derived from the caller's address rather than from any parameter, and the search
-area travels as a query parameter that is honoured independently of them. Measured again
-later, the session is not what the upstream admits a request on either. It is kept because
-it is the only recovery a client has when a request is refused, and because the upstream
-states a session in the refusal.
+Carrying no session costs nothing, because the session bought nothing that was ever
+measured. It was claimed first for regional results, which the search area already carries
+as a query parameter, and then as the recovery available when a request is refused, which
+it never was: the upstream admits a request on the `Referer` the proxy sets and its refusal
+blames a session only to mislead. Removing it also removes the failure it created, where a
+bootstrap that did not answer stopped every read behind it.
 
 Any capability that must run while the device is asleep falls outside this design and
 requires a separate, explicitly stateful component.

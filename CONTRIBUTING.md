@@ -339,7 +339,7 @@ name the live suite injects to a name the setup provides, and it is a step in `q
 rebase that drops one fails the pull request instead of the night.
 
 **The answers come from a global setup rather than from the test.** `tools/live-answers.mjs`
-opens a session, reads an area, takes the day's widest release, and asks for one seat map per
+reads an area, takes the day's widest release, and asks for one seat map per
 Chain plus whatever the listing already knows to be unbookable, and hands on the area and the
 listing answers it already made rather than asking for them twice, which is under twenty
 requests half a second apart, the spacing the corpus refresh uses and the spacing at which 156
@@ -519,13 +519,12 @@ saying so, which would leave the entry silently inert.
 ## The fake upstream
 
 Tests substitute at `fetch`, never at the Source port. The port exists, but no caller
-varies across it, and substituting there would mock away the session handling, retry and
+varies across it, and substituting there would mock away the retry and
 parsing the adapter is judged on. `packages/core/src/testing/fake-upstream.ts` is
 therefore the seam the unit suite runs on. `fakeUpstream({ seed })` returns a `Fetch`, and
 `Fetch` is declared in `packages/core/src/transport.ts` rather than borrowed from a host,
-because the import ban leaves Core no host type to borrow. `FetchResponse` carries the
-response headers as well as its status, because the session travels in a header and the
-client owns it.
+because the import ban leaves Core no host type to borrow. `FetchResponse` carries a
+status and a body and nothing else, because nothing Core does reads a response header.
 
 It replays the corpus by route. Every capture is indexed under the path it was recorded
 at, query string dropped, because the capture redacts the location parameters and no
@@ -536,22 +535,16 @@ recorded rejects rather than answering, which is what a real `fetch` does with a
 cannot satisfy, so nothing under test behaves differently for being under test. The three
 refusals the capture met arrive as themselves rather than as an invented failure payload.
 
-The capture writes no response header, so a replayed response reports none. That is what
-the corpus holds rather than a simplification, and it is the piece a session lifecycle test
-has to supply for itself.
-
 Faults are scripted as a status and a share of requests in percent, drawn against a
 hundred-slot table. `[{ status: 500, percent: 20 }, { status: 403, percent: 5 }]` is a
-fifth of requests failing and a twentieth needing a session refresh. A script totalling
+fifth of requests failing and a twentieth refused outright. A script totalling
 more than a hundred is refused rather than quietly truncated, because the slots past the
 hundredth are unreachable and the later fault would fire at a rate nobody asked for. A
 faulted response carries the scripted status and an empty body, because no body was ever
 recorded for one.
 
 A route the script names is answered from the script rather than from the corpus, with a
-status, response headers and a body of its own, whether or not the corpus recorded that
-route. That is where a session bootstrap answers: no capture holds one and none may, because
-`.gitleaks.toml` treats `Set-Cookie` material under the corpus as a leak.
+status and a body of its own, whether or not the corpus recorded that route.
 
 A rate cannot express "fail once and then succeed", so a route may also be given a sequence
 of statuses, consumed in request order and then exhausted, after which that route answers
@@ -594,7 +587,7 @@ that is pure TypeScript.
 
 `packages/core/src/source` is the port every read of the upstream aggregator goes through,
 and the adapter behind it. It is internal on purpose: no caller varies across it, and
-publishing it would oblige every caller to learn session handling and retry semantics to use
+publishing it would oblige every caller to learn its retry semantics to use
 it. See [ADR 1](docs/adr/0001-single-aggregating-source.md).
 
 Its three operations are domain questions rather than upstream routes: theaters near an area,
@@ -808,25 +801,16 @@ identity and the sellability word, so a field added to the declaration and not t
 still does not compile, and the kind of each of those two is asserted in the predicate beside
 it.
 
-### The session
+### No session
 
-The adapter opens a session once and holds it, and a fan-out of any width opens one rather
-than one each, because concurrent callers join the bootstrap already in flight. A bootstrap
-the aggregator refuses opens nothing, and the read fails rather than going on unauthenticated.
-A request the aggregator rejects drops the session and re-opens it once per reading; a second
-rejection is a failure like any other rather than a second bootstrap. Any response carrying a
-session replaces the one held, because the proxy returns the whole jar rather than what
-changed.
-
-The session travels as `X-Upstream-Cookie` and arrives as `X-Upstream-Set-Cookie`, which is
-what the proxy translates to and from the real headers, and never as `Cookie` or
-`Set-Cookie`, which no browser exposes to script. A native transport renames the pair.
-
-What the session is not is the thing the aggregator admits a request on. That is the
-`Referer` the transport sets, and a request carrying no session but a `Referer` is answered
-while one carrying a fresh session and no `Referer` is refused. The session is kept because
-it carries the caller's location context, because the aggregator's own refusal text asserts a
-session, and because re-opening it is the only recovery a client has.
+A read is one request. The adapter carries no session and opens nothing before reading,
+because the aggregator admits a request on the `Referer` the transport sets and on nothing
+else: a request carrying no cookie at all is answered, and one carrying a fresh cookie and no
+`Referer` is refused. The refusal text says `Session expired or invalid token` whatever the
+real cause, so a rejection is treated as a refusal like any other rather than as a session to
+re-open, which is what `aggregator.test.ts` pins. The adapter held a session until the
+measurement in **D49** retired it; carrying it also meant a failed bootstrap stopped every read
+behind it.
 
 ### Retry and the circuit breaker
 
@@ -1165,13 +1149,6 @@ the worker and its cache under `WebWorker`, which is the split `apps/proxy` alre
 for the same reason. Neither emits; Vite does that. Their build info sits beside the
 project rather than in `dist`, which the bundler empties on every run.
 
-The same adapter file holds the upstream session, because it is the same Web Storage and
-the same two failure modes. It is a second accessor rather than a second key on
-`KeyValueStore`, whose write takes a `CachedCatalogue` and must keep taking only that; the
-session is a string the transport carries, under a key of its own, and it is asynchronous
-for the reason the store is, so a native runtime with no synchronous storage is a drop-in
-rather than a rewrite.
-
 Web Storage can be absent or refuse outright: a private window, cleared site data, storage
 disabled by policy. **Reaching it is attempted once, and where it refuses the adapter falls
 back to memory, which lives as long as the accessor that made it.** That is the honest answer rather than a
@@ -1184,8 +1161,8 @@ back as something other than what was written reads as absent for the same reaso
 ### The shell, and what its service worker may cache
 
 `apps/web/public/index.html` is the page the deployment serves at `/`. It is provisional
-and says so on its face: a heading, a sentence, and one line reporting whether this device
-holds an upstream session. It is copied into the build output rather than compiled, so the
+and says so on its face: a heading and a sentence. It is copied into the build output
+rather than compiled, so the
 two scripts beside it keep the names the worker and the page refer to. Its only inline
 script imports the entry and calls `startShell`, which is why that entry has no import-time
 side effect and can therefore be imported by a test page as well as by the shell.
@@ -1313,8 +1290,7 @@ as the shell rather than as a miss. It is a stand-in and not a replica: it answe
 the deployment sends the same request to the proxy. The suite watches the worker take
 control, reads Cache Storage back and asserts it holds the shell and nothing else, requests
 a seat map route and a published file the shell does not list and asserts neither is added,
-reloads with the network disabled, and writes a session through the shipped module and
-reads it back after a reload.
+and reloads with the network disabled, still under the worker's control.
 
 **Accessibility is checked here, on every pull request.** `@axe-core/playwright` scans the
 shell against WCAG 2.2 at levels A and AA, which is the [W3C
@@ -1587,13 +1563,12 @@ existed. Every figure the live timing test uses comes from it and none is invent
 
 | step | time |
 |---|---|
-| Session bootstrap | 209 ms |
 | Every bookable Showtime for one Movie, one date, 31 Theaters | 375 ms |
 | 48 seat maps at concurrency 24 | 0.67 s |
 | the same 48 at concurrency 12 | 0.96 s |
 | the same 48 at concurrency 6 | 10.30 s |
 
-A whole search is therefore about 1.3 s, and concurrency 24 is roughly fifteen times faster
+A whole search is therefore about 1.0 s, and concurrency 24 is roughly fifteen times faster
 than 6, which is what makes fan-out width the dominant performance lever in the system.
 
 `packages/client/src/search.live.test.ts` runs one whole search against the live Source in
@@ -1603,8 +1578,7 @@ real search over the same work. Its fan-out is allowed the larger of two bounds:
 recorded 0.67 s scaled to the seat maps actually read, and the same raw pass taken moments
 earlier converted to its concurrency-12 equivalent by the table's own ratio, which is to say
 no slower than the same work at half the width. The whole search is then allowed that bound
-plus the recorded bootstrap and listing, which is the 1.3 s figure written out from its
-parts.
+plus the recorded listing, which is the 1.0 s figure written out from its parts.
 
 Taking the larger of the two bounds is what keeps a slow afternoon at the Source from
 reading as a regression in this code, and what it catches is a fan-out that has lost its
@@ -1771,8 +1745,8 @@ Run it with `pnpm --filter @seatscout/native start` and open the printed URL in 
 
 ## The proxy
 
-`apps/proxy` is the whole hosted component. It verifies the access layer's assertion,
-translates the session headers, and forwards the upstream bytes without reading them. It
+`apps/proxy` is the whole hosted component. It verifies the access layer's assertion and
+forwards the upstream bytes without reading them. It
 does nothing else, and `apps/proxy/wrangler.json` declares no storage binding, which a test
 asserts against the file rather than against intent, over the file's whole key set and
 over the assets block's own. Run it with `pnpm --filter @seatscout/proxy dev`.
@@ -1782,17 +1756,17 @@ name the access application whose assertion is verified against the signing keys
 domain publishes; `UPSTREAM_ORIGIN` is the aggregator a request is forwarded to. Missing
 any of them, the proxy serves nothing, so a half-configured deployment fails closed.
 
-On the web the session cannot travel in the cookie headers. The Fetch standard makes
-`Set-Cookie` a forbidden response-header name, which a basic filtered response excludes
-from what page scripts can read, and `Cookie` is a forbidden request-header that script
-cannot set. The proxy therefore reads `X-Upstream-Cookie` and sends it upstream as
-`Cookie`, and returns the session as `X-Upstream-Set-Cookie`, having merged what the
-upstream set into what the caller sent, so the client can hold the value as an opaque
-string. A native client sets `Cookie` itself and uses neither header.
+No session crosses it in either direction. The proxy carried one until the measurement in
+**D49** retired it, which on the web had obliged it to translate `X-Upstream-Cookie` and
+`X-Upstream-Set-Cookie` to and from the real headers, because the Fetch standard makes
+`Set-Cookie` a forbidden response-header name that a basic filtered response excludes from
+what page scripts can read, and `Cookie` a forbidden request-header that script cannot set.
+What survives is one line: an upstream `Set-Cookie` is stripped from the answer rather than
+planted on the caller's own origin.
 
-Only `accept`, `content-type` and `user-agent` cross to the upstream alongside that cookie.
-The caller's own cookies, the access assertion and the platform's `cf-` headers belong to
-this hop and stay here. An upstream redirect is handed back rather than followed, because
+Only `accept`, `content-type` and `user-agent` cross to the upstream. The caller's own
+cookies, the access assertion and the platform's `cf-` headers belong to this hop and stay
+here. An upstream redirect is handed back rather than followed, because
 one call to the proxy is one upstream request.
 
 One header is added rather than forwarded. The aggregator admits a request on its `Referer`

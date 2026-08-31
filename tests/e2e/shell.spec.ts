@@ -7,10 +7,6 @@ const WCAG = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
 const SHELL = ["/", "/index.js", "/manifest.webmanifest"];
 
-const SESSION = "AKA_SESSION=held";
-
-const WRITE_SESSION = `import("/index.js").then((shell) => shell.browserSession().write(${JSON.stringify(SESSION)}))`;
-
 const cachedPaths = (page: Page) =>
   page.evaluate(async () => {
     const names = await caches.keys();
@@ -47,7 +43,9 @@ test("the shell carries no violation of WCAG 2.2 at level AA that axe can detect
   tag: "@accessibility",
 }, async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator("#session")).not.toBeEmpty();
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+  });
 
   const scan = await new AxeBuilder({ page }).withTags(WCAG).analyze();
 
@@ -84,26 +82,7 @@ test("the shell loads with the network disabled", async ({ context, page }) => {
   await page.reload();
 
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("SeatScout");
-  await expect(page.locator("#session")).toHaveText(
-    "No upstream session is held on this device.",
-  );
-});
-
-test("the upstream session persists on-device across a reload", async ({
-  page,
-}) => {
-  await page.goto("/");
-  await expect(page.locator("#session")).toHaveText(
-    "No upstream session is held on this device.",
-  );
-
-  await page.evaluate(WRITE_SESSION);
-  await page.reload();
-
-  await expect(page.locator("#session")).toHaveText(
-    "An upstream session is held on this device.",
-  );
-  expect(await page.evaluate(() => localStorage.getItem("session"))).toBe(
-    SESSION,
-  );
+  expect(
+    await page.evaluate(() => navigator.serviceWorker.controller !== null),
+  ).toBe(true);
 });

@@ -152,7 +152,7 @@ describe("access", () => {
   );
 });
 
-describe("the session", () => {
+describe("the hop to the upstream", () => {
   it("sends upstream only the headers the caller nominated", async () => {
     const upstream = network();
     await through(upstream, {
@@ -164,17 +164,14 @@ describe("the session", () => {
       origin: "https://proxy.test",
       referer: "https://proxy.test/results",
       "user-agent": "seatscout/0.0.0",
-      "x-upstream-cookie": "session=held",
     });
 
     expect(headerNamesOf(upstream.received[0])).toEqual([
       "accept",
       "content-type",
-      "cookie",
       "referer",
       "user-agent",
     ]);
-    expect(upstream.received[0]?.headers.get("cookie")).toBe("session=held");
     expect(upstream.received[0]?.headers.get("referer")).toBe(`${UPSTREAM}/`);
   });
 
@@ -188,27 +185,7 @@ describe("the session", () => {
     expect(upstream.received[0]?.headers.get("referer")).toBe(`${UPSTREAM}/`);
   });
 
-  it("returns nothing when neither side holds a session", async () => {
-    const upstream = network();
-    const response = await through(upstream, {
-      "cf-access-jwt-assertion": await upstream.assertion(),
-    });
-
-    expect(response.headers.has("x-upstream-set-cookie")).toBe(false);
-  });
-
-  it("returns the session an upstream bootstrap opens", async () => {
-    const upstream = network(
-      () => new Response("{}", { headers: { "set-cookie": "session=new" } }),
-    );
-    const response = await through(upstream, {
-      "cf-access-jwt-assertion": await upstream.assertion(),
-    });
-
-    expect(response.headers.get("x-upstream-set-cookie")).toBe("session=new");
-  });
-
-  it("merges what the upstream sets into the session the caller holds", async () => {
+  it("plants none of the upstream's cookies on the caller", async () => {
     const upstream = network(
       () =>
         new Response("{}", {
@@ -220,28 +197,9 @@ describe("the session", () => {
     );
     const response = await through(upstream, {
       "cf-access-jwt-assertion": await upstream.assertion(),
-      "x-upstream-cookie": "session=stale; sid=42",
     });
 
-    expect(upstream.received[0]?.headers.get("cookie")).toBe(
-      "session=stale; sid=42",
-    );
-    expect(response.headers.get("x-upstream-set-cookie")).toBe(
-      "session=fresh; sid=42; region=nyc",
-    );
     expect(response.headers.getSetCookie()).toEqual([]);
-  });
-
-  it("drops a cookie the upstream cleared rather than replaying it", async () => {
-    const upstream = network(
-      () => new Response("{}", { headers: { "set-cookie": "session=" } }),
-    );
-    const response = await through(upstream, {
-      "cf-access-jwt-assertion": await upstream.assertion(),
-      "x-upstream-cookie": "session=stale; sid=42",
-    });
-
-    expect(response.headers.get("x-upstream-set-cookie")).toBe("sid=42");
   });
 });
 

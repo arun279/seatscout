@@ -1,8 +1,6 @@
 import { createRemoteJWKSet, jwtVerify } from "jose";
 
 const ACCESS_ASSERTION = "cf-access-jwt-assertion";
-const UPSTREAM_COOKIE = "x-upstream-cookie";
-const UPSTREAM_SET_COOKIE = "x-upstream-set-cookie";
 const FORWARDED = ["accept", "content-type", "user-agent"];
 
 type Env = {
@@ -66,29 +64,12 @@ const upstreamHeaders = (from: Headers, referer: string) => {
     const value = from.get(name);
     if (value !== null) headers.set(name, value);
   }
-  const cookie = from.get(UPSTREAM_COOKIE);
-  if (cookie !== null) headers.set("cookie", cookie);
   return headers;
 };
 
-const sessionAfter = (cookie: string | null, setCookies: readonly string[]) => {
-  const opened = setCookies.map(
-    (setCookie) => setCookie.split(";")[0] ?? setCookie,
-  );
-  const jar = new Map<string, string>();
-  for (const pair of [...(cookie ?? "").split(";"), ...opened]) {
-    const trimmed = pair.trim();
-    const [name = trimmed] = trimmed.split("=");
-    if (trimmed === "" || trimmed.endsWith("=")) jar.delete(name);
-    else jar.set(name, trimmed);
-  }
-  return [...jar.values()].join("; ");
-};
-
-const callerResponse = (upstream: Response, session: string) => {
+const callerResponse = (upstream: Response) => {
   const headers = new Headers(upstream.headers);
   headers.delete("set-cookie");
-  if (session !== "") headers.set(UPSTREAM_SET_COOKIE, session);
   return new Response(upstream.body, {
     status: upstream.status,
     statusText: upstream.statusText,
@@ -120,10 +101,6 @@ export default {
       },
     );
 
-    const session = sessionAfter(
-      request.headers.get(UPSTREAM_COOKIE),
-      upstream.headers.getSetCookie(),
-    );
-    return callerResponse(upstream, session);
+    return callerResponse(upstream);
   },
 };
