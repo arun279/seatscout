@@ -131,32 +131,27 @@ It proves:
 - the most recent deploy of `main` succeeded;
 - an anonymous request is redirected to your team domain, so Access is in front;
 - with the service token, the same request is admitted rather than sent to sign in;
-- with the service token, the session bootstrap the adapter performs is carried through
-  the deployed proxy, the upstream answers it, and the session comes back in
-  `X-Upstream-Set-Cookie`. It issues the request `packages/core` issues, reading the route
-  and the content type out of the adapter rather than restating them, and refuses to run
-  if that request has changed shape.
+- with the service token, the area read the adapter performs is carried through the
+  deployed proxy and the upstream answers it. It issues the request `packages/core`
+  issues, reading the route and the theatre count out of the adapter rather than restating
+  them, and refuses to run if that request has changed shape.
 
-  That one check settles five things at once, and reports which of them failed rather than
+  That one check settles four things at once, and reports which of them failed rather than
   only that something did. Whether the Worker holds its three secrets. Whether the
   assertion Access attaches actually reaches the Worker, which is worth naming because
   Cloudflare documents that a Worker serving static assets runs behind an internal router
   Worker and documents that the router does not pass the `ctx.access` object through it,
   while nothing states either way whether the `Cf-Access-Jwt-Assertion` **header**
   survives that hop. Whether the assertion verifies against the team domain and audience
-  you configured. Whether the `Referer` the proxy sets from `UPSTREAM_ORIGIN` is what the
-  upstream admits, which is why a non-2xx answer is a failure here: the upstream refuses a
-  missing `Referer` with a message that blames the session instead. And whether the proxy
-  hands the merged session back as `X-Upstream-Set-Cookie`, which is the last of the five
-  this check can report and the only one that can arrive on a 2xx.
+  you configured. And whether the `Referer` the proxy sets from `UPSTREAM_ORIGIN` is what
+  the upstream admits, which is why a non-2xx answer is a failure here: the upstream
+  refuses a missing `Referer` with a message that blames a session instead.
 
 It cannot prove that a non-allowlisted account is refused. Reaching the refusal means
 completing a Google login as somebody who is not on the list, which needs a browser and a
 second Google account. Access is deny by default and the anonymous redirect establishes
 that the gate is there; the allowlist itself is a manual check.
 
-It also cannot prove that the session persists on the device. That is the client's job and
-the client has no shell yet.
 
 ## Sources
 

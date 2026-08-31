@@ -11,8 +11,6 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const named = (path) => path.split("?")[0];
 
-let session = "";
-
 async function reach(path, init) {
   try {
     return await fetch(`${HOST}${path}`, init);
@@ -21,36 +19,13 @@ async function reach(path, init) {
   }
 }
 
-async function bootstrap() {
-  const response = await reach("/napi/preferences/themes", {
-    method: "POST",
-    headers: {
-      "User-Agent": UA,
-      Referer: `${HOST}/`,
-      "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-    },
-    body: `_expiry=${Date.now()}`,
-  });
-  await response.body?.cancel();
-  if (response.status !== 200)
-    throw new Error(`the bootstrap answered ${response.status}`);
-  session = response.headers
-    .getSetCookie()
-    .map((raw) => raw.split(";")[0])
-    .join("; ");
-}
-
 async function answer(path, attempt = 1) {
   await sleep(PAUSE_MS * 2 ** (attempt - 1));
   const fetchedAt = Date.now();
   const response = await reach(path, {
-    headers: { "User-Agent": UA, Cookie: session, Referer: `${HOST}/` },
+    headers: { "User-Agent": UA, Referer: `${HOST}/` },
   });
   const body = await response.text();
-  if (response.status === 403 && attempt === 1) {
-    await bootstrap();
-    return answer(path, attempt + 1);
-  }
   if (response.status >= 500 && attempt < ATTEMPTS)
     return answer(path, attempt + 1);
   return { status: response.status, body, fetchedAt };
@@ -109,7 +84,6 @@ const unbookableAmong = (showtimes) =>
   ].filter((showtime) => showtime !== undefined);
 
 export default async function readTheLiveSource(project) {
-  await bootstrap();
   const today = new Date().toLocaleDateString("en-CA");
 
   const nearby = `/napi/nearbyTheaters?zipCode=${encodeURIComponent(ANCHOR_THEATER_ZIP)}&limit=25`;

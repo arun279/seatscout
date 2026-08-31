@@ -5,7 +5,6 @@ import { openSource } from "./aggregator.js";
 import type { Source } from "./port.js";
 import type { Designation, Seat } from "./seat-map.js";
 
-const BOOTSTRAP = "/napi/preferences/themes";
 const FETCHED_AT = 1000;
 const AUDITORIUM_WITH_ACCESSIBLE_SPACES = "561462741";
 const AUDITORIUM_WITH_ALMOST_NO_NEIGHBOUR_LINKS = "561230736";
@@ -15,7 +14,7 @@ const sourceOf = (routes?: UpstreamScript["routes"]) =>
   openSource({
     fetch: fakeUpstream({
       seed: 4,
-      routes: { [BOOTSTRAP]: { status: 200, body: "{}" }, ...routes },
+      routes,
     }),
     now: () => FETCHED_AT,
     wait: () => Promise.resolve(),
