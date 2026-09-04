@@ -7,7 +7,7 @@ import {
   SOME_SOURCE,
   side,
 } from "./report.fixtures.js";
-import { type Counts, filesOf, type Tree } from "./report.js";
+import { type Counts, filesOf, type Tree } from "./volume.js";
 
 describe("the footprint report", () => {
   it("splits changed lines by product, test and tooling code, and by comments", () => {

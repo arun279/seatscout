@@ -98,7 +98,7 @@ describe("what was counted", () => {
 
     expect(report.passed).toBe(false);
     expect(report.markdown).toContain(
-      "Tooling held files at the merge base and holds none here. A file leaves the measurement when its path stops matching how this report sorts it. Either put it back, or sort it in tools/footprint/src/report.ts, where a reviewer sees which side of the count it landed on.",
+      "Tooling held files at the merge base and holds none here. A file leaves the measurement when its path stops matching how this report sorts it. Either put it back, or sort it in tools/footprint/src/volume.ts, where a reviewer sees which side of the count it landed on.",
     );
   });
 

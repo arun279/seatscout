@@ -1,0 +1,13 @@
+{
+  "diagnostics": [
+    {
+      "message": "function `read` has a complexity of 9. Maximum allowed is 0.",
+      "code": "eslint(complexity)",
+      "severity": "error",
+      "filename": "packages/core/src/source/read.ts",
+      "labels": [
+        { "span": { "offset": 118, "length": 93, "line": 41, "column": 7 } }
+      ]
+    }
+  ]
+}

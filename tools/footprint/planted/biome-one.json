@@ -1,0 +1,25 @@
+{
+  "summary": { "unchanged": 2 },
+  "diagnostics": [
+    {
+      "severity": "error",
+      "message": "Excessive complexity of 14 detected (max: 1).",
+      "category": "lint/complexity/noExcessiveCognitiveComplexity",
+      "location": {
+        "path": "tools/corpus-rows.mjs",
+        "start": { "line": 39, "column": 7 },
+        "end": { "line": 76, "column": 2 }
+      }
+    },
+    {
+      "severity": "error",
+      "message": "This file has too many lines (297). Maximum allowed is 1.",
+      "category": "lint/style/noExcessiveLinesPerFile",
+      "location": {
+        "path": "packages/core/src/domain/auditorium-map.test.ts",
+        "start": { "line": 1, "column": 1 },
+        "end": { "line": 297, "column": 3 }
+      }
+    }
+  ]
+}

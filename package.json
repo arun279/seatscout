@@ -26,6 +26,7 @@
     "test:e2e": "playwright test --list --grep @accessibility && playwright test",
     "test:live": "vitest run --config vitest.live.config.ts",
     "test:mutation": "stryker run && node tools/no-empty-mutation-run/src/index.ts",
+    "test:mutation:incremental": "stryker run --incremental && node tools/no-empty-mutation-run/src/index.ts",
     "test:unit": "vitest run",
     "typecheck": "tsc --build --pretty false --noEmit"
   },

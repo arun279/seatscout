@@ -115,6 +115,9 @@ importers:
       '@types/node':
         specifier: 26.4.0
         version: 26.4.0
+      mutation-testing-metrics:
+        specifier: 3.8.4
+        version: 3.8.4
 
   tools/live-injections:
     devDependencies:

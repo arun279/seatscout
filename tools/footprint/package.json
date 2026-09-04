@@ -8,6 +8,7 @@
     "build": "tsc --build --pretty false"
   },
   "devDependencies": {
-    "@types/node": "26.4.0"
+    "@types/node": "26.4.0",
+    "mutation-testing-metrics": "3.8.4"
   }
 }
