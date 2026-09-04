@@ -2,7 +2,7 @@ import { openSource, type Reading } from "@seatscout/core";
 import { type UpstreamScript, fakeUpstream } from "@seatscout/core/testing";
 import { describe, expect, it } from "vitest";
 import { openProgramme, type Programme } from "./programme.js";
-import { inMemoryStore } from "./store.js";
+import { inMemoryStore, type KeyValueStore } from "./store.js";
 
 const AREA = "75006";
 const TODAY = "2026-08-28";
@@ -35,7 +35,10 @@ const payloadOf = (reading: Reading<Programme>): Programme => {
   return reading.payload;
 };
 
-const opened = (script: Omit<UpstreamScript, "seed"> = {}) => {
+const opened = (
+  script: Omit<UpstreamScript, "seed"> = {},
+  store: KeyValueStore = inMemoryStore(),
+) => {
   const clock = { at: AT };
   const upstream = fakeUpstream({ seed: 4, standInTheaters: true, ...script });
   const deps = {
@@ -48,7 +51,7 @@ const opened = (script: Omit<UpstreamScript, "seed"> = {}) => {
     clock,
     programme: openProgramme({
       source: openSource(deps),
-      store: inMemoryStore(),
+      store,
       now: () => clock.at,
     }),
     requested: () => ({
@@ -140,6 +143,22 @@ describe("the programme near an area on a date", () => {
     await programme("75201", TODAY);
 
     expect(requested()).toEqual({ areas: 3, schedules: 75 });
+  });
+
+  it("refuses a stored entry whose moment is not a number, as an older build might have written, and reads the Source", async () => {
+    const stale: KeyValueStore = {
+      read: async () => ({
+        fetchedAt: `${AT - 1}`,
+        programme: { theaters: [], movies: [], unreached: [] },
+      }),
+      write: async () => undefined,
+    };
+    const { programme, requested } = opened({}, stale);
+
+    const reading = await programme(AREA, TODAY);
+
+    expect(reading.ok && reading.payload.theaters).toHaveLength(25);
+    expect(requested()).toEqual({ areas: 1, schedules: 25 });
   });
 
   it("keeps no read that missed a Theater, so the next asks the Source again", async () => {

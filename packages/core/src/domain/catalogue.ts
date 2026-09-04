@@ -130,8 +130,6 @@ export interface ShowtimeTerms {
   readonly until?: string;
 }
 
-const CLOCK_ON_THE_DATE = "2026-08-28T19:20".length;
-
 const within = (
   at: string,
   from: string | undefined,
@@ -154,7 +152,7 @@ const admits =
     satisfied(terms.amenities, (amenity) =>
       presentation.amenities.includes(amenity),
     ) &&
-    within(startsAt.slice(0, CLOCK_ON_THE_DATE), terms.from, terms.until);
+    within(startsAt, terms.from, terms.until);
 
 export const narrowed = (
   catalogue: Catalogue,
