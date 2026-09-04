@@ -1341,7 +1341,10 @@ adapter author is who needs it and the native adapter is who needs it next. Each
 answers with what the store did wrong, or with nothing. One of them is why the in-memory
 store serialises rather than holding the object it was given: a store hands back its own
 value, so a test double that hands back the caller's object would let a caller mutate what
-another caller is about to read, and would pass in Node what fails in a browser.
+another caller is about to read, and would pass in Node what fails in a browser. The write
+admits three shapes, a cached catalogue, a Seat Profile and a history of searches, and the
+last two clauses write one of each and read it back, so a store that can hold a catalogue
+and not a Profile fails the contract rather than the screen.
 
 The in-memory store runs it under vitest. The browser adapter runs the same clauses in a
 real browser: `tests/e2e/store-contract.spec.ts` serves the built
@@ -1762,9 +1765,17 @@ show, so it is computed where the room is read rather than reconstructed by a sc
 **`createSeatScout` is the composition root, and it is what an application calls.** It takes
 the Source's dependencies, the transport, the clock, the wait and the random draw, and
 optionally a store, and answers with `search` and `verify` composed over one Source and one
-catalogue cache. The store defaults to memory, so a caller that brings none still searches;
-the web application brings Web Storage. The catalogue read is not on it, for the reason
-recorded against ticket 26: nothing captured can serve one.
+catalogue cache, and with `profile` and `recent`, which remember a Seat Profile and a history
+of searches on the same store. The store defaults to memory, so a caller that brings none
+still searches; the web application brings Web Storage. The catalogue read is not on it, for
+the reason recorded against ticket 26: nothing captured can serve one.
+
+`packages/client/src/profile.ts` reads a Profile back only when every one of its fields is a
+number, and answers Reference otherwise; `packages/client/src/recent.ts` keeps the four terms
+that make a search, newest first, never twice, five at most, and reads a history back only
+when every entry carries them. Each stores under a key that names its shape and version,
+`seatscout.profile.v1` and `seatscout.recent.v1`, so an entry an earlier build wrote is not
+found rather than found and tested, which is the catalogue's rule applied twice more.
 
 ### Reading a response body
 
@@ -2069,12 +2080,14 @@ dialog focusing steps read, and a focus call made before `showModal` lands on no
 element not yet being rendered. The end-to-end suite asserts that focus in Chromium, where the
 shim below has no say.
 
-**The stylesheet is four files, one per owner.** `house.css` is the direction's tokens,
-verbatim. `app.css` owns the stage and what every screen shares: the offline notice, the
-screen band, the type scale, the buttons, the dialog chrome, the verdict frame and the named
-list. `query.css` owns the title card, the term buttons and the editor's fields and stepper.
-`results.css` owns the list head, the cards and their plan marks, the tie rule, the count line
-and the fail box. `coverage.css` owns the strip and the ledger. All five are on the shell list
+**The stylesheet is five files, one per owner.** `house.css` is the direction's tokens,
+verbatim, and the marks a room is drawn with, which the card's plan and the sheet's room
+share. `app.css` owns the stage and what every screen shares: the offline notice, the
+screen band, the type scale, the buttons, the dialog chrome, the verdict frame, the named
+list and the recent searches. `query.css` owns the title card, the term buttons and the
+editor's fields, stepper, drawn room and ranges. `results.css` owns the list head, the cards,
+the tie rule, the count line and the fail box. `coverage.css` owns the strip and the ledger.
+All five are on the shell list
 and the page links each one, so the preload scanner fetches them together rather than through
 an `@import` chain.
 
@@ -2089,9 +2102,10 @@ into a thrown error, so React's own warnings, a duplicate key among them, fail t
 provoked them instead of scrolling past. The screen tests are split by subject: `app.test.tsx`
 holds the title card, the prompt, the editor and the offline notice; `results.test.tsx` the
 list, its cards and the hold; `verdicts.test.tsx` what the screen says when the answer is not
-a list; `coverage.test.tsx` the strip and the ledger. They share `app.fixtures.tsx`, which
-stages the real `App` over the fake upstream and records every search it opens, abandons and
-is asked for.
+a list; `coverage.test.tsx` the strip and the ledger; `profile.test.tsx` the editor's "Where
+you sit" section; `recent.test.tsx` the recent searches on the first screen and on the sheet.
+They share `app.fixtures.tsx`, which stages the real `App` over the fake upstream, holds the
+Profile the way `Root` does, and records every search it opens, abandons and is asked for.
 
 ## The native application
 

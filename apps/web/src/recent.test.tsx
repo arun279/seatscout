@@ -76,11 +76,24 @@ describe("recent searches, on the first screen", () => {
     expect(screen.queryByText("Run again")).toBeNull();
   });
 
-  it("is not on the screen while a search is", async () => {
-    const stage = staged({ recent: [TONIGHT, TOMORROW] });
+  it("is not on the screen while a search is, and is on the sheet instead, where one press runs it under the sheet's Profile and closes the sheet", async () => {
+    const stage = staged({ recent: [TONIGHT, TOMORROW], profile: FRONT_ROW });
     await stage.settled();
 
     expect(screen.queryByRole("region", { name: "Run again" })).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: /custom seat/i }));
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "243819, tomorrow, near 75234, four seats together",
+      }),
+    );
+
+    expect(stage.chosen).toEqual([
+      { movie: "243819", date: "2026-08-29", area: "75234", partySize: 4 },
+    ]);
+    expect(stage.profiles).toEqual([FRONT_ROW]);
+    expect(screen.queryByRole("dialog", { hidden: true })).toBeNull();
   });
 
   it("says which seat is already set beside the party and the day", () => {

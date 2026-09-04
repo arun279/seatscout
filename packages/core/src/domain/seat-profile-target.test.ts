@@ -4,6 +4,7 @@ import { normalised } from "./auditorium.js";
 import {
   type Auditorium,
   auditoriums,
+  drawn,
   rankedIn,
   sweptWeightings,
 } from "./seat-profile.fixtures.js";
@@ -18,17 +19,31 @@ const unit = (min: number, max: number) => fc.double({ min, max, noNaN: true });
 const ordered = (one: number, other: number): readonly [number, number] =>
   one <= other ? [one, other] : [other, one];
 
-const furthestBest = (
-  room: Auditorium,
-  profile: SeatProfile,
+const furthestOf = (
+  ranked: ReturnType<typeof rankedIn>,
   along: "depth" | "seatsOffCentre",
 ) => {
-  const ranked = rankedIn(room, profile);
   const top = Math.max(...ranked.map((one) => one.score));
   return Math.max(
     ...ranked
       .filter((one) => one.score >= top - TIE)
       .map((one) => one.seat[along]),
+  );
+};
+
+const furthestBest = (
+  room: Auditorium,
+  profile: SeatProfile,
+  along: "depth" | "seatsOffCentre",
+) => furthestOf(rankedIn(room, profile), along);
+
+const rightmostBestByRow = (room: Auditorium, profile: SeatProfile) => {
+  const ranked = rankedIn(room, profile);
+  return [...new Set(room.map((seat) => seat.depth))].map((depth) =>
+    furthestOf(
+      ranked.filter((one) => one.seat.depth === depth),
+      "seatsOffCentre",
+    ),
   );
 };
 
@@ -57,7 +72,7 @@ describe("the best Seat as the Profile's target moves", () => {
     );
   });
 
-  it("never moves to house left when the target moves to house right, in any room, under any weighting", () => {
+  it("never moves a row's best Seat to house left when the target moves to house right, in any room, under any weighting", () => {
     fc.assert(
       fc.property(
         auditoriums,
@@ -68,17 +83,40 @@ describe("the best Seat as the Profile's target moves", () => {
           const room = normalised(seats);
           const [lefter, righter] = ordered(one, other);
           const at = (targetLateral: number) =>
-            furthestBest(
-              room,
-              { ...REFERENCE, ...weights, targetLateral },
-              "seatsOffCentre",
-            );
+            rightmostBestByRow(room, {
+              ...REFERENCE,
+              ...weights,
+              targetLateral,
+            });
+          const before = at(lefter);
+          const after = at(righter);
 
-          expect(at(lefter)).toBeLessThanOrEqual(at(righter));
+          expect(before.map((seat, row) => seat <= (after[row] ?? -1))).toEqual(
+            before.map(() => true),
+          );
         },
       ),
       { numRuns: 300 },
     );
+  });
+
+  it("can move the room's best Seat to house left when the target moves right, because a far row's angle costs less than a near row's, so the law holds within a row and not across the room", () => {
+    const room = drawn([
+      { gap: 20, pitch: 50, width: 10, seats: 2, shift: 35 },
+      { gap: 20, pitch: 10, width: 10, seats: 1, shift: -60 },
+    ]);
+    const profile = {
+      ...REFERENCE,
+      frontBandWeight: 0,
+      wallBandWeight: 0,
+      rowPitch: 20.7,
+      targetDepth: 0.5,
+    };
+    const at = (targetLateral: number) =>
+      furthestBest(room, { ...profile, targetLateral }, "seatsOffCentre");
+
+    expect(room.map((seat) => seat.seatsOffCentre)).toEqual([1, 6, -6]);
+    expect([at(0), at(0.6)]).toEqual([1, -6]);
   });
 
   it("moves with the target across a real shape of room, so the law is not vacuous", () => {

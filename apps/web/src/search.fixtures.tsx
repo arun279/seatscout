@@ -10,7 +10,7 @@ import {
 import { fakeUpstream, type UpstreamScript } from "@seatscout/client/testing";
 import { act, cleanup, render, screen, within } from "@testing-library/react";
 import { useState } from "react";
-import { App } from "./app.js";
+import { App, type AppProps } from "./app.js";
 import type { Terms } from "./terms.js";
 
 export const TODAY = "2026-08-28";
@@ -46,21 +46,12 @@ interface Staged {
   readonly holdRetries?: boolean;
 }
 
-interface HarnessProps {
-  readonly seatscout: SeatScout;
-  readonly terms: Terms;
-  readonly profile: SeatProfile;
-  readonly recent: readonly RecentSearch[];
-  readonly clock: {
-    now: () => number;
-    subscribe: (tick: () => void) => () => void;
-  };
-  readonly onTerms: (terms: Terms) => void;
-  readonly onProfile: (profile: SeatProfile) => void;
-}
-
-const Harness = ({ onProfile, ...props }: HarnessProps) => {
-  const [profile, setProfile] = useState(props.profile);
+const Harness = ({
+  profile: initial,
+  onProfile,
+  ...props
+}: Omit<AppProps, "today">) => {
+  const [profile, setProfile] = useState(initial);
   return (
     <App
       {...props}

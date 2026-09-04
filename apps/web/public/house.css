@@ -71,3 +71,27 @@ a:hover {
   outline: 2px solid var(--beam);
   outline-offset: 2px;
 }
+
+.mp-screen {
+  stroke: var(--beam);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.mp-row {
+  stroke: var(--seat-gone);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.mp-target {
+  fill: none;
+  stroke: var(--silver-faint);
+  stroke-width: 1;
+  stroke-dasharray: 2 2.5;
+}
+
+.mp-pair {
+  fill: var(--beam);
+  filter: drop-shadow(0 0 3.5px oklch(0.88 0.055 230 / 0.9));
+}

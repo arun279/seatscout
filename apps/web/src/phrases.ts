@@ -97,6 +97,9 @@ export const whenOf = (date: string, today: string): string => {
 export const seatOf = (profile: SeatProfile): string =>
   isReference(profile) ? "Reference seat" : "Custom seat";
 
+export const seatSetOf = (profile: SeatProfile): string =>
+  isReference(profile) ? "the Reference seat" : "your custom seat";
+
 export const noneOf = (party: number): string =>
   party === 1 ? "No seat" : `No ${wordOf(party)} seats together`;
 

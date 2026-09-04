@@ -1,24 +1,35 @@
-import type { SeatProfile } from "@seatscout/client";
+import type { RecentSearch, SeatProfile } from "@seatscout/client";
 import { useState } from "react";
 import { modal } from "./modal.js";
 import { Profile } from "./profile.js";
+import { Recent } from "./recent.js";
 import { type Terms, termsOf } from "./terms.js";
 import type { Term } from "./title-card-terms.js";
 
 interface AskProps {
   readonly terms: Terms;
   readonly profile: SeatProfile;
+  readonly recent: readonly RecentSearch[];
+  readonly today: string;
   readonly focus: Term;
   readonly onClose: () => void;
   readonly onFind: (terms: Terms, profile: SeatProfile) => void;
 }
 
-export const Ask = ({ terms, focus, onClose, onFind, ...held }: AskProps) => {
+export const Ask = ({
+  terms,
+  profile: held,
+  recent,
+  today,
+  focus,
+  onClose,
+  onFind,
+}: AskProps) => {
   const [movie, setMovie] = useState(terms.movie ?? "");
   const [date, setDate] = useState(terms.date);
   const [area, setArea] = useState(terms.area ?? "");
   const [partySize, setPartySize] = useState(terms.partySize);
-  const [profile, setProfile] = useState(held.profile);
+  const [profile, setProfile] = useState(held);
 
   return (
     <dialog
@@ -104,6 +115,14 @@ export const Ask = ({ terms, focus, onClose, onFind, ...held }: AskProps) => {
           Preferences and history stay on this phone. No account exists.
         </p>
       </form>
+      <Recent
+        recent={recent}
+        today={today}
+        onRun={(asked) => {
+          onFind(asked, profile);
+          onClose();
+        }}
+      />
     </dialog>
   );
 };

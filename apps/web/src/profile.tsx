@@ -1,6 +1,7 @@
 import { isReference, REFERENCE, type SeatProfile } from "@seatscout/client";
 import { type PointerEvent, useId } from "react";
 import { dotAt, rowsOf, targetAt } from "./plan.js";
+import type { Term } from "./title-card.js";
 
 interface ProfileProps {
   readonly profile: SeatProfile;
@@ -19,7 +20,7 @@ interface RangeProps {
   readonly span: Span;
   readonly value: number;
   readonly text?: string;
-  readonly term?: string;
+  readonly term?: Term;
   readonly onChange: (value: number) => void;
 }
 

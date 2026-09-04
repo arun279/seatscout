@@ -20,7 +20,7 @@ const CLOSER: SeatProfile = {
 };
 
 const unit = (min: number, max: number) =>
-  fc.double({ min, max, noNaN: true }).map((value) => value + 0);
+  fc.double({ min, max, noNaN: true }).filter((value) => !Object.is(value, -0));
 
 const profiles: fc.Arbitrary<SeatProfile> = fc.record({
   targetDepth: unit(0, 1),

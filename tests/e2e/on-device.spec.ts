@@ -215,11 +215,17 @@ test("the assertion fires when the Profile or the history is planted in a reques
       await fetch(room ?? "", {
         headers: { "x-profile": localStorage.getItem(key ?? "") ?? "" },
       });
+      await fetch(room ?? "", {
+        method: "POST",
+        body: localStorage.getItem(key ?? "") ?? "",
+      });
     },
     [A_ROOM, PROFILE_KEY],
   );
 
   expect(carrying(captured, ["targetDepth", "0.31"])).toEqual([
+    `targetDepth in ${origin}${A_ROOM}`,
+    `0.31 in ${origin}${A_ROOM}`,
     `targetDepth in ${origin}${A_ROOM}`,
     `0.31 in ${origin}${A_ROOM}`,
   ]);
