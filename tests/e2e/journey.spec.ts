@@ -3,14 +3,17 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { AxeBuilder } from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
-import { fakeUpstream } from "@seatscout/core/testing";
+import {
+  answeredByTheCorpus,
+  HIT_AREA,
+  hitAreasUnder,
+  TONIGHT,
+  WCAG,
+} from "./corpus.fixtures.js";
 
-const TONIGHT = "/?movie=245569&date=2026-08-28&area=75006&partySize=2";
 const JOURNEYS = 10;
 const SAMPLES = "reports/journey/samples.json";
-const WCAG = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 const GOOD = { lcp: 2500, inp: 200, cls: 0.1 };
-const HIT_AREA = 44;
 const VITALS = join(
   dirname(createRequire(import.meta.url).resolve("web-vitals")),
   "web-vitals.iife.js",
@@ -42,18 +45,6 @@ declare global {
 
 const p75 = (values: readonly number[]) =>
   values.toSorted((a, b) => a - b)[Math.ceil(values.length * 0.75) - 1] ?? 0;
-
-const answeredByTheCorpus = (page: Page) => {
-  const upstream = fakeUpstream({ seed: 4, standInAuditoriums: true });
-  return page.route("**/napi/**", async (route) => {
-    const answer = await upstream(new URL(route.request().url()).pathname);
-    await route.fulfill({
-      status: answer.status,
-      contentType: "application/json",
-      body: await answer.text(),
-    });
-  });
-};
 
 const collector = () => {
   window.journey = {
@@ -122,26 +113,6 @@ const journey = async (page: Page): Promise<Journey> => {
     cls: measured.cls,
   };
 };
-
-const hitAreasUnder = (page: Page, least: number) =>
-  page.evaluate((floor) => {
-    const grown = (element: Element, edge: "top" | "left") => {
-      const after = getComputedStyle(element, "::after");
-      if (after.content === "none" || after.position !== "absolute") return 0;
-      return 2 * Math.abs(Number.parseFloat(after[edge]));
-    };
-    return [...document.querySelectorAll("button, a[href]")]
-      .filter((element) => element.closest("dialog:not([open])") === null)
-      .map((element) => {
-        const box = element.getBoundingClientRect();
-        return {
-          name: (element.textContent ?? "").trim().slice(0, 32),
-          width: box.width + grown(element, "left"),
-          height: box.height + grown(element, "top"),
-        };
-      })
-      .filter((area) => area.width < floor || area.height < floor);
-  }, least);
 
 test.use({ serviceWorkers: "block" });
 
