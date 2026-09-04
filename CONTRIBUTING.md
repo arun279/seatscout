@@ -809,14 +809,26 @@ filter parses it. And it states no Movie the way a Presentation is built from on
 `MovieId` is branded as the type of a field it does not carry and the movie identity it does
 carry is a number one level up, so minting one would need the assertion `noUnsafeTypeAssertion`
 refuses. `captures.test.ts` holds both absences against the capture, so a refresh that ever
-records either fails the suite rather than leaving the decision to be remembered.
+records either fails the suite rather than leaving the decision to be remembered, and both were
+still absent when the live route was read again on 2026-09-04.
 
-**What is left is a composition rather than a translation.** A theater list, then the movies at
-each theater, then the listing route this adapter already reads for each of those movies, would
-answer it in the vocabulary that already works. What that costs is a route the corpus does not
-hold, a request per Theater and then one per Movie against the single request a movie-centric
-read costs, and a Source operation that does not exist. That is a measurement and a decision,
-and neither is a thing this change is in a position to make.
+**What is left is a composition, and the measurement refuses it.** A theater list, then the
+movies at each theater, then the listing route this adapter already reads for each of those
+movies, would answer it in the vocabulary that already works. Reading it costs 1 + 25 + 56
+requests and 1.46 s at the fan-out width the search uses, against the one request and 375 ms a
+movie-centric read costs, so the resolving half is affordable. What it resolves to is not. One
+date in the area the corpus is anchored on holds **1,479 bookable Showtimes** where the widest
+single release holds 185, so a Movie-less search reads eight times the seat maps the recorded
+table was measured on. Read at that width against the live Source on 2026-09-04, 361 of the
+1,479 answered 403, the rest took 37.6 ms each against the 14 ms the table implies, and the
+Source then refused every request from this client for at least six minutes. In this
+code that is worse than slow: 403 is in no refusal table, so each one spends three attempts and
+answers `unreachable`, and three consecutive ones open the circuit `theatersNear`,
+`showtimesFor` and `seatsFor` share, which darkens the area for the searches that follow too. A
+narrower fan-out does not rescue it either, the recorded table putting 48 maps at 10.30 s at
+width 6. So the read stays refused, and what would lift the refusal is a Query term that bounds
+the candidate set before the fan-out, which is a screen and a change to what Coverage promises
+rather than an adapter that is missing.
 
 The boundary is then measured rather than asserted. One test walks every key name in the
 captured responses and every key name the domain emits, and holds their overlap to `id`,
