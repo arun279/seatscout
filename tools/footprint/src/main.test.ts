@@ -1,16 +1,7 @@
 import { describe, expect, it } from "vitest";
+import type { Bundle } from "./bundles.js";
 import { main, type Measure } from "./main.js";
-import type { Bundle, Measurement } from "./report.js";
-
-const TREE = { "packages/core/src/seat.ts": { code: 40, comment: 0 } };
-
-const measurement = (bundle: Bundle): Measurement => ({
-  base: { ref: "base-sha", tree: TREE },
-  head: { ref: "head-sha", tree: TREE },
-  diff: { added: {}, removed: {}, modified: {} },
-  bundles: [bundle],
-  commentRatchet: 0,
-});
+import { measurement } from "./report.fixtures.js";
 
 const WITHIN: Bundle = {
   name: "web app",
@@ -26,7 +17,7 @@ const harness = (bundle: Bundle = WITHIN) => {
 
   const measure: Measure = (base, head) => {
     asked.push({ base, head });
-    return measurement(bundle);
+    return measurement({ bundles: [bundle] });
   };
 
   const run = (...argv: readonly string[]) =>

@@ -1,73 +1,26 @@
 import { describe, expect, it } from "vitest";
-import { measureWith, RATCHET } from "./measure.js";
-import type { Completed, Run } from "./shell.js";
-
-interface Command {
-  readonly command: string;
-  readonly args: readonly string[];
-}
-
-const recorder = (
-  over: (command: Command) => Completed | undefined = () => undefined,
-) => {
-  const commands: Command[] = [];
-
-  const canned = (command: Command): string => {
-    if (command.command === "git" && command.args[0] === "rev-parse")
-      return "head-sha\n";
-    if (command.command === "git" && command.args[0] === "merge-base")
-      return "base-sha\n";
-    if (command.command === "cloc" && command.args[1] === "--diff")
-      return JSON.stringify({
-        added: { "packages/core/src/seat.ts": { code: 5, comment: 0 } },
-        removed: {},
-        modified: {},
-      });
-    if (command.command === "cloc")
-      return JSON.stringify({
-        header: { cloc_version: "2.10" },
-        "packages/core/src/seat.ts": { code: 40, comment: 1 },
-        SUM: { code: 40, comment: 1 },
-      });
-    if (command.command === "pnpm")
-      return JSON.stringify([
-        { name: "web app", size: 15, sizeLimit: 15, passed: true },
-      ]);
-    return "";
-  };
-
-  const run: Run = (command, args) => {
-    const call = { command, args: [...args] };
-    commands.push(call);
-    return over(call) ?? { ok: true, stdout: canned(call), stderr: "" };
-  };
-
-  return { run, commands };
-};
-
-const reading = (ratchet: string = JSON.stringify({ comments: 0 })) => {
-  const asked: string[] = [];
-  const read = (path: string) => {
-    asked.push(path);
-    return ratchet;
-  };
-  return { read, asked };
-};
-
-const measuring = (run: Run, ratchet?: string) =>
-  measureWith(run, reading(ratchet).read);
-
-const lines = (commands: readonly Command[]): readonly string[] =>
-  commands.map(({ command, args }) => [command, ...args].join(" "));
-
-const sizeLimitExitingNonZero = (stdout: string): Run =>
-  recorder((command) =>
-    command.command === "pnpm" ? { ok: false, stdout, stderr: "" } : undefined,
-  ).run;
+import { BIOME, OXLINT } from "./limits.js";
+import {
+  lines,
+  MUTATION_REPORT,
+  measuring,
+  reading,
+  recorder,
+} from "./measure.fixtures.js";
+import {
+  BIOME_REPORT,
+  measureWith,
+  OXLINT_REPORT,
+  RATCHET,
+  STRYKER,
+} from "./measure.js";
 
 describe("measuring a change", () => {
-  it("reads the comment ratchet out of the file that holds it", () => {
+  it("names every file it reads a number or a path out of", () => {
     expect(RATCHET).toBe(".footprint.json");
+    expect(STRYKER).toBe("stryker.config.json");
+    expect(OXLINT_REPORT).toBe(".oxlintrc.report.json");
+    expect(BIOME_REPORT).toBe("biome.report.json");
   });
 
   it("resolves the head first, then the merge base against it", () => {
@@ -105,6 +58,45 @@ describe("measuring a change", () => {
     expect(lines(commands)).toContain("pnpm exec size-limit --json");
   });
 
+  it("asks each linter for the same rule again, at a threshold of one", () => {
+    const { run, commands } = recorder();
+
+    measuring(run)("origin/main", "HEAD");
+
+    expect(lines(commands)).toContain(
+      `pnpm exec oxlint --config ${OXLINT_REPORT} --format json`,
+    );
+    expect(lines(commands)).toContain(
+      `pnpm exec biome lint --config-path=${BIOME_REPORT} --only=complexity/noExcessiveCognitiveComplexity --only=style/noExcessiveLinesPerFile --reporter=json --max-diagnostics=none`,
+    );
+  });
+
+  it("asks each runner to list its tests rather than to run them", () => {
+    const { run, commands } = recorder();
+
+    measuring(run)("origin/main", "HEAD");
+
+    expect(lines(commands)).toContain("pnpm exec vitest list --json");
+    expect(lines(commands)).toContain(
+      "pnpm exec playwright test --list --reporter=json",
+    );
+  });
+
+  it("reads the limits from the files that gate them, not from the report pass", () => {
+    const { run } = recorder();
+    const { read, asked } = reading();
+
+    const measurement = measureWith(run, read)("origin/main", "HEAD");
+
+    expect(measurement.gates).toStrictEqual({
+      cyclomatic: 10,
+      cognitive: 15,
+      lines: 300,
+    });
+    expect(asked).toContain(OXLINT);
+    expect(asked).toContain(BIOME);
+  });
+
   it("carries the counter's numbers into the measurement", () => {
     const { run } = recorder();
 
@@ -123,6 +115,48 @@ describe("measuring a change", () => {
     ]);
   });
 
+  it("carries each linter's highest reading into the measurement", () => {
+    const { run } = recorder();
+
+    const { limits } = measuring(run)("origin/main", "HEAD");
+
+    expect(limits.cyclomatic).toStrictEqual({
+      value: 9,
+      at: "`packages/core/src/read.ts:41` `read`",
+    });
+    expect(limits.cognitive).toStrictEqual({
+      value: 14,
+      at: "`tools/corpus-rows.mjs:39`",
+    });
+    expect(limits.longest).toStrictEqual({
+      value: 297,
+      at: "`packages/core/src/map.test.ts`",
+    });
+  });
+
+  it("carries both test counts and the score of the run that was recorded", () => {
+    const { run } = recorder();
+
+    const measurement = measuring(run)("origin/main", "HEAD");
+
+    expect(measurement.suites).toStrictEqual({ unit: 2, endToEnd: 1 });
+    expect(measurement.mutation).toStrictEqual({
+      score: 100,
+      detected: 1,
+      weighed: 1,
+      breaksAt: 100,
+    });
+  });
+
+  it("reads the mutation report from wherever the runner was told to write it", () => {
+    const { run } = recorder();
+    const { read, asked } = reading();
+
+    measureWith(run, read)("origin/main", "HEAD");
+
+    expect(asked).toContain(MUTATION_REPORT);
+  });
+
   it("names the command and repeats its complaint when one fails", () => {
     const { run } = recorder((command) =>
       command.command === "git" && command.args[0] === "rev-parse"
@@ -133,87 +167,5 @@ describe("measuring a change", () => {
     expect(() => measuring(run)("origin/main", "HEAD")).toThrow(
       "git rev-parse HEAD\nunknown revision",
     );
-  });
-
-  it("reads the bundle verdict from size-limit even when it exits non-zero", () => {
-    const run = sizeLimitExitingNonZero(
-      JSON.stringify([
-        { name: "web app", size: 90, sizeLimit: 15, passed: false },
-      ]),
-    );
-
-    expect(measuring(run)("origin/main", "HEAD").bundles).toStrictEqual([
-      { name: "web app", size: 90, sizeLimit: 15, passed: false },
-    ]);
-  });
-
-  it("refuses the verdict a glob matching nothing reports, which passes at no ratchet", () => {
-    const run = sizeLimitExitingNonZero(
-      JSON.stringify([{ name: "web app", passed: true, size: 0 }]),
-    );
-
-    expect(() => measuring(run)("origin/main", "HEAD")).toThrow(
-      'size-limit weighed no bundle against a ratchet:\n[{"name":"web app","passed":true,"size":0}]',
-    );
-  });
-
-  it("refuses a list where one bundle was weighed and another was not", () => {
-    const run = sizeLimitExitingNonZero(
-      JSON.stringify([
-        { name: "web app", size: 15, sizeLimit: 15, passed: true },
-        { name: "proxy", passed: true, size: 0 },
-      ]),
-    );
-
-    expect(() => measuring(run)("origin/main", "HEAD")).toThrow(
-      "size-limit weighed no bundle against a ratchet",
-    );
-  });
-
-  it("refuses a run that weighed no bundle at all", () => {
-    const run = sizeLimitExitingNonZero("[]");
-
-    expect(() => measuring(run)("origin/main", "HEAD")).toThrow(
-      "size-limit weighed no bundle against a ratchet",
-    );
-  });
-
-  it("refuses size-limit's error object, which is not a list of bundles", () => {
-    const run = sizeLimitExitingNonZero(
-      '{"error":"SizeLimitError: config is empty"}',
-    );
-
-    expect(() => measuring(run)("origin/main", "HEAD")).toThrow(
-      "size-limit weighed no bundle against a ratchet",
-    );
-  });
-
-  it("reads the number of comments the tree is held to", () => {
-    const { run } = recorder();
-    const { read, asked } = reading(JSON.stringify({ comments: 7 }));
-
-    expect(measureWith(run, read)("origin/main", "HEAD").commentRatchet).toBe(
-      7,
-    );
-    expect(asked).toStrictEqual([RATCHET]);
-  });
-
-  it("refuses a ratchet file that sets no number of comments", () => {
-    const { run } = recorder();
-
-    expect(() =>
-      measuring(run, JSON.stringify({}))("origin/main", "HEAD"),
-    ).toThrow(`${RATCHET} sets no number of comments to hold the tree to`);
-  });
-
-  it("refuses a comment ratchet that is not a number", () => {
-    const { run } = recorder();
-
-    expect(() =>
-      measuring(run, JSON.stringify({ comments: "none" }))(
-        "origin/main",
-        "HEAD",
-      ),
-    ).toThrow(`${RATCHET} sets no number of comments to hold the tree to`);
   });
 });

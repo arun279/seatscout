@@ -1,0 +1,17 @@
+{
+  "suites": [
+    {
+      "title": "shell.spec.ts",
+      "file": "shell.spec.ts",
+      "specs": [
+        {
+          "title": "the root serves the shell page",
+          "ok": true,
+          "tests": [{ "expectedStatus": "passed", "projectName": "" }]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": { "expected": 0, "skipped": 1, "unexpected": 0, "flaky": 0 }
+}

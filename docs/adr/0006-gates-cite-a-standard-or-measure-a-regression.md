@@ -267,6 +267,37 @@ placed on functions length", and the Linux kernel's 48 is a remark about one scr
 file limit above bounds the same thing honestly. The finding that would reverse this is a long
 straight-line function body, and there is none.
 
+**Where the tree stands under each of those three limits is printed on every pull request,
+and printing is not a second gate.** The highest cyclomatic complexity, the highest
+cognitive complexity and the longest file go in the footprint comment beside the limit each
+one sits under. None of them gates there, because each already gates where it is measured,
+in `quality` and on the pre-commit hook, and a second enforcement point for one number is a
+second place for it to drift. What the figures are is headroom under a limit that bites:
+a reader can act on "9 against 10" without weighing anything, which is the test this
+decision sets for a figure that gates nothing.
+
+The values are read by asking each linter for the same rule a second time at a threshold of
+one and parsing its machine output, never by counting anything here.
+`.oxlintrc.report.json` and `biome.report.json` sit beside the gating configurations and
+differ from them in the threshold alone; the Biome one extends `biome.json`, so the file set
+and the ignore rules are the same bytes rather than a second copy that can drift. Biome's
+`json` reporter announces itself as experimental and subject to change in a patch release,
+so a diagnostic whose number the report cannot read is a refusal by name and a rule that
+reports nothing at all is a refusal too, rather than a peak taken over whatever survived.
+
+Both Biome rules now carry their thresholds explicitly rather than relying on the documented
+default. The numbers are unchanged and so is the verdict on this tree; what it buys is that
+the comment reads the limit out of the file that gates, so it cannot print one the gate is
+not using, and that a limit going missing is a refusal rather than a stale figure.
+
+**The count of files within a tenth of the line limit is printed for a decision that is
+already written down.** The 300 is the one number here that is a convention rather than a
+standard, and it is raised on cost sustained across many files, never to make one file fit;
+the first raise, if it comes, goes to 500, which is inside the range ESLint's own
+documentation states. That decision needs to know how much of the tree is running close to
+the limit rather than how one file is doing, so the count is the figure the decision takes
+and it gates nothing.
+
 **What counts as test code is written in four places, and they have to agree.** The
 `*.test.ts` suffix was the whole definition in all four: the pathspec of ADR 1's claim about
 modules that build a `Source`, the mutate glob, the footprint report's bucket classifier, and

@@ -17,13 +17,19 @@
     "rules": {
       "preset": "recommended",
       "complexity": {
-        "noExcessiveCognitiveComplexity": "error"
+        "noExcessiveCognitiveComplexity": {
+          "level": "error",
+          "options": { "maxAllowedComplexity": 15 }
+        }
       },
       "nursery": {
         "noUnsafeTypeAssertion": "error"
       },
       "style": {
-        "noExcessiveLinesPerFile": "error",
+        "noExcessiveLinesPerFile": {
+          "level": "error",
+          "options": { "maxLines": 300 }
+        },
         "useNodejsImportProtocol": "error"
       },
       "suspicious": {

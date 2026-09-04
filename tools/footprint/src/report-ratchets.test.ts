@@ -98,7 +98,7 @@ describe("what was counted", () => {
 
     expect(report.passed).toBe(false);
     expect(report.markdown).toContain(
-      "Tooling held files at the merge base and holds none here. A file leaves the measurement when its path stops matching how this report sorts it. Either put it back, or sort it in tools/footprint/src/report.ts, where a reviewer sees which side of the count it landed on.",
+      "Tooling held files at the merge base and holds none here. A file leaves the measurement when its path stops matching how this report sorts it. Either put it back, or sort it in tools/footprint/src/volume.ts, where a reviewer sees which side of the count it landed on.",
     );
   });
 
@@ -156,13 +156,12 @@ describe("what was counted", () => {
   });
 
   it("does not mind a bucket that was empty at the merge base staying empty", () => {
-    const tree = {
+    const holdingNoTooling = {
       "packages/core/src/seat.ts": counts(40, 0),
       "packages/core/src/seat.test.ts": counts(20, 0),
-      "tools/footprint/src/report.ts": counts(30, 0),
     };
 
-    expect(between(tree, tree).passed).toBe(true);
+    expect(between(holdingNoTooling, holdingNoTooling).passed).toBe(true);
   });
 });
 
