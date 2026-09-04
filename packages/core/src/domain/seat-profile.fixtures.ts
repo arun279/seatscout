@@ -1,3 +1,4 @@
+import * as fc from "fast-check";
 import { expect } from "vitest";
 import type { Seat } from "../source/seat-map.js";
 import { type NormalisedPosition, normalised } from "./auditorium.js";
@@ -207,3 +208,37 @@ export const sweptWeightings = () =>
       ),
     ),
   );
+
+const rowSpecs = fc.record({
+  gap: fc.integer({ min: 1, max: 40 }),
+  pitch: fc.integer({ min: 0, max: 30 }),
+  width: fc.integer({ min: 1, max: 20 }),
+  seats: fc.integer({ min: 1, max: 12 }),
+  shift: fc.integer({ min: -30, max: 30 }),
+});
+
+const tapered = (direction: number) =>
+  fc.tuple(rowSpecs, fc.integer({ min: 2, max: 9 })).map(([base, rows]) =>
+    Array.from({ length: rows }, (_, index) => ({
+      ...base,
+      seats: Math.max(1, base.seats + direction * index * 2),
+    })),
+  );
+
+const layouts = fc.oneof(
+  {
+    weight: 1,
+    arbitrary: rowSpecs.map((row) => [{ ...row, seats: 1 }]),
+  },
+  { weight: 1, arbitrary: fc.array(rowSpecs, { minLength: 1, maxLength: 1 }) },
+  { weight: 3, arbitrary: tapered(1) },
+  { weight: 3, arbitrary: tapered(-1) },
+  { weight: 3, arbitrary: fc.array(rowSpecs, { minLength: 2, maxLength: 9 }) },
+);
+
+export const auditoriums = layouts.map(drawn).chain((seats) =>
+  fc.shuffledSubarray([...seats], {
+    minLength: seats.length,
+    maxLength: seats.length,
+  }),
+);
