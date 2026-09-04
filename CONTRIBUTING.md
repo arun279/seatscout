@@ -10,7 +10,9 @@
   [shellcheck](https://www.shellcheck.net), for the workflow and shell checks in the
   `quality` job
 
-Run `pnpm install` after cloning. The install registers the lefthook Git hooks.
+Run `pnpm install` after cloning. The install registers the lefthook Git hooks and prunes
+any worktree registration whose directory has gone, so a stale entry cannot outlive the
+checkout it named.
 
 ## Quality gates
 
@@ -285,7 +287,9 @@ search against its package directory, which under pnpm holds no siblings to find
 whatever it finds there through `ts.parseConfigFileTextToJson`, which TypeScript 7 no longer
 exposes. Nothing needs it to run the tests: esbuild reads each package's own `tsconfig.json`,
 and the root file only lists project references. With it out of the way the run works in a
-copy, so a run killed part way leaves the working tree exactly as it found it.
+copy, so a run killed part way leaves the working tree exactly as it found it. The copy
+itself is what such a run leaves behind, so `cleanTempDir` is `always` rather than the
+default, which clears the sandbox only after a run that finished.
 
 Do the work of a test inside the test. A mutant that stops a test file loading at all
 produces no failing test, and the runner scores that as a survivor rather than a kill, so

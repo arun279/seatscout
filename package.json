@@ -21,7 +21,7 @@
     "format:check": "biome format .",
     "lint": "biome lint .",
     "live-injections": "node tools/live-injections/src/index.ts",
-    "prepare": "lefthook install",
+    "prepare": "lefthook install && git worktree prune",
     "spell": "cspell lint --dot .",
     "test:e2e": "playwright test --list --grep @accessibility && playwright test",
     "test:live": "vitest run --config vitest.live.config.ts",
