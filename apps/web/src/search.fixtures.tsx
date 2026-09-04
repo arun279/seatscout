@@ -1,11 +1,15 @@
 import {
   createSeatScout,
+  REFERENCE,
+  type RecentSearch,
   type Search,
   type SearchTerms,
+  type SeatProfile,
   type SeatScout,
 } from "@seatscout/client";
 import { fakeUpstream, type UpstreamScript } from "@seatscout/client/testing";
 import { act, cleanup, render, screen, within } from "@testing-library/react";
+import { useState } from "react";
 import { App } from "./app.js";
 import type { Terms } from "./terms.js";
 
@@ -29,13 +33,46 @@ export const ASKED: SearchTerms = {
   area: "75006",
   partySize: 2,
   accessibleSeating: false,
+  profile: REFERENCE,
 };
+
+export const FRONT_ROW: SeatProfile = { ...REFERENCE, targetDepth: 0 };
 
 interface Staged {
   readonly terms?: Terms;
+  readonly profile?: SeatProfile;
+  readonly recent?: readonly RecentSearch[];
   readonly script?: Omit<UpstreamScript, "seed" | "standInAuditoriums">;
   readonly holdRetries?: boolean;
 }
+
+interface HarnessProps {
+  readonly seatscout: SeatScout;
+  readonly terms: Terms;
+  readonly profile: SeatProfile;
+  readonly recent: readonly RecentSearch[];
+  readonly clock: {
+    now: () => number;
+    subscribe: (tick: () => void) => () => void;
+  };
+  readonly onTerms: (terms: Terms) => void;
+  readonly onProfile: (profile: SeatProfile) => void;
+}
+
+const Harness = ({ onProfile, ...props }: HarnessProps) => {
+  const [profile, setProfile] = useState(props.profile);
+  return (
+    <App
+      {...props}
+      profile={profile}
+      onProfile={(next) => {
+        onProfile(next);
+        setProfile(next);
+      }}
+      today={TODAY}
+    />
+  );
+};
 
 const ticking = () => {
   const ticks = new Set<() => void>();
@@ -92,19 +129,23 @@ export const staged = (options: Staged = {}) => {
     },
   };
   const chosen: Terms[] = [];
+  const profiles: SeatProfile[] = [];
   const rendered = render(
-    <App
+    <Harness
       seatscout={seatscout}
       terms={options.terms ?? TONIGHT}
-      onTerms={(terms) => chosen.push(terms)}
-      today={TODAY}
+      profile={options.profile ?? REFERENCE}
+      recent={options.recent ?? []}
       clock={time.clock}
+      onTerms={(terms) => chosen.push(terms)}
+      onProfile={(profile) => profiles.push(profile)}
     />,
   );
   return {
     unmount: rendered.unmount,
     asked,
     chosen,
+    profiles,
     aborted,
     advance: time.advance,
     resumeRetries: async () => {
