@@ -1,4 +1,5 @@
 import { openSource, type SourceDependencies } from "@seatscout/core";
+import { openProgramme } from "./programme.js";
 import { openSearch } from "./search.js";
 import { inMemoryStore, type KeyValueStore } from "./store.js";
 import { openVerification } from "./verify.js";
@@ -14,6 +15,7 @@ export const createSeatScout = (deps: SeatScoutDependencies) => {
     now: deps.now,
   };
   return {
+    programme: openProgramme(catalogue),
     search: openSearch(catalogue),
     verify: openVerification(catalogue),
   };

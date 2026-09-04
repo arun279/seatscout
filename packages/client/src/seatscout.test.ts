@@ -15,7 +15,11 @@ const TONIGHT: SearchTerms = {
 };
 
 const composed = (overrides: Partial<SeatScoutDependencies> = {}) => {
-  const upstream = fakeUpstream({ seed: 4, standInAuditoriums: true });
+  const upstream = fakeUpstream({
+    seed: 4,
+    standInAuditoriums: true,
+    standInTheaters: true,
+  });
   const seatscout = createSeatScout({
     fetch: upstream,
     now: () => AT,
@@ -52,6 +56,20 @@ describe("a SeatScout", () => {
     await seatscout.search(TONIGHT).done;
 
     expect(listingsRead()).toBe(1);
+  });
+
+  it("names what is playing near an area on a date through the same Source, titled", async () => {
+    const { seatscout } = composed();
+
+    const reading = await seatscout.programme("75006", "2026-08-28");
+    if (!reading.ok)
+      throw new Error(`the programme answered ${reading.reason}`);
+
+    expect(reading.payload.theaters).toHaveLength(25);
+    expect(reading.payload.movies).toContainEqual({
+      id: "245569",
+      title: "The Dog Stars (2026)",
+    });
   });
 
   it("re-verifies a result it found through the same Source", async () => {

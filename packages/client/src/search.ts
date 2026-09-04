@@ -10,13 +10,12 @@ import {
   type CatalogueTerms,
   openCatalogue,
 } from "./catalogue.js";
+import { fannedOut } from "./fan-out.js";
 import {
   type ResultTerms,
   rankingIn,
   type SeatGroupResult,
 } from "./ranking.js";
-
-const WIDTH = 24;
 
 export interface SearchTerms extends CatalogueTerms, ResultTerms {}
 
@@ -114,22 +113,15 @@ export const openSearch = (deps: CatalogueDependencies) => {
     };
 
     const check = async (showtime: Showtime) => {
+      if (aborted) return;
       const reading = await deps.source.seatsFor(`${showtime.id}`);
       if (aborted) return;
       record(showtime, reading);
       publish("searching");
     };
 
-    const fanOut = async (bookable: readonly Showtime[]) => {
-      const queue = bookable[Symbol.iterator]();
-      const worker = async () => {
-        for (const showtime of queue) {
-          if (aborted) return;
-          await check(showtime);
-        }
-      };
-      await Promise.all(Array.from({ length: WIDTH }, worker));
-    };
+    const fanOut = (bookable: readonly Showtime[]) =>
+      fannedOut(bookable, check);
 
     const run = async () => {
       const reading = await resolve(terms);
