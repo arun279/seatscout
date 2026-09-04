@@ -1,6 +1,13 @@
-import type { RecentSearch, SeatProfile } from "@seatscout/client";
+import type {
+  RecentSearch,
+  SeatGroupResult,
+  SeatProfile,
+  Verified,
+} from "@seatscout/client";
 import { useSyncExternalStore } from "react";
+import type { Clock } from "./app.js";
 import { Ask } from "./ask.js";
+import { Auditorium } from "./auditorium.js";
 import { Ledger } from "./coverage.js";
 import type { HeldSnapshots } from "./held.js";
 import type { Overlay } from "./overlay.js";
@@ -12,9 +19,11 @@ interface OverlaysProps {
   readonly profile: SeatProfile;
   readonly recent: readonly RecentSearch[];
   readonly today: string;
+  readonly clock: Clock;
   readonly onClose: () => void;
   readonly onTerms: (terms: Terms) => void;
   readonly onProfile: (profile: SeatProfile) => void;
+  readonly onHandOff: (candidate: SeatGroupResult) => Promise<Verified>;
 }
 
 const CurrentLedger = ({
@@ -30,15 +39,40 @@ const CurrentLedger = ({
   />
 );
 
+const CurrentRoom = ({
+  overlay,
+  today,
+  clock,
+  onClose,
+  onHandOff,
+}: {
+  readonly overlay: Extract<Overlay, { kind: "room" }>;
+  readonly today: string;
+  readonly clock: Clock;
+  readonly onClose: () => void;
+  readonly onHandOff: (candidate: SeatGroupResult) => Promise<Verified>;
+}) => (
+  <Auditorium
+    result={overlay.result}
+    search={overlay.search}
+    today={today}
+    now={useSyncExternalStore(clock.subscribe, clock.now)}
+    onClose={onClose}
+    onHandOff={onHandOff}
+  />
+);
+
 const Current = ({
   overlay,
   terms,
   profile,
   recent,
   today,
+  clock,
   onClose,
   onTerms,
   onProfile,
+  onHandOff,
 }: Omit<OverlaysProps, "stack"> & { readonly overlay: Overlay }) => {
   switch (overlay.kind) {
     case "ask":
@@ -58,32 +92,24 @@ const Current = ({
       );
     case "ledger":
       return <CurrentLedger held={overlay.held} onClose={onClose} />;
+    case "room":
+      return (
+        <CurrentRoom
+          overlay={overlay}
+          today={today}
+          clock={clock}
+          onClose={onClose}
+          onHandOff={onHandOff}
+        />
+      );
   }
 };
 
-export const Overlays = ({
-  stack,
-  terms,
-  profile,
-  recent,
-  today,
-  onClose,
-  onTerms,
-  onProfile,
-}: OverlaysProps) => (
+export const Overlays = ({ stack, ...rest }: OverlaysProps) => (
   <>
     {stack.map((overlay, at) => (
       <div key={String(at)}>
-        <Current
-          overlay={overlay}
-          terms={terms}
-          profile={profile}
-          recent={recent}
-          today={today}
-          onClose={onClose}
-          onTerms={onTerms}
-          onProfile={onProfile}
-        />
+        <Current overlay={overlay} {...rest} />
       </div>
     ))}
   </>

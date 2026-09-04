@@ -18,6 +18,9 @@ export const accountOf = (coverage: Coverage) => {
 export const unreachedIn = (snapshot: Snapshot): number =>
   snapshot.coverage.failed.length + accountOf(snapshot.coverage).remaining;
 
+export const seatsOf = (result: SeatGroupResult) =>
+  result.seats.map((seat) => seat.id).join("·");
+
 const tied = (result: SeatGroupResult) => result.reasons.tiedAtRoomResolution;
 
 export const tiedIn = (results: readonly SeatGroupResult[]): number =>

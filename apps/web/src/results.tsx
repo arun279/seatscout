@@ -1,4 +1,4 @@
-import type { Snapshot } from "@seatscout/client";
+import type { SeatGroupResult, Snapshot } from "@seatscout/client";
 import { Fragment } from "react";
 import { Card } from "./card.js";
 import { accountOf, listed, tiedIn, unreachedIn } from "./derived.js";
@@ -16,6 +16,7 @@ interface ResultsProps {
   readonly held: HeldSnapshots;
   readonly onRetry: () => void;
   readonly onEdit: (term: Term) => void;
+  readonly onRoom: (result: SeatGroupResult) => void;
 }
 
 const ListHead = ({
@@ -61,6 +62,7 @@ export const Results = ({
   held,
   onRetry,
   onEdit,
+  onRoom,
 }: ResultsProps) => {
   const when = whenOf(terms.date, today);
   const settled = snapshot.phase === "settled";
@@ -105,7 +107,7 @@ export const Results = ({
                 <span className="beam-line" />
               </li>
             )}
-            <Card result={result} now={now} />
+            <Card result={result} now={now} onRoom={onRoom} />
           </Fragment>
         ))}
       </ol>

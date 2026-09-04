@@ -113,6 +113,17 @@
   margin: 0;
 }
 
+.card .open {
+  appearance: none;
+  background: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
 .card .place {
   font-size: 15px;
   font-weight: 600;

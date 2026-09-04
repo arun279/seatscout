@@ -95,6 +95,9 @@ const Searching = ({
         held={session.held}
         onRetry={() => setSession(opened(seatscout, asked))}
         onEdit={(focus) => overlays.open({ kind: "ask", focus })}
+        onRoom={(result) =>
+          overlays.open({ kind: "room", result, search: session.search })
+        }
       />
     </>
   );
@@ -181,9 +184,11 @@ const Screen = ({
         profile={profile}
         recent={recent}
         today={today}
+        clock={clock}
         onClose={overlays.close}
         onTerms={onTerms}
         onProfile={onProfile}
+        onHandOff={seatscout.verify}
       />
     </>
   );
