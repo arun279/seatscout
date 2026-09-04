@@ -15,7 +15,11 @@ import { startApp } from "./start.js";
 const SEAT_MAP = "/napi/seatMap/";
 
 const opened = (query: string) => {
-  const upstream = fakeUpstream({ seed: 4, standInAuditoriums: true });
+  const upstream = fakeUpstream({
+    seed: 4,
+    standInAuditoriums: true,
+    standInTheaters: true,
+  });
   vi.stubGlobal("fetch", upstream);
   window.history.replaceState(null, "", `/${query}`);
   document.body.replaceChildren(
@@ -53,7 +57,10 @@ describe("starting the application in a browser", () => {
     await waitFor(() =>
       expect(screen.getAllByRole("article").length).toBeGreaterThan(0),
     );
-    expect(page.cached()).toHaveLength(1);
+    expect(page.cached().toSorted()).toEqual([
+      'seatscout.catalogue.v1.["245569","2026-08-28","75006"]',
+      'seatscout.programme.v1.["2026-08-28","75006"]',
+    ]);
     expect(
       within(screen.getAllByRole("article")[0] ?? document.body).getByText(
         /^\d+s$/,

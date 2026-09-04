@@ -7,13 +7,14 @@ import { Fragment } from "react";
 import { nameOf } from "./coverage.js";
 import { accountOf, listed, tiedIn, unreachedIn } from "./derived.js";
 import type { HeldSnapshots } from "./held.js";
-import { ageOf, clockOf, noneOf, whenOf, whyOf } from "./phrases.js";
+import { ageOf, clockOf, noneOf, retryOf, whenOf, whyOf } from "./phrases.js";
 import { marksOf } from "./plan.js";
 import type { Terms } from "./terms.js";
 import type { Term } from "./title-card.js";
 
 interface ResultsProps {
   readonly snapshot: Snapshot;
+  readonly painted: Snapshot | null;
   readonly terms: Terms;
   readonly today: string;
   readonly now: number;
@@ -100,7 +101,13 @@ const Card = ({ result, now }: CardProps) => {
         </div>
         <div className="side">
           <span className="seats">
-            {result.seats.map((seat) => seat.id).join("·")}
+            {result.seats
+              .map((seat) =>
+                seat.designation === "standard"
+                  ? seat.id
+                  : `${seat.id} ${seat.designation}`,
+              )
+              .join("·")}
           </span>
           <span className="prov">1 source</span>
           <time
@@ -115,10 +122,14 @@ const Card = ({ result, now }: CardProps) => {
   );
 };
 
-const Remedy = ({ onRetry, onEdit }: RemedyProps) => (
+const Remedy = ({
+  retry,
+  onRetry,
+  onEdit,
+}: RemedyProps & { readonly retry: string }) => (
   <>
     <button type="button" className="btn btn-velvet" onClick={onRetry}>
-      Retry the search
+      {retry}
     </button>
     <button
       type="button"
@@ -140,7 +151,7 @@ const Unreachable = ({
       Nothing was looked at, so this is not an answer about {when}.
     </p>
     <div className="fail-box">
-      <Remedy {...remedy} />
+      <Remedy {...remedy} retry="Retry the search" />
     </div>
   </section>
 );
@@ -177,7 +188,7 @@ const Partial = ({
             </li>
           ))}
         </ul>
-        <Remedy {...remedy} />
+        <Remedy {...remedy} retry={retryOf(snapshot.coverage.failed.length)} />
       </div>
     </section>
   );
@@ -252,6 +263,7 @@ const ListHead = ({
 
 export const Results = ({
   snapshot,
+  painted,
   terms,
   today,
   now,
@@ -261,8 +273,8 @@ export const Results = ({
 }: ResultsProps) => {
   const when = whenOf(terms.date, today);
   const settled = snapshot.phase === "settled";
-  const results = settled ? listed(snapshot.results) : [];
-  const tied = tiedIn(snapshot.results);
+  const results = painted === null ? [] : listed(painted.results);
+  const tied = tiedIn(results);
   const tie = tied > 1;
   const partial = settled && unreachedIn(snapshot) > 0;
 

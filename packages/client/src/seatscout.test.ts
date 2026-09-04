@@ -72,6 +72,31 @@ describe("a SeatScout", () => {
     });
   });
 
+  it("keeps a programme whose every schedule fails from darkening the search that follows", async () => {
+    const nearby = await composed().seatscout.programme("75006", "2026-08-28");
+    if (!nearby.ok) throw new Error("the corpus lost its area");
+    const { seatscout } = composed({
+      fetch: fakeUpstream({
+        seed: 4,
+        standInAuditoriums: true,
+        standInTheaters: true,
+        sequences: Object.fromEntries(
+          nearby.payload.theaters.map((theater) => [
+            `/napi/theaterMovieShowtimes/${theater.id}`,
+            [500, 500, 500],
+          ]),
+        ),
+      }),
+    });
+
+    const programme = await seatscout.programme("75006", "2026-08-28");
+    const settled = await seatscout.search(TONIGHT).done;
+
+    expect(programme.ok && programme.payload.unreached).toHaveLength(25);
+    expect(settled.phase).toBe("settled");
+    expect(settled.coverage.checked).toBe(172);
+  });
+
   it("re-verifies a result it found through the same Source", async () => {
     const { seatscout } = composed();
     const settled = await seatscout.search(TONIGHT).done;

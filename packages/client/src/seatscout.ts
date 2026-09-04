@@ -15,7 +15,7 @@ export const createSeatScout = (deps: SeatScoutDependencies) => {
     now: deps.now,
   };
   return {
-    programme: openProgramme(catalogue),
+    programme: openProgramme({ ...catalogue, source: openSource(deps) }),
     search: openSearch(catalogue),
     verify: openVerification(catalogue),
   };
