@@ -67,6 +67,7 @@ export const Film = ({ area, programme, typed, onTyped }: FilmProps) => {
               <button
                 type="button"
                 className="suggestion"
+                aria-label={movie.title}
                 onClick={() => onTyped(movie.title)}
               >
                 <Highlighted movie={movie} typed={typed} />
