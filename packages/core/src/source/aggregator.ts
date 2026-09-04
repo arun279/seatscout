@@ -2,6 +2,7 @@ import type { Fetch } from "../transport.js";
 import { delayAfter, type RetryPolicy } from "./backoff.js";
 import { type BreakerPolicy, circuitBreaker } from "./breaker.js";
 import { catalogueFrom, theatersFrom } from "./catalogue.js";
+import { moviesFrom } from "./movies.js";
 import type { Reading, Source, Unreadable } from "./port.js";
 import { seatsFrom } from "./seat-map.js";
 
@@ -102,6 +103,11 @@ export const openSource = (deps: SourceDependencies): Source => {
       read(
         `/napi/nearbyTheaters?zipCode=${encodeURIComponent(area)}&limit=${THEATERS_ASKED_FOR}`,
         theatersFrom,
+      ),
+    moviesAt: (theater, date) =>
+      read(
+        `/napi/theaterMovieShowtimes/${encodeURIComponent(theater)}?startDate=${encodeURIComponent(date)}&isdesktop=true&partnerRestrictedTicketing=`,
+        moviesFrom,
       ),
     showtimesFor: (movie, date, area) =>
       read(

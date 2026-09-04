@@ -756,10 +756,13 @@ and the adapter behind it. It is internal on purpose: no caller varies across it
 publishing it would oblige every caller to learn its retry semantics to use
 it. See [ADR 1](docs/adr/0001-single-aggregating-source.md).
 
-Its three operations are domain questions rather than upstream routes: theaters near an area,
-showtimes for a movie on a date in an area, and seats for a showtime. Discovery asks for 25
-theaters, which is the number the corpus capture asks for. Every value the caller supplies is
-escaped before it reaches a route, so an area holding an ampersand cannot rewrite the request.
+Its four operations are domain questions rather than upstream routes: theaters near an area,
+movies playing at a theater on a date, showtimes for a movie on a date in an area, and seats
+for a showtime. Discovery asks for 25 theaters, which is the number the corpus capture asks
+for. The movies read asks for the date and no chain code, because the code the route survey's
+request carried was measured on 2026-09-04 to change nothing the Source answers. Every value
+the caller supplies is escaped before it reaches a route, so an area holding an ampersand
+cannot rewrite the request.
 
 What comes back is a reading: either the payload, or one of four reasons there is none.
 

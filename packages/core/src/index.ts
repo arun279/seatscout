@@ -3,6 +3,7 @@ export { normalised } from "./domain/auditorium.js";
 export { type AuditoriumPlan, planOf } from "./domain/auditorium-map.js";
 export {
   type Catalogue,
+  type Movie,
   narrowed,
   type Showtime,
   type ShowtimeTerms,
