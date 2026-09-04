@@ -94,20 +94,16 @@ const lengthsIn = (biome: string): readonly Finding[] =>
   }));
 
 const peak = (findings: readonly Finding[], what: string): Peak => {
-  const highest = findings.reduce<Finding | null>(
-    (best, finding) =>
-      best === null ||
-      finding.value > best.value ||
-      (finding.value === best.value && finding.at < best.at)
-        ? finding
-        : best,
-    null,
-  );
-  if (highest === null)
+  const value = Math.max(...findings.map((finding) => finding.value));
+  const [at] = findings
+    .filter((finding) => finding.value === value)
+    .map((finding) => finding.at)
+    .sort();
+  if (at === undefined)
     throw new Error(
       `The report-only pass scored no ${what}, so there is no figure to report. Either it ran over nothing, or the rule it asks for is no longer the rule that gates.`,
     );
-  return highest;
+  return { value, at };
 };
 
 const configured = (held: unknown, where: string, what: string): number => {

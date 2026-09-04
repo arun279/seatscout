@@ -56,6 +56,25 @@ describe("reading a mutation run", () => {
       "The mutation report names no break threshold",
     );
   });
+
+  it("refuses a report carrying no thresholds at all", () => {
+    const bare = JSON.stringify({
+      schemaVersion: "2.0",
+      files: {
+        "packages/core/src/seat.ts": {
+          language: "typescript",
+          source: "export const two = (n) => n * 2;\n",
+          mutants: [
+            { id: "0", mutatorName: "BooleanLiteral", status: "Killed" },
+          ],
+        },
+      },
+    });
+
+    expect(() => mutationFrom(bare)).toThrow(
+      "The mutation report names no break threshold",
+    );
+  });
 });
 
 describe("the score against its threshold", () => {

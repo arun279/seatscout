@@ -12,11 +12,15 @@ import {
   measureWith,
   OXLINT_REPORT,
   RATCHET,
+  STRYKER,
 } from "./measure.js";
 
 describe("measuring a change", () => {
-  it("reads the ratchets out of the file that holds them", () => {
+  it("names every file it reads a number or a path out of", () => {
     expect(RATCHET).toBe(".footprint.json");
+    expect(STRYKER).toBe("stryker.config.json");
+    expect(OXLINT_REPORT).toBe(".oxlintrc.report.json");
+    expect(BIOME_REPORT).toBe("biome.report.json");
   });
 
   it("resolves the head first, then the merge base against it", () => {

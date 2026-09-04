@@ -191,13 +191,39 @@ It goes to the run summary of every pull request, and to one pull request commen
 updated in place as commits land. A pull request from a fork gets the run summary only,
 because its token cannot write comments.
 
-Three things gate the merge. Comments may not exceed the ratchet in `.footprint.json`, no
-bundle may exceed its ratchet in `.size-limit.json`, and every file on both sides has to
-sort into one of the five buckets. Raising either ratchet is a reviewed line in the diff.
-When any of the three fails, the report names the way through rather than only the verdict.
-A run that weighed no bundle at all, which is what a glob matching no file produces, fails
-the job outright rather than reporting a verdict over a measurement that did not happen, and
-so does a branch whose product, test or tooling bucket has emptied since the merge base.
+Five things gate the merge. Comments may not exceed the ratchet in `.footprint.json`, no
+bundle may exceed its ratchet in `.size-limit.json`, the number of tests may not fall below
+the ratchet in `.footprint.json`, the mutation score may not fall below the threshold the
+mutation report names, and every file on both sides has to sort into one of the five
+buckets. Moving a ratchet is a reviewed line in the diff. When any of the five fails, the
+report names the way through rather than only the verdict. A run that weighed no bundle at
+all, which is what a glob matching no file produces, fails the job outright rather than
+reporting a verdict over a measurement that did not happen, and so does a branch whose
+product, test or tooling bucket has emptied since the merge base, a linter pass that scored
+no function, a listing that collected no test, and a mutation run that weighed no mutant.
+
+Three more figures are reported and gate nothing here, because each one already gates where
+it is measured: the highest cyclomatic complexity in the tree against the limit in
+`.oxlintrc.json`, the highest cognitive complexity and the longest file against the limits
+in `biome.json`, and the count of files within a tenth of that line limit. They are the
+headroom under limits that already bite in `quality` and on the pre-commit hook, so a second
+gate on them in the report would be the same verdict in a second place to drift.
+
+Those figures come from asking each linter for the same rule again at a threshold of one and
+parsing its machine output: `.oxlintrc.report.json` and `biome.report.json` sit beside the
+gating configurations and differ from them in the threshold and nothing else, and the Biome
+one extends `biome.json` so the file set and the ignore rules are the same bytes. The limits
+printed beside the figures are read out of the gating configurations rather than restated,
+so the comment cannot name a limit the gate is not using; the report refuses when either
+file stops setting one. Biome's `json` reporter is documented as experimental and may change
+in a patch release, which is why a diagnostic whose number the report cannot read is a
+refusal rather than a finding it quietly drops.
+
+The test count is what each runner collects rather than what a run reached: `vitest list`
+and `playwright test --list`, both of which collect without executing. A count is a weak
+gate on its own, because it notices a suite shrinking and says nothing about whether what is
+left asserts anything. The mutation gate is what stops it being met with tests that cannot
+fail.
 
 The bundle figure is brotli, summed per file, over every script `apps/web`'s own Vite
 build emits. The slice of the workspace packages that build reaches is inside the bundle,
@@ -213,40 +239,61 @@ workspace before it, because a bundler transpiles without type information and t
 directory it writes is the one the deployment publishes. The minifier is Vite's own
 default: a bundle this small is not the evidence on which to pick another.
 
-The line counts gate nothing, and describe the change rather than judging it. The other
-figures are either a gate's verdict or the operands it is computed from, so nothing here is
-a bare total left for a reader to form a private opinion about.
+The line counts gate nothing, and describe the change rather than judging it. Every other
+figure is either a gate's verdict, an operand it is computed from, or the headroom under a
+limit that gates elsewhere, so nothing here is a bare total left for a reader to form a
+private opinion about.
 
 No figure here is an absolute this project invented. See
 [ADR 6](docs/adr/0006-gates-cite-a-standard-or-measure-a-regression.md) for why each is
 shaped the way it is, why the counter is cloc rather than scc or tokei, and what the
 comment-load gate means while the merge base still carries no comments.
 
-The tool is five modules and a wiring line. `report.ts` renders the Markdown and reaches
-the verdicts, `measure.ts` decides which commands the counter gets, `shell.ts` is the only
-thing that starts a subprocess, `file.ts` is the only thing that reads one, and `main.ts`
-reads the arguments and turns the verdict into an exit code. `index.ts` holds the wiring and nothing
-else, because the mutation gate judges every file under `src` and a composition root is
-the one place a test cannot reach: any logic left there would be logic nothing checks.
+The tool is one module per section of the report, plus a composition and a wiring line.
+`volume.ts` holds the line counts, the comment ratchet and the bucket classifier;
+`bundles.ts`, `limits.ts`, `suites.ts` and `mutation.ts` hold one subject each, and every
+one of them renders its own section and reaches its own verdict. `markdown.ts` is the table
+they share. `report.ts` composes them and passes only when all of them do, so a section's
+words, its threshold and its remedy sit in the file named after it. Under those,
+`measure.ts` decides which commands run and which files are read, `shell.ts` is the only
+thing that starts a subprocess, `file.ts` the only thing that reads a file, and `main.ts`
+reads the arguments and turns the verdict into an exit code. `index.ts` holds the wiring and
+nothing else, because the mutation gate judges every file under `src` and a composition root
+is the one place a test cannot reach: any logic left there would be logic nothing checks.
 
-Run the report locally against a built tree:
+Run the report locally against a built tree, with a mutation report already on disk:
 
 ```sh
 pnpm build
+pnpm test:mutation
 pnpm footprint
 ```
 
 It compares `HEAD` with its merge base against `origin/main`. Pass `--base` and `--head`
-to compare something else, and `--out` to write the Markdown to a file.
+to compare something else, and `--out` to write the Markdown to a file. It reads the
+mutation score out of the report at the path `stryker.config.json` names, so the run has to
+have happened; without one it refuses rather than leaving the section out.
 
-## The nightly mutation gate
+## The mutation gate
 
 A test that cannot fail is worse than no test, because it reports safety it does not
 provide, and nothing static tells one apart from a test that works. Mutation testing does:
 it changes the code and asks whether the suite notices. `stryker.config.json` mutates the
-`src` of every workspace package, and `.github/workflows/nightly.yml` fails on any mutant
-no test kills. A file the unit suite does not judge shows up as an uncovered mutant and
-fails the run just as a survivor does.
+`src` of every workspace package and breaks below a score of 100, so a file the unit suite
+does not judge shows up as an uncovered mutant and fails the run just as a survivor does.
+
+It runs twice. On every pull request, inside the `footprint` job, incrementally: the run
+reuses what an earlier run already judged about code that has not changed, and the score
+goes in the pull request comment beside the other figures. And every night on `main`,
+inheriting nothing, which is what the incremental results are checked against. The nightly
+run leaves its incremental file in the Actions cache, so the first push of a new branch
+starts from what `main` was last judged to be rather than from nothing.
+
+The run's exit status is not what fails the pull request. Stryker writes its report, the
+footprint report reads the score out of that report and holds it to the break threshold the
+same report names, and the job goes red on that. This is the shape size-limit already has
+here, and for the same reason: a tool's exit status cannot say whether it measured
+something, and the verdict belongs where the number is printed.
 
 A run that weighs no mutant fails as well, and it takes a second step to say so. Stryker's
 score is mutants detected over mutants valid, so a run with no valid mutant scores `NaN`,
@@ -275,12 +322,15 @@ run over the unit tests cannot stand in for. The stateless proxy is not part of 
 carve-out: it has its own assertions, including that an unauthenticated request is
 rejected, and a fail-closed check is exactly the kind most worth proving can fail.
 
-The run is scheduled rather than attached to pull requests, and is deliberately not a
-required check. It re-judges all of the code against all of the tests every time, so it
-costs more than a pull request should carry and it never inherits a verdict from an
-earlier run.
+The incremental mode is Stryker's own, and it is a reuse of earlier results rather than a
+second opinion about them: it matches a mutant by the content of the file it sits in and of
+the tests that covered it, and re-runs anything that does not match. That is why the nightly
+full run stays. A pull request whose cache is cold pays the whole run, which is the honest
+cost of the first push on a branch that `main`'s nightly seed usually spares it.
 
-Run it locally with `pnpm test:mutation`. Two of its settings are less redundant than they
+Run it locally with `pnpm test:mutation`, which inherits nothing;
+`pnpm test:mutation:incremental` is the pull request's form and is what writes and reuses
+`reports/stryker-incremental.json`. Two of its settings are less redundant than they
 look. The vitest runner is named in `plugins` because Stryker resolves its own plugin
 search against its package directory, which under pnpm holds no siblings to find. And
 `ignorePatterns` keeps the root `tsconfig.json` out of the sandbox, because Stryker rewrites

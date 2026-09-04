@@ -156,13 +156,12 @@ describe("what was counted", () => {
   });
 
   it("does not mind a bucket that was empty at the merge base staying empty", () => {
-    const tree = {
+    const holdingNoTooling = {
       "packages/core/src/seat.ts": counts(40, 0),
       "packages/core/src/seat.test.ts": counts(20, 0),
-      "tools/footprint/src/report.ts": counts(30, 0),
     };
 
-    expect(between(tree, tree).passed).toBe(true);
+    expect(between(holdingNoTooling, holdingNoTooling).passed).toBe(true);
   });
 });
 

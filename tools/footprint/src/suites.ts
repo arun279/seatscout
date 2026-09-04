@@ -6,11 +6,11 @@ export interface Suites {
 }
 
 interface Spec {
-  readonly tests?: readonly unknown[];
+  readonly tests: readonly unknown[];
 }
 
 interface Collected {
-  readonly specs?: readonly Spec[];
+  readonly specs: readonly Spec[];
   readonly suites?: readonly Collected[];
 }
 
@@ -21,10 +21,7 @@ const counted = (collected: readonly Collected[]): number =>
   collected.reduce(
     (total, suite) =>
       total +
-      (suite.specs ?? []).reduce(
-        (specs, spec) => specs + (spec.tests ?? []).length,
-        0,
-      ) +
+      suite.specs.reduce((specs, spec) => specs + spec.tests.length, 0) +
       counted(suite.suites ?? []),
     0,
   );

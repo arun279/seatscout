@@ -25,6 +25,20 @@ describe("a table", () => {
     );
   });
 
+  it("wants the figure at the front of the cell, not somewhere inside it", () => {
+    expect(table(["Where"], [["seat.ts:41"]])[1]).toBe("| --- |");
+  });
+
+  it("judges a column on the rows that reach it, ignoring one that does not", () => {
+    expect(
+      table(["Bundle", "Brotli"], [["web app", "15 B"], ["proxy"]])[1],
+    ).toBe("| --- | ---: |");
+  });
+
+  it("ranges a column no row reaches left rather than calling it all figures", () => {
+    expect(table(["Bundle", "Brotli"], [["web app"]])[1]).toBe("| --- | --- |");
+  });
+
   it("ranges a column right when every cell in it is a figure, first column included", () => {
     expect(table(["Score"], [["100.00"]])[1]).toBe("| ---: |");
   });

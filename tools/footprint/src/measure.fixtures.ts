@@ -116,13 +116,14 @@ const FILES: Record<string, string> = {
   [MUTATION_REPORT]: MUTATION_OUTPUT,
 };
 
-const canned = ({ command, args }: Command): string => {
-  if (command === "git" && args[0] === "rev-parse") return "head-sha\n";
-  if (command === "git" && args[0] === "merge-base") return "base-sha\n";
-  if (command === "cloc") return args[1] === "--diff" ? CLOC_DIFF : CLOC_TREE;
-  if (command === "pnpm") return FROM_PNPM[args[1] ?? ""] ?? "";
-  return "";
+const ANSWERS: Record<string, (args: readonly string[]) => string> = {
+  git: (args) => (args[0] === "merge-base" ? "base-sha\n" : "head-sha\n"),
+  cloc: (args) => (args[1] === "--diff" ? CLOC_DIFF : CLOC_TREE),
+  pnpm: (args) => FROM_PNPM[args[1] ?? ""] ?? "",
 };
+
+const canned = ({ command, args }: Command): string =>
+  ANSWERS[command]?.(args) ?? "";
 
 export const recorder = (
   over: (command: Command) => Completed | undefined = () => undefined,
