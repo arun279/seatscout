@@ -89,6 +89,14 @@ describe("the Movies playing at a Theater", () => {
     expect(refused).toEqual(wrong);
   });
 
+  it("refuses an answer that is not JSON", async () => {
+    const reading = await sourced({
+      routes: { [ROUTE]: { status: 200, body: "<html>not today</html>" } },
+    }).moviesAt(ANCHOR, TODAY);
+
+    expect(reading.ok).toBe(false);
+  });
+
   it("answers a Theater with nothing playing as no Movies rather than a refusal", async () => {
     const movies = payloadOf(
       await readingOf(instead(anchorCapture(), "movies", [])),

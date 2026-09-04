@@ -60,6 +60,7 @@ describe("what the fake upstream stands in for a route the corpus never recorded
       "/napi/theaterMovies/another",
       "/napi/theaterMovieShowtimes/",
       "/napi/theaterMovieShowtimes/another/extra",
+      "/elsewhere/napi/theaterMovieShowtimes/another",
     ])
       await expect(fetch(elsewhere)).rejects.toThrow(elsewhere);
   });
