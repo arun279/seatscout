@@ -1,9 +1,11 @@
-import type {
-  Reading,
-  Seat,
-  Showtime,
-  UnbookableReason,
-  Unidentified,
+import {
+  type AuditoriumMap,
+  auditoriumMap,
+  type Reading,
+  type Seat,
+  type Showtime,
+  type UnbookableReason,
+  type Unidentified,
 } from "@seatscout/core";
 import {
   type CatalogueDependencies,
@@ -11,6 +13,7 @@ import {
   openCatalogue,
 } from "./catalogue.js";
 import {
+  type Ranking,
   type ResultTerms,
   rankingIn,
   type SeatGroupResult,
@@ -39,11 +42,24 @@ export interface Snapshot {
   readonly phase: Phase;
 }
 
+export interface Auditorium {
+  readonly map: AuditoriumMap;
+  readonly recommended: NonNullable<AuditoriumMap["recommended"]>;
+  readonly offered: readonly SeatGroupResult[];
+}
+
 export interface Search {
   readonly snapshot: () => Snapshot;
   readonly subscribe: (onChange: () => void) => () => void;
   readonly done: Promise<Snapshot>;
   readonly abort: () => void;
+  readonly auditorium: (result: SeatGroupResult) => Auditorium;
+}
+
+interface Room {
+  readonly showtime: Showtime;
+  readonly seats: readonly Seat[];
+  readonly ranking: Ranking;
 }
 
 const NOTHING: Coverage = {
@@ -73,6 +89,7 @@ export const openSearch = (deps: CatalogueDependencies) => {
       started: [],
     };
     const failed: Showtime[] = [];
+    const rooms = new Map<Showtime["id"], Room>();
     let unidentified: readonly Unidentified[] = [];
     let candidates = 0;
     let checked = 0;
@@ -109,8 +126,29 @@ export const openSearch = (deps: CatalogueDependencies) => {
       }
       checked += 1;
       const ranking = rankingIn(reading, terms);
+      rooms.set(showtime.id, { showtime, seats: reading.payload, ranking });
       const [best] = ranking.offered;
       if (best !== undefined) results.push(ranking.resultOf(showtime, best));
+    };
+
+    const auditorium = (result: SeatGroupResult): Auditorium => {
+      const room = rooms.get(result.showtime.id);
+      if (room === undefined)
+        throw new Error(
+          `this search never read the room of Showtime ${result.showtime.id}`,
+        );
+      const map = auditoriumMap(room.seats, result.seats);
+      if (map.recommended === null)
+        throw new Error(
+          `the Seat Group is not in the room of Showtime ${result.showtime.id}`,
+        );
+      return {
+        map,
+        recommended: map.recommended,
+        offered: room.ranking.offered.map((ranked) =>
+          room.ranking.resultOf(room.showtime, ranked),
+        ),
+      };
     };
 
     const check = async (showtime: Showtime) => {
@@ -162,6 +200,7 @@ export const openSearch = (deps: CatalogueDependencies) => {
       abort: () => {
         aborted = true;
       },
+      auditorium,
     };
   };
 };
