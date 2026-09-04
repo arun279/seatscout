@@ -814,14 +814,14 @@ still absent when the live route was read again on 2026-09-04.
 
 **What is left is a composition, and the measurement refuses it.** A theater list, then the
 movies at each theater, then the listing route this adapter already reads for each of those
-movies, would answer it in the vocabulary that already works. Reading it costs 1 + 25 + 56
+movies, would answer it in the vocabulary that already works. Resolving one costs 1 + 25 + 56
 requests and 1.46 s at the fan-out width the search uses, against the one request and 375 ms a
-movie-centric read costs, so the resolving half is affordable. What it resolves to is not. One
-date in the area the corpus is anchored on holds **1,479 bookable Showtimes** where the widest
-single release holds 185, so a Movie-less search reads eight times the seat maps the recorded
-table was measured on. Read at that width against the live Source on 2026-09-04, 361 of the
-1,479 answered 403, the rest took 37.6 ms each against the 14 ms the table implies, and the
-Source then refused every request from this client for at least six minutes. In this
+movie-centric read costs, so that half is affordable. What it resolves to is not. One date in
+the area the corpus is anchored on holds **1,479 bookable Showtimes** where the widest single
+release holds 185, so a Movie-less search reads eight times the seat maps a Movie search reads
+on the same date. Read at that width against the live Source on 2026-09-04, 361 of the 1,479
+answered 403, the rest took 37.6 ms each against the 14 ms the recorded table implies, and the
+Source then refused every request from this client for at least six minutes afterwards. In this
 code that is worse than slow: 403 is in no refusal table, so each one spends three attempts and
 answers `unreachable`, and three consecutive ones open the circuit `theatersNear`,
 `showtimesFor` and `seatsFor` share, which darkens the area for the searches that follow too. A
