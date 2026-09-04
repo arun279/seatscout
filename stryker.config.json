@@ -8,6 +8,7 @@
     "!apps/native/src/**",
     "!**/*.{test,spec}.?(c|m)[jt]s?(x)"
   ],
+  "cleanTempDir": "always",
   "reporters": ["clear-text", "json"],
   "jsonReporter": { "fileName": "reports/mutation/mutation.json" },
   "thresholds": {
