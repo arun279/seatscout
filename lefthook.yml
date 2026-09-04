@@ -8,6 +8,9 @@ pre-commit:
     lint:
       glob: "*.{cjs,css,cts,html,js,json,jsonc,jsx,mjs,mts,ts,tsx,yaml,yml}"
       run: pnpm exec biome lint --no-errors-on-unmatched {staged_files}
+    complexity:
+      glob: "*.{cjs,cts,js,jsx,mjs,mts,ts,tsx}"
+      run: pnpm exec oxlint {staged_files}
     spell:
       run: pnpm exec cspell lint --no-must-find-files {staged_files}
     cache-storage:
@@ -22,6 +25,8 @@ pre-push:
   commands:
     typecheck:
       run: pnpm typecheck
+    complexity:
+      run: pnpm complexity
     unit:
       run: pnpm test:unit
     dead-code:

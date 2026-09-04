@@ -5,10 +5,11 @@ import { exit, stderr, stdout } from "node:process";
 const RECORDS = "docs/adr";
 const NARRATIVE = ["CONTEXT.md", "README.md"];
 const BIOME = "biome.json";
-const PRODUCT = ["packages", ":!*.test.ts"];
+const PRODUCT = ["packages", ":!*.test.ts", ":!*.fixtures.ts"];
 const RATCHET = ".size-limit.json";
 const RELEASE = "tools/release-plan/src/index.ts";
 const STRYKER = "stryker.config.json";
+const CYCLOMATIC = ".oxlintrc.json";
 
 const git = (...args) =>
   execFileSync("git", args, { encoding: "utf8", maxBuffer: Infinity });
@@ -124,7 +125,7 @@ const CLAIMS = [
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /\*\*Cyclomatic complexity is not measured\.\*\*/,
+    says: /that rules out scc, and it rules out `lizard` for the same reason/,
     holds: "the toolchain naming the counter that reported it",
     pattern: "scc",
     paths: ["package.json", ".github", "tools"],
@@ -133,7 +134,31 @@ const CLAIMS = [
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /The mutation run measures it directly and breaks below 100 per cent\./,
+    says: /\*\*The number and its exception process\.\*\*/,
+    holds: "the cyclomatic limit that gates the build",
+    pattern: '"max": 10',
+    paths: [CYCLOMATIC],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /the same documented meaning of `classic`/,
+    holds: "the counting variant the limit is defined over",
+    pattern: '"variant": "classic"',
+    paths: [CYCLOMATIC],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /\*\*Lines per file\*\* may not exceed 300, by Biome's/,
+    holds: "the file length rule that gates the build",
+    pattern: "noExcessiveLinesPerFile",
+    paths: [BIOME],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /calls it greater than or equal to a break threshold of 100, and exits/,
     holds: "the mutation gate's breaking threshold",
     pattern: '"break": 100',
     paths: [STRYKER],
