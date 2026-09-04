@@ -50,6 +50,11 @@ export interface Theater {
   readonly chain?: Chain;
 }
 
+export interface Movie {
+  readonly id: string;
+  readonly title: string;
+}
+
 export interface Presentation {
   readonly movie: MovieId;
   readonly theater: Theater;

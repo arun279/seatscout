@@ -26,6 +26,7 @@ export interface UpstreamScript {
   readonly routes?: Readonly<Record<string, ScriptedRoute>>;
   readonly sequences?: Readonly<Record<string, readonly number[]>>;
   readonly standInAuditoriums?: boolean;
+  readonly standInTheaters?: boolean;
 }
 
 interface RecordedRequest {
@@ -57,20 +58,25 @@ interface Arrival {
 const OVERRIDDEN: Content = { body: () => "" };
 
 const SEAT_MAP = /^\/napi\/seatMap\/(\d+)$/;
+const SCHEDULE = /^\/napi\/theaterMovieShowtimes\/\w+$/;
 
-const capturedAuditoriums = (): readonly Replay[] =>
-  [...seatMapCaptures.values()].map((capture) => ({
-    status: capture.status,
-    body: () => JSON.stringify(capture.body),
-  }));
+const replayOfCapture = (capture: Capture<unknown>): Replay => ({
+  status: capture.status,
+  body: () => JSON.stringify(capture.body),
+});
 
-const standingIn = () => {
-  const auditoriums = capturedAuditoriums();
+const standingIn = (script: UpstreamScript) => {
+  const auditoriums = [...seatMapCaptures.values()].map(replayOfCapture);
+  const [schedule] = [...theaterMovieShowtimesCaptures.values()].map(
+    replayOfCapture,
+  );
   return (route: string): Replay | undefined => {
-    const asked = SEAT_MAP.exec(route);
-    return asked === null
-      ? undefined
-      : auditoriums[Number(asked[1]) % auditoriums.length];
+    const seatMap = SEAT_MAP.exec(route);
+    if (seatMap !== null && script.standInAuditoriums)
+      return auditoriums[Number(seatMap[1]) % auditoriums.length];
+    return script.standInTheaters && SCHEDULE.test(route)
+      ? schedule
+      : undefined;
   };
 };
 
@@ -112,10 +118,8 @@ export const fakeUpstream = (script: UpstreamScript): FakeUpstream => {
       body: () => route.body ?? "",
     });
 
-  const standIn = standingIn();
-  const replayOf = (route: string) =>
-    replays.get(route) ??
-    (script.standInAuditoriums ? standIn(route) : undefined);
+  const standIn = standingIn(script);
+  const replayOf = (route: string) => replays.get(route) ?? standIn(route);
   const sequences = new Map<string, number[]>(
     Object.entries(script.sequences ?? {}).map(([path, statuses]) => [
       routeOf(path),
