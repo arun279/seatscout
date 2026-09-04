@@ -31,12 +31,14 @@ const auditoriumOf = (body: CapturedSeatMap): Auditorium => {
 const capturedAuditoriums = (): readonly Auditorium[] =>
   [...seatMapCaptures.values()].map((capture) => auditoriumOf(capture.body));
 
-const benchmarkAuditoriums = (): readonly Auditorium[] =>
-  [...seatMapCaptures.values()]
-    .filter((capture) =>
-      BENCHMARK_AUDITORIUMS.includes(capture.body.showtimeId),
-    )
-    .map((capture) => auditoriumOf(capture.body));
+const benchmarkAuditorium = (showtime: string): Auditorium => {
+  const capture = [...seatMapCaptures.values()].find(
+    (one) => one.body.showtimeId === showtime,
+  );
+  if (capture === undefined)
+    throw new Error(`the corpus holds no seat map for showtime ${showtime}`);
+  return auditoriumOf(capture.body);
+};
 
 const acrossTheSweep = (
   rooms: readonly Auditorium[],
@@ -130,13 +132,18 @@ describe("the Reference Seat Profile over the captured corpus", () => {
     expect(holding(SEPARABLE)).toBe(0);
   });
 
-  it("keeps that ranking across a sweep of every weight and both modelled distances", () => {
-    expect(acrossTheSweep(benchmarkAuditoriums(), sweptWeightings())).toEqual({
-      points: 144 * 5,
-      centreline: 144 * 5,
-      outward: 144 * 5,
-      offTargetRow: 0,
-      offTargetRowWhereDepthLeads: 0,
-    });
-  });
+  it.each(BENCHMARK_AUDITORIUMS)(
+    "keeps that ranking across a sweep of every weight and both modelled distances, in room %s",
+    (showtime) => {
+      expect(
+        acrossTheSweep([benchmarkAuditorium(showtime)], sweptWeightings()),
+      ).toEqual({
+        points: 144,
+        centreline: 144,
+        outward: 144,
+        offTargetRow: 0,
+        offTargetRowWhereDepthLeads: 0,
+      });
+    },
+  );
 });

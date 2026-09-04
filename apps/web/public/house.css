@@ -1,0 +1,73 @@
+:root {
+  --house-deep: oklch(0.13 0.018 275);
+  --house: oklch(0.17 0.022 275);
+  --raised: oklch(0.215 0.026 275);
+  --high: oklch(0.26 0.03 275);
+  --hairline: oklch(0.34 0.03 272);
+  --silver: oklch(0.94 0.01 250);
+  --silver-dim: oklch(0.76 0.018 255);
+  --silver-faint: oklch(0.73 0.02 260);
+  --velvet: oklch(0.52 0.2 15);
+  --velvet-deep: oklch(0.44 0.18 15);
+  --velvet-lit: oklch(0.78 0.115 12);
+  --beam: oklch(0.88 0.055 230);
+  --beam-dim: oklch(0.76 0.07 230);
+  --seat-free: oklch(0.68 0.03 250);
+  --seat-gone: oklch(0.55 0.035 270);
+  --display: "Big Shoulders Display", "Arial Narrow", sans-serif;
+  --body: "Schibsted Grotesk", "Helvetica Neue", sans-serif;
+  --mono: "Spline Sans Mono", "Courier New", monospace;
+}
+
+@font-face {
+  font-family: "Big Shoulders Display";
+  font-weight: 500 700;
+  font-display: swap;
+  src: url("/fonts/big-shoulders-display.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Schibsted Grotesk";
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/fonts/schibsted-grotesk.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Spline Sans Mono";
+  font-weight: 400 500;
+  font-display: swap;
+  src: url("/fonts/spline-sans-mono.woff2") format("woff2");
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: oklch(0.1 0.012 275);
+  color-scheme: dark;
+}
+
+body {
+  font-family: var(--body);
+  color: var(--silver);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--beam);
+  text-decoration-color: var(--hairline);
+}
+
+a:hover {
+  color: var(--silver);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+:focus-visible {
+  outline: 2px solid var(--beam);
+  outline-offset: 2px;
+}

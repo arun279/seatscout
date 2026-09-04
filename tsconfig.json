@@ -11,6 +11,7 @@
     { "path": "apps/proxy" },
     { "path": "apps/proxy/tsconfig.test.json" },
     { "path": "tools/counts-in-prose" },
+    { "path": "tools/journey" },
     { "path": "tools/live-injections" },
     { "path": "tools/no-cache-storage-reach" },
     { "path": "tools/no-empty-mutation-run" },

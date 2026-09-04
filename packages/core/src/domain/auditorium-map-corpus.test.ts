@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { seatMapCaptures } from "../corpus/captures.js";
-import type { CapturedSeatMap } from "../corpus/types.js";
-import { seatsFrom } from "../source/seat-map.js";
 import {
-  FETCHED_AT,
   ascending,
+  capturedSeatMap,
+  capturedSeatMaps,
   lateralsOf,
+  seatsOf,
 } from "./auditorium-map.fixtures.js";
 import { auditoriumMap } from "./auditorium-map.js";
 import { seatGroupsIn } from "./seat-group.js";
@@ -13,25 +12,6 @@ import { seatGroupsIn } from "./seat-group.js";
 const AUDITORIUM_WHOSE_ROW_INDEX_SKIPS_TWO = "561865199";
 const AUDITORIUM_WHOSE_ROW_LETTERS_SKIP_ONE = "561462741";
 const AUDITORIUM_NUMBERED_WITHOUT_LETTERS = "561609773";
-
-const capturedSeatMaps = () =>
-  [...seatMapCaptures.values()].map((capture) => capture.body);
-
-const seatsOf = (body: CapturedSeatMap) => {
-  const seats = seatsFrom(JSON.stringify(body), FETCHED_AT);
-  if (seats === null)
-    throw new Error(
-      `the corpus seat map for showtime ${body.showtimeId} does not read`,
-    );
-  return seats;
-};
-
-const capturedSeatMap = (showtime: string) => {
-  const body = capturedSeatMaps().find((map) => map.showtimeId === showtime);
-  if (body === undefined)
-    throw new Error(`the corpus holds no seat map for showtime ${showtime}`);
-  return body;
-};
 
 describe("the Auditorium map over the captured corpus", () => {
   it("reads every captured Auditorium into contiguous rows of ordered Seats", () => {

@@ -4,8 +4,8 @@ import {
   reaching,
   refusal,
   tracked,
-  withoutStub,
   WRITER,
+  withoutStub,
 } from "./reach.ts";
 
 const read = (files: Readonly<Record<string, string>>) => (path: string) => {

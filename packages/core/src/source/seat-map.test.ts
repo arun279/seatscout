@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { seatMapCaptures } from "../corpus/captures.js";
-import { type UpstreamScript, fakeUpstream } from "../testing/fake-upstream.js";
+import { fakeUpstream, type UpstreamScript } from "../testing/fake-upstream.js";
 import { openSource } from "./aggregator.js";
 import type { Source } from "./port.js";
 import type { Designation, Seat } from "./seat-map.js";

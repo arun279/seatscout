@@ -207,8 +207,8 @@ scope: work that happens as a module loads is work nothing can call, so nothing 
 Each of the three gates written here is now a package under `tools/<name>/src`, with its work
 in functions a test calls and an entry point that only wires them together, which puts them
 inside both the unit suite and the mutation gate. What is left directly under `tools/` is the
-corpus capture, the corpus indexer, the upstream constant and the live suite's setup, none of
-which gates a merge.
+corpus capture, the corpus indexer, the upstream constant, the live suite's setup and the icon
+renderer, none of which gates a merge.
 
 **Lines per file** may not exceed 300, by Biome's
 [`noExcessiveLinesPerFile`](https://biomejs.dev/linter/rules/no-excessive-lines-per-file/) at
@@ -311,9 +311,9 @@ binds the four lists together, so the next one will be found the same way this o
 member was, by somebody reading a config.
 
 **Comment load** is the number of comment lines in first-party source, and it may not
-exceed the ratchet recorded in `.footprint.json`. Only files with a JavaScript or
-TypeScript extension count, which keeps the version comments that pin action SHAs out of
-the measurement.
+exceed the ratchet recorded in `.footprint.json`. Only files with a JavaScript, TypeScript
+or CSS extension count, which keeps the version comments that pin action SHAs out of the
+measurement.
 
 It was a ratio until 2026-08-29, comments over code on the branch against the same ratio at
 the merge base, and the ratio was the wrong form twice over. It permits unbounded absolute
@@ -375,6 +375,18 @@ before the verdict is printed. The report therefore reads the shape rather than 
 and refuses a run that weighed no bundle or weighed one against no ratchet.
 `@size-limit/file` compresses each matched file on its own and adds the results, so the
 figure is a sum of per-file brotli rather than the brotli of everything concatenated.
+
+**The journey** is measured on the built tree served by the deployment's own worker, in
+Chromium, ten times over, and it is judged two ways. The three Core Web Vitals are held at
+their 75th percentile to the thresholds Google publishes as good, 2.5 s for LCP, 200 ms for
+INP and 0.1 for CLS, which is a standard rather than a figure chosen here. The moment the
+first Seat Group is painted has no published threshold, so it is held to the merge base:
+the job measures the base's own journey in a worktree and fails the branch when the head's
+median is slower than the base's slowest, a margin drawn from the base's spread rather than
+chosen. Under identical performance that verdict is wrong in under one run in a hundred,
+measured by simulation over ten journeys a side. The absolute is reported either way, a
+merge base with no journey is reported rather than passed over, and a journey that renders
+no result fails, because a pass has to entail a measurement.
 
 The mutation gate has the same shape one tool along, and takes the same answer. Stryker
 computes its score as mutants detected over mutants valid, scores `NaN` when none was valid,

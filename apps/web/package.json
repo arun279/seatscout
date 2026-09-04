@@ -7,9 +7,13 @@
     "build": "vite build"
   },
   "dependencies": {
-    "@seatscout/client": "workspace:*"
+    "@seatscout/client": "workspace:*",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
   },
   "devDependencies": {
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.5",
     "vite": "8.2.2"
   }
 }

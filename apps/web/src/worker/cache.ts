@@ -1,6 +1,19 @@
 const CACHE = "shell";
 
-const SHELL = ["/", "/index.js", "/manifest.webmanifest"];
+const SHELL = [
+  "/",
+  "/index.js",
+  "/manifest.webmanifest",
+  "/house.css",
+  "/app.css",
+  "/query.css",
+  "/results.css",
+  "/coverage.css",
+  "/icon.svg",
+  "/fonts/big-shoulders-display.woff2",
+  "/fonts/schibsted-grotesk.woff2",
+  "/fonts/spline-sans-mono.woff2",
+];
 
 export const isShellPath = (path: string) => SHELL.includes(path);
 

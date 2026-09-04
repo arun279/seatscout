@@ -12,8 +12,8 @@ import {
 } from "./catalogue.js";
 import {
   type ResultTerms,
-  type SeatGroupResult,
   rankingIn,
+  type SeatGroupResult,
 } from "./ranking.js";
 
 const WIDTH = 24;

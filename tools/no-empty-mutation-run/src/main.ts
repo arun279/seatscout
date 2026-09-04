@@ -1,4 +1,4 @@
-import { refusal, type Report, weighed, missing } from "./weighed.ts";
+import { missing, type Report, refusal, weighed } from "./weighed.ts";
 
 export interface Writer {
   readonly write: (text: string) => void;

@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { type ContractCheck, storeContract } from "./store-contract.js";
 import {
   type CachedCatalogue,
-  type KeyValueStore,
   inMemoryStore,
+  type KeyValueStore,
 } from "./store.js";
+import { type ContractCheck, storeContract } from "./store-contract.js";
 
 const NAMES = [
   "a key that was never written reads as absent",

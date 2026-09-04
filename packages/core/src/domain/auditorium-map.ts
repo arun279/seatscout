@@ -43,12 +43,8 @@ const labelOf = (row: readonly Seat[]) => {
   return initial === "" ? null : initial;
 };
 
-export const auditoriumMap = (
-  seats: readonly Seat[],
-  recommended: readonly Seat[],
-): AuditoriumMap => {
-  const wanted = new Set(recommended.map((seat) => seat.id));
-  const rows = rowsOf(normalised(seats)).map((row, index) => ({
+const seatRowsOf = (seats: readonly Seat[]): readonly SeatRow[] =>
+  rowsOf(normalised(seats)).map((row, index) => ({
     ordinalFromFront: index + 1,
     label: labelOf(row),
     depth: row[0].depth,
@@ -56,6 +52,13 @@ export const auditoriumMap = (
     bookableCount: bookableIn(row),
     gapAfter: gapsAlong(row),
   }));
+
+export const auditoriumMap = (
+  seats: readonly Seat[],
+  recommended: readonly Seat[],
+): AuditoriumMap => {
+  const wanted = new Set(recommended.map((seat) => seat.id));
+  const rows = seatRowsOf(seats);
 
   return {
     rows,
@@ -72,6 +75,31 @@ export const auditoriumMap = (
         .find((row) => row.seats.length > 0) ?? null,
   };
 };
+
+interface Run {
+  readonly from: number;
+  readonly to: number;
+}
+
+export type AuditoriumPlan = readonly {
+  readonly depth: number;
+  readonly runs: readonly Run[];
+}[];
+
+const runsAlong = (row: SeatRow): readonly Run[] =>
+  row.seats.reduce<Run[]>((runs, seat, at) => {
+    const last = runs.at(-1);
+    if (last === undefined || row.gapAfter[at - 1] === "aisle")
+      runs.push({ from: seat.lateral, to: seat.lateral });
+    else runs[runs.length - 1] = { from: last.from, to: seat.lateral };
+    return runs;
+  }, []);
+
+export const planOf = (seats: readonly Seat[]): AuditoriumPlan =>
+  seatRowsOf(seats).map((row) => ({
+    depth: row.depth,
+    runs: runsAlong(row),
+  }));
 
 export const nearestInRow = (row: SeatRow, lateral: number) =>
   row.seats

@@ -4,19 +4,26 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SeatScout</title>
+    <meta name="theme-color" content="#0d0f19" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preload" href="/fonts/big-shoulders-display.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/schibsted-grotesk.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/spline-sans-mono.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/house.css" />
+    <link rel="stylesheet" href="/app.css" />
+    <link rel="stylesheet" href="/query.css" />
+    <link rel="stylesheet" href="/results.css" />
+    <link rel="stylesheet" href="/coverage.css" />
     <script type="module">
-      import { startShell } from "/index.js";
+      import { startApp, startShell } from "/index.js";
+
+      startApp();
       await startShell();
     </script>
   </head>
   <body>
-    <main>
-      <h1>SeatScout</h1>
-      <p>
-        The interface is not built yet. This page is the shell it will load
-        into, and it opens without a network.
-      </p>
-    </main>
+    <div id="app"></div>
   </body>
 </html>

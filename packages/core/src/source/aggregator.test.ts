@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import { nearbyTheatersCaptures } from "../corpus/captures.js";
 import {
   type FakeUpstream,
-  type UpstreamScript,
   fakeUpstream,
+  type UpstreamScript,
 } from "../testing/fake-upstream.js";
-import { type SourcePolicy, openSource } from "./aggregator.js";
+import { openSource, type SourcePolicy } from "./aggregator.js";
 import type { Source } from "./port.js";
 
 const SEAT_MAP = "/napi/seatMap/561748075";

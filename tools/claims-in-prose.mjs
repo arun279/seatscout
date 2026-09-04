@@ -180,6 +180,14 @@ const CLAIMS = [
     paths: [RATCHET],
     files: 1,
   },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /\*\*The journey\*\* is measured on the built tree served by the deployment's own worker/,
+    holds: "the script that holds the head's journey to the merge base's",
+    pattern: "tools/journey/src/index.ts",
+    paths: ["package.json"],
+    files: 1,
+  },
 ];
 
 const UNCHECKED = {

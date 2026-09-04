@@ -1,0 +1,228 @@
+.stage {
+  max-width: 430px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 0 0 48px;
+  background: var(--house);
+  background-image: radial-gradient(
+    140% 60% at 50% 0%,
+    oklch(0.2 0.03 265 / 0.55) 0%,
+    transparent 62%
+  );
+}
+
+.offline {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 430px;
+  margin: 0 auto;
+  padding: 12px 22px;
+  background: var(--raised);
+  border-top: 1px solid var(--hairline);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--silver-dim);
+}
+
+.screen-band {
+  position: relative;
+  height: 46px;
+}
+
+.screen-band .lamp {
+  position: absolute;
+  left: 50%;
+  top: 12px;
+  transform: translateX(-50%);
+  width: 62%;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--beam-dim) 12%,
+    var(--silver) 50%,
+    var(--beam-dim) 88%,
+    transparent 100%
+  );
+  box-shadow:
+    0 2px 18px oklch(0.88 0.055 230 / 0.5),
+    0 8px 44px oklch(0.88 0.055 230 / 0.25);
+}
+
+.screen-band .fall {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 15px;
+  height: 120px;
+  background: linear-gradient(
+    180deg,
+    oklch(0.88 0.055 230 / 0.1) 0%,
+    transparent 100%
+  );
+  clip-path: polygon(10% 0, 90% 0, 100% 100%, 0 100%);
+  pointer-events: none;
+}
+
+.screen-band .word {
+  position: absolute;
+  left: 50%;
+  top: 24px;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.44em;
+  text-indent: 0.44em;
+  color: var(--silver-faint);
+  white-space: nowrap;
+}
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--silver-faint);
+}
+
+.display {
+  font-family: var(--display);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  line-height: 0.98;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.verdict {
+  padding: 8px 22px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.verdict h2 {
+  font-size: 36px;
+}
+
+.lede {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--silver-dim);
+  text-wrap: pretty;
+}
+
+.named {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--silver);
+}
+
+.named li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.named a {
+  position: relative;
+  white-space: nowrap;
+}
+
+.named a::after {
+  content: "";
+  position: absolute;
+  inset: -15px -8px;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  border-radius: 14px;
+  font-family: var(--body);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+}
+
+.btn-velvet {
+  background: linear-gradient(
+    180deg,
+    oklch(0.56 0.205 15),
+    var(--velvet) 55%,
+    var(--velvet-deep)
+  );
+  color: var(--silver);
+  box-shadow: 0 8px 26px oklch(0.44 0.18 15 / 0.45);
+  border: 1px solid oklch(0.62 0.2 12);
+}
+
+.btn-ghost {
+  border: 1px solid var(--hairline);
+  color: var(--silver-dim);
+  background: transparent;
+  font-size: 15px;
+  font-weight: 500;
+  min-height: 48px;
+}
+
+dialog {
+  width: min(100vw, 430px);
+  max-width: 100vw;
+  max-height: 100dvh;
+  height: 100dvh;
+  margin: 0 auto;
+  padding: 12px 22px 32px;
+  border: 0;
+  background: var(--house);
+  color: var(--silver);
+  overflow-y: auto;
+}
+
+dialog::backdrop {
+  background: oklch(0.05 0.01 275 / 0.7);
+}
+
+dialog form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+dialog .display {
+  font-size: 34px;
+}
+
+.back {
+  align-self: flex-start;
+  position: relative;
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin-bottom: 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--silver-dim);
+  cursor: pointer;
+}
+
+.back::after {
+  content: "";
+  position: absolute;
+  inset: -15px -6px;
+}

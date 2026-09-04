@@ -4,7 +4,20 @@ const ORIGIN = "https://seatscout.test";
 
 const SEAT_MAP = `${ORIGIN}/napi/seatMap/561478479`;
 
-const SHELL = ["/", "/index.js", "/manifest.webmanifest"];
+const SHELL = [
+  "/",
+  "/index.js",
+  "/manifest.webmanifest",
+  "/house.css",
+  "/app.css",
+  "/query.css",
+  "/results.css",
+  "/coverage.css",
+  "/icon.svg",
+  "/fonts/big-shoulders-display.woff2",
+  "/fonts/schibsted-grotesk.woff2",
+  "/fonts/spline-sans-mono.woff2",
+];
 
 const worker = async () => {
   const listeners = new Map<string, (event: unknown) => void>();
