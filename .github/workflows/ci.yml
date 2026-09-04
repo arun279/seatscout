@@ -38,6 +38,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm format:check
       - run: pnpm lint
+      - run: pnpm complexity
       - run: actionlint
       - run: shellcheck deploy/*.sh
       - run: pnpm spell

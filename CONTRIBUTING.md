@@ -112,17 +112,20 @@ asked the first endpoint would report the branch unprotected and be wrong. Ask a
 that returns the whole set, require it to be non-empty, and treat any non-2xx as a failure
 rather than as a zero.
 
-The pre-commit hook runs five checks over staged files: it formats, lints and spell checks
-them, refuses a reach for Cache Storage under `apps/`, and scans for secrets. The pre-push
-hook runs five over the whole workspace: it type checks, runs unit tests, checks for dead
-code, holds the counts stated in prose, and holds every claim an ADR makes about this
-repository to the repository. `lefthook.yml` is where both are declared.
+The pre-commit hook runs six checks over staged files: it formats, lints and spell checks
+them, holds each one to the cyclomatic complexity limit, refuses a reach for Cache Storage
+under `apps/`, and scans for secrets. The pre-push hook runs six over the whole workspace:
+it type checks, holds every function to the cyclomatic complexity limit, runs unit tests,
+checks for dead code, holds the counts stated in prose, and holds every claim an ADR makes
+about this repository to the repository. `lefthook.yml` is where both are declared.
 
 TypeScript uses strict checking, unchecked indexed access checks, and erasable syntax.
 Biome uses its recommended rules, and `biome.json` names the published ones this workspace
-asks more of than the preset does. Outside the preset: the standard limit of
+asks more of than the preset does. Outside the preset: the standard limits of
 [`noExcessiveCognitiveComplexity`](https://biomejs.dev/linter/rules/no-excessive-cognitive-complexity/)
-is the only complexity gate, and
+and
+[`noExcessiveLinesPerFile`](https://biomejs.dev/linter/rules/no-excessive-lines-per-file/),
+and
 [`noUnsafeTypeAssertion`](https://biomejs.dev/linter/rules/no-unsafe-type-assertion/) refuses
 a type assertion, which is the widest way past the compile-time guarantees below. Inside it,
 but at severities `biome lint` exits zero on, which is no gate at all:
@@ -138,8 +141,10 @@ A complexity failure names the file, the function, its score and the limit, and 
 refactor the function until the score is under the limit; extracting part of it is the
 usual way. There is no figure to weigh and no exemption to grant. Suppressing the rule in
 place would take a comment, and comment load is gated separately, so the way through is the
-refactor. Cyclomatic complexity is not measured at all;
-[ADR 6](docs/adr/0006-gates-cite-a-standard-or-measure-a-regression.md) says why.
+refactor. The same is true of the file length limit, whose remedy is to split the file, and
+of cyclomatic complexity, which `pnpm complexity` measures with oxlint at NIST's limit of 10.
+[ADR 6](docs/adr/0006-gates-cite-a-standard-or-measure-a-regression.md) says where every one
+of those numbers comes from.
 
 **The gates are judged by the suite that judges everything else.** Each of the three written
 here is a package under `tools/<name>/src`, which is what the unit runner's include and the
@@ -482,7 +487,7 @@ form. `const held = globalThis`, the destructured `const { document } = globalTh
 at the name, because none of them can be written without first naming the object. The rule
 resolves scopes, so a local or a parameter borrowing one of those names is untouched: the
 `window` that `seat-group.ts` gives each party-sized slice of a run still compiles, and so
-does the `top` in `seat-profile.test.ts`.
+does the `top` in `seat-profile.fixtures.ts`.
 
 **What it does not close is a receiver that is never named**, and a Grit plugin refusing the
 member instead was written and measured before being dropped. Two findings decided that. A
@@ -1174,7 +1179,7 @@ Going deeper would be the adapter's own parse restated against data the adapter 
 store it came from is the reader's own device rather than a third party's answer. Anything that
 fails is a miss and the Source is read again.
 
-**What moves the version is a test rather than a memory.** `catalogue.test.ts` holds
+**What moves the version is a test rather than a memory.** `catalogue-cache.test.ts` holds
 `ENTRY_SHAPE` to the field paths a written entry actually carries, so a `Catalogue` that grows a
 field or moves one fails the suite beside the version that has to move with it.
 

@@ -8,7 +8,7 @@ import {
   theaterMovieShowtimesCaptures,
 } from "../corpus/captures.js";
 import type { Capture } from "../corpus/types.js";
-import type { Fetch, FetchResponse } from "../transport.js";
+import type { Fetch, FetchInit, FetchResponse } from "../transport.js";
 
 export { seatMapCaptures };
 
@@ -60,6 +60,14 @@ const lowercased = (headers: Readonly<Record<string, string>>) =>
     Object.entries(headers).map(([name, value]) => [name.toLowerCase(), value]),
   );
 
+const recordOf = (path: string, init?: FetchInit): RecordedRequest => ({
+  path,
+  method: init?.method ?? "GET",
+  cache: init?.cache ?? null,
+  headers: lowercased(init?.headers ?? {}),
+  body: init?.body ?? null,
+});
+
 export const routeOf = (url: string): string =>
   new URL(url, "https://upstream.invalid").pathname;
 
@@ -110,13 +118,7 @@ export const fakeUpstream = (script: UpstreamScript): FakeUpstream => {
 
   const upstream: Fetch = (url, init) => {
     const route = routeOf(url);
-    requests.push({
-      path: url,
-      method: init?.method ?? "GET",
-      cache: init?.cache ?? null,
-      headers: lowercased(init?.headers ?? {}),
-      body: init?.body ?? null,
-    });
+    requests.push(recordOf(url, init));
     const replay = replays.get(route);
     if (!replay)
       return Promise.reject(new Error(`no capture was recorded for ${route}`));

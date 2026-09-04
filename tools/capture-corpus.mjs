@@ -2,13 +2,27 @@
 import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  LOCATION_PARAMS,
+  REDACTED,
+  redactBody,
+  redactPath,
+  redactSecrets,
+  rememberedSecrets,
+  rememberSecret,
+} from "./corpus-redaction.mjs";
+import {
+  candidatesByChain,
+  showtimeCount,
+  showtimeRows,
+  spreadOverTheaters,
+} from "./corpus-rows.mjs";
+import { shapeOf } from "./corpus-shape.mjs";
 import { UPSTREAM_ORIGIN as HOST } from "./upstream.mjs";
 
 const UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36";
-const LOCATION_PARAMS = new Set(["zip", "zipCode", "lat", "long"]);
 const CAPTURED = ["manifest.json", "seatmaps", "showtimes", "theaters"];
-const REDACTED = "[REDACTED]";
 
 const flags = Object.fromEntries(
   process.argv
@@ -41,11 +55,6 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const previousDay = (date) =>
   new Date(`${date}T12:00:00Z`).valueOf() - 86400000;
 const isoDay = (ms) => new Date(ms).toISOString().slice(0, 10);
-
-const secrets = new Set();
-const rememberSecret = (value) => {
-  if (typeof value === "string" && value.length >= 6) secrets.add(value);
-};
 
 async function bootstrapSession() {
   const response = await fetch(`${HOST}/napi/preferences/themes`, {
@@ -103,36 +112,6 @@ async function get(path, { attempt = 1 } = {}) {
   return { status: response.status, body: JSON.parse(text) };
 }
 
-function redactPath(path) {
-  const [route, query] = path.split("?");
-  if (!query) return route;
-  const redacted = query.split("&").map((pair) => {
-    const key = pair.slice(0, pair.indexOf("="));
-    return LOCATION_PARAMS.has(key) ? `${key}=${REDACTED}` : pair;
-  });
-  return `${route}?${redacted.join("&")}`;
-}
-
-function redactBody(value) {
-  if (Array.isArray(value)) return value.map(redactBody);
-  if (value && typeof value === "object") {
-    return Object.fromEntries(
-      Object.entries(value).map(([key, inner]) => [
-        key,
-        key === "distance" ? null : redactBody(inner),
-      ]),
-    );
-  }
-  return value;
-}
-
-function redactSecrets(text) {
-  return [...secrets].reduce(
-    (acc, secret) => acc.split(secret).join(REDACTED),
-    text,
-  );
-}
-
 const written = [];
 async function writeFixture(relativePath, path, capture) {
   const envelope = {
@@ -149,119 +128,6 @@ async function writeFixture(relativePath, path, capture) {
   );
   written.push(relativePath);
   return envelope;
-}
-
-function shapeOf(body) {
-  const seats = body.seats ?? [];
-  const tally = (pick) =>
-    seats.reduce(
-      (acc, seat) =>
-        Object.assign(acc, { [pick(seat)]: (acc[pick(seat)] ?? 0) + 1 }),
-      {},
-    );
-  const labels = seats.map((seat) => String(seat.id));
-  const rowsOfLetter = new Map();
-  for (const seat of seats) {
-    const letter = String(seat.id).match(/^[A-Za-z]+/)?.[0];
-    if (letter) rowsOfLetter.set(letter.toUpperCase(), seat.row);
-  }
-  const letterMatchesRow = [...rowsOfLetter].every(
-    ([letter, row]) => letter.length === 1 && letter.charCodeAt(0) - 64 === row,
-  );
-  return {
-    seatsInArray: seats.length,
-    rows: new Set(seats.map((seat) => seat.row)).size,
-    columns: new Set(seats.map((seat) => seat.column)).size,
-    extentX: Math.max(0, ...seats.map((seat) => seat.x + seat.width)),
-    extentY: Math.max(0, ...seats.map((seat) => seat.y + seat.height)),
-    labelStyle: labels.every((label) => /^\d+$/.test(label))
-      ? "numeric"
-      : labels.every((label) => /^[A-Za-z]/.test(label))
-        ? "alphanumeric"
-        : "mixed",
-    labelLetterMatchesRowIndex:
-      rowsOfLetter.size === 0 ? null : letterMatchesRow,
-    rawSeatStatusCounts: tally((seat) => seat.status),
-    seatTypeCounts: tally((seat) => seat.type),
-    areaCodes: [...new Set(seats.map((seat) => seat.areaCode))],
-    seatBlocks: body.seatBlocks?.length ?? null,
-    areas: body.areas?.length ?? null,
-    reportedTotalSeatCount: body.totalSeatCount ?? null,
-    reportedTotalAvailableSeatCount: body.totalAvailableSeatCount ?? null,
-    hasGeometry: seats.every(
-      (seat) => Number.isFinite(seat.x) && Number.isFinite(seat.y),
-    ),
-    hasNeighbourLinks: seats.every(
-      (seat) => "leftNeighbor" in seat && "rightNeighbor" in seat,
-    ),
-  };
-}
-
-const showtimeRows = (groupings) =>
-  groupings.flatMap(({ movieId, body }) =>
-    (body.theaterShowtimes?.theaters ?? []).flatMap((theater) =>
-      (theater.variants ?? []).flatMap((variant) =>
-        (variant.amenityGroups ?? []).flatMap((group) =>
-          (group.showtimes ?? []).map((showtime) => ({
-            chain: theater.chainCode,
-            theaterId: theater.id,
-            theaterName: theater.name,
-            movieId,
-            movieVariantId: group.movieVariantId,
-            format: variant.filmFormatHeader,
-            amenities: group.amenityString,
-            hasReservedSeating: group.hasReservedSeating,
-            showtimeType: showtime.type,
-            showtimeId: showtime.id,
-          })),
-        ),
-      ),
-    ),
-  );
-
-function candidatesByChain(rows) {
-  const byChain = new Map();
-  for (const row of rows) {
-    if (row.showtimeType !== "available") continue;
-    const list = byChain.get(row.chain) ?? [];
-    if (
-      row.hasReservedSeating === false &&
-      list.some((entry) => entry.hasReservedSeating === false)
-    )
-      continue;
-    list.push(row);
-    byChain.set(row.chain, list);
-  }
-  return byChain;
-}
-
-function spreadOverTheaters(candidates, limit) {
-  const queues = new Map();
-  for (const candidate of candidates) {
-    const queue = queues.get(candidate.theaterId) ?? [];
-    if (
-      !queue.some(
-        (entry) =>
-          entry.format === candidate.format &&
-          entry.movieId === candidate.movieId,
-      )
-    )
-      queue.push(candidate);
-    queues.set(candidate.theaterId, queue);
-  }
-  const picked = [];
-  const lists = [...queues.values()];
-  for (
-    let depth = 0;
-    picked.length < limit && lists.some((list) => list.length > depth);
-    depth += 1
-  ) {
-    for (const list of lists) {
-      if (picked.length >= limit) break;
-      if (list[depth]) picked.push(list[depth]);
-    }
-  }
-  return picked;
 }
 
 for (const stale of CAPTURED)
@@ -281,10 +147,6 @@ await writeFixture(
   catalogue,
 );
 
-const showtimeCount = (movie) =>
-  (movie.variants ?? []).flatMap((variant) =>
-    (variant.amenityGroups ?? []).flatMap((group) => group.showtimes ?? []),
-  ).length;
 const widestReleases = [...catalogue.body.viewModel.movies]
   .sort((a, b) => showtimeCount(b) - showtimeCount(a))
   .slice(0, config.movies);
@@ -370,7 +232,7 @@ const manifest = {
     rule: "response headers are never written; location query parameters and every bootstrap cookie value are replaced",
     locationQueryParams: [...LOCATION_PARAMS],
     strippedBodyFields: ["distance"],
-    secretCount: secrets.size,
+    secretCount: rememberedSecrets().length,
   },
   chains: [...new Set(seatMaps.map((entry) => entry.chain))].sort(),
   chainsNearbyWithoutSeatMaps: [
@@ -411,7 +273,7 @@ const searchArea = new RegExp(String.raw`\b${config.zip}\b`);
 const leaks = [];
 for (const file of await walk(config.out)) {
   const text = await readFile(file, "utf8");
-  for (const secret of secrets)
+  for (const secret of rememberedSecrets())
     if (text.includes(secret)) leaks.push(`${file}: ${secret.slice(0, 24)}...`);
   if (searchArea.test(text)) leaks.push(`${file}: the area passed to --zip`);
 }
@@ -431,6 +293,6 @@ geometry        ${ok.every((entry) => entry.hasGeometry) ? "present in every sea
 neighbours      ${ok.every((entry) => entry.hasNeighbourLinks) ? "present in every seat" : "MISSING"}
 showtime types  ${JSON.stringify(manifest.showtimeTypeCounts)}
 requests        ${ledger.length}, non-200: ${ledger.filter((entry) => entry.status !== 200).length}
-redaction       ${secrets.size} secret values checked against ${written.length + 1} files, no leak
+redaction       ${rememberedSecrets().length} secret values checked against ${written.length + 1} files, no leak
 written to      ${config.out}
 `);

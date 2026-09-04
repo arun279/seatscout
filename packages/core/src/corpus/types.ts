@@ -41,7 +41,7 @@ export interface CapturedUpstreamError {
   readonly message: string;
 }
 
-interface CapturedShowtime {
+export interface CapturedShowtime {
   readonly id: number;
   readonly type: string;
   readonly expired: boolean;

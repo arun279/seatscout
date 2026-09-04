@@ -1,94 +1,19 @@
 import * as fc from "fast-check";
 import { describe, expect, it } from "vitest";
-import { seatMapCaptures } from "../corpus/captures.js";
-import { type Designation, type Seat, seatsFrom } from "../source/seat-map.js";
 import {
-  rowsOf,
-  type SeatGroup,
-  type SeatGroupTerms,
-  seatGroupsIn,
-} from "./seat-group.js";
-
-type Band = "contiguous" | "pod" | "aisle";
-
-interface Cell {
-  readonly gapBefore: Band;
-  readonly designation: Designation;
-  readonly bookable: boolean;
-}
-
-interface Placed {
-  readonly seat: Seat;
-  readonly cell: Cell;
-  readonly column: number;
-}
-
-interface Room {
-  readonly seats: readonly Seat[];
-  readonly placed: ReadonlyMap<string, Placed>;
-}
-
-interface Pair {
-  readonly lower: Seat;
-  readonly higher: Seat;
-}
-
-const FETCHED_AT = 1000;
-const SEAT_WIDTH = 100;
-const ROW_PITCH = 500;
-
-const SPACING: Readonly<Record<Band, number>> = {
-  contiguous: 130,
-  pod: 180,
-  aisle: 300,
-};
-
-const cellOf = (
-  gapBefore: Band,
-  bookable: boolean,
-  designation: Designation = "standard",
-): Cell => ({ gapBefore, designation, bookable });
-
-const free = (gapBefore: Band = "contiguous") => cellOf(gapBefore, true);
-const taken = (gapBefore: Band = "contiguous") => cellOf(gapBefore, false);
-
-const seatAt = (id: string, x: number, y: number, cell: Cell): Seat => ({
-  id,
-  designation: cell.designation,
-  bookable: cell.bookable,
-  x,
-  y,
-  width: SEAT_WIDTH,
-  height: SEAT_WIDTH,
-  leftNeighbour: null,
-  rightNeighbour: null,
-  provenance: {
-    source: "aggregator",
-    fetchedAt: FETCHED_AT,
-    upstreamStatus: cell.bookable ? "A" : "R",
-  },
-});
-
-const roomFrom = (rows: readonly (readonly Cell[])[]): Room => {
-  const placed = rows.flatMap((row, depth) =>
-    row.map((cell, column) => ({
-      cell,
-      column,
-      seat: seatAt(
-        `${depth}.${column}`,
-        row
-          .slice(1, column + 1)
-          .reduce((x, before) => x + SPACING[before.gapBefore], 0),
-        depth * ROW_PITCH,
-        cell,
-      ),
-    })),
-  );
-  return {
-    seats: placed.map((entry) => entry.seat),
-    placed: new Map(placed.map((entry) => [entry.seat.id, entry])),
-  };
-};
+  accessibleIn,
+  type Band,
+  bandBetween,
+  cellOf,
+  free,
+  pairAt,
+  partySize,
+  type Room,
+  roomFrom,
+  rooms,
+  terms,
+} from "./seat-group.fixtures.js";
+import { type SeatGroup, seatGroupsIn } from "./seat-group.js";
 
 const placesIn = (room: Room, group: SeatGroup) =>
   group.seats.map((seat) => {
@@ -102,110 +27,6 @@ const idsIn = (groups: readonly SeatGroup[]) =>
     seats: group.seats.map((seat) => seat.id),
     podDividers: group.podDividers,
   }));
-
-const bandBetween = ({ lower, higher }: Pair): Band => {
-  const pair = [lower, higher].map((seat) => ({ ...seat, bookable: true }));
-  const [group] = seatGroupsIn(pair, {
-    partySize: 2,
-    accessibleSeating: pair.some((seat) => seat.designation !== "standard"),
-  });
-  if (group === undefined) return "aisle";
-  return group.podDividers === 1 ? "pod" : "contiguous";
-};
-
-const pairAt = (
-  spacing: number,
-  left: Designation,
-  right: Designation,
-): Pair => ({
-  lower: seatAt("0.0", 0, 0, cellOf("contiguous", true, left)),
-  higher: seatAt("0.1", spacing, 0, cellOf("contiguous", true, right)),
-});
-
-const asStandard = ({ lower, higher }: Pair): Pair => ({
-  lower: { ...lower, designation: "standard" },
-  higher: { ...higher, designation: "standard" },
-});
-
-const capturedAuditoriums = (): readonly (readonly Seat[])[] =>
-  [...seatMapCaptures.values()].map((capture) => {
-    const seats = seatsFrom(JSON.stringify(capture.body), FETCHED_AT);
-    if (seats === null)
-      throw new Error("the corpus holds a seat map that will not read");
-    return seats;
-  });
-
-const pairsIn = (row: readonly Seat[]): readonly Pair[] => {
-  const pairs: Pair[] = [];
-  let lower: Seat | undefined;
-  for (const higher of row) {
-    if (lower !== undefined) pairs.push({ lower, higher });
-    lower = higher;
-  }
-  return pairs;
-};
-
-const tallyBands = (pairs: readonly Pair[]) => {
-  const tally = { contiguous: 0, pod: 0, aisle: 0 };
-  for (const pair of pairs) tally[bandBetween(pair)] += 1;
-  return tally;
-};
-
-const ordinary = (seat: Seat) =>
-  seat.bookable && seat.designation === "standard";
-
-const accessibleIn = (seats: readonly Seat[]) =>
-  seats.filter((seat) => seat.designation !== "standard").length;
-
-const designation = fc.oneof(
-  { arbitrary: fc.constant<Designation>("standard"), weight: 6 },
-  { arbitrary: fc.constant<Designation>("wheelchair"), weight: 1 },
-  { arbitrary: fc.constant<Designation>("companion"), weight: 1 },
-);
-
-const gapBefore = fc.oneof(
-  { arbitrary: fc.constant<Band>("contiguous"), weight: 6 },
-  { arbitrary: fc.constant<Band>("pod"), weight: 3 },
-  { arbitrary: fc.constant<Band>("aisle"), weight: 1 },
-);
-
-const ADVERSARIAL_ROWS: readonly (readonly Cell[])[] = [
-  [free()],
-  [free(), free()],
-  Array.from({ length: 10 }, () => free()),
-  Array.from({ length: 10 }, () => taken()),
-  Array.from({ length: 10 }, (_, column) =>
-    column % 2 === 0 ? free() : taken(),
-  ),
-  [free(), free("aisle"), free(), free(), free(), free("aisle"), free()],
-  [
-    free(),
-    free(),
-    cellOf("pod", true, "wheelchair"),
-    cellOf("pod", true, "companion"),
-    free(),
-    free(),
-  ],
-  [free(), free("pod"), free(), free("pod"), free()],
-  [free(), taken("aisle"), free("aisle"), free()],
-];
-
-const rows = fc.oneof(
-  fc.constantFrom(...ADVERSARIAL_ROWS),
-  fc.array(fc.record({ gapBefore, designation, bookable: fc.boolean() }), {
-    minLength: 1,
-    maxLength: 12,
-  }),
-);
-
-const rooms = fc.array(rows, { minLength: 1, maxLength: 6 }).map(roomFrom);
-
-const partySize = fc.integer({ min: 1, max: 6 });
-
-const terms: fc.Arbitrary<SeatGroupTerms> = fc.record({
-  partySize,
-  accessibleSeating: fc.boolean(),
-});
 
 describe("Seat Group construction", () => {
   it("emits only runs of the party's size, in one row, unbroken by an aisle", () => {
@@ -455,110 +276,5 @@ describe("Seat Group construction", () => {
       { seats: ["0.2", "0.3"], podDividers: 0 },
       { seats: ["1.0", "1.1"], podDividers: 0 },
     ]);
-  });
-});
-
-describe("Seat Group construction over the captured corpus", () => {
-  it("sorts every in-row gap into the three bands, and re-reads an accessible space's width as no console", () => {
-    const drawnRows = capturedAuditoriums().flatMap(rowsOf);
-    const pairs = drawnRows.flatMap(pairsIn);
-
-    expect(drawnRows).toHaveLength(376);
-    expect(pairs).toHaveLength(6395);
-    expect(tallyBands(pairs.map(asStandard))).toEqual({
-      contiguous: 5688,
-      pod: 540,
-      aisle: 167,
-    });
-    expect(tallyBands(pairs)).toEqual({
-      contiguous: 5766,
-      pod: 462,
-      aisle: 167,
-    });
-  });
-
-  it("seats a party of three in every captured Auditorium that has three free Seats in one row", () => {
-    const auditoriums = capturedAuditoriums();
-    const groupsFor = (seats: readonly Seat[]) =>
-      seatGroupsIn(seats, { partySize: 3, accessibleSeating: false });
-    const counting = (holds: (seats: readonly Seat[]) => boolean) =>
-      auditoriums.filter(holds).length;
-
-    expect({
-      auditoriums: auditoriums.length,
-      withThreeFreeSeatsInARow: counting((seats) =>
-        rowsOf(seats).some((row) => row.filter(ordinary).length >= 3),
-      ),
-      seatingThem: counting((seats) => groupsFor(seats).length > 0),
-      seatingThemOnlyAcrossAConsole: counting((seats) => {
-        const groups = groupsFor(seats);
-        return (
-          groups.length > 0 && groups.every((group) => group.podDividers > 0)
-        );
-      }),
-    }).toEqual({
-      auditoriums: 42,
-      withThreeFreeSeatsInARow: 42,
-      seatingThem: 42,
-      seatingThemOnlyAcrossAConsole: 5,
-    });
-  });
-
-  it("holds every neighbour link the Source sent to the geometry, and finds that links are not adjacency", () => {
-    const auditoriums = capturedAuditoriums();
-    const pairs = auditoriums.flatMap((seats) =>
-      rowsOf(seats).flatMap(pairsIn),
-    );
-    const linksAcross = ({ lower, higher }: Pair) =>
-      (lower.rightNeighbour === higher.id ? 1 : 0) +
-      (higher.leftNeighbour === lower.id ? 1 : 0);
-    const carried = (pick: (seat: Seat) => string | null) =>
-      auditoriums.flat().filter((seat) => pick(seat) !== null).length;
-    const linksOver = (over: readonly Pair[]) =>
-      over.reduce((total, pair) => total + linksAcross(pair), 0);
-
-    expect({
-      links:
-        carried((seat) => seat.leftNeighbour) +
-        carried((seat) => seat.rightNeighbour),
-      namingAnImmediateNeighbour: linksOver(pairs),
-      acrossAContiguousGap: linksOver(
-        pairs.filter((pair) => bandBetween(pair) === "contiguous"),
-      ),
-      contiguousGapsCarryingNoLink: pairs.filter(
-        (pair) => linksAcross(pair) === 0 && bandBetween(pair) === "contiguous",
-      ).length,
-    }).toEqual({
-      links: 10974,
-      namingAnImmediateNeighbour: 10974,
-      acrossAContiguousGap: 10974,
-      contiguousGapsCarryingNoLink: 279,
-    });
-  });
-
-  it("answers every captured Auditorium that has a bookable accessible Seat with one, and no other Auditorium at all", () => {
-    const auditoriums = capturedAuditoriums();
-    const groupsFor = (seats: readonly Seat[], accessibleSeating: boolean) =>
-      seatGroupsIn(seats, { partySize: 2, accessibleSeating });
-
-    expect({
-      withABookableAccessibleSeat: auditoriums.filter(
-        (seats) => accessibleIn(seats.filter((seat) => seat.bookable)) > 0,
-      ).length,
-      answeringWithOne: auditoriums.filter(
-        (seats) => groupsFor(seats, true).length > 0,
-      ).length,
-      groupsCarryingNone: auditoriums
-        .flatMap((seats) => groupsFor(seats, true))
-        .filter((group) => accessibleIn(group.seats) === 0).length,
-      offeredOrdinarily: auditoriums
-        .flatMap((seats) => groupsFor(seats, false))
-        .reduce((total, group) => total + accessibleIn(group.seats), 0),
-    }).toEqual({
-      withABookableAccessibleSeat: 40,
-      answeringWithOne: 40,
-      groupsCarryingNone: 0,
-      offeredOrdinarily: 0,
-    });
   });
 });
