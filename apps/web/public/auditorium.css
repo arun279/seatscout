@@ -195,7 +195,8 @@
   bottom: 0;
   margin: 14px -22px 0;
   padding: 12px 22px 24px;
-  background: linear-gradient(180deg, transparent, var(--house) 30%);
+  background: var(--house);
+  box-shadow: 0 -14px 18px var(--house);
   display: flex;
   flex-direction: column;
   gap: 9px;

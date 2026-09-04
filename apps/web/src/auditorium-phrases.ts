@@ -5,7 +5,7 @@ import type {
   SeatGroupResult,
   SeatRow,
 } from "@seatscout/client";
-import { capitalised, clockOf, lateralOf, partyOf, wordOf } from "./phrases.js";
+import { capitalised, clockOf, lateralOf, wordOf } from "./phrases.js";
 
 type Accessible = Exclude<PositionedSeat["designation"], "standard">;
 
@@ -118,14 +118,17 @@ export const refusalOf = (
     return `Seat ${seat.id} is not bookable, so no seats together can include it.`;
   if (isAccessible(seat) && !accessibleSeating)
     return `Seat ${seat.id} is a ${KINDS[seat.designation].toLowerCase()}. Ask for accessible seating in the query to include it.`;
-  return `No ${partyOf(partySize).toLowerCase()} include seat ${seat.id}.`;
+  return `No offered ${groupWordOf(partySize)} includes seat ${seat.id}.`;
 };
 
 export const chosenOf = (result: SeatGroupResult) =>
   `${listOf(result.seats.map((seat) => seat.id))} chosen. ${result.seats.length === 1 ? "It is" : "They are"} re-checked when you continue.`;
 
+const groupWordOf = (partySize: number) =>
+  GROUP_WORDS[partySize] ?? wordOf(partySize);
+
 export const groupsOf = (count: number, partySize: number) => {
-  const word = GROUP_WORDS[partySize] ?? wordOf(partySize);
+  const word = groupWordOf(partySize);
   return count === 1
     ? `The only ${word} in this room.`
     : `${count} ${word}s in this room.`;

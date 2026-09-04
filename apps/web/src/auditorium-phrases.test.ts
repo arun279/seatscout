@@ -152,10 +152,10 @@ describe("what the room calls things", () => {
       "Seat E18 is a companion seat. Ask for accessible seating in the query to include it.",
     );
     expect(refusalOf(seatNamed(plano, "J10"), 2, false)).toBe(
-      "No two seats together include seat J10.",
+      "No offered pair includes seat J10.",
     );
     expect(refusalOf(seatNamed(village, "WC17"), 3, true)).toBe(
-      "No three seats together include seat WC17.",
+      "No offered three includes seat WC17.",
     );
   });
 
