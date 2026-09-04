@@ -20,9 +20,12 @@ Pull requests run the `quality` job, which is the list below in the order it run
 and three further jobs described after it. The end-to-end suite drives a real browser, so the
 `quality` job installs Chromium before it runs, and it runs after the build because what it
 loads is the built output. The accessibility gate lives there too: axe-core scans the shell
-against WCAG 2.2 at levels A and AA and a violation fails the job. `pnpm test:e2e` lists the
-tests tagged `@accessibility` before it runs anything, so the suite has to still hold that
-scan for the run to start. Run the same gates locally with:
+and the results screen against WCAG 2.2 at levels A and AA and a violation fails the job. So
+does the journey gate, described under the first screen below, which the same suite runs and
+which writes the samples the last two steps of the job hold to the merge base. `pnpm test:e2e`
+lists the tests tagged `@accessibility` and then the ones tagged `@performance` before it runs
+anything, so the suite has to still hold both for the run to start. Run the same gates locally
+with:
 
 ```sh
 pnpm format:check
@@ -40,9 +43,12 @@ pnpm test:unit
 pnpm build
 pnpm --filter @seatscout/proxy exec wrangler deploy --dry-run
 pnpm test:e2e
+pnpm journey --head reports/journey/samples.json --no-baseline
 ```
 
-The list is the job, not a selection from it. Running a shorter one and finding it green is
+The list is the job, not a selection from it. The last line is the half of the journey gate a
+checkout can run alone; the job also builds the merge base in a worktree, runs its journey, and
+holds this one to it, which is described under the first screen below. Running a shorter one and finding it green is
 how a contributor arrives red on a pull request, which is what this list is for.
 
 Three further jobs run alongside them. `footprint` measures the change and is described
@@ -345,6 +351,20 @@ Do the work of a test inside the test. A mutant that stops a test file loading a
 produces no failing test, and the runner scores that as a survivor rather than a kill, so
 a suite that derives its fixtures at module scope reports mutants as surviving that its
 assertions would otherwise have caught.
+
+Keep a hot test's work under Vitest's default timeout with room to spare, because the dry
+run makes it slower than it is and by an amount that depends on files it never touches.
+Stryker numbers mutants in file order and records per-test coverage in a plain object keyed
+by the mutant id as a string. V8 keeps such an object's numeric keys in fast elements only
+while the first index written stays under `JSObject::kMaxGap`, which V8 sets at 1,024, and
+falls to dictionary elements otherwise, which made every coverage increment about six times
+slower when benchmarked (34 ms against 211 ms per five million). `apps`
+sorts before `packages`, so when the first screen added about 700 mutants under `apps/web`,
+Core's ids moved from the hundreds past 1,250 and the Seat Profile sweep, unchanged, went
+from 1.6 s to 5.8 s under the dry run and timed out. It is now five sweeps of one benchmark
+room each rather than one of five, with the same assertions partitioned. A dry-run timeout
+on a test nobody edited is this, and the remedy is to divide the test's work, not to raise
+the timeout.
 
 ## The nightly contract test
 
@@ -1356,12 +1376,13 @@ back as something other than what was written reads as absent for the same reaso
 
 ### The shell, and what its service worker may cache
 
-`apps/web/public/index.html` is the page the deployment serves at `/`. It is provisional
-and says so on its face: a heading and a sentence. It is copied into the build output
-rather than compiled, so the
-two scripts beside it keep the names the worker and the page refer to. Its only inline
-script imports the entry and calls `startShell`, which is why that entry has no import-time
-side effect and can therefore be imported by a test page as well as by the shell.
+`apps/web/public/index.html` is the page the deployment serves at `/`. It carries the first
+screen, which has a section of its own below, and beside the page the build publishes its
+five stylesheets, its icon, and the three typefaces the direction is set in. It is copied into
+the build output rather than compiled, so the two scripts beside it keep the names the worker
+and the page refer to. Its only inline script imports the entry and calls `startApp` and then
+`startShell`, which is why that entry has no import-time side effect and can therefore be
+imported by a test page as well as by the shell.
 
 **The service worker cannot cache seat Availability, and that is structural rather than
 observed.** `apps/web/src/worker/cache.ts` is the only file the deployment ships that may
@@ -1479,12 +1500,11 @@ device on the shell the deployment is serving; the copy the cache holds is a fal
 having no network, which is the only thing asked of it.
 
 `tests/e2e/shell.spec.ts` drives all of it in a real browser against the built output,
-served by `vite preview` from `playwright.config.ts`'s `webServer`. The server is
-configured `appType: "mpa"`, because its default answers any unmatched path with the page,
-which would make the pass-through assertion below vacuous: a seat map route would come back
-as the shell rather than as a miss. It is a stand-in and not a replica: it answers 404 where
-the deployment sends the same request to the proxy. The suite watches the worker take
-control, reads Cache Storage back and asserts it holds the shell and nothing else, requests
+served by `wrangler dev` from `playwright.config.ts`'s `webServer`: the worker the deployment
+runs, over the asset directory it publishes, so what the suite sees is what a deployment
+serves rather than a stand-in for it. A seat map route therefore reaches the proxy, which
+answers that it is not configured because no secret is set, and the suite asserts that
+answer. The suite watches the worker take control, reads Cache Storage back and asserts it holds the shell and nothing else, requests
 a seat map route and a published file the shell does not list and asserts neither is added,
 and reloads with the network disabled, still under the worker's control.
 
@@ -1709,6 +1729,19 @@ progressive delivery costs: at the few hundred candidates a Query has, the work 
 and the allocation is short-lived. Coalescing the notifications is a rendering decision and
 belongs where the rendering is.
 
+**A result carries the room's seat count and its row plan beside the Seat Group.** The plan
+is every row of the Auditorium as the runs its aisles divide it into, each run the lateral of
+its first and last Seat, in the same normalised lateral the Seats carry. It is what a result
+card draws the room from, and it is what stands in for the score the interface refuses to
+show, so it is computed where the room is read rather than reconstructed by a screen.
+
+**`createSeatScout` is the composition root, and it is what an application calls.** It takes
+the Source's dependencies, the transport, the clock, the wait and the random draw, and
+optionally a store, and answers with `search` and `verify` composed over one Source and one
+catalogue cache. The store defaults to memory, so a caller that brings none still searches;
+the web application brings Web Storage. The catalogue read is not on it, for the reason
+recorded against ticket 26: nothing captured can serve one.
+
 ### Reading a response body
 
 A `fetch()` is not complete until its body is consumed. Collecting responses across a
@@ -1902,6 +1935,136 @@ parse, a suppression of the lint rule, a widening of the brand, or a `declare` t
 `TicketingUrl` would each work, and each is visible. The property is that no ordinary code
 path reaches a URL, not that a determined author cannot; the same is true of every
 compile-time guarantee in this workspace.
+
+## The first screen
+
+`apps/web` is React over the client's composition root, and everything on its screen is
+computed from a search: no fixture is rendered as if it were live, and the screen tests
+drive the real `openSearch` over the fake upstream with a captured room standing in for every
+seat map the corpus did not record. The query lives in the address as `movie`, `date`,
+`area` and `partySize`, the glossary's own words, so a search is a URL, the back button is the
+previous query, and a test can open a journey by navigating to one. The title card shows the
+terms and each editable one is a button that opens the Ask sheet with that field focused; the
+Movie is the identity the Source states, because the domain carries no title and picking one
+by name is ticket 26's. The application reaches Core only through the client, which is D21's
+sentence about it: `REFERENCE` and the fake upstream come through `@seatscout/client` and
+`@seatscout/client/testing`, and `tools/claims-in-prose.mjs` holds `apps` to naming Core's
+package nowhere.
+
+**The list is painted when the ranking has stopped moving, and the reason is measured.**
+Results arrive out of order, the ranking is a total order, and a better result inserting above
+a card that is already on screen moves that card down. That is a layout shift by the
+definition Core Web Vitals use, and the first such insertion alone measured 0.13 against the
+0.1 the standard allows. Rendering by rank position instead would keep the score at zero by
+replacing what a reader is looking at, which games the metric rather than meets it. So while
+the search is in flight the strip carries the counts, the list head says how many seat maps
+are still being read and how many showtimes have answered, and the cards appear once, at
+settle. On the live Source that is well under a second end to end, which is the figure
+recorded against ticket 23; on the corpus replay it is a few hundred milliseconds. The one
+transition the list does make is held still while a pointer is down on it and released when
+the pointer lifts, leaves the list, or is cancelled by a scroll, which is what "without
+reshuffling under a tap" means here. The list's own pointer events carry all of that, so
+nothing listens on the window for it.
+
+**The tie is drawn as the direction draws it.** Every result whose Seat Group sits within
+half a row and one seat of the target is in the tie, whatever a console or a wall cost it in
+the score, because that predicate is what the tie means; those results sit above a rule of
+light ordered soonest first, which is the direction's own default once the in-tie sort control
+is cut, and everything below the rule is in score order and is, exactly as the rule says,
+measurably further from the target. A card says where the Seat Group is as its row of the
+room's rows and its offset from the centreline in seats, why it ranked where it did as the
+penalties it was charged, how fresh it is as an age that keeps counting, and that it came from
+one Source. That last line is stated rather than counted, because a Seat's Provenance names
+exactly one Source and a count over it cannot come out otherwise; a type test in
+`results.test.tsx` binds the statement to that type, so widening Provenance to a second
+Source fails a test that points at the card. A card is named for assistive technology by its
+Theater, its time and its formats, because two rooms at one Theater can share a time. A pair
+astride the centreline is called central, because half a seat off is the finest a pair can do.
+
+**Coverage on this screen is counts and never a bar.** An in-flight search is Coverage: its
+ledger closes in every snapshot, so the strip reads candidates, checked and to go, and the
+ledger is a dialog with a count per outcome, the named rows with their Theater and time, a
+link to the operator's page where that is the remedy, and an arithmetic line that adds to the
+candidates. A search that settles with rooms unreached says so in its heading before it shows
+a card, names those rooms, and offers the retry before it offers to change the query; a search
+that settles with every room answered and nothing to offer says that in a different heading;
+a search whose listing could not be read says the listing could not be read. The retry is a
+fresh search, which re-reads every room, and the button says so.
+
+**The typefaces are published beside the page and precached with it.** Big Shoulders
+Display, Schibsted Grotesk and Spline Sans Mono are served from `apps/web/public/fonts/` as
+the latin subsets of their variable files under the Open Font License, whose notices sit
+beside them, and they are on the service worker's shell list. They are not Availability: a
+face is a build output with a deterministic name, which is exactly what the shell cache holds,
+and a shell that opens offline in a fallback face would be a different screen from the one
+the direction drew. Every stylesheet an application ships counts as product code in the
+footprint report and a drawing counts as data.
+
+**The icon is one SVG and everything else is rendered from it.** `pnpm icons` renders the
+manifest's sizes, the Apple touch icon and a favicon from `apps/web/public/icon.svg` through
+the browser Playwright already installs, so the mark has one source. The manifest names the
+rasters and the page names its icon, and `tests/e2e/install.spec.ts` asks Chromium itself,
+through the DevTools protocol, for its installability errors and expects none.
+
+**The journey gate is web-vitals under Playwright, ten journeys, against the built tree the
+worker serves.** `tests/e2e/journey.spec.ts` opens a query, waits for the first Seat Group,
+opens and closes the ledger, and reads LCP, INP and CLS off Google's own library, plus the
+moment the first Seat Group was painted, taken from a mutation observer and the next frame.
+It holds the 75th percentile of each vital to the Core Web Vitals good thresholds, which is
+the standard, and reports the first-Seat-Groups moment's 75th percentile as an annotation
+without holding it to any figure of its own; the ticket's "well under a second" is read off
+that figure by a person, and the ratchet below is what gates it. CLS is summed from the
+Layout Instability entries the browser itself reports, so a journey with no shift reads as
+zero rather than as nothing measured; LCP and INP come from web-vitals, and a journey that
+measured nothing on either axis throws, so a screen that renders no result is red rather
+than fast. It writes the ten journeys to `reports/journey/samples.json`,
+and `tools/journey` holds them to the merge base's: the job checks the merge base out into a
+worktree, runs its own journey spec, and fails this branch when the head's median is slower
+than the base's slowest journey. The same accessibility test that scans the results screen
+also measures every control's hit area, its own box plus the `::after` area the stylesheet
+gives inline controls, on the list and inside the open ledger, and fails under 44 px. That margin is the base's own spread rather than a number
+chosen here; under identical performance the head's median exceeds the base's maximum in
+under one run in a hundred, measured by simulation over ten journeys a side. A merge base
+with no journey to compare against is
+reported as such rather than passed over, and a base or head that measured no journey fails.
+The browser blocks service workers for that spec, so the journey it measures is a first
+visit, which is the one that has no cache to help it.
+
+**The dialogs are the platform's.** The editor and the ledger are `<dialog>` elements
+opened by one ref callback, `modal` in `apps/web/src/modal.ts`, which React 19 calls with the
+element and, because it returns a cleanup, never with null, so there is no branch for an
+element that is not there. They close through `method="dialog"` forms, which is how a dialog
+closes without a script reaching for it, and the `close` event that follows is what tells the
+screen the editor has gone. The editor names the term that was tapped on the dialog as
+`data-focus`, each control carries its term as `data-term`, and `modal` focuses the control
+named once the dialog is shown, because React never writes the `autofocus` attribute the
+dialog focusing steps read, and a focus call made before `showModal` lands on nothing, the
+element not yet being rendered. The end-to-end suite asserts that focus in Chromium, where the
+shim below has no say.
+
+**The stylesheet is four files, one per owner.** `house.css` is the direction's tokens,
+verbatim. `app.css` owns the stage and what every screen shares: the offline notice, the
+screen band, the type scale, the buttons, the dialog chrome, the verdict frame and the named
+list. `query.css` owns the title card, the term buttons and the editor's fields and stepper.
+`results.css` owns the list head, the cards and their plan marks, the tie rule, the count line
+and the fail box. `coverage.css` owns the strip and the ledger. All five are on the shell list
+and the page links each one, so the preload scanner fetches them together rather than through
+an `@import` chain.
+
+**Screen tests run under jsdom, shim the dialog, and refuse a console error.**
+`vitest.config.ts` gives `apps/web`'s `.tsx` tests a jsdom environment as their own project.
+jsdom has no `showModal` and does not close a dialog on a `method="dialog"` submit, so
+`apps/web/test/dialogs.ts` gives `HTMLDialogElement` a `showModal` that sets the `open`
+attribute, a `close` that removes it and fires `close`, and a document-level submit handler
+that closes the enclosing dialog for such a form; the real dialogs are exercised by the
+end-to-end suite in Chromium. `apps/web/test/strict-console.ts` turns every `console.error`
+into a thrown error, so React's own warnings, a duplicate key among them, fail the test that
+provoked them instead of scrolling past. The screen tests are split by subject: `app.test.tsx`
+holds the title card, the prompt, the editor and the offline notice; `results.test.tsx` the
+list, its cards and the hold; `verdicts.test.tsx` what the screen says when the answer is not
+a list; `coverage.test.tsx` the strip and the ledger. They share `app.fixtures.tsx`, which
+stages the real `App` over the fake upstream and records every search it opens, abandons and
+is asked for.
 
 ## The native application
 

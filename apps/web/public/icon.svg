@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>SeatScout</title>
+  <defs>
+    <radialGradient id="fall" cx="50%" cy="24%" r="62%">
+      <stop offset="0" stop-color="#b3dff5" stop-opacity="0.26"/>
+      <stop offset="1" stop-color="#b3dff5" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-50%" y="-200%" width="200%" height="500%">
+      <feGaussianBlur stdDeviation="9"/>
+    </filter>
+  </defs>
+  <rect width="512" height="512" fill="#06070e"/>
+  <rect width="512" height="512" fill="url(#fall)"/>
+  <rect x="118" y="124" width="276" height="12" rx="6" fill="#b3dff5" filter="url(#glow)"/>
+  <rect x="118" y="124" width="276" height="12" rx="6" fill="#e6ecf2"/>
+  <g stroke="#697187" stroke-width="12" stroke-linecap="round" fill="none">
+    <path d="M176 204h160"/>
+    <path d="M160 254h192"/>
+    <path d="M148 304h216"/>
+    <path d="M136 354h240"/>
+    <path d="M130 404h252"/>
+  </g>
+  <g fill="#b3dff5" filter="url(#glow)">
+    <circle cx="234" cy="354" r="17"/>
+    <circle cx="278" cy="354" r="17"/>
+  </g>
+  <circle cx="234" cy="354" r="17" fill="#b3dff5"/>
+  <circle cx="278" cy="354" r="17" fill="#b3dff5"/>
+</svg>

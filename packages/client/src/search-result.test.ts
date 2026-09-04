@@ -66,6 +66,21 @@ describe("the result a search hands back", () => {
     });
   });
 
+  it("carries the room's seat count and its row plan on every result", async () => {
+    const run = await searching({
+      at: [STONEBRIAR],
+      rooms: ["561562311"],
+    });
+    const settled = await run.search.done;
+    const result = settled.results[0];
+
+    expect(result?.seatCount).toBe(99);
+    expect(result?.plan).toHaveLength(8);
+    expect(result?.plan[0]?.runs).toHaveLength(3);
+    expect(result?.plan[0]?.depth).toBe(0);
+    expect(result?.plan.at(-1)?.depth).toBe(1);
+  });
+
   it("orders Showtimes that score alike by the Showtime they are", async () => {
     const run = await searching({
       at: [STONEBRIAR],

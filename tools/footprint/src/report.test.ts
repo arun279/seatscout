@@ -135,6 +135,23 @@ describe("the footprint report", () => {
     expect(markdown).toContain("| Product code | 0 | 0 | 0 |");
   });
 
+  it("counts a stylesheet an application ships as product code, and a drawing as data", () => {
+    const { markdown } = reportOn({
+      diff: {
+        added: {
+          "apps/web/public/app.css": counts(30, 0),
+          "apps/web/public/icon.svg": counts(20, 0),
+        },
+        removed: {},
+        modified: {},
+      },
+    });
+
+    expect(markdown).toContain("| Product code | 30 | 0 | 0 |");
+    expect(markdown).toContain("| Data code | 20 | 0 | 0 |");
+    expect(markdown).toContain("| Authored total | 30 | 0 | 0 |");
+  });
+
   it("keeps configuration and data out of the authored total", () => {
     const { markdown } = reportOn({
       diff: {

@@ -9,8 +9,8 @@ import {
 } from "./auditorium.fixtures.js";
 import {
   type NormalisedPosition,
-  type Placement,
   normalised,
+  type Placement,
 } from "./auditorium.js";
 
 interface Row {

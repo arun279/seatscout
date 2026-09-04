@@ -4,7 +4,8 @@
     "noEmit": true,
     "rootDir": ".",
     "skipLibCheck": true,
-    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
+    "types": ["node"]
   },
   "include": ["."]
 }

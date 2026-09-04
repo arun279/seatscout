@@ -1,5 +1,5 @@
 import type { Fetch } from "../transport.js";
-import { type RetryPolicy, delayAfter } from "./backoff.js";
+import { delayAfter, type RetryPolicy } from "./backoff.js";
 import { type BreakerPolicy, circuitBreaker } from "./breaker.js";
 import { catalogueFrom, theatersFrom } from "./catalogue.js";
 import type { Reading, Source, Unreadable } from "./port.js";

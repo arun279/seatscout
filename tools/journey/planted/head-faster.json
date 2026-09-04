@@ -1,0 +1,5 @@
+[
+  { "firstSeatGroupsMs": 200, "lcp": 60, "inp": 32, "cls": 0 },
+  { "firstSeatGroupsMs": 210, "lcp": 60, "inp": 32, "cls": 0 },
+  { "firstSeatGroupsMs": 290, "lcp": 60, "inp": 32, "cls": 0 }
+]

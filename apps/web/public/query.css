@@ -1,0 +1,135 @@
+.title-card {
+  padding: 10px 22px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.title-card .eyebrow {
+  margin: 0;
+}
+
+.title-card .line1 {
+  font-size: 30px;
+  color: var(--silver);
+}
+
+.title-card .line2 {
+  font-size: 36px;
+  color: var(--velvet-lit);
+}
+
+.title-card .line3 {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--silver-dim);
+  letter-spacing: 0.08em;
+  line-height: 1.8;
+  text-transform: uppercase;
+}
+
+.term {
+  position: relative;
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0 0 2px;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: left;
+  border-bottom: 1px dotted var(--silver-faint);
+  cursor: pointer;
+}
+
+.display .term {
+  border-bottom-color: var(--hairline);
+}
+
+.term::after {
+  content: "";
+  position: absolute;
+  inset: -15px -6px;
+}
+
+.ask {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ask[open] {
+  display: flex;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.field legend {
+  padding: 0;
+  margin-bottom: 9px;
+}
+
+.input {
+  min-height: 50px;
+  padding: 0 16px;
+  border-radius: 12px;
+  background: var(--house-deep);
+  border: 1px solid var(--hairline);
+  font-family: var(--mono);
+  font-size: 16px;
+  color: var(--silver);
+}
+
+.stepper {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
+.stepper legend {
+  float: left;
+  width: 100%;
+}
+
+.pm {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 1px solid var(--hairline);
+  background: var(--raised);
+  font-size: 22px;
+  color: var(--silver);
+  cursor: pointer;
+}
+
+.pm:disabled {
+  color: var(--silver-faint);
+  cursor: default;
+}
+
+.stepper .n {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 40px;
+  width: 44px;
+  text-align: center;
+}
+
+.micro {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--silver-faint);
+  text-wrap: pretty;
+}

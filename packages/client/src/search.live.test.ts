@@ -1,4 +1,4 @@
-import { type Reading, openSource } from "@seatscout/core";
+import { openSource, type Reading } from "@seatscout/core";
 import { describe, expect, inject, it } from "vitest";
 import { openSearch } from "./search.js";
 import { inMemoryStore } from "./store.js";

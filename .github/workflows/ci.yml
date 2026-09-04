@@ -13,10 +13,14 @@ concurrency:
 jobs:
   quality:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 20
+    env:
+      BASE: ${{ github.event.pull_request.base.sha }}
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
       - name: Set up pnpm and Node.js
         uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2
         with:
@@ -56,6 +60,28 @@ jobs:
       - name: Install the browser the end-to-end suite drives
         run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
+      - name: Measure the journey at the merge base
+        run: |
+          git worktree add "$RUNNER_TEMP/base" "$(git merge-base "$BASE" HEAD)"
+          cd "$RUNNER_TEMP/base"
+          pnpm install --frozen-lockfile
+          if listed="$(pnpm exec playwright test --list --grep @performance 2>&1)"; then
+            pnpm build
+            pnpm exec playwright test --grep @performance
+            cp reports/journey/samples.json "$GITHUB_WORKSPACE/reports/journey/base.json"
+          elif printf '%s' "$listed" | grep -q "No tests found"; then
+            echo "The merge base has no journey to hold this one to."
+          else
+            printf '%s\n' "$listed"
+            exit 1
+          fi
+      - name: Hold the journey to the merge base
+        run: |
+          if [ -f reports/journey/base.json ]; then
+            pnpm journey --head reports/journey/samples.json --base reports/journey/base.json
+          else
+            pnpm journey --head reports/journey/samples.json --no-baseline
+          fi
 
   footprint:
     runs-on: ubuntu-24.04

@@ -1,6 +1,6 @@
 import type { TicketingUrl } from "@seatscout/core";
 import { type CatalogueDependencies, openCatalogue } from "./catalogue.js";
-import { type SeatGroupResult, rankingIn } from "./ranking.js";
+import { rankingIn, type SeatGroupResult } from "./ranking.js";
 
 type Unverified = "taken" | "unreachable";
 

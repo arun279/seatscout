@@ -25,6 +25,7 @@ export interface UpstreamScript {
   }[];
   readonly routes?: Readonly<Record<string, ScriptedRoute>>;
   readonly sequences?: Readonly<Record<string, readonly number[]>>;
+  readonly standInAuditoriums?: boolean;
 }
 
 interface RecordedRequest {
@@ -54,6 +55,24 @@ interface Arrival {
 }
 
 const OVERRIDDEN: Content = { body: () => "" };
+
+const SEAT_MAP = /^\/napi\/seatMap\/(\d+)$/;
+
+const capturedAuditoriums = (): readonly Replay[] =>
+  [...seatMapCaptures.values()].map((capture) => ({
+    status: capture.status,
+    body: () => JSON.stringify(capture.body),
+  }));
+
+const standingIn = () => {
+  const auditoriums = capturedAuditoriums();
+  return (route: string): Replay | undefined => {
+    const asked = SEAT_MAP.exec(route);
+    return asked === null
+      ? undefined
+      : auditoriums[Number(asked[1]) % auditoriums.length];
+  };
+};
 
 const lowercased = (headers: Readonly<Record<string, string>>) =>
   Object.fromEntries(
@@ -93,6 +112,10 @@ export const fakeUpstream = (script: UpstreamScript): FakeUpstream => {
       body: () => route.body ?? "",
     });
 
+  const standIn = standingIn();
+  const replayOf = (route: string) =>
+    replays.get(route) ??
+    (script.standInAuditoriums ? standIn(route) : undefined);
   const sequences = new Map<string, number[]>(
     Object.entries(script.sequences ?? {}).map(([path, statuses]) => [
       routeOf(path),
@@ -119,7 +142,7 @@ export const fakeUpstream = (script: UpstreamScript): FakeUpstream => {
   const upstream: Fetch = (url, init) => {
     const route = routeOf(url);
     requests.push(recordOf(url, init));
-    const replay = replays.get(route);
+    const replay = replayOf(route);
     if (!replay)
       return Promise.reject(new Error(`no capture was recorded for ${route}`));
 

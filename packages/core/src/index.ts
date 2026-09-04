@@ -1,5 +1,6 @@
 export type { NormalisedPosition } from "./domain/auditorium.js";
 export { normalised } from "./domain/auditorium.js";
+export { type AuditoriumPlan, planOf } from "./domain/auditorium-map.js";
 export {
   type Catalogue,
   narrowed,
@@ -15,12 +16,12 @@ export {
   seatGroupsIn,
 } from "./domain/seat-group.js";
 export {
-  REFERENCE,
   type RankReasons,
+  REFERENCE,
   type Scored,
   type SeatProfile,
   scoringIn,
 } from "./domain/seat-profile.js";
-export { openSource } from "./source/aggregator.js";
+export { openSource, type SourceDependencies } from "./source/aggregator.js";
 export type { Reading, Source } from "./source/port.js";
 export type { Seat } from "./source/seat-map.js";

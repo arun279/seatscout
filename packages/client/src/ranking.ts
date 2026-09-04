@@ -1,15 +1,17 @@
 import {
+  type AuditoriumPlan,
   type NormalisedPosition,
-  REFERENCE,
+  normalised,
+  planOf,
   type RankReasons,
+  REFERENCE,
   type Reading,
+  type Scored,
   type Seat,
   type SeatGroup,
   type SeatGroupTerms,
   type SeatProfile,
-  type Scored,
   type Showtime,
-  normalised,
   scoringIn,
   seatGroupsIn,
 } from "@seatscout/core";
@@ -34,6 +36,8 @@ export interface SeatGroupResult {
   readonly showtime: Omit<Showtime, "ticketing">;
   readonly terms: ResultTerms;
   readonly removed: RemovedSeats;
+  readonly seatCount: number;
+  readonly plan: AuditoriumPlan;
   readonly fetchedAt: number;
   readonly attempts: number;
 }
@@ -66,6 +70,7 @@ export const rankingIn = (
   const placed = normalised(auditorium.payload);
   const score = scoringIn(placed, query.profile ?? REFERENCE);
   const removed = removedFrom(auditorium.payload, query);
+  const plan = planOf(auditorium.payload);
   const terms: ResultTerms = {
     movie: query.movie,
     date: query.date,
@@ -104,6 +109,8 @@ export const rankingIn = (
       },
       terms,
       removed,
+      seatCount: auditorium.payload.length,
+      plan,
       fetchedAt: auditorium.fetchedAt,
       attempts: auditorium.attempts,
     }),

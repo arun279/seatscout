@@ -25,7 +25,7 @@ describe("the shell cache", () => {
     vi.unstubAllGlobals();
   });
 
-  it("holds the page, its module and its manifest and nothing else", async () => {
+  it("holds the page, its module, its manifest, its five stylesheets, its icon and its three faces, and nothing else", async () => {
     const storage = cacheStorage();
     await precacheShell();
 
@@ -34,6 +34,15 @@ describe("the shell cache", () => {
       "/",
       "/index.js",
       "/manifest.webmanifest",
+      "/house.css",
+      "/app.css",
+      "/query.css",
+      "/results.css",
+      "/coverage.css",
+      "/icon.svg",
+      "/fonts/big-shoulders-display.woff2",
+      "/fonts/schibsted-grotesk.woff2",
+      "/fonts/spline-sans-mono.woff2",
     ]);
   });
 
@@ -51,10 +60,24 @@ describe("the shell cache", () => {
     expect(await cachedShell(SEAT_MAP)).toBeUndefined();
   });
 
-  it("counts the page, its module and its manifest as the shell, and a seat map not", () => {
+  it("counts what the page loads as the shell, and a seat map not", () => {
     expect(
-      ["/", "/index.js", "/manifest.webmanifest"].map(isShellPath),
-    ).toEqual([true, true, true]);
+      [
+        "/",
+        "/index.js",
+        "/manifest.webmanifest",
+        "/house.css",
+        "/app.css",
+        "/query.css",
+        "/results.css",
+        "/coverage.css",
+        "/icon.svg",
+        "/fonts/big-shoulders-display.woff2",
+        "/fonts/schibsted-grotesk.woff2",
+        "/fonts/spline-sans-mono.woff2",
+      ].map(isShellPath),
+    ).toEqual(Array.from({ length: 12 }, () => true));
     expect(isShellPath(SEAT_MAP)).toBe(false);
+    expect(isShellPath("/icon-192.png")).toBe(false);
   });
 });

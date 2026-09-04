@@ -1,12 +1,3 @@
-import type {
-  Capture,
-  CapturedNearbyTheaters,
-  CapturedSeatMap,
-  CapturedShowtimeGrouping,
-  CapturedTheaterMovieShowtimes,
-  CapturedUpstreamError,
-  CorpusManifest,
-} from "./types.js";
 import manifest from "./manifest.json" with { type: "json" };
 import afcAapoy559055311 from "./seatmaps/AFC-aapoy-559055311.json" with {
   type: "json",
@@ -164,6 +155,15 @@ import theaterShowtimesAacbt20260828 from "./showtimes/theater-showtimes-aacbt-2
 import nearbyTheaters from "./theaters/nearby-theaters.json" with {
   type: "json",
 };
+import type {
+  Capture,
+  CapturedNearbyTheaters,
+  CapturedSeatMap,
+  CapturedShowtimeGrouping,
+  CapturedTheaterMovieShowtimes,
+  CapturedUpstreamError,
+  CorpusManifest,
+} from "./types.js";
 
 export const corpusManifest: CorpusManifest = manifest;
 
