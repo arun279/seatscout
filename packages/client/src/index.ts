@@ -1,6 +1,14 @@
 export {
+  type Amenity,
+  type Chain,
+  EVERY_AMENITY,
+  EVERY_CHAIN,
+  EVERY_FORMAT,
+  type Format,
+  type Movie,
   REFERENCE,
   type SeatProfile,
+  type Theater,
   type TicketingUrl,
 } from "@seatscout/core";
 export { isReference } from "./profile.js";
