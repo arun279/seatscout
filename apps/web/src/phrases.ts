@@ -37,9 +37,9 @@ const MONTHS = [
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-const wordOf = (count: number) => WORDS[count - 1] ?? `${count}`;
+export const wordOf = (count: number) => WORDS[count - 1] ?? `${count}`;
 
-const capitalised = (phrase: string) =>
+export const capitalised = (phrase: string) =>
   phrase.charAt(0).toUpperCase() + phrase.slice(1);
 
 export const twoDigits = (value: number) => `${value}`.padStart(2, "0");
@@ -103,12 +103,19 @@ export const seatSetOf = (profile: SeatProfile): string =>
 export const noneOf = (party: number): string =>
   party === 1 ? "No seat" : `No ${wordOf(party)} seats together`;
 
+export const penaltiesOf = (
+  reasons: RankReasons,
+  podDividers: number,
+): readonly string[] => [
+  ...(reasons.inFrontBand ? ["in the front rows"] : []),
+  ...(reasons.againstWall ? ["against a wall"] : []),
+  ...(podDividers === 1 ? ["across a console"] : []),
+  ...(podDividers > 1 ? [`across ${wordOf(podDividers)} consoles`] : []),
+];
+
 export const whyOf = (reasons: RankReasons, podDividers: number): string =>
   [
     `Row ${reasons.rowFromFront} of ${reasons.rowCount}`,
     lateralOf(reasons.seatsOffCentre),
-    ...(reasons.inFrontBand ? ["in the front rows"] : []),
-    ...(reasons.againstWall ? ["against a wall"] : []),
-    ...(podDividers === 1 ? ["across a console"] : []),
-    ...(podDividers > 1 ? [`across ${wordOf(podDividers)} consoles`] : []),
+    ...penaltiesOf(reasons, podDividers),
   ].join(" · ");
