@@ -1,7 +1,9 @@
+import { REFERENCE } from "@seatscout/core";
 import { fakeUpstream } from "@seatscout/core/testing";
 import { describe, expect, it } from "vitest";
 import type { SearchTerms } from "./search.js";
 import { createSeatScout, type SeatScoutDependencies } from "./seatscout.js";
+import { inMemoryStore } from "./store.js";
 
 const AT = 1000;
 const LISTING = "/napi/theaterShowtimeGroupings/245569/2026-08-28";
@@ -63,5 +65,31 @@ describe("a SeatScout", () => {
     const verified = await seatscout.verify(best);
 
     expect(verified.ok).toBe(true);
+  });
+
+  it("remembers the Profile and the searches on the store it is given, so a root opened later over the same store finds them", async () => {
+    const store = inMemoryStore();
+    const closer = { ...REFERENCE, targetDepth: 0.4 };
+    const first = composed({ store }).seatscout;
+    await first.profile.remember(closer);
+    await first.recent.remember({ ...TONIGHT, partySize: 3 });
+    await first.recent.remember(TONIGHT);
+
+    const relaunched = composed({ store }).seatscout;
+
+    expect(await relaunched.profile.remembered()).toEqual(closer);
+    expect(await relaunched.recent.remembered()).toEqual([
+      { movie: "245569", date: "2026-08-28", area: "75006", partySize: 2 },
+      { movie: "245569", date: "2026-08-28", area: "75006", partySize: 3 },
+    ]);
+  });
+
+  it("remembers nothing across roots that were given no store", async () => {
+    await composed().seatscout.profile.remember({
+      ...REFERENCE,
+      targetDepth: 0.4,
+    });
+
+    expect(await composed().seatscout.profile.remembered()).toEqual(REFERENCE);
   });
 });

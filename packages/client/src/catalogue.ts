@@ -5,7 +5,7 @@ import {
   type ShowtimeTerms,
   type Source,
 } from "@seatscout/core";
-import type { CachedCatalogue, KeyValueStore } from "./store.js";
+import { type CachedCatalogue, isRecord, type KeyValueStore } from "./store.js";
 
 const CACHE_FOR_MS = 2 * 60 * 60 * 1000;
 const ENTRY_SHAPE = 1;
@@ -24,9 +24,6 @@ export interface CatalogueDependencies {
   readonly now: () => number;
   readonly cacheForMs?: number;
 }
-
-const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
-  value instanceof Object;
 
 const isCached = (value: unknown): value is CachedCatalogue =>
   isRecord(value) &&

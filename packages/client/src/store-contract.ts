@@ -1,4 +1,4 @@
-import type { CachedCatalogue, KeyValueStore } from "./store.js";
+import type { KeyValueStore, Stored } from "./store.js";
 
 export interface ContractCheck {
   readonly name: string;
@@ -6,7 +6,7 @@ export interface ContractCheck {
 }
 
 interface Sample {
-  readonly value: CachedCatalogue;
+  readonly value: Stored;
   readonly text: string;
 }
 
@@ -16,6 +16,27 @@ interface Clause {
 }
 
 const AWKWARD_KEY = 'a "quoted" \\ key with a ☃ in it';
+
+const PROFILE: Sample = {
+  value: {
+    targetDepth: 0.5,
+    targetLateral: -0.25,
+    depthWeight: 1.5,
+    offAxisWeight: 0.75,
+    frontBandWeight: 0,
+    wallBandWeight: 0.125,
+    podDividerWeight: 2,
+    screenGap: 6,
+    rowPitch: 1.71,
+    frontBand: 6.97,
+  },
+  text: '{"targetDepth":0.5,"targetLateral":-0.25,"depthWeight":1.5,"offAxisWeight":0.75,"frontBandWeight":0,"wallBandWeight":0.125,"podDividerWeight":2,"screenGap":6,"rowPitch":1.71,"frontBand":6.97}',
+};
+
+const RECENT: Sample = {
+  value: [{ movie: "245569", date: "2026-08-28", area: "75006", partySize: 2 }],
+  text: '[{"movie":"245569","date":"2026-08-28","area":"75006","partySize":2}]',
+};
 
 const sample = (fetchedAt: number): Sample => ({
   value: {
@@ -77,6 +98,14 @@ const CLAUSES: readonly Clause[] = [
   {
     name: "a key carrying quotes, a backslash and a snowman is a key like any other",
     run: (store) => wrote(store, AWKWARD_KEY, sample(7)),
+  },
+  {
+    name: "a remembered Seat Profile reads back unchanged",
+    run: (store) => wrote(store, "profile", PROFILE),
+  },
+  {
+    name: "a remembered history of searches reads back unchanged",
+    run: (store) => wrote(store, "recent", RECENT),
   },
 ];
 

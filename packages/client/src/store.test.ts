@@ -3,6 +3,7 @@ import {
   type CachedCatalogue,
   inMemoryStore,
   type KeyValueStore,
+  type Stored,
 } from "./store.js";
 import { type ContractCheck, storeContract } from "./store-contract.js";
 
@@ -13,6 +14,8 @@ const NAMES = [
   "one key does not disturb another",
   "what is read back is the store's own value, not the caller's object",
   "a key carrying quotes, a backslash and a snowman is a key like any other",
+  "a remembered Seat Profile reads back unchanged",
+  "a remembered history of searches reads back unchanged",
 ];
 
 const AWKWARD_KEY = 'a "quoted" \\ key with a ☃ in it';
@@ -65,7 +68,7 @@ const oneSlot = (): KeyValueStore => {
 };
 
 const byReference = (): KeyValueStore => {
-  const held = new Map<string, CachedCatalogue>();
+  const held = new Map<string, Stored>();
   return {
     read: async (key) => held.get(key),
     write: async (key, value) => {
@@ -111,6 +114,10 @@ describe("the key-value store contract", () => {
       "read copied",
       `write ${AWKWARD_KEY}`,
       `read ${AWKWARD_KEY}`,
+      "write profile",
+      "read profile",
+      "write recent",
+      "read recent",
     ]);
   });
 
@@ -130,7 +137,7 @@ describe("the key-value store contract", () => {
       ["answering a key it was never given", [NAMES[0]]],
       [
         "forgetting what it was told",
-        [NAMES[1], NAMES[2], NAMES[3], NAMES[4], NAMES[5]],
+        [NAMES[1], NAMES[2], NAMES[3], NAMES[4], NAMES[5], NAMES[6], NAMES[7]],
       ],
       ["refusing to replace a value", [NAMES[2]]],
       ["keeping one value for every key", [NAMES[3]]],
@@ -152,6 +159,8 @@ describe("the key-value store contract", () => {
       'undisturbed read undefined rather than {"fetchedAt":4,"catalogue":{"bookable":[],"unbookable":[],"unidentified":[]}}',
       'copied read undefined rather than {"fetchedAt":6,"catalogue":{"bookable":[],"unbookable":[],"unidentified":[]}}',
       `${AWKWARD_KEY} read undefined rather than {"fetchedAt":7,"catalogue":{"bookable":[],"unbookable":[],"unidentified":[]}}`,
+      'profile read undefined rather than {"targetDepth":0.5,"targetLateral":-0.25,"depthWeight":1.5,"offAxisWeight":0.75,"frontBandWeight":0,"wallBandWeight":0.125,"podDividerWeight":2,"screenGap":6,"rowPitch":1.71,"frontBand":6.97}',
+      'recent read undefined rather than [{"movie":"245569","date":"2026-08-28","area":"75006","partySize":2}]',
     ]);
   });
 
