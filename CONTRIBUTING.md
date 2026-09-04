@@ -46,8 +46,11 @@ The list is the job, not a selection from it. Running a shorter one and finding 
 how a contributor arrives red on a pull request, which is what this list is for.
 
 Three further jobs run alongside them. `footprint` measures the change and is described
-below. `secrets` scans the pull request's commits with gitleaks. `dependencies` runs
-`pnpm audit` and scans the lockfile against the OSV database; both fail on any advisory.
+below. `secrets` scans the pull request's commits with gitleaks. `dependencies` scans the
+lockfile against the OSV database and fails on any advisory. It once also ran `pnpm audit`,
+which since 2021 has been a proxy in front of the same GitHub Advisory Database that OSV
+mirrors, so the two steps asked one database the same question through two doors, and the
+job failed whenever the weaker door did.
 
 `pnpm counts` holds a count stated in prose to the structure that carries the items. Four
 times a sentence in this repository has counted something the code beside it had outgrown,
