@@ -7,6 +7,7 @@ export {
   narrowed,
   type Showtime,
   type ShowtimeTerms,
+  type Theater,
   type TicketingUrl,
   type UnbookableReason,
   type Unidentified,

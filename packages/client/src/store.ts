@@ -1,8 +1,14 @@
 import type { Catalogue, SeatProfile } from "@seatscout/core";
+import type { Programme } from "./programme.js";
 
 export interface CachedCatalogue {
   readonly fetchedAt: number;
   readonly catalogue: Catalogue;
+}
+
+export interface CachedProgramme {
+  readonly fetchedAt: number;
+  readonly programme: Programme;
 }
 
 export interface RecentSearch {
@@ -12,7 +18,11 @@ export interface RecentSearch {
   readonly partySize: number;
 }
 
-export type Stored = CachedCatalogue | SeatProfile | readonly RecentSearch[];
+export type Stored =
+  | CachedCatalogue
+  | CachedProgramme
+  | SeatProfile
+  | readonly RecentSearch[];
 
 export interface KeyValueStore {
   readonly read: (key: string) => Promise<unknown>;

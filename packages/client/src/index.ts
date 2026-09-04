@@ -4,6 +4,7 @@ export {
   type TicketingUrl,
 } from "@seatscout/core";
 export { isReference } from "./profile.js";
+export type { Programme } from "./programme.js";
 export type { SeatGroupResult } from "./ranking.js";
 export type { Coverage } from "./search.js";
 export type { Search } from "./search.js";
