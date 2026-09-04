@@ -42,6 +42,7 @@ export interface Search {
   readonly snapshot: () => Snapshot;
   readonly subscribe: (onChange: () => void) => () => void;
   readonly done: Promise<Snapshot>;
+  readonly retry: () => Promise<Snapshot>;
   readonly abort: () => void;
 }
 
@@ -144,13 +145,28 @@ export const openSearch = (deps: CatalogueDependencies) => {
       return current;
     };
 
+    const recheck = async () => {
+      const unreached = failed.splice(0);
+      publish("searching");
+      await fanOut(unreached);
+      publish("settled");
+      return current;
+    };
+
+    let running = run();
+
     return {
       snapshot: () => current,
       subscribe: (onChange) => {
         listeners.add(onChange);
         return () => listeners.delete(onChange);
       },
-      done: run(),
+      done: running,
+      retry: () => {
+        if (current.phase === "unreachable") running = run();
+        else if (current.phase === "settled") running = recheck();
+        return running;
+      },
       abort: () => {
         aborted = true;
       },

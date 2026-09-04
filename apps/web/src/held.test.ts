@@ -27,6 +27,7 @@ const searching = () => {
       return () => listeners.delete(onChange);
     },
     done: Promise.resolve(EMPTY),
+    retry: () => Promise.resolve(EMPTY),
     abort: () => {},
   };
   return {
