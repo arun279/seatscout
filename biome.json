@@ -23,6 +23,7 @@
         "noUnsafeTypeAssertion": "error"
       },
       "style": {
+        "noExcessiveLinesPerFile": "error",
         "useNodejsImportProtocol": "error"
       },
       "suspicious": {

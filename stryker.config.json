@@ -6,7 +6,8 @@
   "mutate": [
     "{apps,packages,tools}/*/src/**/*.{ts,tsx}",
     "!apps/native/src/**",
-    "!**/*.{test,spec}.?(c|m)[jt]s?(x)"
+    "!**/*.{test,spec}.?(c|m)[jt]s?(x)",
+    "!**/*.fixtures.?(c|m)[jt]s?(x)"
   ],
   "reporters": ["clear-text", "json"],
   "jsonReporter": { "fileName": "reports/mutation/mutation.json" },

@@ -39,7 +39,7 @@ export interface Report {
 const SOURCE = /\.[cm]?[jt]sx?$/;
 const PROSE = /\.mdx?$/;
 const DATA = /\.(html|jsonc?|sh|toml|txt|webmanifest|ya?ml)$/;
-const TEST = /(^|\/)tests?\/|\.(test|spec)\./;
+const TEST = /(^|\/)tests?\/|\.(test|spec|fixtures)\./;
 const APPLICATION = /^(apps|packages)\//;
 const NOT_A_FILE = new Set(["header", "SUM"]);
 

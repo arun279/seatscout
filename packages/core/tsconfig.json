@@ -8,5 +8,10 @@
     "types": []
   },
   "include": ["src"],
-  "exclude": ["src/**/*.test.ts", "src/corpus", "src/testing"]
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.fixtures.ts",
+    "src/corpus",
+    "src/testing"
+  ]
 }
