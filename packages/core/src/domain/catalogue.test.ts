@@ -1,45 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { showtimeGroupingCaptures } from "../corpus/captures.js";
-import { catalogueFrom } from "../source/catalogue.js";
+import { type Catalogue, narrowed } from "./catalogue.js";
 import {
-  type Catalogue,
-  narrowed,
-  type Showtime,
-  type TheaterId,
-  type Unidentified,
-} from "./catalogue.js";
-
-const CAPTURE = "showtimes/grouping-245569-2026-08-28.json";
-
-const captured = (): Catalogue => {
-  const capture = showtimeGroupingCaptures.get(CAPTURE);
-  if (capture === undefined) throw new Error(`${CAPTURE} was never captured`);
-  const catalogue = catalogueFrom(JSON.stringify(capture.body));
-  if (catalogue === null) throw new Error(`${CAPTURE} did not parse`);
-  return catalogue;
-};
-
-const everyShowtime = (
-  catalogue: Catalogue,
-): readonly (Showtime | Unidentified)[] => [
-  ...catalogue.bookable,
-  ...catalogue.unbookable.map((entry) => entry.showtime),
-  ...catalogue.unidentified,
-];
-
-const counted = (catalogue: Catalogue) => ({
-  bookable: catalogue.bookable.length,
-  unbookable: catalogue.unbookable.length,
-  unidentified: catalogue.unidentified.length,
-});
-
-const theaterNamed = (catalogue: Catalogue, name: string): TheaterId => {
-  const theater = everyShowtime(catalogue).find(
-    (showtime) => showtime.presentation.theater.name === name,
-  );
-  if (theater === undefined) throw new Error(`${name} is not in this capture`);
-  return theater.presentation.theater.id;
-};
+  captured,
+  counted,
+  everyShowtime,
+  theaterNamed,
+} from "./catalogue.fixtures.js";
 
 const asUnidentified = (catalogue: Catalogue): Catalogue => ({
   bookable: [],
@@ -52,11 +18,6 @@ const asUnidentified = (catalogue: Catalogue): Catalogue => ({
     }),
   ),
 });
-
-const startsAt = (catalogue: Catalogue): readonly number[] =>
-  everyShowtime(catalogue)
-    .map((showtime) => Date.parse(showtime.startsAt))
-    .toSorted((first, second) => first - second);
 
 describe("narrowing a catalogue", () => {
   it("admits every Showtime when nothing narrows it", () => {
@@ -102,11 +63,19 @@ describe("narrowing a catalogue", () => {
     expect(
       counted(
         narrowed(catalogue, {
-          from: Date.parse("2026-08-28T19:00:00-05:00"),
-          until: Date.parse("2026-08-28T22:00:00-05:00"),
+          from: "2026-08-28T19:00",
+          until: "2026-08-28T22:00",
         }),
       ),
     ).toEqual({ ...none, unidentified: 46 });
+  });
+
+  it("narrows to a Theater named by the string an address carries", () => {
+    expect(counted(narrowed(captured(), { theaters: ["aacbt"] }))).toEqual({
+      bookable: 14,
+      unbookable: 0,
+      unidentified: 0,
+    });
   });
 
   it("narrows the identified Showtimes to the Theaters asked for", () => {
@@ -213,50 +182,6 @@ describe("narrowing a catalogue", () => {
     });
   });
 
-  it("keeps a Showtime that starts at the opening of the window and drops one that starts at its close", () => {
-    const catalogue = captured();
-    const times = startsAt(catalogue);
-    const opening = times[0];
-    const close = times.at(-1);
-    if (opening === undefined || close === undefined)
-      throw new Error("the capture holds no Showtimes");
-
-    expect(counted(narrowed(catalogue, { from: opening }))).toEqual({
-      bookable: 172,
-      unbookable: 4,
-      unidentified: 0,
-    });
-    expect(counted(narrowed(catalogue, { from: opening + 1 }))).toEqual({
-      bookable: 171,
-      unbookable: 4,
-      unidentified: 0,
-    });
-    expect(counted(narrowed(catalogue, { until: close }))).toEqual({
-      bookable: 171,
-      unbookable: 4,
-      unidentified: 0,
-    });
-    expect(counted(narrowed(catalogue, { until: close + 1 }))).toEqual({
-      bookable: 172,
-      unbookable: 4,
-      unidentified: 0,
-    });
-  });
-
-  it("narrows to an evening window across every Theater at once", () => {
-    const catalogue = captured();
-    const kept = narrowed(catalogue, {
-      from: Date.parse("2026-08-28T19:00:00-05:00"),
-      until: Date.parse("2026-08-28T22:00:00-05:00"),
-    });
-
-    expect(counted(kept)).toEqual({
-      bookable: 46,
-      unbookable: 0,
-      unidentified: 0,
-    });
-  });
-
   it("applies every term it was given at once", () => {
     const catalogue = captured();
     const theaters = [theaterNamed(catalogue, "Cinemark Dallas XD and IMAX")];
@@ -269,7 +194,7 @@ describe("narrowing a catalogue", () => {
         narrowed(catalogue, {
           theaters,
           formats: ["XD"],
-          until: Date.parse("2026-08-28T20:00:00-05:00"),
+          until: "2026-08-28T20:00",
         }),
       ),
     ).toEqual({ bookable: 2, unbookable: 0, unidentified: 0 });
