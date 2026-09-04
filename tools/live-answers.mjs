@@ -90,8 +90,9 @@ export default async function readTheLiveSource(project) {
   const area = await answer(nearby);
   const anchor = bodyOf(area, nearby).theaters[0];
 
-  const schedule = `/napi/theaterMovieShowtimes/${anchor.id.toLowerCase()}?chainCode=${anchor.chainCode}&startDate=${today}&isdesktop=true&partnerRestrictedTicketing=`;
-  const movies = bodyOf(await answer(schedule), schedule).viewModel.movies;
+  const schedule = `/napi/theaterMovieShowtimes/${anchor.id.toLowerCase()}?startDate=${today}&isdesktop=true&partnerRestrictedTicketing=`;
+  const scheduled = await answer(schedule);
+  const movies = bodyOf(scheduled, schedule).viewModel.movies;
   const widest = movies.reduce((most, movie) =>
     showtimeCountOf(movie) > showtimeCountOf(most) ? movie : most,
   );
@@ -109,6 +110,7 @@ export default async function readTheLiveSource(project) {
 
   project.provide("liveSeatMaps", seatMaps);
   project.provide("liveArea", area);
+  project.provide("liveSchedule", scheduled);
   project.provide("liveListing", listing);
   project.provide("liveSearch", {
     origin: HOST,

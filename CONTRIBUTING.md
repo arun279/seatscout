@@ -372,8 +372,8 @@ The mutation gate judges the code against the tests. Nothing above it judges the
 other test runs against the committed corpus, so the whole suite stays green while the
 upstream quietly changes shape underneath it. `packages/core/src/testing/contract.ts` is what
 notices. It reads one seat map answer and reports every way it diverges from what the corpus
-recorded, and it reads a live area and a live listing and reports either one that no longer
-becomes a domain object or arrives with nothing in it. `contract.live.test.ts` holds the live
+recorded, and it reads a live area, a live Theater schedule and a live listing and reports any
+of them that no longer becomes a domain object or arrives with nothing in it. `contract.live.test.ts` holds the live
 aggregator to that, and `.github/workflows/contract.yml` runs it nightly.
 
 The same lane carries one more reading of the world: the live search timing described under
