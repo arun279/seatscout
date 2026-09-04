@@ -6,10 +6,11 @@ import type { HeldSnapshots } from "./held.js";
 import { whenOf } from "./phrases.js";
 import type { Terms } from "./terms.js";
 import type { Term } from "./title-card-terms.js";
-import { NoneAnywhere, Partial, Unreachable } from "./verdicts.js";
+import { Empty, Partial, Unreachable } from "./verdicts.js";
 
 interface ResultsProps {
   readonly snapshot: Snapshot;
+  readonly painted: Snapshot | null;
   readonly terms: Terms;
   readonly today: string;
   readonly now: number;
@@ -57,6 +58,7 @@ const ListHead = ({
 
 export const Results = ({
   snapshot,
+  painted,
   terms,
   today,
   now,
@@ -68,8 +70,8 @@ export const Results = ({
 }: ResultsProps) => {
   const when = whenOf(terms.date, today);
   const settled = snapshot.phase === "settled";
-  const results = settled ? listed(snapshot.results) : [];
-  const tied = tiedIn(snapshot.results);
+  const results = painted === null ? [] : listed(painted.results);
+  const tied = tiedIn(results);
   const tie = tied > 1;
   const partial = settled && unreachedIn(snapshot) > 0;
 
@@ -82,7 +84,7 @@ export const Results = ({
         <Partial snapshot={snapshot} onRetry={onRetry} onEdit={onEdit} />
       )}
       {settled && !partial && results.length === 0 ? (
-        <NoneAnywhere
+        <Empty
           snapshot={snapshot}
           terms={terms}
           when={when}

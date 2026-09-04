@@ -39,6 +39,13 @@ export const Card = ({ result, now, online, onHandOff }: CardProps) => {
               </span>
             )}
           </p>
+          {result.seats.some((seat) => seat.designation !== "standard") && (
+            <p className="designations">
+              {result.seats
+                .map((seat) => `${seat.id} ${seat.designation}`)
+                .join(" · ")}
+            </p>
+          )}
         </div>
         <div className="side">
           {online ? (

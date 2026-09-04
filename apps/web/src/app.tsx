@@ -7,7 +7,7 @@ import type {
   SeatScout,
   TicketingUrl,
 } from "@seatscout/client";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { askedFrom } from "./asked.js";
 import { Strip } from "./coverage.js";
 import { type HeldSnapshots, heldSnapshots } from "./held.js";
@@ -16,6 +16,7 @@ import { Overlays } from "./overlays.js";
 import { useOnline } from "./online.js";
 import { partyOf, seatSetOf, whenOf } from "./phrases.js";
 import { Recent } from "./recent.js";
+import { type HeldProgramme, programmeNear } from "./programme.js";
 import { Results } from "./results.js";
 import { queryOf, type Terms } from "./terms.js";
 import { TitleCard } from "./title-card.js";
@@ -69,14 +70,16 @@ const Searching = ({
   online,
   overlays,
 }: SearchingProps) => {
-  const [session, setSession] = useState(() => opened(seatscout, asked));
+  const [session] = useState(() => opened(seatscout, asked));
   const snapshot = useSyncExternalStore(
     session.held.subscribe,
     session.held.snapshot,
   );
+  const painted = useSyncExternalStore(
+    session.held.subscribe,
+    session.held.painted,
+  );
   const now = useSyncExternalStore(clock.subscribe, clock.now);
-
-  useEffect(() => () => session.search.abort(), [session]);
 
   return (
     <>
@@ -86,12 +89,15 @@ const Searching = ({
       />
       <Results
         snapshot={snapshot}
+        painted={painted}
         terms={terms}
         today={today}
         now={now}
         held={session.held}
         online={online}
-        onRetry={() => setSession(opened(seatscout, asked))}
+        onRetry={() => {
+          void session.search.retry();
+        }}
         onEdit={(focus) => overlays.open({ kind: "ask", focus })}
         onHandOff={(candidate: SeatGroupResult) =>
           overlays.open({ kind: "handOff", candidate })
@@ -119,13 +125,13 @@ const Prompt = ({
   <>
     <section className="verdict">
       <p className="lede">
-        Name a movie and an area to search. {partyOf(terms.partySize)},{" "}
+        Name an area, then a movie playing near it. {partyOf(terms.partySize)},{" "}
         {whenOf(terms.date, today)} and {seatSetOf(profile)} are already set.
       </p>
       <button
         type="button"
         className="btn btn-velvet"
-        onClick={() => onEdit(terms.movie === undefined ? "movie" : "area")}
+        onClick={() => onEdit(terms.area === undefined ? "area" : "movie")}
       >
         Find seats
       </button>
@@ -149,11 +155,16 @@ const Screen = ({
   const asked = askedFrom(terms, profile);
   const overlays = useOverlays();
   const openAsk = (focus: Term) => overlays.open({ kind: "ask", focus });
+  const [held] = useState<HeldProgramme>(() =>
+    programmeNear(seatscout, terms.area, terms.date),
+  );
+  const programme = useSyncExternalStore(held.subscribe, held.snapshot);
 
   return (
     <>
       <TitleCard
         terms={terms}
+        programme={programme}
         profile={profile}
         today={today}
         onEdit={openAsk}
@@ -182,6 +193,8 @@ const Screen = ({
       <Overlays
         stack={overlays.stack}
         terms={terms}
+        programme={held}
+        onProgramme={(area, date) => programmeNear(seatscout, area, date)}
         profile={profile}
         recent={recent}
         today={today}
