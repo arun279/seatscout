@@ -302,7 +302,11 @@ baseline got wrong a branch inherits until the file it wrote is replaced.
 
 `main`'s run follows the merge that changed `main` rather than a clock. On a schedule it
 re-judged a tree that had not moved, and the seed a branch started from was always as old
-as the last night rather than as old as the last merge.
+as the last night rather than as old as the last merge. A merge landing while one is still
+running cancels it, because the whole point is a seed at the tip and a run for a commit that
+is no longer the tip cannot produce one. Without that a busy day queues twenty-minute runs
+behind each other and the seed lags further than the schedule ever left it: `main` took
+seventeen pushes on 2026-08-29 and five to seven on a normal day.
 
 The `footprint` job saves its incremental file immediately after the mutation step and on
 any outcome, rather than in a step that runs after everything else and only when everything

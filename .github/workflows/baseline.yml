@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   mutation:
@@ -30,7 +30,6 @@ jobs:
       - name: Judge main with no incremental file to inherit from
         run: pnpm test:mutation:incremental
       - name: Leave what it judged for every branch to start from
-        if: always()
         continue-on-error: true
         uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
