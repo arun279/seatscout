@@ -20,34 +20,42 @@ describe("panning and zooming the room", () => {
 
   it("zooms about the point under the pointer, so that point stays put", () => {
     expect(zoomed(FITTED, 2, { x: 250, y: 150 }, ROOM, MOST)).toEqual({
-      k: 2,
+      scale: 2,
       tx: -250,
       ty: -150,
     });
     expect(zoomed(FITTED, 2, { x: 0, y: 0 }, ROOM, MOST)).toEqual({
-      k: 2,
+      scale: 2,
       tx: 0,
       ty: 0,
     });
   });
 
   it("stops zooming in where a Seat would reach the size of a tap target, and stops zooming out at the fit", () => {
-    expect(zoomed(FITTED, 100, { x: 0, y: 0 }, ROOM, MOST).k).toBe(3.6);
+    expect(zoomed(FITTED, 100, { x: 0, y: 0 }, ROOM, MOST).scale).toBe(3.6);
     expect(zoomed(FITTED, 0.5, { x: 250, y: 150 }, ROOM, MOST)).toEqual(FITTED);
   });
 
   it("pans a zoomed room no further than its own edge", () => {
-    const halfway = { k: 2, tx: -250, ty: -150 };
+    const halfway = { scale: 2, tx: -250, ty: -150 };
 
-    expect(panned(halfway, 300, 0, ROOM)).toEqual({ k: 2, tx: 0, ty: -150 });
+    expect(panned(halfway, 300, 0, ROOM)).toEqual({
+      scale: 2,
+      tx: 0,
+      ty: -150,
+    });
     expect(panned(halfway, -500, 0, ROOM)).toEqual({
-      k: 2,
+      scale: 2,
       tx: -500,
       ty: -150,
     });
-    expect(panned(halfway, 0, 400, ROOM)).toEqual({ k: 2, tx: -250, ty: 0 });
+    expect(panned(halfway, 0, 400, ROOM)).toEqual({
+      scale: 2,
+      tx: -250,
+      ty: 0,
+    });
     expect(panned(halfway, 0, -400, ROOM)).toEqual({
-      k: 2,
+      scale: 2,
       tx: -250,
       ty: -300,
     });
@@ -68,16 +76,16 @@ describe("panning and zooming the room", () => {
         ROOM,
         MOST,
       ),
-    ).toEqual({ k: 2, tx: -200, ty: -100 });
+    ).toEqual({ scale: 2, tx: -200, ty: -100 });
   });
 
   it("brings a Seat outside the view back inside it, and leaves one already in view alone", () => {
-    const view = { k: 2, tx: -250, ty: -150 };
+    const view = { scale: 2, tx: -250, ty: -150 };
 
     expect(
       revealed(view, { x: 480, y: 10, width: 18, height: 18 }, ROOM),
     ).toEqual({
-      k: 2,
+      scale: 2,
       tx: -496,
       ty: -20,
     });
@@ -94,7 +102,7 @@ describe("panning and zooming the room", () => {
 
   it("spells the transform the wrapping group carries", () => {
     expect(transformOf(FITTED)).toBe("translate(0 0) scale(1)");
-    expect(transformOf({ k: 2, tx: -250, ty: -150 })).toBe(
+    expect(transformOf({ scale: 2, tx: -250, ty: -150 })).toBe(
       "translate(-250 -150) scale(2)",
     );
   });

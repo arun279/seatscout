@@ -268,4 +268,23 @@ describe("the room a result opens into", () => {
 
     expect(screen.queryByRole("dialog")).toBeNull();
   });
+
+  it("returns focus to the current Seat when the row bar is pressed, and the bar shows the row again after a refusal", async () => {
+    const stage = await opened(STRIKE_AND_REEL_1);
+    stage.press("Home");
+    stage.press("Enter");
+    act(() => stage.room.getByRole("radio", { name: /^D8·D7/ }).focus());
+
+    expect(stage.rowBar()).toHaveTextContent("Seat D11 is not bookable");
+    expect(stage.focused()).toHaveAttribute("type", "radio");
+
+    fireEvent.click(
+      stage.room.getByRole("button", { name: /Seat D11 is not bookable/ }),
+    );
+
+    expect(nameOf(stage.focused())).toMatch(/^Seat D11\. /);
+    expect(stage.rowBar()).toHaveTextContent(
+      "ROW D4th row of 5 from the front. 10 seats, 4 bookable.",
+    );
+  });
 });

@@ -18,7 +18,7 @@
   margin: 2px 6px 8px;
 }
 
-.screen-edge .lamp2 {
+.screen-edge .lamp {
   position: absolute;
   left: 50%;
   top: 4px;
@@ -37,7 +37,7 @@
   box-shadow: 0 2px 14px oklch(0.88 0.055 230 / 0.55);
 }
 
-.screen-edge .word2 {
+.screen-edge .word {
   position: absolute;
   left: 50%;
   top: 10px;
@@ -82,23 +82,23 @@
   outline: none;
 }
 
-.seat.free {
+.seat.bookable {
   fill: var(--seat-free);
 }
 
-.seat.gone {
+.seat.unbookable {
   fill: none;
   stroke: var(--seat-gone);
   stroke-width: 1.2px;
   vector-effect: non-scaling-stroke;
 }
 
-.seat.space.free {
-  fill: url("#space-free");
+.seat.space.bookable {
+  fill: url("#space-bookable");
 }
 
-.seat.space.gone {
-  fill: url("#space-gone");
+.seat.space.unbookable {
+  fill: url("#space-unbookable");
   stroke: var(--seat-gone);
 }
 
@@ -118,11 +118,11 @@
   fill: url("#space-lit");
 }
 
-.space-ground.free {
+.space-ground.bookable {
   fill: var(--seat-free);
 }
 
-.space-ground.gone {
+.space-ground.unbookable {
   fill: none;
 }
 
@@ -174,11 +174,11 @@
   box-shadow: 0 0 6px var(--beam);
 }
 
-.legend .free {
+.legend .bookable {
   background: var(--seat-free);
 }
 
-.legend .gone {
+.legend .unbookable {
   border: 1px solid var(--seat-gone);
 }
 

@@ -5,7 +5,7 @@ import {
   seatMapCaptures,
 } from "@seatscout/core/testing";
 
-export const TONIGHT = "/?movie=245569&date=2026-08-28&area=75006&partySize=2";
+const TONIGHT = "/?movie=245569&date=2026-08-28&area=75006&partySize=2";
 export const WCAG = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 export const NON_TEXT_CONTRAST = 3;
 
@@ -83,37 +83,44 @@ export interface Colours {
   readonly halo: string;
 }
 
-export const luminancesOf = (
-  colours: Colours,
-): Record<keyof Colours, number> => {
+type Rgb = readonly [number, number, number];
+
+export const luminanceOf = ([r, g, b]: Rgb) => {
+  const channel = (value: number) => {
+    const c = value / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+};
+
+export const contrastOf = (first: Rgb, second: Rgb) => {
+  const one = luminanceOf(first);
+  const other = luminanceOf(second);
+  return (Math.max(one, other) + 0.05) / (Math.min(one, other) + 0.05);
+};
+
+export const channelsOf = (colours: Colours): Record<keyof Colours, Rgb> => {
   const canvas = document.createElement("canvas");
   canvas.width = 1;
   canvas.height = 1;
   const context = canvas.getContext("2d");
   if (context === null) throw new Error("no canvas to resolve colours on");
-  const channel = (value: number) => {
-    const c = value / 255;
-    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-  };
-  const luminance = (colour: string) => {
+  const resolved = (colour: string): Rgb => {
     context.fillStyle = colour;
     context.fillRect(0, 0, 1, 1);
     const [r = 0, g = 0, b = 0] = context.getImageData(0, 0, 1, 1).data;
-    return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+    return [r, g, b];
   };
   return {
-    ground: luminance(colours.ground),
-    free: luminance(colours.free),
-    gone: luminance(colours.gone),
-    seat: luminance(colours.seat),
-    tick: luminance(colours.tick),
-    ring: luminance(colours.ring),
-    halo: luminance(colours.halo),
+    ground: resolved(colours.ground),
+    free: resolved(colours.free),
+    gone: resolved(colours.gone),
+    seat: resolved(colours.seat),
+    tick: resolved(colours.tick),
+    ring: resolved(colours.ring),
+    halo: resolved(colours.halo),
   };
 };
-
-export const contrastOf = (first: number, second: number) =>
-  (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05);
 
 export const paintedOn = () => {
   const styleOf = (selector: string): Painted => {
@@ -130,10 +137,31 @@ export const paintedOn = () => {
   };
   return {
     ground: styleOf("svg.seat-map .ground"),
-    free: styleOf("svg.seat-map .seat.free:not(.space):not(.lit)"),
-    gone: styleOf("svg.seat-map .seat.gone:not(.space)"),
+    free: styleOf("svg.seat-map .seat.bookable:not(.space):not(.lit)"),
+    gone: styleOf("svg.seat-map .seat.unbookable:not(.space)"),
     lit: styleOf("svg.seat-map .seat.lit"),
     tick: styleOf("svg.seat-map .tick"),
     focused: styleOf("svg.seat-map .seat:focus"),
   };
+};
+
+export const pixelsOf = async (png: string) => {
+  const blob = await (await fetch(`data:image/png;base64,${png}`)).blob();
+  const bitmap = await createImageBitmap(blob);
+  const canvas = document.createElement("canvas");
+  canvas.width = bitmap.width;
+  canvas.height = bitmap.height;
+  const context = canvas.getContext("2d");
+  if (context === null) throw new Error("no canvas to read pixels on");
+  context.drawImage(bitmap, 0, 0);
+  const across = (fraction: number): Rgb => {
+    const [r = 0, g = 0, b = 0] = context.getImageData(
+      Math.floor(bitmap.width * fraction),
+      Math.floor(bitmap.height / 2),
+      1,
+      1,
+    ).data;
+    return [r, g, b];
+  };
+  return { centre: across(0.5), edge: across(0.22) };
 };

@@ -34,10 +34,14 @@ const boxOf = (seat: PositionedSeat, frame: Frame): Box => ({
 
 const measured = (target: SVGGElement, frame: Frame, view: View) => {
   const bounds = target.getBoundingClientRect();
-  const perUnit = bounds.width / (frame.width * view.k);
+  const perUnit = bounds.width / (frame.width * view.scale);
   return {
     perUnit,
-    mostZoom: mostZoomFor(frame.seatWidth, frame.width, bounds.width / view.k),
+    mostZoom: mostZoomFor(
+      frame.seatWidth,
+      frame.width,
+      bounds.width / view.scale,
+    ),
     inView: (client: Point): Point => ({
       x: (client.x - bounds.left) / perUnit + view.tx,
       y: (client.y - bounds.top) / perUnit + view.ty,

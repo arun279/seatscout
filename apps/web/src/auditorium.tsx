@@ -18,7 +18,7 @@ import {
   penaltiesOf,
   whyOf,
 } from "./phrases.js";
-import { SeatMap } from "./seat-map.js";
+import { holds, SeatMap } from "./seat-map.js";
 import { type Cursor, opened, type Place, rowAt, seatAt } from "./traversal.js";
 
 interface AuditoriumProps {
@@ -32,20 +32,17 @@ interface AuditoriumProps {
 
 const ALTERNATES_SHOWN = 3;
 
-const holds = (group: SeatGroupResult, id: string) =>
-  group.seats.some((seat) => seat.id === id);
-
 const Billing = ({ result }: { readonly result: SeatGroupResult }) => {
   const penalties = penaltiesOf(result.reasons, result.podDividers);
   return (
     <div className="billing">
-      <span className="b1">
+      <span className="headline">
         Row {result.reasons.rowFromFront} of {result.reasons.rowCount}
       </span>
-      <span className="b2">
+      <span className="credit">
         {capitalised(lateralOf(result.reasons.seatsOffCentre))}
       </span>
-      <span className="b2">
+      <span className="credit">
         {penalties.length === 0
           ? "Clear of the front rows and the walls"
           : capitalised(penalties.join(" · "))}
@@ -69,11 +66,11 @@ const Legend = ({
       {seatsOf(candidate)}, yours
     </li>
     <li>
-      <i className="sw free" />
-      for sale
+      <i className="sw bookable" />
+      bookable
     </li>
     <li>
-      <i className="sw gone" />
+      <i className="sw unbookable" />
       not bookable
     </li>
     <li>
@@ -99,7 +96,7 @@ export const Auditorium = ({
   onHandOff,
 }: AuditoriumProps) => {
   const auditorium = useMemo(() => search.auditorium(result), [search, result]);
-  const [cursor, setCursorOnly] = useState<Cursor>(() => opened(auditorium));
+  const [cursor, holdCursor] = useState<Cursor>(() => opened(auditorium));
   const [candidate, setCandidate] = useState(result);
   const [notice, setNotice] = useState<string | null>(null);
   const { theater, formats, amenities } = result.showtime.presentation;
@@ -118,9 +115,11 @@ export const Auditorium = ({
   );
 
   const setCursor = (next: Cursor) => {
-    setCursorOnly(next);
+    holdCursor(next);
     setNotice(null);
   };
+
+  const refocus = () => setCursor({ ...cursor });
 
   const choose = (group: SeatGroupResult) => {
     setCandidate(group);
@@ -129,7 +128,7 @@ export const Auditorium = ({
 
   const activate = (place: Place) => {
     const seat = seatAt(auditorium.map, place);
-    const group = auditorium.offered.find((offered) => holds(offered, seat.id));
+    const group = auditorium.offered.find((offered) => holds(offered, seat));
     if (group === undefined)
       setNotice(refusalOf(seat, partySize, accessibleSeating));
     else choose(group);
@@ -159,11 +158,7 @@ export const Auditorium = ({
           {theater.name}
         </h2>
       </header>
-      <button
-        type="button"
-        className="row-bar"
-        onClick={() => setCursor({ ...cursor })}
-      >
+      <button type="button" className="row-bar" onClick={refocus}>
         <span role="status">
           {notice ?? (
             <>
@@ -182,8 +177,8 @@ export const Auditorium = ({
       </button>
       <div className="map-frame">
         <div className="screen-edge" aria-hidden="true">
-          <span className="lamp2" />
-          <span className="word2">SCREEN</span>
+          <span className="lamp" />
+          <span className="word">SCREEN</span>
         </div>
         <SeatMap
           auditorium={auditorium}

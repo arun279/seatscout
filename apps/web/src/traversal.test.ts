@@ -2,7 +2,6 @@ import type { Auditorium } from "@seatscout/client";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
   ANGELIKA_5,
-  FIVE_ROOMS,
   LAKE_HIGHLANDS_1,
   labelAt,
   type OpenedRoom,
@@ -63,7 +62,7 @@ describe("the keyboard model over the five captured rooms", () => {
     const cursor = opened(auditorium);
 
     expect(labelAt(auditorium, cursor)).toBe("H14");
-    expect(cursor.anchor).toBe(auditorium.map.rows[7]?.seats[9]?.lateral);
+    expect(cursor.anchor).toBeCloseTo(-0.04, 3);
   });
 
   it.each([
@@ -237,6 +236,5 @@ describe("the keyboard model over the five captured rooms", () => {
     expect(
       rooms.map(({ auditorium }) => labelAt(auditorium, opened(auditorium))),
     ).toEqual(["H14", "L11", "G14", "608", "D8"]);
-    expect(FIVE_ROOMS).toHaveLength(5);
   });
 });

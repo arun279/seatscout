@@ -4,7 +4,7 @@ import type {
   SeatGroupResult,
   SeatRow,
 } from "@seatscout/client";
-import { type KeyboardEvent, useMemo } from "react";
+import { type KeyboardEvent, type ReactNode, useMemo } from "react";
 import { gridLabelOf, seatNameOf } from "./auditorium-phrases.js";
 import { type Frame, usePanZoom } from "./pan-zoom.js";
 import { type Cursor, isMove, moved, type Place, placed } from "./traversal.js";
@@ -22,7 +22,7 @@ interface SeatMapProps {
 interface RowProps {
   readonly row: SeatRow;
   readonly frame: Frame;
-  readonly children: React.ReactNode;
+  readonly children: ReactNode;
 }
 
 const frameOf = (auditorium: Auditorium): Frame => {
@@ -45,13 +45,13 @@ const frameOf = (auditorium: Auditorium): Frame => {
   };
 };
 
-const holds = (group: SeatGroupResult, seat: PositionedSeat) =>
+export const holds = (group: SeatGroupResult, seat: PositionedSeat) =>
   group.seats.some((held) => held.id === seat.id);
 
 const classOf = (seat: PositionedSeat, recommended: boolean, lit: boolean) =>
   [
     "seat",
-    seat.bookable ? "free" : "gone",
+    seat.bookable ? "bookable" : "unbookable",
     ...(seat.designation === "standard" ? [] : ["space"]),
     ...(recommended ? ["recommended"] : []),
     ...(lit ? ["lit"] : []),
@@ -59,11 +59,12 @@ const classOf = (seat: PositionedSeat, recommended: boolean, lit: boolean) =>
 
 const Spaces = () => (
   <defs>
-    {["free", "gone", "lit"].map((state) => (
+    {["bookable", "unbookable", "lit"].map((state) => (
       <pattern
         key={state}
         id={`space-${state}`}
         patternUnits="objectBoundingBox"
+        patternContentUnits="objectBoundingBox"
         width="1"
         height="1"
       >
@@ -76,12 +77,15 @@ const Spaces = () => (
 
 const Row = ({ row, frame, children }: RowProps) => (
   <g role="row" aria-rowindex={row.ordinalFromFront}>
-    {row.label !== null && row.seats[0] !== undefined && (
+    {row.label !== null && (
       <text
         role="rowheader"
         className="row-label"
         x={frame.x + 1.2 * frame.seatWidth}
-        y={row.seats[0].y + row.seats[0].height / 2}
+        y={
+          Math.min(...row.seats.map((seat) => seat.y)) +
+          Math.max(...row.seats.map((seat) => seat.height)) / 2
+        }
         fontSize={0.7 * frame.seatWidth}
       >
         {row.label}
@@ -120,6 +124,15 @@ export const SeatMap = ({
   const frame = useMemo(() => frameOf(auditorium), [auditorium]);
   const { setGroup, handlers, dragged } = usePanZoom(map, frame, cursor);
   const recommended = result.seats.map((seat) => seat.id);
+  const offered = useMemo(
+    () =>
+      new Set(
+        auditorium.offered.flatMap((group) =>
+          group.seats.map((seat) => seat.id),
+        ),
+      ),
+    [auditorium],
+  );
 
   const keyed = (event: KeyboardEvent<SVGSVGElement>) => {
     if (event.key === "Enter" || event.key === " ") {
@@ -184,11 +197,7 @@ export const SeatMap = ({
                       accessibleSeating,
                     )}
                     aria-selected={holds(candidate, seat)}
-                    aria-disabled={
-                      auditorium.offered.some((offered) => holds(offered, seat))
-                        ? undefined
-                        : true
-                    }
+                    aria-disabled={offered.has(seat.id) ? undefined : true}
                     data-seat={seat.id}
                     x={seat.x}
                     y={seat.y}

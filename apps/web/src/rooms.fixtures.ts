@@ -59,7 +59,7 @@ export const STRIKE_AND_REEL_1: CapturedRoom = {
   card: "AMC Grapevine Mills 24, 9:00p",
 };
 
-export const FIVE_ROOMS: readonly CapturedRoom[] = [
+const FIVE_ROOMS: readonly CapturedRoom[] = [
   WEST_PLANO_28,
   ANGELIKA_5,
   VILLAGE_1,

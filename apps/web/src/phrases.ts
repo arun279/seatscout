@@ -44,6 +44,9 @@ export const capitalised = (phrase: string) =>
 
 export const twoDigits = (value: number) => `${value}`.padStart(2, "0");
 
+export const seatsOf = (result: SeatGroupResult) =>
+  result.seats.map((seat) => seat.id).join("·");
+
 export const clockOf = (startsAt: string): string => {
   const hours = Number(startsAt.slice(11, 13));
   const minutes = startsAt.slice(14, 16);

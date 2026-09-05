@@ -9,10 +9,10 @@ import { capitalised, clockOf, lateralOf, wordOf } from "./phrases.js";
 
 type Accessible = Exclude<PositionedSeat["designation"], "standard">;
 
-const SUFFIXES: Readonly<Record<string, string>> = {
-  "1": "st",
-  "2": "nd",
-  "3": "rd",
+const SUFFIXES: Readonly<Record<number, string>> = {
+  1: "st",
+  2: "nd",
+  3: "rd",
 };
 
 const ORDINALS = [
@@ -34,10 +34,12 @@ const KINDS: Readonly<Record<Accessible, string>> = {
 
 const GROUP_WORDS: Readonly<Record<number, string>> = { 1: "seat", 2: "pair" };
 
+const groupWordOf = (partySize: number) =>
+  GROUP_WORDS[partySize] ?? wordOf(partySize);
+
 export const ordinalOf = (count: number) => {
   const rest = count % 100;
-  const suffix =
-    rest > 10 && rest < 14 ? "th" : (SUFFIXES[`${count % 10}`] ?? "th");
+  const suffix = rest > 10 && rest < 14 ? "th" : (SUFFIXES[count % 10] ?? "th");
   return `${count}${suffix}`;
 };
 
@@ -123,9 +125,6 @@ export const refusalOf = (
 
 export const chosenOf = (result: SeatGroupResult) =>
   `${listOf(result.seats.map((seat) => seat.id))} chosen. ${result.seats.length === 1 ? "It is" : "They are"} re-checked when you continue.`;
-
-const groupWordOf = (partySize: number) =>
-  GROUP_WORDS[partySize] ?? wordOf(partySize);
 
 export const groupsOf = (count: number, partySize: number) => {
   const word = groupWordOf(partySize);

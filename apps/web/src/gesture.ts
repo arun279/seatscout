@@ -1,5 +1,5 @@
 export interface View {
-  readonly k: number;
+  readonly scale: number;
   readonly tx: number;
   readonly ty: number;
 }
@@ -20,15 +20,15 @@ type Pair = readonly [Point, Point];
 
 const TAP_TARGET = 44;
 
-export const FITTED: View = { k: 1, tx: 0, ty: 0 };
+export const FITTED: View = { scale: 1, tx: 0, ty: 0 };
 
 const clamped = (value: number, low: number, high: number) =>
   Math.min(high, Math.max(low, value));
 
 const bounded = (view: View, extent: Extent): View => ({
-  k: view.k,
-  tx: clamped(view.tx, extent.width * (1 - view.k), 0),
-  ty: clamped(view.ty, extent.height * (1 - view.k), 0),
+  scale: view.scale,
+  tx: clamped(view.tx, extent.width * (1 - view.scale), 0),
+  ty: clamped(view.ty, extent.height * (1 - view.scale), 0),
 });
 
 export const panned = (view: View, dx: number, dy: number, extent: Extent) =>
@@ -41,11 +41,11 @@ export const zoomed = (
   extent: Extent,
   mostZoom: number,
 ): View => {
-  const k = clamped(view.k * factor, 1, mostZoom);
-  const grown = k / view.k;
+  const scale = clamped(view.scale * factor, 1, mostZoom);
+  const grown = scale / view.scale;
   return bounded(
     {
-      k,
+      scale,
       tx: about.x - (about.x - view.tx) * grown,
       ty: about.y - (about.y - view.ty) * grown,
     },
@@ -83,12 +83,12 @@ const shiftInto = (low: number, high: number, limit: number) =>
   low < 0 ? -low : Math.min(0, limit - high);
 
 export const revealed = (view: View, seat: Box, extent: Extent): View => {
-  const left = view.tx + view.k * seat.x;
-  const top = view.ty + view.k * seat.y;
+  const left = view.tx + view.scale * seat.x;
+  const top = view.ty + view.scale * seat.y;
   return panned(
     view,
-    shiftInto(left, left + view.k * seat.width, extent.width),
-    shiftInto(top, top + view.k * seat.height, extent.height),
+    shiftInto(left, left + view.scale * seat.width, extent.width),
+    shiftInto(top, top + view.scale * seat.height, extent.height),
     extent,
   );
 };
@@ -100,4 +100,4 @@ export const mostZoomFor = (
 ) => Math.max(1, TAP_TARGET / ((seatWidth * clientWidth) / extentWidth));
 
 export const transformOf = (view: View) =>
-  `translate(${view.tx} ${view.ty}) scale(${view.k})`;
+  `translate(${view.tx} ${view.ty}) scale(${view.scale})`;

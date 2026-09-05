@@ -2,7 +2,7 @@ import "@testing-library/jest-dom/vitest";
 import { act, cleanup, fireEvent } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { opened } from "./auditorium.fixtures.js";
-import { WEST_PLANO_28 } from "./rooms.fixtures.js";
+import { VILLAGE_1, WEST_PLANO_28 } from "./rooms.fixtures.js";
 
 const MAP_ON_SCREEN = { left: 20, top: 100, width: 340, height: 204 };
 
@@ -121,5 +121,70 @@ describe("panning and zooming the drawn room", () => {
     stage.press("ArrowUp");
 
     expect(stage.focused().getAttribute("aria-label")).toMatch(/^Seat H10\. /);
+  });
+
+  it("draws each labelled row's label as its row header, a console tick between two pods, and the frame padded by the seats' own width", async () => {
+    const large = await opened(WEST_PLANO_28);
+    const labels = [...large.dialog.querySelectorAll('[role="rowheader"]')];
+    const viewBox = (
+      large.dialog.querySelector("svg.seat-map")?.getAttribute("viewBox") ?? ""
+    )
+      .split(" ")
+      .map(Number);
+    const inner = large.dialog.querySelector("svg.seat-map > g > g");
+
+    expect(labels.map((label) => label.textContent)).toEqual([
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "J",
+      "K",
+      "L",
+      "M",
+      "N",
+      "P",
+    ]);
+    expect(labels.map((label) => label.getAttribute("y"))).toEqual([
+      "9",
+      "49",
+      "69",
+      "89",
+      "109",
+      "129",
+      "149",
+      "169",
+      "189",
+      "229",
+      "249",
+      "269",
+      "289",
+      "309",
+    ]);
+    expect(viewBox.map((edge) => Number(edge.toFixed(3)))).toEqual([
+      0, 0, 555.8, 336,
+    ]);
+    expect(inner).toHaveAttribute("transform", "translate(28.8 9)");
+    expect(large.dialog.querySelectorAll("svg.seat-map .tick")).toHaveLength(0);
+    cleanup();
+
+    const pods = await opened(VILLAGE_1);
+    const ticks = [...pods.dialog.querySelectorAll("svg.seat-map .tick")];
+    const [first] = ticks;
+
+    expect(
+      [...pods.dialog.querySelectorAll('[role="rowheader"]')].map(
+        (label) => label.textContent,
+      ),
+    ).toEqual(["A", "B", "C", "D", "F", "G", "H", "J", "K"]);
+    expect(ticks).toHaveLength(133);
+    expect(Number(first?.getAttribute("x1"))).toBeCloseTo(60.3925, 3);
+    expect(Number(first?.getAttribute("x2"))).toBeCloseTo(60.3925, 3);
+    expect(Number(first?.getAttribute("y1"))).toBeCloseTo(2.8532, 3);
+    expect(Number(first?.getAttribute("y2"))).toBeCloseTo(11.4128, 3);
   });
 });
