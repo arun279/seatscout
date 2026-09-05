@@ -15,7 +15,6 @@
     { "path": "tools/live-injections" },
     { "path": "tools/no-cache-storage-reach" },
     { "path": "tools/no-empty-mutation-run" },
-    { "path": "tools/release-plan" },
     { "path": "tools/footprint" },
     { "path": "tests/e2e" }
   ]

@@ -14,7 +14,6 @@ pre-commit:
     spell:
       run: pnpm exec cspell lint --no-must-find-files {staged_files}
     cache-storage:
-      glob: "apps/**"
       run: node tools/no-cache-storage-reach/src/index.ts
     secrets:
       run: gitleaks git --pre-commit --staged --no-banner --redact --verbose
