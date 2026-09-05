@@ -114,31 +114,18 @@ const Prompt = ({
   </section>
 );
 
-export const App = ({ seatscout, terms, onTerms, today, clock }: AppProps) => {
+const Screen = ({ seatscout, terms, onTerms, today, clock }: AppProps) => {
   const asked = askedFrom(terms);
   const overlays = useOverlays();
-  const online = useSyncExternalStore(connectionChanges, isOnline);
   const openAsk = (focus: Term) => overlays.open({ kind: "ask", focus });
 
   return (
-    <main className="stage">
-      {!online && (
-        <p className="offline" role="status">
-          Offline. Seats are never cached, so nothing here is refreshed until
-          the connection returns.
-        </p>
-      )}
-      <div className="screen-band" aria-hidden="true">
-        <span className="lamp" />
-        <span className="fall" />
-        <span className="word">SEATSCOUT</span>
-      </div>
+    <>
       <TitleCard terms={terms} today={today} onEdit={openAsk} />
       {asked === null ? (
         <Prompt terms={terms} today={today} onEdit={openAsk} />
       ) : (
         <Searching
-          key={queryOf(terms)}
           seatscout={seatscout}
           asked={asked}
           terms={terms}
@@ -153,6 +140,27 @@ export const App = ({ seatscout, terms, onTerms, today, clock }: AppProps) => {
         onClose={overlays.close}
         onTerms={onTerms}
       />
+    </>
+  );
+};
+
+export const App = ({ terms, ...rest }: AppProps) => {
+  const online = useSyncExternalStore(connectionChanges, isOnline);
+
+  return (
+    <main className="stage">
+      {!online && (
+        <p className="offline" role="status">
+          Offline. Seats are never cached, so nothing here is refreshed until
+          the connection returns.
+        </p>
+      )}
+      <div className="screen-band" aria-hidden="true">
+        <span className="lamp" />
+        <span className="fall" />
+        <span className="word">SEATSCOUT</span>
+      </div>
+      <Screen key={queryOf(terms)} terms={terms} {...rest} />
     </main>
   );
 };

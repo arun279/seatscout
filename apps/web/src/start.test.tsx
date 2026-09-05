@@ -125,6 +125,34 @@ describe("starting the application in a browser", () => {
     );
   });
 
+  it("takes the sheet a search opened off the screen when Back returns to the query before it", async () => {
+    const page = opened("?movie=245569&date=2026-08-28&area=75006&partySize=2");
+    await waitFor(() => expect(page.seatMapsRead()).toBeGreaterThan(0));
+    fireEvent.click(
+      screen.getByRole("button", { name: /two seats together/i }),
+    );
+    const ask = within(
+      screen.getByRole("dialog", { name: /what are we seeing/i }),
+    );
+    fireEvent.click(ask.getByRole("button", { name: /more/i }));
+    fireEvent.click(ask.getByRole("button", { name: /find seats/i }));
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /ledger/i })).toBeVisible(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: /ledger/i }));
+
+    expect(screen.getByRole("dialog", { name: /accounted/i })).toBeVisible();
+
+    window.history.back();
+
+    await waitFor(() =>
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
+        "Two seats together",
+      ),
+    );
+    expect(screen.queryByRole("dialog", { hidden: true })).toBeNull();
+  });
+
   it("hands back the root it mounted, so unmounting stops the clock ticking into a torn-down tree", () => {
     vi.useFakeTimers();
     opened("?movie=245569&date=2026-08-28&area=75006&partySize=2");
