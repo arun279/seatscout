@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { queryOf, searchTermsOf, termsFrom } from "./terms.js";
+import { askedFrom } from "./asked.js";
+import { queryOf, termsFrom } from "./terms.js";
 
 const TODAY = "2026-08-28";
 
@@ -61,7 +62,7 @@ describe("the query terms a URL carries", () => {
 
   it("becomes a search once it names a Movie and an area, and not before", () => {
     expect(
-      searchTermsOf({
+      askedFrom({
         movie: "245569",
         date: TODAY,
         area: "75006",
@@ -75,10 +76,8 @@ describe("the query terms a URL carries", () => {
       accessibleSeating: false,
     });
     expect(
-      searchTermsOf({ movie: "245569", date: TODAY, partySize: 3 }),
+      askedFrom({ movie: "245569", date: TODAY, partySize: 3 }),
     ).toBeNull();
-    expect(
-      searchTermsOf({ area: "75006", date: TODAY, partySize: 3 }),
-    ).toBeNull();
+    expect(askedFrom({ area: "75006", date: TODAY, partySize: 3 })).toBeNull();
   });
 });

@@ -27,6 +27,7 @@
 }
 
 .card {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 13px;
@@ -35,6 +36,23 @@
   border-radius: 14px;
   padding: 11px 13px;
   min-height: 68px;
+}
+
+.card .open::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.card .seats {
+  position: relative;
+  z-index: 1;
+}
+
+.card .seats::after {
+  content: "";
+  position: absolute;
+  inset: -16px -10px;
 }
 
 .card .plan {

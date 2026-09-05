@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { modal } from "./modal.js";
 import { type Terms, termsOf } from "./terms.js";
-import type { Term } from "./title-card.js";
+import type { Term } from "./title-card-terms.js";
 
 interface AskProps {
   readonly terms: Terms;

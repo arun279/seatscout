@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { marksOf } from "./plan.js";
+import { marksOf, targetAt } from "./plan.js";
 
 describe("the marks a card's room plan is drawn from", () => {
   it("spreads the rows from y 9 at the front to y 41 at the back, and the seats from x 2 at house left to x 62 at house right", () => {
@@ -25,5 +25,9 @@ describe("the marks a card's room plan is drawn from", () => {
     ]);
     expect(marks.pair).toEqual({ cx: 32, cy: 25 });
     expect(marks.target).toEqual({ cx: 32, cy: 30.44 });
+    expect(targetAt(marks.target)).toEqual({
+      targetDepth: 0.67,
+      targetLateral: 0,
+    });
   });
 });

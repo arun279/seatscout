@@ -7,8 +7,9 @@ import {
   screen,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ask, cards, staged, TODAY, TONIGHT } from "./app.fixtures.js";
+import { ask } from "./app.fixtures.js";
 import { modal } from "./modal.js";
+import { cards, staged, TODAY, TONIGHT } from "./search.fixtures.js";
 import type { Terms } from "./terms.js";
 
 const NO_MOVIE: Terms = { date: TODAY, partySize: 2 };

@@ -1,15 +1,15 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
+import { ask } from "./app.fixtures.js";
 import {
-  ask,
   before,
   cards,
   failing,
   LISTING,
   staged,
   TONIGHT,
-} from "./app.fixtures.js";
+} from "./search.fixtures.js";
 
 describe("what the first screen says when the answer is not a list", () => {
   afterEach(cleanup);

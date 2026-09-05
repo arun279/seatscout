@@ -1,6 +1,11 @@
 export { REFERENCE } from "@seatscout/core";
 export type { SeatGroupResult } from "./ranking.js";
-export type { Coverage, Search, SearchTerms, Snapshot } from "./search.js";
-export { createSeatScout, type SeatScout } from "./seatscout.js";
-export type { CachedCatalogue, KeyValueStore } from "./store.js";
+export type { Coverage } from "./search.js";
+export type { Search } from "./search.js";
+export type { SearchTerms } from "./search.js";
+export type { Snapshot } from "./search.js";
+export { createSeatScout } from "./seatscout.js";
+export type { SeatScout } from "./seatscout.js";
+export type { CachedCatalogue } from "./store.js";
+export type { KeyValueStore } from "./store.js";
 export { storeContract } from "./store-contract.js";

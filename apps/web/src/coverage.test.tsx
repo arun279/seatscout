@@ -9,7 +9,7 @@ import {
   within,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { ASKED, failing, settledAlone, staged } from "./app.fixtures.js";
+import { ASKED, failing, settledAlone, staged } from "./search.fixtures.js";
 import { Ledger } from "./coverage.js";
 
 const ROWS: readonly (readonly [string, string, number])[] = [

@@ -18,7 +18,7 @@ import {
   staged,
   TODAY,
   TONIGHT,
-} from "./app.fixtures.js";
+} from "./search.fixtures.js";
 import type { HeldSnapshots } from "./held.js";
 import { clockOf } from "./phrases.js";
 import { Results } from "./results.js";
