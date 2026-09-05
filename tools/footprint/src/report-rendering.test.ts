@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { counts, GATES, LIMITS, SUITES, WEIGHED } from "./report.fixtures.js";
-import { render } from "./report.js";
+import { type Measurement, render } from "./report.js";
 
 const RENDERED = `### Code footprint
 
@@ -99,8 +99,9 @@ mutant alive.
 Stryker's own score over the run that wrote the report, held to the threshold named in
 that same report rather than to one restated here. A run that weighed no mutant is
 refused instead of scored, because such a run scores NaN and NaN is never below a
-threshold. The run is incremental across pushes of one branch; the nightly run on the
-default branch re-judges everything and is what the incremental results are checked by.
+threshold. The run is incremental: it starts from what the run on \`main\` last judged,
+and from this branch's own last run after that. Nothing cross-checks the two, so a
+verdict reused here is one that run reached rather than one reached again.
 
 | Score | Detected | Weighed | Break |
 | ---: | ---: | ---: | ---: |
@@ -109,45 +110,53 @@ default branch re-judges everything and is what the incremental results are chec
 The score may not fall below the threshold, which is 100. At or above it.
 `;
 
+const MEASURED: Measurement = {
+  base: {
+    ref: "0123456789abcdef0123456789abcdef01234567",
+    tree: {
+      "packages/core/src/seat.ts": counts(100, 2),
+      "packages/core/src/seat.test.ts": counts(30, 0),
+      "tools/footprint/src/report.ts": counts(40, 0),
+      "CONTRIBUTING.md": counts(1000, 0),
+    },
+  },
+  head: {
+    ref: "fedcba9876543210fedcba9876543210fedcba98",
+    tree: {
+      "packages/core/src/seat.ts": counts(120, 2),
+      "packages/core/src/seat.test.ts": counts(60, 0),
+      "tools/footprint/src/report.ts": counts(40, 0),
+      "CONTRIBUTING.md": counts(1200, 0),
+    },
+  },
+  diff: {
+    added: {
+      "packages/core/src/seat.ts": counts(20, 0),
+      "packages/core/src/seat.test.ts": counts(30, 0),
+      "CONTRIBUTING.md": counts(200, 0),
+      "pnpm-lock.yaml": counts(40, 0),
+    },
+    removed: { "packages/core/src/label.ts": counts(5, 1) },
+    modified: { "vitest.config.ts": counts(2, 0) },
+  },
+  bundles: [{ name: "web app", size: 15, sizeLimit: 15, passed: true }],
+  gates: GATES,
+  limits: LIMITS,
+  suites: SUITES,
+  mutation: WEIGHED,
+  ratchets: { comments: 2, tests: 494 },
+};
+
 describe("one measurement, always the same bytes", () => {
   it("renders exactly this", () => {
-    const { markdown } = render({
-      base: {
-        ref: "0123456789abcdef0123456789abcdef01234567",
-        tree: {
-          "packages/core/src/seat.ts": counts(100, 2),
-          "packages/core/src/seat.test.ts": counts(30, 0),
-          "tools/footprint/src/report.ts": counts(40, 0),
-          "CONTRIBUTING.md": counts(1000, 0),
-        },
-      },
-      head: {
-        ref: "fedcba9876543210fedcba9876543210fedcba98",
-        tree: {
-          "packages/core/src/seat.ts": counts(120, 2),
-          "packages/core/src/seat.test.ts": counts(60, 0),
-          "tools/footprint/src/report.ts": counts(40, 0),
-          "CONTRIBUTING.md": counts(1200, 0),
-        },
-      },
-      diff: {
-        added: {
-          "packages/core/src/seat.ts": counts(20, 0),
-          "packages/core/src/seat.test.ts": counts(30, 0),
-          "CONTRIBUTING.md": counts(200, 0),
-          "pnpm-lock.yaml": counts(40, 0),
-        },
-        removed: { "packages/core/src/label.ts": counts(5, 1) },
-        modified: { "vitest.config.ts": counts(2, 0) },
-      },
-      bundles: [{ name: "web app", size: 15, sizeLimit: 15, passed: true }],
-      gates: GATES,
-      limits: LIMITS,
-      suites: SUITES,
-      mutation: WEIGHED,
-      ratchets: { comments: 2, tests: 494 },
-    });
+    expect(render(MEASURED).markdown).toBe(RENDERED);
+  });
 
-    expect(markdown).toBe(RENDERED);
+  it("renders the same bytes and the same verdict when it is run again", () => {
+    const first = render(MEASURED);
+    const again = render(MEASURED);
+
+    expect(again.markdown).toBe(first.markdown);
+    expect(again.passed).toBe(first.passed);
   });
 });
