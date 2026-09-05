@@ -74,6 +74,8 @@ export const lateralOf = (seatsOffCentre: number): string => {
   return `${seatsPhrase(Math.round(away * 2))} ${side} of centre`;
 };
 
+export const labelOf = (seats: readonly string[]): string => seats.join("·");
+
 export const partyOf = (party: number): string =>
   party === 1 ? "One seat" : `${capitalised(wordOf(party))} seats together`;
 

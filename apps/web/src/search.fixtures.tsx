@@ -6,6 +6,7 @@ import {
   type SearchTerms,
   type SeatProfile,
   type SeatScout,
+  type Verified,
 } from "@seatscout/client";
 import { fakeUpstream, type UpstreamScript } from "@seatscout/client/testing";
 import { act, cleanup, render, screen, within } from "@testing-library/react";
@@ -65,6 +66,27 @@ const Harness = ({
   );
 };
 
+export interface Room {
+  readonly status?: number;
+  readonly statuses?: Readonly<Record<string, string>>;
+  readonly rest?: string;
+}
+
+interface SeatMapBody {
+  readonly seats: readonly { readonly id: string; readonly status: string }[];
+}
+
+const roomAs = (body: string, room: Room) => {
+  const map: SeatMapBody = JSON.parse(body);
+  return JSON.stringify({
+    ...map,
+    seats: map.seats.map((seat) => ({
+      ...seat,
+      status: room.statuses?.[seat.id] ?? room.rest ?? seat.status,
+    })),
+  });
+};
+
 const ticking = () => {
   const ticks = new Set<() => void>();
   let at = 10_000;
@@ -91,8 +113,25 @@ export const staged = (options: Staged = {}) => {
   });
   const time = ticking();
   const retries: (() => void)[] = [];
+  const held: (() => void)[] = [];
+  let holding = false;
+  let room: Room | null = null;
+  const fetch: Parameters<typeof createSeatScout>[0]["fetch"] = async (
+    url,
+    init,
+  ) => {
+    const answer = await upstream(url, init);
+    if (!url.startsWith(SEAT_MAP)) return answer;
+    if (holding) await new Promise<void>((resume) => held.push(resume));
+    if (room === null) return answer;
+    const text = roomAs(await answer.text(), room);
+    return {
+      status: room.status ?? answer.status,
+      text: () => Promise.resolve(text),
+    };
+  };
   const real = createSeatScout({
-    fetch: upstream,
+    fetch,
     now: time.clock.now,
     wait: () =>
       options.holdRetries
@@ -103,8 +142,14 @@ export const staged = (options: Staged = {}) => {
   const searches: Search[] = [];
   const aborted: Search[] = [];
   const asked: SearchTerms[] = [];
+  const verifications: Promise<Verified>[] = [];
   const seatscout: SeatScout = {
     ...real,
+    verify: (result) => {
+      const pending = real.verify(result);
+      verifications.push(pending);
+      return pending;
+    },
     search: (terms) => {
       asked.push(terms);
       const search = real.search(terms);
@@ -121,6 +166,7 @@ export const staged = (options: Staged = {}) => {
   };
   const chosen: Terms[] = [];
   const profiles: SeatProfile[] = [];
+  const checkouts: string[] = [];
   const rendered = render(
     <Harness
       seatscout={seatscout}
@@ -130,6 +176,7 @@ export const staged = (options: Staged = {}) => {
       clock={time.clock}
       onTerms={(terms) => chosen.push(terms)}
       onProfile={(profile) => profiles.push(profile)}
+      checkout={(ticketing) => checkouts.push(ticketing)}
     />,
   );
   return {
@@ -138,7 +185,26 @@ export const staged = (options: Staged = {}) => {
     chosen,
     profiles,
     aborted,
+    checkouts,
     advance: time.advance,
+    roomAtHandOff: (answer: Room) => {
+      room = answer;
+    },
+    holdSeatMaps: () => {
+      holding = true;
+    },
+    releaseSeatMaps: () => {
+      holding = false;
+      for (const resume of held.splice(0)) resume();
+    },
+    answered: async () => {
+      const verification = verifications.at(-1);
+      if (verification === undefined) throw new Error("nothing was verified");
+      const verified = await verification;
+      await act(() => Promise.resolve());
+      return verified;
+    },
+    verifications,
     resumeRetries: async () => {
       for (const resume of retries.splice(0)) resume();
       await act(() => Promise.resolve());

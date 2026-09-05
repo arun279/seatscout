@@ -1,0 +1,155 @@
+.hand-off {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hand-off[open] {
+  display: flex;
+}
+
+.hand-off .eyebrow,
+.hand-off .why,
+.hand-off .body {
+  margin: 0;
+}
+
+.hand-off .name {
+  font-size: 30px;
+}
+
+.hand-off .went {
+  font-size: 40px;
+  max-width: 300px;
+}
+
+.hand-off .body {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--silver-dim);
+  text-wrap: pretty;
+}
+
+.hand-off .why {
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--silver-dim);
+  text-align: center;
+}
+
+.big-plan {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 0;
+}
+
+.mp-lost {
+  fill: none;
+  stroke: var(--velvet-lit);
+  stroke-width: 1.3;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--silver-dim);
+}
+
+.legend i {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  margin-right: 5px;
+  vertical-align: -1px;
+}
+
+.legend .lit {
+  background: var(--beam);
+  box-shadow: 0 0 6px var(--beam);
+}
+
+.legend .lost {
+  border: 1px solid var(--velvet-lit);
+  border-radius: 50%;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 0 15px;
+  border-radius: 12px;
+  border: 1px solid var(--hairline);
+  background: var(--raised);
+  color: var(--silver);
+  font-family: var(--body);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.chip .sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--silver-faint);
+}
+
+.chip[aria-pressed="true"] {
+  border-color: var(--silver);
+  background: var(--silver);
+  color: var(--house-deep);
+}
+
+.chip[aria-pressed="true"] .sub {
+  color: oklch(0.35 0.02 270);
+}
+
+.hand-off .prov {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 6px 0 0;
+  border-top: 1px solid var(--hairline);
+  padding-top: 10px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--silver-dim);
+}
+
+.hand-off .prov .p2 {
+  color: var(--velvet-lit);
+}
+
+.hand-off .cta {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding-top: 4px;
+}
+
+.hand-off .cta .micro {
+  color: var(--silver-dim);
+  text-align: center;
+}

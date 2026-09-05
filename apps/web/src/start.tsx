@@ -1,5 +1,10 @@
 import { createRoot } from "react-dom/client";
-import { browserAddress, browserClock, browserSeatScout } from "./browser.js";
+import {
+  browserAddress,
+  browserCheckout,
+  browserClock,
+  browserSeatScout,
+} from "./browser.js";
 import { rememberedBy, Root } from "./root.js";
 
 export const startApp = async () => {
@@ -14,6 +19,7 @@ export const startApp = async () => {
       address={browserAddress()}
       clock={browserClock()}
       remembered={remembered}
+      checkout={browserCheckout}
     />,
   );
   return root;

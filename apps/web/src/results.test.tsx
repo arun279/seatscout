@@ -54,8 +54,10 @@ const listing = (snapshot: Snapshot) => {
       today={TODAY}
       now={0}
       held={held}
+      online={true}
       onRetry={() => {}}
       onEdit={() => {}}
+      onHandOff={() => {}}
     />,
   );
 };

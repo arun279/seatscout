@@ -1,5 +1,5 @@
 import { createSeatScout, type SeatScout } from "@seatscout/client";
-import type { Clock } from "./app.js";
+import type { Checkout, Clock } from "./app.js";
 import { signal } from "./signal.js";
 import { browserStore } from "./store.js";
 
@@ -36,6 +36,10 @@ export const browserClock = (): Clock => {
       return () => clearInterval(ticking);
     },
   };
+};
+
+export const browserCheckout: Checkout = (ticketing) => {
+  window.location.assign(ticketing);
 };
 
 export const browserSeatScout = (): SeatScout =>

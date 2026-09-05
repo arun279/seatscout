@@ -154,6 +154,11 @@
 .card .seats {
   position: relative;
   z-index: 1;
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
   font-family: var(--mono);
   font-size: 13px;
   font-weight: 500;

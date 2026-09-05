@@ -10,6 +10,7 @@ const SHELL = [
   "/ask.css",
   "/results.css",
   "/coverage.css",
+  "/hand-off.css",
   "/icon.svg",
   "/fonts/big-shoulders-display.woff2",
   "/fonts/schibsted-grotesk.woff2",

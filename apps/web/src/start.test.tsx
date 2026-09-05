@@ -75,6 +75,28 @@ describe("starting the application in a browser", () => {
     ).toBeVisible();
   });
 
+  it("opens a verified Seat Group's ticketing URL as a navigation of the page itself", async () => {
+    const query = "?movie=245569&date=2026-08-28&area=75006&partySize=2";
+    const assign = vi.fn();
+    vi.stubGlobal("location", { ...window.location, search: query, assign });
+    await opened(query);
+    await waitFor(() =>
+      expect(screen.getAllByRole("article").length).toBeGreaterThan(0),
+    );
+    fireEvent.click(
+      within(screen.getAllByRole("article")[0] ?? document.body).getByRole(
+        "button",
+        { name: /G6·G7/ },
+      ),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Take G6 and G7" }));
+
+    await waitFor(() => expect(assign).toHaveBeenCalledTimes(1));
+    expect(assign).toHaveBeenCalledWith(
+      expect.stringMatching(/showtimehashcode=v2-[0-9a-f]{64}$/),
+    );
+  });
+
   it("opens on the title card with nothing to search when the address names no Movie", async () => {
     const page = await opened("");
 
