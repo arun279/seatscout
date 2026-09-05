@@ -2,17 +2,24 @@ import "@testing-library/jest-dom/vitest";
 import { fakeUpstream } from "@seatscout/client/testing";
 import {
   act,
-  cleanup,
   fireEvent,
   screen,
   waitFor,
   within,
 } from "@testing-library/react";
+import type { Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { browserClock, browserSeatScout } from "./browser.js";
 import { startApp } from "./start.js";
 
 const SEAT_MAP = "/napi/seatMap/";
+
+const running: Root[] = [];
+
+const closed = () =>
+  act(() => {
+    for (const root of running.splice(0)) root.unmount();
+  });
 
 const opened = (query: string) => {
   const upstream = fakeUpstream({ seed: 4, standInAuditoriums: true });
@@ -22,7 +29,7 @@ const opened = (query: string) => {
     Object.assign(document.createElement("div"), { id: "app" }),
   );
   act(() => {
-    startApp();
+    running.push(startApp());
   });
   return {
     seatMapsRead: () =>
@@ -38,7 +45,7 @@ describe("starting the application in a browser", () => {
     localStorage.clear();
   });
   afterEach(() => {
-    cleanup();
+    closed();
     vi.unstubAllGlobals();
     vi.useRealTimers();
   });
@@ -116,6 +123,18 @@ describe("starting the application in a browser", () => {
         "Two seats together",
       ),
     );
+  });
+
+  it("hands back the root it mounted, so unmounting stops the clock ticking into a torn-down tree", () => {
+    vi.useFakeTimers();
+    opened("?movie=245569&date=2026-08-28&area=75006&partySize=2");
+
+    expect(vi.getTimerCount()).toBe(1);
+
+    closed();
+
+    expect(vi.getTimerCount()).toBe(0);
+    expect(document.getElementById("app")?.childElementCount).toBe(0);
   });
 
   it("ticks its clock once a second while someone listens, and not after", () => {

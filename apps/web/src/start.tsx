@@ -39,11 +39,13 @@ const Root = ({ seatscout, address, clock }: RootProps) => {
 export const startApp = () => {
   const mount = document.getElementById("app");
   if (mount === null) throw new Error("the page has nothing to mount into");
-  createRoot(mount).render(
+  const root = createRoot(mount);
+  root.render(
     <Root
       seatscout={browserSeatScout()}
       address={browserAddress()}
       clock={browserClock()}
     />,
   );
+  return root;
 };
