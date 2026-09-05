@@ -191,6 +191,22 @@ describe("where you sit, on the Ask sheet", () => {
     expect(editor.getByLabelText("How far back")).toHaveValue("1");
   });
 
+  it("marks where Reference was, once the target has moved off it", async () => {
+    const { editor } = await opened();
+
+    expect(room().querySelector("circle.mp-was")).toBeNull();
+
+    slide(editor.getByLabelText("How far back"), 0.2);
+
+    const was = room().querySelector("circle.mp-was");
+    expect(was).toHaveAttribute("cx", "32");
+    expect(was).toHaveAttribute("cy", "30.44");
+    expect(room().querySelector("circle.mp-target")).toHaveAttribute(
+      "cy",
+      "15.4",
+    );
+  });
+
   it("labels the ends of every control in words and never with a number", async () => {
     const { editor } = await opened();
 

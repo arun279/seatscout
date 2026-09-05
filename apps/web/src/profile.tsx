@@ -39,12 +39,6 @@ const WEIGHTS: readonly { readonly field: Weight; readonly label: string }[] = [
   { field: "podDividerWeight", label: "A console between seats" },
 ];
 
-const REFERENCE_AT = {
-  depth: REFERENCE.targetDepth,
-  lateral: REFERENCE.targetLateral,
-  seatsOffCentre: 0,
-};
-
 const WIDTH = 64;
 const HEIGHT = 46;
 
@@ -88,16 +82,13 @@ const Room = ({ profile, onChange }: ProfileProps) => {
       targetLateral: held(at.targetLateral, -1, 1),
     });
   };
-  const was = marksOf(ROOM, REFERENCE_AT, REFERENCE);
-  const marks = marksOf(
-    ROOM,
-    {
-      depth: profile.targetDepth,
-      lateral: profile.targetLateral,
-      seatsOffCentre: 0,
-    },
-    profile,
-  );
+  const sitting = {
+    depth: profile.targetDepth,
+    lateral: profile.targetLateral,
+    seatsOffCentre: 0,
+  };
+  const was = marksOf(ROOM, sitting, REFERENCE);
+  const marks = marksOf(ROOM, sitting, profile);
   return (
     <svg
       className="room"
