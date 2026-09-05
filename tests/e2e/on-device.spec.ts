@@ -19,11 +19,11 @@ const CORPUS_DAY = new Date(2026, 7, 28, 9, 0);
 const CHOSEN = {
   "How far back": "0.31",
   "Left or right": "-0.17",
-  "Rows away from your target": "1.35",
-  "Off to the side": "0.85",
+  "Missing your spot": "1.35",
+  "Watching at an angle": "0.85",
   "The front rows": "0.55",
-  "Against a wall": "0.45",
-  "A console between you": "0.65",
+  "A wall, or the back row": "0.45",
+  "A console between seats": "0.65",
 };
 
 const PROFILE_FIELDS = [
@@ -155,7 +155,7 @@ test("an adjusted Profile re-ranks the results and moves the target on every car
   expect(seatMapsIn(again.captured)).toBe(0);
   await recent
     .getByRole("button", {
-      name: "245569, today, near 75006, two seats together",
+      name: "245569, 2 seats · today · 75006",
     })
     .click();
   expect(new URL(again.page.url()).search).toBe(TONIGHT.slice(1));
