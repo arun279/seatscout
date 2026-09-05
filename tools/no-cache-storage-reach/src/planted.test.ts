@@ -18,10 +18,15 @@ const REFUSED = [
 
 let repository: string;
 
+const env = Object.fromEntries(
+  Object.entries(process.env).filter(([name]) => !name.startsWith("GIT_")),
+);
+
 const gate = (...args: readonly string[]) =>
   spawnSync(process.execPath, [ENTRY, ...args], {
     cwd: repository,
     encoding: "utf8",
+    env,
   });
 
 beforeAll(() => {
@@ -31,7 +36,7 @@ beforeAll(() => {
     ["init", "--quiet"],
     ["add", "--all"],
   ])
-    execFileSync("git", args, { cwd: repository });
+    execFileSync("git", args, { cwd: repository, env });
 });
 
 afterAll(() => {
