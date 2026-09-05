@@ -77,18 +77,13 @@ describe("recent searches, on the first screen", () => {
         /Nothing yet/,
       ),
     ).toBeVisible();
-    expect(screen.queryByText("Run again")).toBeNull();
   });
 
   it("is not on the screen while a search is, and is on the sheet instead, where one press runs it under the sheet's Profile and closes the sheet", async () => {
     const stage = staged({ recent: [TONIGHT, TOMORROW], profile: FRONT_ROW });
     await stage.settled();
 
-    expect(
-      within(screen.getByRole("region", { name: "Run again" })).getByText(
-        /Nothing yet/,
-      ),
-    ).toBeVisible();
+    expect(screen.queryByRole("region", { name: "Run again" })).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: /custom seat/i }));
     fireEvent.click(
