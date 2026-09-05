@@ -16,7 +16,6 @@ export default defineConfig({
         test: {
           name: "screen",
           environment: "jsdom",
-          testTimeout: 30_000,
           include: ["apps/web/src/**/*.test.tsx"],
           setupFiles: [
             "apps/web/test/dialogs.ts",
