@@ -25,6 +25,19 @@ describe("narrowing a catalogue to a time window", () => {
     ).toEqual([176, 175, 175, 176]);
   });
 
+  it("keeps a Showtime the window opens on to the instant, and drops the one it closes on", () => {
+    const catalogue = captured();
+    const [first] = everyShowtime(catalogue)
+      .map((showtime) => showtime.startsAt)
+      .toSorted();
+    if (first === undefined) throw new Error("the capture holds no Showtime");
+
+    expect(everyShowtime(narrowed(catalogue, { from: first })).length).toBe(
+      176,
+    );
+    expect(everyShowtime(narrowed(catalogue, { until: first })).length).toBe(0);
+  });
+
   it("narrows to an evening window across every Theater at once, by each Theater's own clock", () => {
     const catalogue = captured();
     const kept = narrowed(catalogue, {

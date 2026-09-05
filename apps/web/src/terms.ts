@@ -60,7 +60,7 @@ const anyOf = <Named extends string>(
 const namedIn = <Named extends string>(
   asked: readonly string[] | undefined,
   every: readonly Named[],
-) => anyOf((asked ?? []).filter(among(every)));
+) => (asked === undefined ? undefined : anyOf(asked.filter(among(every))));
 
 const clockOf = (value: string | null | undefined) => {
   const clock = given(value);

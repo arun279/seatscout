@@ -30,7 +30,7 @@ interface ChipGroupProps<Named extends string> {
 
 const toggled = <Named extends string>(
   every: readonly Named[],
-  chosen: readonly Named[],
+  chosen: readonly Named[] | undefined,
   value: Named,
 ): readonly Named[] => {
   const pressed = new Set(chosen);
@@ -43,7 +43,7 @@ const ChipGroup = <Named extends string>({
   term,
   legend,
   chips,
-  chosen = [],
+  chosen,
   onChosen,
 }: ChipGroupProps<Named>) => (
   <fieldset className="field chips">
@@ -53,7 +53,7 @@ const ChipGroup = <Named extends string>({
         key={chip.value}
         type="button"
         className="chip"
-        aria-pressed={chosen.includes(chip.value)}
+        aria-pressed={chosen?.includes(chip.value) === true}
         data-term={at === 0 ? term : undefined}
         onClick={() =>
           onChosen(

@@ -12,15 +12,20 @@ const statusOf = (
   area: string | undefined,
   programme: ProgrammeState,
 ): string | null => {
-  if (programme.phase === "none") return "Name an area to see what is playing.";
-  if (programme.phase === "reading")
-    return `Reading what is playing near ${area}`;
-  if (programme.phase === "unreachable")
-    return `What is playing near ${area} could not be read.`;
-  const unreached = programme.unreached;
-  if (unreached.length === 0) return null;
-  const names = unreached.map((theater) => theater.name).join(", ");
-  return `Films at ${unreached.length} theater${unreached.length === 1 ? "" : "s"} could not be read: ${names}.`;
+  switch (programme.phase) {
+    case "none":
+      return "Name an area to see what is playing.";
+    case "reading":
+      return `Reading what is playing near ${area}`;
+    case "unreachable":
+      return `What is playing near ${area} could not be read.`;
+    case "read": {
+      const unreached = programme.unreached;
+      if (unreached.length === 0) return null;
+      const names = unreached.map((theater) => theater.name).join(", ");
+      return `Films at ${unreached.length} theater${unreached.length === 1 ? "" : "s"} could not be read: ${names}.`;
+    }
+  }
 };
 
 const Highlighted = ({

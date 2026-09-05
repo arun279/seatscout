@@ -99,13 +99,11 @@ export const Overlays = ({
   clock,
   verify,
   checkout,
-  onClose,
-  onTerms,
-  onProfile,
   programme,
   onProgramme,
   onClose,
   onTerms,
+  onProfile,
 }: OverlaysProps) => (
   <>
     {stack.map((overlay, at) => (

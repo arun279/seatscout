@@ -15,6 +15,7 @@ export const heldSnapshots = (search: Search): HeldSnapshots => {
   let painted: Snapshot | null = null;
   let holding = false;
   let missed = false;
+  let watching = 0;
 
   const show = () => {
     shown = search.snapshot();
@@ -30,7 +31,15 @@ export const heldSnapshots = (search: Search): HeldSnapshots => {
   return {
     snapshot: () => shown,
     painted: () => painted,
-    subscribe: changes.subscribe,
+    subscribe: (onChange) => {
+      watching += 1;
+      const stop = changes.subscribe(onChange);
+      return () => {
+        stop();
+        watching -= 1;
+        if (watching === 0) search.abort();
+      };
+    },
     hold: () => {
       holding = true;
     },

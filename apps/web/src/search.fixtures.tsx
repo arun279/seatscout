@@ -230,6 +230,7 @@ export const staged = (options: Staged = {}) => {
       upstream.requests.filter((request) => request.path.startsWith(prefix))
         .length,
     heldRetries: () => retries.length,
+    programmesRead: () => programmes.length,
     resumeRetries: async () => {
       for (const resume of retries.splice(0)) resume();
       await act(() => Promise.resolve());

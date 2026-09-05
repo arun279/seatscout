@@ -24,21 +24,18 @@ const Entries = ({
   readonly onEdit: (term: Term) => void;
 }) => (
   <>
-    {entries.map((entry, at) => {
-      const term = entry.term;
-      return (
-        <Fragment key={entry.words}>
-          {at > 0 && (entry.joinedBy ?? " · ")}
-          {term === undefined ? (
-            <span>{entry.words}</span>
-          ) : (
-            <button type="button" className="term" onClick={() => onEdit(term)}>
-              {entry.words}
-            </button>
-          )}
-        </Fragment>
-      );
-    })}
+    {entries.map((entry, at) => (
+      <Fragment key={entry.words}>
+        {at > 0 && (entry.joinedBy ?? " · ")}
+        <button
+          type="button"
+          className="term"
+          onClick={() => onEdit(entry.term)}
+        >
+          {entry.words}
+        </button>
+      </Fragment>
+    ))}
   </>
 );
 

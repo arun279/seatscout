@@ -95,6 +95,17 @@ describe("the first screen", () => {
     expect(screen.getByRole("button", { name: "245569" })).toBeVisible();
   });
 
+  it("abandons the search it opened when the screen goes", async () => {
+    const stage = staged();
+    await stage.settled();
+
+    expect(stage.aborted).toEqual([]);
+
+    cleanup();
+
+    expect(stage.aborted).toEqual(stage.searches);
+  });
+
   it("states every term on the card, each a line that opens the sheet at that term", async () => {
     const stage = staged({ terms: EVERYTHING });
     await stage.programmed();

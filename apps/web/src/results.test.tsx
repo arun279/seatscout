@@ -199,7 +199,7 @@ describe("the list on the first screen", () => {
 
     expect(plain.length).toBeGreaterThan(0);
     for (const card of plain)
-      expect(within(card).queryByText(/wheelchair|companion/)).toBeNull();
+      expect(card.querySelector(".designations")).toBeNull();
 
     cleanup();
     const stage = staged({ terms: { ...TONIGHT, accessibleSeating: true } });

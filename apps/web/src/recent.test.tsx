@@ -129,7 +129,7 @@ describe("recent searches, on the first screen", () => {
 
     expect(
       screen.getByText(
-        "Name a movie and an area to search. Two seats together, today and your custom seat are already set.",
+        "Name an area, then a movie playing near it. Two seats together, today and your custom seat are already set.",
       ),
     ).toBeVisible();
   });

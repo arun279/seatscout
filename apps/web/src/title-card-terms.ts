@@ -17,7 +17,7 @@ export type Term =
   | "profile";
 
 export interface TitleCardEntry {
-  readonly term?: Term;
+  readonly term: Term;
   readonly words: string;
   readonly joinedBy?: string;
 }

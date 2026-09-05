@@ -1,9 +1,17 @@
 import type { Movie, Programme, SeatScout, Theater } from "@seatscout/client";
 import { signal } from "./signal.js";
 
-export interface ProgrammeState extends Programme {
-  readonly phase: "none" | "reading" | "read" | "unreachable";
+interface Reading {
+  readonly phase: "none" | "reading" | "unreachable";
+  readonly theaters: readonly Theater[];
+  readonly movies: readonly Movie[];
 }
+
+interface Read extends Programme {
+  readonly phase: "read";
+}
+
+export type ProgrammeState = Reading | Read;
 
 export interface HeldProgramme {
   readonly area: string | undefined;
@@ -12,11 +20,10 @@ export interface HeldProgramme {
   readonly subscribe: (onChange: () => void) => () => void;
 }
 
-const NONE: ProgrammeState = {
+const NONE: Reading = {
   phase: "none",
   theaters: [],
   movies: [],
-  unreached: [],
 };
 
 export const programmeNear = (

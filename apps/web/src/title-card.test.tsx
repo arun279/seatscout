@@ -1,16 +1,16 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
+import { REFERENCE } from "@seatscout/client";
 import type { ProgrammeState } from "./programme.js";
 import { programmeRead, TODAY, TONIGHT } from "./search.fixtures.js";
-import { termsFrom } from "./terms.js";
+import { type Terms, termsFrom } from "./terms.js";
 import { TitleCard } from "./title-card.js";
 
 const NOTHING_READ: ProgrammeState = {
   phase: "none",
   theaters: [],
   movies: [],
-  unreached: [],
 };
 
 let PLAYING: ProgrammeState = NOTHING_READ;
@@ -20,11 +20,15 @@ const EVERYTHING = termsFrom(
   TODAY,
 );
 
-const card = (terms = TONIGHT, programme = NOTHING_READ) =>
+const card = (
+  terms: Terms = TONIGHT,
+  programme: ProgrammeState = NOTHING_READ,
+) =>
   render(
     <TitleCard
       terms={terms}
       programme={programme}
+      profile={REFERENCE}
       today={TODAY}
       onEdit={() => {}}
     />,
@@ -50,7 +54,7 @@ describe("the title card", () => {
     ]);
   });
 
-  it("offers the terms the query holds to be changed, and says the rest in plain words", () => {
+  it("offers every term the query holds to be changed, each its own control", () => {
     card();
 
     expect(
@@ -61,6 +65,7 @@ describe("the title card", () => {
       "Today",
       "Near 75006",
       "Any showtime",
+      "Reference seat",
     ]);
   });
 
@@ -76,6 +81,19 @@ describe("the title card", () => {
     expect(lines(container)[3]).toBe(
       "Today · 7:00p to 9:00p · Near 75006 · Dolby Cinema or IMAX · Recliners · AMC or Landmark · Cinemark Dallas XD and IMAX or AMC Village on the Parkway 9 · Accessible seating · Reference seat",
     );
+  });
+
+  it.each([
+    ["from=19:00&until=21:00", "7:00p to 9:00p"],
+    ["from=19:00", "from 7:00p"],
+    ["until=21:00", "until 9:00p"],
+  ])("states the window %s names as %s", (window, words) => {
+    const { container } = card(
+      termsFrom(`?movie=245569&date=2026-08-28&area=75006&${window}`, TODAY),
+      PLAYING,
+    );
+
+    expect(lines(container)[3]).toContain(`· ${words} ·`);
   });
 
   it("gives each value of a term its own control, so a line breaks between two Theaters rather than around both", () => {
@@ -97,6 +115,7 @@ describe("the title card", () => {
       "Cinemark Dallas XD and IMAX",
       "AMC Village on the Parkway 9",
       "Accessible seating",
+      "Reference seat",
     ]);
   });
 });

@@ -169,6 +169,8 @@
   border-radius: 50%;
   background: var(--silver);
   border: 1px solid var(--hairline);
+}
+
 .when {
   display: flex;
   gap: 10px;

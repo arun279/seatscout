@@ -44,7 +44,11 @@ export const hitAreasUnder = (page: Page, least: number) =>
         height: Math.max(box.height, Number.parseFloat(after.height)),
       };
     };
-    return [...document.querySelectorAll("button, a[href], input")]
+    return [
+      ...document.querySelectorAll(
+        "button, a[href], input:not([type=checkbox]), label:has(> input[type=checkbox])",
+      ),
+    ]
       .filter((element) => element.closest("dialog:not([open])") === null)
       .map((element) => {
         const area = areaOf(element);

@@ -19,6 +19,7 @@ const EMPTY: Snapshot = {
 
 const searching = () => {
   const listeners = new Set<() => void>();
+  const aborted: true[] = [];
   let current = EMPTY;
   const search: Search = {
     snapshot: () => current,
@@ -28,10 +29,11 @@ const searching = () => {
     },
     done: Promise.resolve(EMPTY),
     retry: () => Promise.resolve(EMPTY),
-    abort: () => {},
+    abort: () => aborted.push(true),
   };
   return {
     search,
+    aborted: () => aborted.length,
     publish: (phase: Snapshot["phase"]) => {
       current = { ...EMPTY, phase };
       for (const listener of listeners) listener();
@@ -112,6 +114,21 @@ describe("holding a snapshot still under a pointer", () => {
     held.release();
 
     expect(heard).toEqual([]);
+  });
+
+  it("abandons the search when the last thing watching it leaves, and not before", () => {
+    const { search, aborted } = searching();
+    const held = heldSnapshots(search);
+    const first = held.subscribe(() => {});
+    const second = held.subscribe(() => {});
+
+    first();
+
+    expect(aborted()).toBe(0);
+
+    second();
+
+    expect(aborted()).toBe(1);
   });
 
   it("stops telling a subscriber that has unsubscribed", () => {

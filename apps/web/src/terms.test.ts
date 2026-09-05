@@ -95,6 +95,22 @@ describe("the query terms a URL carries", () => {
     });
   });
 
+  it("takes a time only on the clock the address states, anchored end to end", () => {
+    expect(termsFrom("?from=19:00&until=21:00", TODAY)).toMatchObject({
+      from: "19:00",
+      until: "21:00",
+    });
+    for (const clock of ["7:00", "x19:00", "19:00x", "24:00", "19:60"])
+      expect(termsFrom(`?from=${clock}`, TODAY).from).toBeUndefined();
+  });
+
+  it("trims a Theater the address padded, and drops one it left empty", () => {
+    expect(
+      termsFrom("?theater=%20aacbt%20&theater=%20%20&theater=aaxju", TODAY)
+        .theaters,
+    ).toEqual(["aacbt", "aaxju"]);
+  });
+
   it("writes every term back as the query string it read, and leaves out what was not asked", () => {
     expect(queryOf(termsFrom(EVERYTHING, TODAY))).toBe(EVERYTHING);
     expect(queryOf(termsFrom("?chain=AMC&chain=Regal&from=07:05", TODAY))).toBe(
