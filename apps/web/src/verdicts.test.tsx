@@ -116,6 +116,31 @@ describe("what the first screen says when the answer is not a list", () => {
     expect(ask().getByLabelText("More seats")).toHaveFocus();
   });
 
+  it("says no Showtime matched when the terms narrowed the listing to nothing, and does not claim anywhere", async () => {
+    const stage = staged({
+      terms: { ...TONIGHT, theaters: ["nowhere"] },
+    });
+    await stage.settled();
+
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /^0 candidates · 0 checked$/,
+    );
+    expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent(
+      "No showtime matches this query today.",
+    );
+    expect(screen.queryByText(/anywhere/)).toBeNull();
+    expect(
+      screen.getByText(
+        "Nothing listed near 75006 carries every term at once, so nothing was checked. Fewer terms would change it.",
+      ),
+    ).toBeVisible();
+    expect(screen.queryByRole("button", { name: /retry/i })).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: /change the query/i }));
+
+    expect(ask().getByRole("button", { name: "3D" })).toHaveFocus();
+  });
+
   it("does not earn that no while rooms are unreached, and retries before it widens", async () => {
     const stage = staged({
       terms: { ...TONIGHT, partySize: 400 },
