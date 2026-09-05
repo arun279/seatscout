@@ -9,10 +9,13 @@ import {
   within,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { Root } from "react-dom/client";
 import { browserClock, browserSeatScout } from "./browser.js";
 import { startApp } from "./start.js";
 
 const SEAT_MAP = "/napi/seatMap/";
+
+let mounted: Root | null = null;
 
 const opened = (query: string) => {
   const upstream = fakeUpstream({
@@ -26,9 +29,13 @@ const opened = (query: string) => {
     Object.assign(document.createElement("div"), { id: "app" }),
   );
   act(() => {
-    startApp();
+    mounted = startApp();
   });
   return {
+    unmount: () => {
+      act(() => mounted?.unmount());
+      mounted = null;
+    },
     seatMapsRead: () =>
       upstream.requests.filter((request) => request.path.startsWith(SEAT_MAP))
         .length,
@@ -42,6 +49,8 @@ describe("starting the application in a browser", () => {
     localStorage.clear();
   });
   afterEach(() => {
+    act(() => mounted?.unmount());
+    mounted = null;
     cleanup();
     vi.unstubAllGlobals();
     vi.useRealTimers();
@@ -145,6 +154,18 @@ describe("starting the application in a browser", () => {
     expect(screen.queryByRole("dialog", { hidden: true })).toBeNull();
     await act(() => new Promise((settle) => setTimeout(settle)));
     expect(screen.queryByRole("dialog", { hidden: true })).toBeNull();
+  });
+
+  it("hands back the root it mounted, so unmounting stops the clock ticking into a torn-down tree", () => {
+    vi.useFakeTimers();
+    const page = opened("?movie=245569&date=2026-08-28&area=75006&partySize=2");
+
+    expect(vi.getTimerCount()).toBe(1);
+
+    page.unmount();
+
+    expect(vi.getTimerCount()).toBe(0);
+    expect(document.getElementById("app")?.childElementCount).toBe(0);
   });
 
   it("ticks its clock once a second while someone listens, and not after", () => {
