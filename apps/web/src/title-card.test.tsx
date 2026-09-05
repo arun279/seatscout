@@ -1,11 +1,19 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
+import { REFERENCE } from "@seatscout/client";
 import { afterEach, describe, expect, it } from "vitest";
 import { TODAY, TONIGHT } from "./search.fixtures.js";
 import { TitleCard } from "./title-card.js";
 
 const card = () =>
-  render(<TitleCard terms={TONIGHT} today={TODAY} onEdit={() => {}} />);
+  render(
+    <TitleCard
+      terms={TONIGHT}
+      profile={REFERENCE}
+      today={TODAY}
+      onEdit={() => {}}
+    />,
+  );
 
 describe("the title card", () => {
   afterEach(cleanup);
@@ -28,6 +36,12 @@ describe("the title card", () => {
 
     expect(
       screen.getAllByRole("button").map((term) => term.textContent),
-    ).toEqual(["Two seats together", "245569", "Today", "Near 75006"]);
+    ).toEqual([
+      "Two seats together",
+      "245569",
+      "Today",
+      "Near 75006",
+      "Reference seat",
+    ]);
   });
 });

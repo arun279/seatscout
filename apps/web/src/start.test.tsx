@@ -21,7 +21,7 @@ const closed = () =>
     for (const root of running.splice(0)) root.unmount();
   });
 
-const opened = (query: string) => {
+const opened = async (query: string) => {
   const upstream = fakeUpstream({ seed: 4, standInAuditoriums: true });
   vi.stubGlobal("fetch", upstream);
   window.history.replaceState(null, "", `/${query}`);
@@ -29,14 +29,19 @@ const opened = (query: string) => {
     Object.assign(document.createElement("div"), { id: "app" }),
   );
   act(() => {
-    running.push(startApp());
+    void startApp().then((root) => running.push(root));
   });
+  await waitFor(() =>
+    expect(screen.getByRole("heading", { level: 1 })).toBeVisible(),
+  );
   return {
     seatMapsRead: () =>
       upstream.requests.filter((request) => request.path.startsWith(SEAT_MAP))
         .length,
     cached: () =>
-      Object.keys(localStorage).filter((key) => key.startsWith("seatscout.")),
+      Object.keys(localStorage).filter((key) =>
+        key.startsWith("seatscout.catalogue."),
+      ),
   };
 };
 
@@ -51,7 +56,9 @@ describe("starting the application in a browser", () => {
   });
 
   it("reads the query from the address, searches through the page's own fetch, and keeps the listing in Web Storage", async () => {
-    const page = opened("?movie=245569&date=2026-08-28&area=75006&partySize=3");
+    const page = await opened(
+      "?movie=245569&date=2026-08-28&area=75006&partySize=3",
+    );
 
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
       "Three seats together",
@@ -68,17 +75,17 @@ describe("starting the application in a browser", () => {
     ).toBeVisible();
   });
 
-  it("opens on the title card with nothing to search when the address names no Movie", () => {
-    const page = opened("");
+  it("opens on the title card with nothing to search when the address names no Movie", async () => {
+    const page = await opened("");
 
     expect(screen.getByRole("button", { name: /which movie/i })).toBeVisible();
     expect(page.seatMapsRead()).toBe(0);
   });
 
-  it("takes today from the device's own calendar day", () => {
+  it("takes today from the device's own calendar day", async () => {
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(new Date(2026, 0, 5, 23, 30));
-    opened("");
+    await opened("");
     fireEvent.click(screen.getByRole("button", { name: /today/i }));
 
     expect(
@@ -86,14 +93,16 @@ describe("starting the application in a browser", () => {
     ).toHaveValue("2026-01-05");
   });
 
-  it("refuses a page with nothing to mount into", () => {
+  it("refuses a page with nothing to mount into", async () => {
     document.body.replaceChildren();
 
-    expect(() => startApp()).toThrow("nothing to mount into");
+    await expect(startApp()).rejects.toThrow("nothing to mount into");
   });
 
   it("writes an edited query to the address and searches it, and goes back to the one before", async () => {
-    const page = opened("?movie=245569&date=2026-08-28&area=75006&partySize=2");
+    const page = await opened(
+      "?movie=245569&date=2026-08-28&area=75006&partySize=2",
+    );
     await waitFor(() => expect(page.seatMapsRead()).toBeGreaterThan(0));
     fireEvent.click(
       screen.getByRole("button", { name: /two seats together/i }),
@@ -125,8 +134,23 @@ describe("starting the application in a browser", () => {
     );
   });
 
+  it("leaves the address alone when the sheet closes with the query as it was", async () => {
+    await opened("?movie=245569&date=2026-08-28&area=75006&partySize=2");
+    const pushed = vi.spyOn(window.history, "pushState");
+    fireEvent.click(screen.getByRole("button", { name: /reference seat/i }));
+    fireEvent.click(
+      within(
+        screen.getByRole("dialog", { name: /what are we seeing/i }),
+      ).getByRole("button", { name: /find seats/i }),
+    );
+
+    expect(pushed).not.toHaveBeenCalled();
+  });
+
   it("takes the sheet a search opened off the screen when Back returns to the query before it", async () => {
-    const page = opened("?movie=245569&date=2026-08-28&area=75006&partySize=2");
+    const page = await opened(
+      "?movie=245569&date=2026-08-28&area=75006&partySize=2",
+    );
     await waitFor(() => expect(page.seatMapsRead()).toBeGreaterThan(0));
     fireEvent.click(
       screen.getByRole("button", { name: /two seats together/i }),
@@ -153,9 +177,16 @@ describe("starting the application in a browser", () => {
     expect(screen.queryByRole("dialog", { hidden: true })).toBeNull();
   });
 
-  it("hands back the root it mounted, so unmounting stops the clock ticking into a torn-down tree", () => {
+  it("hands back the root it mounted, so unmounting stops the clock ticking into a torn-down tree", async () => {
     vi.useFakeTimers();
-    opened("?movie=245569&date=2026-08-28&area=75006&partySize=2");
+    vi.stubGlobal("fetch", fakeUpstream({ seed: 4, standInAuditoriums: true }));
+    window.history.replaceState(null, "", "/");
+    document.body.replaceChildren(
+      Object.assign(document.createElement("div"), { id: "app" }),
+    );
+    await act(async () => {
+      running.push(await startApp());
+    });
 
     expect(vi.getTimerCount()).toBe(1);
 

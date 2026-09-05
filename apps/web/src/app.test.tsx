@@ -71,6 +71,7 @@ describe("the first screen", () => {
     [/^245569$/, "Movie number"],
     [/^today$/i, "Date"],
     [/near 75006/i, "Near, by postal code"],
+    [/reference seat/i, "How far back"],
   ])(
     "opens the query for editing from the title card's %s line, with that term ready to change",
     async (line, control) => {

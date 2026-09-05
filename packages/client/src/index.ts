@@ -1,4 +1,5 @@
-export { REFERENCE } from "@seatscout/core";
+export { REFERENCE, type SeatProfile } from "@seatscout/core";
+export { isReference } from "./profile.js";
 export type { SeatGroupResult } from "./ranking.js";
 export type { Coverage } from "./search.js";
 export type { Search } from "./search.js";
@@ -8,4 +9,5 @@ export { createSeatScout } from "./seatscout.js";
 export type { SeatScout } from "./seatscout.js";
 export type { CachedCatalogue } from "./store.js";
 export type { KeyValueStore } from "./store.js";
+export type { RecentSearch } from "./store.js";
 export { storeContract } from "./store-contract.js";

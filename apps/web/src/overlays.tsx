@@ -1,3 +1,4 @@
+import type { RecentSearch, SeatProfile } from "@seatscout/client";
 import { useSyncExternalStore } from "react";
 import { Ask } from "./ask.js";
 import { Ledger } from "./coverage.js";
@@ -8,8 +9,12 @@ import type { Terms } from "./terms.js";
 interface OverlaysProps {
   readonly stack: readonly Overlay[];
   readonly terms: Terms;
+  readonly profile: SeatProfile;
+  readonly recent: readonly RecentSearch[];
+  readonly today: string;
   readonly onClose: () => void;
   readonly onTerms: (terms: Terms) => void;
+  readonly onProfile: (profile: SeatProfile) => void;
 }
 
 const CurrentLedger = ({
@@ -28,17 +33,27 @@ const CurrentLedger = ({
 const Current = ({
   overlay,
   terms,
+  profile,
+  recent,
+  today,
   onClose,
   onTerms,
+  onProfile,
 }: Omit<OverlaysProps, "stack"> & { readonly overlay: Overlay }) => {
   switch (overlay.kind) {
     case "ask":
       return (
         <Ask
           terms={terms}
+          profile={profile}
+          recent={recent}
+          today={today}
           focus={overlay.focus}
           onClose={onClose}
-          onFind={onTerms}
+          onFind={(next, chosen) => {
+            onTerms(next);
+            onProfile(chosen);
+          }}
         />
       );
     case "ledger":
@@ -46,15 +61,28 @@ const Current = ({
   }
 };
 
-export const Overlays = ({ stack, terms, onClose, onTerms }: OverlaysProps) => (
+export const Overlays = ({
+  stack,
+  terms,
+  profile,
+  recent,
+  today,
+  onClose,
+  onTerms,
+  onProfile,
+}: OverlaysProps) => (
   <>
     {stack.map((overlay, at) => (
       <div key={String(at)}>
         <Current
           overlay={overlay}
           terms={terms}
+          profile={profile}
+          recent={recent}
+          today={today}
           onClose={onClose}
           onTerms={onTerms}
+          onProfile={onProfile}
         />
       </div>
     ))}

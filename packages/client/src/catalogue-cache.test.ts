@@ -12,11 +12,7 @@ import {
   opened,
   payloadOf,
 } from "./catalogue.fixtures.js";
-import {
-  type CachedCatalogue,
-  type KeyValueStore,
-  inMemoryStore,
-} from "./store.js";
+import { type KeyValueStore, inMemoryStore } from "./store.js";
 
 const SEAT_MAP = "/napi/seatMap/";
 const EMPTY = { bookable: [], unbookable: [], unidentified: [] };
@@ -36,12 +32,12 @@ type Written = Parameters<KeyValueStore["write"]>[1];
 
 const watching = () => {
   const held = inMemoryStore();
-  const written: { key: string; value: CachedCatalogue }[] = [];
+  const written: { key: string; value: Written }[] = [];
   return {
     written,
     store: {
       read: (key: string) => held.read(key),
-      write: (key: string, value: CachedCatalogue) => {
+      write: (key: string, value: Written) => {
         written.push({ key, value });
         return held.write(key, value);
       },
@@ -232,17 +228,16 @@ describe("what the catalogue phase caches", () => {
     const { resolve } = opened({ store: watched.store });
     const reading = await resolve({ ...TERMS, formats: ["IMAX"] });
     const stored = watched.written[0]?.value;
+    if (stored === undefined || !("catalogue" in stored))
+      throw new Error("the listing was not stored as a catalogue");
 
     expect(watched.written).toHaveLength(1);
-    expect(Object.keys(stored ?? {}).toSorted()).toEqual([
-      "catalogue",
-      "fetchedAt",
-    ]);
-    expect(stored?.fetchedAt).toBe(FETCHED_AT);
+    expect(Object.keys(stored).toSorted()).toEqual(["catalogue", "fetchedAt"]);
+    expect(stored.fetchedAt).toBe(FETCHED_AT);
     expect({
-      bookable: stored?.catalogue.bookable.length,
-      unbookable: stored?.catalogue.unbookable.length,
-      unidentified: stored?.catalogue.unidentified.length,
+      bookable: stored.catalogue.bookable.length,
+      unbookable: stored.catalogue.unbookable.length,
+      unidentified: stored.catalogue.unidentified.length,
     }).toEqual({ bookable: 172, unbookable: 4, unidentified: 0 });
     expect(counted(reading)).toEqual({
       bookable: 1,

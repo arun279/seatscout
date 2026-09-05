@@ -71,3 +71,84 @@ a:hover {
   outline: 2px solid var(--beam);
   outline-offset: 2px;
 }
+
+.mp-screen {
+  stroke: var(--beam);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.mp-row {
+  stroke: var(--seat-gone);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.mp-target {
+  fill: none;
+  stroke: var(--silver-faint);
+  stroke-width: 1;
+  stroke-dasharray: 2 2.5;
+}
+
+.mp-was {
+  fill: none;
+  stroke: var(--silver-faint);
+  stroke-width: 1;
+}
+
+.mp-pair {
+  fill: var(--beam);
+  filter: drop-shadow(0 0 3.5px oklch(0.88 0.055 230 / 0.9));
+}
+
+.recent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 22px 22px 0;
+}
+
+.recent h2 {
+  margin: 0;
+  font-weight: 400;
+}
+
+.again {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rerun {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  width: 100%;
+  min-height: 64px;
+  padding: 11px 13px;
+  border-radius: 14px;
+  background: var(--raised);
+  border: 1px solid oklch(0.27 0.028 274);
+  color: var(--silver);
+  text-align: left;
+  cursor: pointer;
+}
+
+.rerun .display {
+  font-size: 24px;
+  color: var(--velvet-lit);
+}
+
+.rerun .line {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  line-height: 1.5;
+  text-transform: uppercase;
+  color: var(--silver-dim);
+}
