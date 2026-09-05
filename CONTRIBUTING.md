@@ -21,10 +21,12 @@ and three further jobs described after it. The end-to-end suite drives a real br
 `quality` job installs Chromium before it runs, and it runs after the build because what it
 loads is the built output. The accessibility gate lives there too: axe-core scans the shell
 and the results screen against WCAG 2.2 at levels A and AA and a violation fails the job. So
-does the journey gate, described under the first screen below, which the same suite runs and
-which writes the samples the last two steps of the job hold to the merge base. `pnpm test:e2e`
-lists the tests tagged `@accessibility` and then the ones tagged `@performance` before it runs
-anything, so the suite has to still hold both for the run to start. Run the same gates locally
+does the journey gate, described under the first screen below, which runs in a step of its own
+rather than inside the suite, so that this branch's journey and the merge base's are each
+measured with the runner to themselves; that step writes the samples the last two steps of the
+job hold to the merge base. `pnpm test:e2e` lists the tests tagged `@accessibility` before it
+runs anything and `pnpm test:journey` lists the ones tagged `@performance` before it runs
+anything, so the suite has to still hold both for the runs to start. Run the same gates locally
 with:
 
 ```sh
@@ -43,6 +45,7 @@ pnpm test:unit
 pnpm build
 pnpm --filter @seatscout/proxy exec wrangler deploy --dry-run
 pnpm test:e2e
+pnpm test:journey
 pnpm journey --head reports/journey/samples.json --no-baseline
 ```
 
@@ -2020,7 +2023,10 @@ measured nothing on either axis throws, so a screen that renders no result is re
 than fast. It writes the ten journeys to `reports/journey/samples.json`,
 and `tools/journey` holds them to the merge base's: the job checks the merge base out into a
 worktree, runs its own journey spec, and fails this branch when the head's median is slower
-than the base's slowest journey. The same accessibility test that scans the results screen
+than the base's slowest journey. Both journeys run on their own, in a step outside the
+end-to-end suite rather than inside it, because a journey measured while the rest of the suite
+runs beside it is measured under a load the other side never meets, and the comparison then
+reads that load rather than the branch. The same accessibility test that scans the results screen
 also measures every control's hit area, its own box plus the `::after` area the stylesheet
 gives inline controls, on the list and inside the open ledger, and fails under 44 px. That margin is the base's own spread rather than a number
 chosen here; under identical performance the head's median exceeds the base's maximum in

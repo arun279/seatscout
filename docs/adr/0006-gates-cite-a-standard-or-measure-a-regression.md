@@ -384,9 +384,14 @@ first Seat Group is painted has no published threshold, so it is held to the mer
 the job measures the base's own journey in a worktree and fails the branch when the head's
 median is slower than the base's slowest, a margin drawn from the base's spread rather than
 chosen. Under identical performance that verdict is wrong in under one run in a hundred,
-measured by simulation over ten journeys a side. The absolute is reported either way, a
-merge base with no journey is reported rather than passed over, and a journey that renders
-no result fails, because a pass has to entail a measurement.
+measured by simulation over ten journeys a side. That simulation assumes the two sides are
+drawn under the same conditions, so both are measured the same way: each side's ten journeys
+run in a step of their own, outside the end-to-end suite. Measured inside the suite, the
+branch's journey shares the runner with the rest of the suite while the merge base's has the
+runner to itself, and the gate reads that difference in load as a difference in the branch,
+by a margin that grows with every end-to-end test the branch adds. The absolute is reported
+either way, a merge base with no journey is reported rather than passed over, and a journey
+that renders no result fails, because a pass has to entail a measurement.
 
 The mutation gate has the same shape one tool along, and takes the same answer. Stryker
 computes its score as mutants detected over mutants valid, scores `NaN` when none was valid,
