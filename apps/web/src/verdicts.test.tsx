@@ -9,7 +9,7 @@ import {
   LISTING,
   staged,
   TONIGHT,
-} from "./app.fixtures.js";
+} from "./search.fixtures.js";
 
 describe("what the first screen says when the answer is not a list", () => {
   afterEach(cleanup);

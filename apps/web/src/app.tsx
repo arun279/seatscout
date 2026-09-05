@@ -1,12 +1,15 @@
 import type { Search, SearchTerms, SeatScout } from "@seatscout/client";
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { Ask } from "./ask.js";
-import { Ledger, Strip } from "./coverage.js";
+import { askedFrom } from "./asked.js";
+import { Strip } from "./coverage.js";
 import { type HeldSnapshots, heldSnapshots } from "./held.js";
+import { type Overlays as OverlayState, useOverlays } from "./overlay.js";
+import { Overlays } from "./overlays.js";
 import { partyOf, whenOf } from "./phrases.js";
 import { Results } from "./results.js";
-import { queryOf, searchTermsOf, type Terms } from "./terms.js";
-import { type Term, TitleCard } from "./title-card.js";
+import { queryOf, type Terms } from "./terms.js";
+import { TitleCard } from "./title-card.js";
+import type { Term } from "./title-card-terms.js";
 
 export interface Clock {
   readonly now: () => number;
@@ -27,7 +30,7 @@ interface SearchingProps {
   readonly terms: Terms;
   readonly today: string;
   readonly clock: Clock;
-  readonly onEdit: (term: Term) => void;
+  readonly overlays: OverlayState;
 }
 
 interface Session {
@@ -57,10 +60,9 @@ const Searching = ({
   terms,
   today,
   clock,
-  onEdit,
+  overlays,
 }: SearchingProps) => {
   const [session, setSession] = useState(() => opened(seatscout, asked));
-  const [ledger, setLedger] = useState(false);
   const snapshot = useSyncExternalStore(
     session.held.subscribe,
     session.held.snapshot,
@@ -71,7 +73,10 @@ const Searching = ({
 
   return (
     <>
-      <Strip snapshot={snapshot} onLedger={() => setLedger(true)} />
+      <Strip
+        snapshot={snapshot}
+        onLedger={() => overlays.open({ kind: "ledger", held: session.held })}
+      />
       <Results
         snapshot={snapshot}
         terms={terms}
@@ -79,11 +84,8 @@ const Searching = ({
         now={now}
         held={session.held}
         onRetry={() => setSession(opened(seatscout, asked))}
-        onEdit={onEdit}
+        onEdit={(focus) => overlays.open({ kind: "ask", focus })}
       />
-      {ledger && (
-        <Ledger snapshot={snapshot} onClose={() => setLedger(false)} />
-      )}
     </>
   );
 };
@@ -112,9 +114,37 @@ const Prompt = ({
   </section>
 );
 
-export const App = ({ seatscout, terms, onTerms, today, clock }: AppProps) => {
-  const asked = searchTermsOf(terms);
-  const [editing, setEditing] = useState<Term | null>(null);
+const Screen = ({ seatscout, terms, onTerms, today, clock }: AppProps) => {
+  const asked = askedFrom(terms);
+  const overlays = useOverlays();
+  const openAsk = (focus: Term) => overlays.open({ kind: "ask", focus });
+
+  return (
+    <>
+      <TitleCard terms={terms} today={today} onEdit={openAsk} />
+      {asked === null ? (
+        <Prompt terms={terms} today={today} onEdit={openAsk} />
+      ) : (
+        <Searching
+          seatscout={seatscout}
+          asked={asked}
+          terms={terms}
+          today={today}
+          clock={clock}
+          overlays={overlays}
+        />
+      )}
+      <Overlays
+        stack={overlays.stack}
+        terms={terms}
+        onClose={overlays.close}
+        onTerms={onTerms}
+      />
+    </>
+  );
+};
+
+export const App = ({ terms, ...rest }: AppProps) => {
   const online = useSyncExternalStore(connectionChanges, isOnline);
 
   return (
@@ -130,28 +160,7 @@ export const App = ({ seatscout, terms, onTerms, today, clock }: AppProps) => {
         <span className="fall" />
         <span className="word">SEATSCOUT</span>
       </div>
-      <TitleCard terms={terms} today={today} onEdit={setEditing} />
-      {asked === null ? (
-        <Prompt terms={terms} today={today} onEdit={setEditing} />
-      ) : (
-        <Searching
-          key={queryOf(terms)}
-          seatscout={seatscout}
-          asked={asked}
-          terms={terms}
-          today={today}
-          clock={clock}
-          onEdit={setEditing}
-        />
-      )}
-      {editing !== null && (
-        <Ask
-          terms={terms}
-          focus={editing}
-          onClose={() => setEditing(null)}
-          onFind={onTerms}
-        />
-      )}
+      <Screen key={queryOf(terms)} terms={terms} {...rest} />
     </main>
   );
 };

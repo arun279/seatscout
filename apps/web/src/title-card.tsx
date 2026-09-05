@@ -1,7 +1,10 @@
-import { dayOf, partyOf } from "./phrases.js";
+import { Fragment } from "react";
 import type { Terms } from "./terms.js";
-
-export type Term = "partySize" | "movie" | "date" | "area";
+import {
+  type Term,
+  termLinesOf,
+  type TitleCardEntry,
+} from "./title-card-terms.js";
 
 interface TitleCardProps {
   readonly terms: Terms;
@@ -9,35 +12,46 @@ interface TitleCardProps {
   readonly onEdit: (term: Term) => void;
 }
 
-export const TitleCard = ({ terms, today, onEdit }: TitleCardProps) => (
-  <header className="title-card">
-    <p className="eyebrow">Your query · tap any line to change it</p>
-    <h1 className="display line1">
-      <button
-        type="button"
-        className="term"
-        onClick={() => onEdit("partySize")}
-      >
-        {partyOf(terms.partySize)}
-      </button>
-    </h1>
-    <p className="display line2">
-      <button type="button" className="term" onClick={() => onEdit("movie")}>
-        {terms.movie ?? "Which movie?"}
-      </button>
-    </p>
-    <p className="line3">
-      <button type="button" className="term" onClick={() => onEdit("date")}>
-        {dayOf(terms.date, today)}
-      </button>
-      {" · "}
-      <button type="button" className="term" onClick={() => onEdit("area")}>
-        {terms.area === undefined ? "Near where?" : `Near ${terms.area}`}
-      </button>
-      {" · "}
-      <span>Any format</span>
-      {" · "}
-      <span>Reference seat</span>
-    </p>
-  </header>
+const Entries = ({
+  entries,
+  onEdit,
+}: {
+  readonly entries: readonly TitleCardEntry[];
+  readonly onEdit: (term: Term) => void;
+}) => (
+  <>
+    {entries.map((entry, at) => {
+      const term = entry.term;
+      return (
+        <Fragment key={term ?? entry.words}>
+          {at > 0 && " · "}
+          {term === undefined ? (
+            <span>{entry.words}</span>
+          ) : (
+            <button type="button" className="term" onClick={() => onEdit(term)}>
+              {entry.words}
+            </button>
+          )}
+        </Fragment>
+      );
+    })}
+  </>
 );
+
+export const TitleCard = ({ terms, today, onEdit }: TitleCardProps) => {
+  const [party, movie, details] = termLinesOf(terms, today);
+  return (
+    <header className="title-card">
+      <p className="eyebrow">Your query · tap any line to change it</p>
+      <h1 className="display line1">
+        <Entries entries={party} onEdit={onEdit} />
+      </h1>
+      <p className="display line2">
+        <Entries entries={movie} onEdit={onEdit} />
+      </p>
+      <p className="line3">
+        <Entries entries={details} onEdit={onEdit} />
+      </p>
+    </header>
+  );
+};

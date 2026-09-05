@@ -11,6 +11,7 @@ const SHELL = [
   "/house.css",
   "/app.css",
   "/query.css",
+  "/ask.css",
   "/results.css",
   "/coverage.css",
   "/icon.svg",

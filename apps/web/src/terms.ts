@@ -1,5 +1,3 @@
-import type { SearchTerms } from "@seatscout/client";
-
 export interface Terms {
   readonly movie?: string;
   readonly date: string;
@@ -60,14 +58,3 @@ export const queryOf = (terms: Terms): string => {
   params.set("partySize", `${terms.partySize}`);
   return `?${params}`;
 };
-
-export const searchTermsOf = (terms: Terms): SearchTerms | null =>
-  terms.movie === undefined || terms.area === undefined
-    ? null
-    : {
-        movie: terms.movie,
-        date: terms.date,
-        area: terms.area,
-        partySize: terms.partySize,
-        accessibleSeating: false,
-      };

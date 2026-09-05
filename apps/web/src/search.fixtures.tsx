@@ -134,9 +134,9 @@ export const failing = (statuses: readonly number[]) =>
 
 export const cards = () => screen.queryAllByRole("article");
 
-export const ask = () =>
-  within(screen.getByRole("dialog", { name: /what are we seeing/i }));
-
 export const before = (first: Element, second: Element) =>
   (first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING) !==
   0;
+
+export const ask = () =>
+  within(screen.getByRole("dialog", { name: /what are we seeing/i }));

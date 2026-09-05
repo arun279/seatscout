@@ -26,86 +26,6 @@
   display: block;
 }
 
-.card {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  background: var(--raised);
-  border: 1px solid oklch(0.27 0.028 274);
-  border-radius: 14px;
-  padding: 11px 13px;
-  min-height: 68px;
-}
-
-.card .plan {
-  flex: none;
-}
-
-.card .mid {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.card p {
-  margin: 0;
-}
-
-.card .place {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--silver);
-}
-
-.card .why {
-  font-size: 12.5px;
-  color: var(--silver-dim);
-  line-height: 1.35;
-}
-
-.card .side {
-  flex: none;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 5px;
-}
-
-.card .seats {
-  font-family: var(--mono);
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--beam);
-  letter-spacing: 0.03em;
-}
-
-.card .prov,
-.card .age {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  color: var(--silver-faint);
-}
-
-.fmt {
-  display: inline-block;
-  margin-left: 6px;
-  font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--beam-dim);
-  border: 1px solid oklch(0.4 0.05 240);
-  border-radius: 4px;
-  padding: 2px 5px 1px;
-  vertical-align: 2px;
-}
-
-.warn-note {
-  color: var(--velvet-lit);
-}
-
 .tie-rule {
   display: flex;
   align-items: center;
@@ -135,6 +55,28 @@
   white-space: nowrap;
 }
 
+.card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  background: var(--raised);
+  border: 1px solid oklch(0.27 0.028 274);
+  border-radius: 14px;
+  padding: 11px 13px;
+  min-height: 68px;
+}
+
+.card .open::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.card .plan {
+  flex: none;
+}
+
 .mp-screen {
   stroke: var(--beam);
   stroke-width: 2;
@@ -157,6 +99,79 @@
 .mp-pair {
   fill: var(--beam);
   filter: drop-shadow(0 0 3.5px oklch(0.88 0.055 230 / 0.9));
+}
+
+.card .mid {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.card p {
+  margin: 0;
+}
+
+.card .place {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--silver);
+}
+
+.fmt {
+  display: inline-block;
+  margin-left: 6px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--beam-dim);
+  border: 1px solid oklch(0.4 0.05 240);
+  border-radius: 4px;
+  padding: 2px 5px 1px;
+  vertical-align: 2px;
+}
+
+.card .why {
+  font-size: 12.5px;
+  color: var(--silver-dim);
+  line-height: 1.35;
+}
+
+.warn-note {
+  color: var(--velvet-lit);
+}
+
+.card .side {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+
+.card .seats {
+  position: relative;
+  z-index: 1;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--beam);
+  letter-spacing: 0.03em;
+}
+
+.card .seats::after {
+  content: "";
+  position: absolute;
+  inset: -16px -10px;
+}
+
+.card .prov,
+.card .age {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--silver-faint);
 }
 
 .count-line {
