@@ -262,7 +262,7 @@ export const CLAIMS = [
     says: /\*\*The fan-out is 24 workers over one queue\.\*\*/,
     holds: "the fan-out width the search runs at",
     pattern: "WIDTH = 24",
-    paths: ["packages/client/src/search.ts"],
+    paths: ["packages/client/src/fan-out.ts"],
     files: 1,
   },
   {
