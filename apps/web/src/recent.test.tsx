@@ -54,6 +54,17 @@ describe("recent searches, on the first screen", () => {
     ]);
   });
 
+  it("counts one seat as one, not as one seats", () => {
+    staged({
+      terms: NOTHING_ASKED,
+      recent: [{ ...TONIGHT, partySize: 1 }],
+    });
+
+    expect(again().map((button) => button.textContent)).toEqual([
+      "2455691 seat · today · 75006",
+    ]);
+  });
+
   it("names each one to assistive technology by what it asked for", () => {
     staged({ terms: NOTHING_ASKED, recent: [TONIGHT] });
 

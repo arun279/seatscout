@@ -103,15 +103,39 @@ describe("where you sit, on the Ask sheet", () => {
   });
 
   it("moves the Profile field the penalty it is named for, and no other", async () => {
-    for (const [label, , field] of WEIGHTS) {
-      const { stage, editor } = await opened();
+    const { stage, editor } = await opened();
+    const moved = [1.35, 0.85, 0.05, 0.45, 0.65];
 
-      slide(editor.getByLabelText(label), 1.35);
-      fireEvent.click(editor.getByRole("button", { name: /find seats/i }));
+    WEIGHTS.forEach(([label], at) =>
+      slide(editor.getByLabelText(label), moved[at] ?? 0),
+    );
+    fireEvent.click(editor.getByRole("button", { name: /find seats/i }));
 
-      expect(stage.profiles).toEqual([{ ...REFERENCE, [field]: 1.35 }]);
-      cleanup();
-    }
+    expect(stage.profiles).toEqual([
+      {
+        ...REFERENCE,
+        ...Object.fromEntries(
+          WEIGHTS.map(([, , field], at) => [field, moved[at]]),
+        ),
+      },
+    ]);
+  });
+
+  it("says a weight in words, and turns from a little to avoiding at what Reference minds most", async () => {
+    const { editor } = await opened();
+    const said = () =>
+      editor
+        .getByLabelText("The front rows")
+        .parentElement?.querySelector(".said")?.textContent;
+
+    slide(editor.getByLabelText("The front rows"), 0);
+    expect(said()).toBe("Don't mind");
+
+    slide(editor.getByLabelText("The front rows"), 0.5);
+    expect(said()).toBe("A little");
+
+    slide(editor.getByLabelText("The front rows"), 1);
+    expect(said()).toBe("Avoid");
   });
 
   it("keeps a weight between not minding at all and twice what Reference minds most", async () => {

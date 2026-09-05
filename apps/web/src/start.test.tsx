@@ -134,6 +134,19 @@ describe("starting the application in a browser", () => {
     );
   });
 
+  it("leaves the address alone when the sheet closes with the query as it was", async () => {
+    await opened("?movie=245569&date=2026-08-28&area=75006&partySize=2");
+    const pushed = vi.spyOn(window.history, "pushState");
+    fireEvent.click(screen.getByRole("button", { name: /reference seat/i }));
+    fireEvent.click(
+      within(
+        screen.getByRole("dialog", { name: /what are we seeing/i }),
+      ).getByRole("button", { name: /find seats/i }),
+    );
+
+    expect(pushed).not.toHaveBeenCalled();
+  });
+
   it("takes the sheet a search opened off the screen when Back returns to the query before it", async () => {
     const page = await opened(
       "?movie=245569&date=2026-08-28&area=75006&partySize=2",
