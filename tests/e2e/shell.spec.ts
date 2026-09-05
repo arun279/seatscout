@@ -8,6 +8,7 @@ const WCAG = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 const SHELL = [
   "/",
   "/app.css",
+  "/ask.css",
   "/coverage.css",
   "/fonts/big-shoulders-display.woff2",
   "/fonts/schibsted-grotesk.woff2",
