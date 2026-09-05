@@ -42,7 +42,11 @@ test("every Query term composes in one search on a phone, one-handed, and the ca
   await sheet(page).getByLabel("Accessible seating").check();
   const scan = await new AxeBuilder({ page }).withTags(WCAG).analyze();
   const onTheSheet = await hitAreasUnder(page, HIT_AREA);
+  const submit = await sheet(page).locator(".cta").boundingBox();
   await sheet(page).getByRole("button", { name: "Find seats" }).click();
+
+  expect(submit?.y).toBeGreaterThan(0);
+  expect((submit?.y ?? 0) + (submit?.height ?? 0)).toBe(PHONE.height);
 
   expect(scan.violations).toEqual([]);
   expect(onTheSheet).toEqual([]);
@@ -96,10 +100,22 @@ test("an accessible-seating Query returns wheelchair Seats", async ({
   await settled(page);
 
   const seats = await page.locator("article .seats").allTextContents();
+  const designations = await page
+    .locator("article .designations")
+    .allTextContents();
   expect(seats.length).toBeGreaterThan(0);
-  expect(seats.filter((text) => !/wheelchair|companion/.test(text))).toEqual(
-    [],
-  );
+  expect(designations).toHaveLength(seats.length);
+  expect(
+    designations.map((text) =>
+      text
+        .split(" · ")
+        .map((pair) => pair.split(" ")[0])
+        .join("·"),
+    ),
+  ).toEqual(seats);
+  expect(
+    designations.filter((text) => !/wheelchair|companion/.test(text)),
+  ).toEqual([]);
 });
 
 test("the retry re-checks only the failed Showtimes, and Coverage updates accordingly", async ({

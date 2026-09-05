@@ -135,14 +135,15 @@ export const Ask = ({
       </form>
       <form
         method="dialog"
-        onSubmit={() =>
+        onSubmit={() => {
           onFind(
             termsOf(
               { ...draft, movie: movieOf(film, playing.movies) },
               terms.date,
             ),
-          )
-        }
+          );
+          onClose();
+        }}
       >
         <h2 id="ask-title" className="display">
           What are we seeing?

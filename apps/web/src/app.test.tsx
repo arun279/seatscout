@@ -5,6 +5,7 @@ import {
   fireEvent,
   render,
   screen,
+  waitFor,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ask, cards, NEARBY, staged, TODAY, TONIGHT } from "./app.fixtures.js";
@@ -115,6 +116,9 @@ describe("the first screen", () => {
       fireEvent.click(screen.getByRole("button", { name: line }));
       expect(control()).toHaveFocus();
       fireEvent.click(ask().getByRole("button", { name: /keep as it was/i }));
+      await waitFor(() =>
+        expect(screen.queryByRole("dialog", { hidden: true })).toBeNull(),
+      );
     }
   });
 
@@ -157,7 +161,9 @@ describe("the first screen", () => {
     );
     fireEvent.click(ask().getByRole("button", { name: /keep as it was/i }));
 
-    expect(screen.queryByRole("dialog", { hidden: true })).toBeNull();
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog", { hidden: true })).toBeNull(),
+    );
     expect(stage.chosen).toEqual([]);
   });
 

@@ -205,10 +205,22 @@ describe("the list on the first screen", () => {
 
     expect(stage.asked[0]?.accessibleSeating).toBe(true);
     expect(cards().length).toBeGreaterThan(0);
-    for (const card of cards())
-      expect(within(card).getByText(/wheelchair|companion/)).toHaveClass(
-        "seats",
+    const named = cards().map((card) => ({
+      ids: card.querySelector(".seats")?.textContent?.split("·"),
+      pairs:
+        card.querySelector(".designations")?.textContent?.split(" · ") ?? [],
+    }));
+    for (const { ids, pairs } of named) {
+      expect(pairs.map((pair) => pair.split(" ")[0])).toEqual(ids);
+      expect(pairs.some((pair) => /wheelchair|companion/.test(pair))).toBe(
+        true,
       );
+    }
+    expect(
+      named.some(({ pairs }) =>
+        pairs.some((pair) => pair.endsWith(" standard")),
+      ),
+    ).toBe(true);
   });
 
   it("counts freshness up as the clock moves", async () => {

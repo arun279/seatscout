@@ -111,18 +111,40 @@ describe("starting the application in a browser", () => {
       "Three seats together",
     );
 
+    const traversed = new Promise((settle) =>
+      window.addEventListener("popstate", settle, { once: true }),
+    );
     window.history.back();
+    await act(() => traversed);
 
-    await waitFor(() =>
-      expect(window.location.search).toBe(
-        "?movie=245569&date=2026-08-28&area=75006&partySize=2",
-      ),
+    expect(window.location.search).toBe(
+      "?movie=245569&date=2026-08-28&area=75006&partySize=2",
     );
-    await waitFor(() =>
-      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-        "Two seats together",
-      ),
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
+      "Two seats together",
     );
+  });
+
+  it("closes the sheet once a query naming another date is found, rather than opening it again on the new query", async () => {
+    const page = opened("?movie=245569&date=2026-08-28&area=75006&partySize=2");
+    await waitFor(() => expect(page.seatMapsRead()).toBeGreaterThan(0));
+    fireEvent.click(
+      screen.getByRole("button", { name: /two seats together/i }),
+    );
+    const ask = within(
+      screen.getByRole("dialog", { name: /what are we seeing/i }),
+    );
+    fireEvent.change(ask.getByLabelText("Date"), {
+      target: { value: "2026-08-29" },
+    });
+    fireEvent.click(ask.getByRole("button", { name: /find seats/i }));
+
+    expect(window.location.search).toBe(
+      "?movie=245569&date=2026-08-29&area=75006&partySize=2",
+    );
+    expect(screen.queryByRole("dialog", { hidden: true })).toBeNull();
+    await act(() => new Promise((settle) => setTimeout(settle)));
+    expect(screen.queryByRole("dialog", { hidden: true })).toBeNull();
   });
 
   it("ticks its clock once a second while someone listens, and not after", () => {
