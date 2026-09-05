@@ -5,11 +5,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { ask, cards, FRONT_ROW, staged } from "./app.fixtures.js";
 
 const WEIGHTS = [
-  ["Rows away from your target", "1"],
-  ["Off to the side", "1"],
-  ["The front rows", "0.25"],
-  ["Against a wall", "0.25"],
-  ["A console between you", "0.25"],
+  ["Rows away from your target", "1", "depthWeight"],
+  ["Off to the side", "1", "offAxisWeight"],
+  ["The front rows", "0.25", "frontBandWeight"],
+  ["Against a wall", "0.25", "wallBandWeight"],
+  ["A console between you", "0.25", "podDividerWeight"],
 ] as const;
 
 const rowOf = (card: HTMLElement) =>
@@ -100,6 +100,18 @@ describe("where you sit, on the Ask sheet", () => {
     expect(stage.profiles).toEqual([
       { ...REFERENCE, frontBandWeight: 1.5, targetLateral: -0.5 },
     ]);
+  });
+
+  it("moves the Profile field the penalty it is named for, and no other", async () => {
+    for (const [label, , field] of WEIGHTS) {
+      const { stage, editor } = await opened();
+
+      slide(editor.getByLabelText(label), 1.35);
+      fireEvent.click(editor.getByRole("button", { name: /find seats/i }));
+
+      expect(stage.profiles).toEqual([{ ...REFERENCE, [field]: 1.35 }]);
+      cleanup();
+    }
   });
 
   it("keeps a weight between not minding at all and twice what Reference minds most", async () => {

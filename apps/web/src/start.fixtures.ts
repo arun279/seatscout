@@ -59,5 +59,4 @@ export const reset = () => {
   closed();
   vi.unstubAllGlobals();
   vi.useRealTimers();
-  localStorage.clear();
 };

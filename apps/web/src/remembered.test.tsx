@@ -6,7 +6,7 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   ASKED,
   editor,
@@ -20,6 +20,9 @@ import {
 } from "./start.fixtures.js";
 
 describe("what the running application remembers on the device", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
   afterEach(reset);
 
   it("remembers nothing while the address names no Movie or no area", async () => {
