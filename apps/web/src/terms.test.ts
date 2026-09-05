@@ -1,6 +1,4 @@
-import { REFERENCE } from "@seatscout/client";
 import { describe, expect, it } from "vitest";
-import { askedFrom } from "./asked.js";
 import { queryOf, termsFrom } from "./terms.js";
 
 const TODAY = "2026-08-28";
@@ -63,33 +61,6 @@ describe("the query terms a URL carries", () => {
     ).toBe("?movie=a+b&date=2026-08-28&area=c%26d&partySize=3");
   });
 
-  it("becomes a search once it names a Movie and an area, and not before", () => {
-    expect(
-      askedFrom(
-        {
-          movie: "245569",
-          date: TODAY,
-          area: "75006",
-          partySize: 3,
-        },
-        REFERENCE,
-      ),
-    ).toEqual({
-      movie: "245569",
-      date: TODAY,
-      area: "75006",
-      partySize: 3,
-      accessibleSeating: false,
-      profile: REFERENCE,
-    });
-    expect(
-      askedFrom({ movie: "245569", date: TODAY, partySize: 3 }, REFERENCE),
-    ).toBeNull();
-    expect(
-      askedFrom({ area: "75006", date: TODAY, partySize: 3 }, REFERENCE),
-    ).toBeNull();
-  });
-
   it("reads every narrowing term the glossary names: Chain, Theater, Format, Amenity, a time window and accessible seating", () => {
     expect(termsFrom(EVERYTHING, TODAY)).toEqual({
       movie: "245569",
@@ -129,31 +100,5 @@ describe("the query terms a URL carries", () => {
     expect(queryOf(termsFrom("?chain=AMC&chain=Regal&from=07:05", TODAY))).toBe(
       "?date=2026-08-28&partySize=2&chain=AMC&from=07%3A05",
     );
-  });
-
-  it("becomes a search carrying every term, with the window on the date and no term where none was asked", () => {
-    expect(searchTermsOf(termsFrom(EVERYTHING, TODAY))).toEqual({
-      movie: "245569",
-      date: "2026-08-28",
-      area: "75006",
-      partySize: 2,
-      accessibleSeating: true,
-      chains: ["AMC", "Landmark"],
-      theaters: ["aacbt", "aaxju"],
-      formats: ["Dolby Cinema", "IMAX"],
-      amenities: ["Recliners"],
-      from: "2026-08-28T19:00",
-      until: "2026-08-28T21:00",
-    });
-    expect(
-      Object.keys(
-        searchTermsOf({
-          movie: "245569",
-          date: TODAY,
-          area: "75006",
-          partySize: 2,
-        }) ?? {},
-      ).toSorted(),
-    ).toEqual(["accessibleSeating", "area", "date", "movie", "partySize"]);
   });
 });

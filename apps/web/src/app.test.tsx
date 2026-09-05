@@ -8,7 +8,14 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ask, cards, NEARBY, staged, TODAY, TONIGHT } from "./app.fixtures.js";
+import {
+  ask,
+  cards,
+  NEARBY,
+  staged,
+  TODAY,
+  TONIGHT,
+} from "./search.fixtures.js";
 import { modal } from "./modal.js";
 import { type Terms, termsFrom } from "./terms.js";
 
@@ -97,17 +104,16 @@ describe("the first screen", () => {
     );
     for (const [line, control] of [
       [/7:00p to 9:00p/i, () => ask().getByLabelText("From")],
+      [/^Dolby Cinema$/, () => ask().getByRole("button", { name: "3D" })],
+      [/^IMAX$/, () => ask().getByRole("button", { name: "3D" })],
       [
-        /dolby cinema or imax/i,
-        () => ask().getByRole("button", { name: "3D" }),
-      ],
-      [
-        /^recliners$/i,
+        /^Recliners$/,
         () => ask().getByRole("button", { name: "Accessibility Devices" }),
       ],
-      [/amc or landmark/i, () => ask().getByRole("button", { name: "AMC" })],
+      [/^AMC$/, () => ask().getByRole("button", { name: "AMC" })],
+      [/^Landmark$/, () => ask().getByRole("button", { name: "AMC" })],
       [
-        /cinemark dallas xd and imax or/i,
+        /^Cinemark Dallas XD and IMAX$/,
         () =>
           ask().getByRole("button", { name: "Cinemark Dallas XD and IMAX" }),
       ],

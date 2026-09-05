@@ -1,10 +1,17 @@
 import { AxeBuilder } from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
-import { answeredByTheCorpus, hitAreasUnder, TONIGHT } from "./corpus.js";
+import {
+  answeredByTheCorpus,
+  HIT_AREA,
+  hitAreasUnder,
+  requestsTo,
+  SEAT_MAP,
+  TONIGHT,
+  WCAG,
+} from "./corpus.fixtures.js";
 
 const PHONE = { width: 390, height: 844 };
-const WCAG = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
-const HIT_AREA = 44;
+const LISTINGS = "/napi/theaterShowtimeGroupings/";
 const EVERYTHING =
   "?movie=245569&date=2026-08-28&area=75006&partySize=2&chain=AMC&chain=Landmark&theater=aacbt&theater=aaxju&format=Dolby+Cinema&format=IMAX&amenity=Recliners&from=19%3A00&until=21%3A00&accessibleSeating=true";
 const STONEBRIAR = ["558117351", "558782900"];
@@ -123,19 +130,19 @@ test("the retry re-checks only the failed Showtimes, and Coverage updates accord
 }) => {
   const upstream = await answeredByTheCorpus(page, {
     sequences: Object.fromEntries(
-      STONEBRIAR.map((id) => [`/napi/seatMap/${id}`, [500, 500, 500]]),
+      STONEBRIAR.map((id) => [`${SEAT_MAP}${id}`, [500, 500, 500]]),
     ),
   });
   await page.goto(TONIGHT);
   await expect(page.getByRole("status").first()).toHaveText(/170 checked$/);
   await expect(page.getByText("Not everywhere yet.")).toBeVisible();
-  const seatMaps = upstream.requested("/napi/seatMap/");
-  const listings = upstream.requested("/napi/theaterShowtimeGroupings/");
+  const seatMaps = requestsTo(upstream, SEAT_MAP);
+  const listings = requestsTo(upstream, LISTINGS);
 
   await page.getByRole("button", { name: "Retry the two unreached" }).click();
   await settled(page);
 
-  expect(upstream.requested("/napi/seatMap/") - seatMaps).toBe(2);
-  expect(upstream.requested("/napi/theaterShowtimeGroupings/")).toBe(listings);
+  expect(requestsTo(upstream, SEAT_MAP) - seatMaps).toBe(2);
+  expect(requestsTo(upstream, LISTINGS)).toBe(listings);
   await expect(page.getByText("Not everywhere yet.")).toBeHidden();
 });

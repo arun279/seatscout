@@ -1,33 +1,52 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { REFERENCE } from "@seatscout/client";
-import { afterEach, describe, expect, it } from "vitest";
-import { TODAY, TONIGHT } from "./search.fixtures.js";
+import { afterEach, beforeAll, describe, expect, it } from "vitest";
+import type { ProgrammeState } from "./programme.js";
+import { programmeRead, TODAY, TONIGHT } from "./search.fixtures.js";
+import { termsFrom } from "./terms.js";
 import { TitleCard } from "./title-card.js";
 
-const card = () =>
+const NOTHING_READ: ProgrammeState = {
+  phase: "none",
+  theaters: [],
+  movies: [],
+  unreached: [],
+};
+
+let PLAYING: ProgrammeState = NOTHING_READ;
+
+const EVERYTHING = termsFrom(
+  "?movie=245569&date=2026-08-28&area=75006&partySize=2&chain=AMC&chain=Landmark&theater=aacbt&theater=aaxju&format=Dolby+Cinema&format=IMAX&amenity=Recliners&from=19:00&until=21:00&accessibleSeating=true",
+  TODAY,
+);
+
+const card = (terms = TONIGHT, programme = NOTHING_READ) =>
   render(
     <TitleCard
-      terms={TONIGHT}
-      profile={REFERENCE}
+      terms={terms}
+      programme={programme}
       today={TODAY}
       onEdit={() => {}}
     />,
   );
 
+const lines = (container: HTMLElement) =>
+  [...container.querySelectorAll("h1, p")].map((line) => line.textContent);
+
 describe("the title card", () => {
+  beforeAll(async () => {
+    PLAYING = await programmeRead();
+  });
   afterEach(cleanup);
 
   it("reads the query back line by line, a middot between terms and never before the first", () => {
     const { container } = card();
 
-    expect(
-      [...container.querySelectorAll("h1, p")].map((line) => line.textContent),
-    ).toEqual([
+    expect(lines(container)).toEqual([
       "Your query · tap any line to change it",
       "Two seats together",
       "245569",
-      "Today · Near 75006 · Any format · Reference seat",
+      "Today · Near 75006 · Any showtime · Reference seat",
     ]);
   });
 
@@ -41,7 +60,43 @@ describe("the title card", () => {
       "245569",
       "Today",
       "Near 75006",
-      "Reference seat",
+      "Any showtime",
+    ]);
+  });
+
+  it("names the Movie and the Theaters once the programme has been read", () => {
+    const { container } = card(TONIGHT, PLAYING);
+
+    expect(lines(container)[2]).toBe("The Dog Stars (2026)");
+  });
+
+  it("states every term the query carries, in the order the board draws them", () => {
+    const { container } = card(EVERYTHING, PLAYING);
+
+    expect(lines(container)[3]).toBe(
+      "Today · 7:00p to 9:00p · Near 75006 · Dolby Cinema or IMAX · Recliners · AMC or Landmark · Cinemark Dallas XD and IMAX or AMC Village on the Parkway 9 · Accessible seating · Reference seat",
+    );
+  });
+
+  it("gives each value of a term its own control, so a line breaks between two Theaters rather than around both", () => {
+    card(EVERYTHING, PLAYING);
+
+    expect(
+      screen.getAllByRole("button").map((term) => term.textContent),
+    ).toEqual([
+      "Two seats together",
+      "The Dog Stars (2026)",
+      "Today",
+      "7:00p to 9:00p",
+      "Near 75006",
+      "Dolby Cinema",
+      "IMAX",
+      "Recliners",
+      "AMC",
+      "Landmark",
+      "Cinemark Dallas XD and IMAX",
+      "AMC Village on the Parkway 9",
+      "Accessible seating",
     ]);
   });
 });

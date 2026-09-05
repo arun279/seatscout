@@ -1,13 +1,21 @@
 import type { Page } from "@playwright/test";
-import { fakeUpstream } from "@seatscout/core/testing";
+import { fakeUpstream, type UpstreamScript } from "@seatscout/core/testing";
 
 export const TONIGHT = "/?movie=245569&date=2026-08-28&area=75006&partySize=2";
 export const HIT_AREA = 44;
 export const WCAG = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 export const SEAT_MAP = "/napi/seatMap/";
 
-export const answeredByTheCorpus = async (page: Page) => {
-  const upstream = fakeUpstream({ seed: 4, standInAuditoriums: true });
+export const answeredByTheCorpus = async (
+  page: Page,
+  script: Omit<UpstreamScript, "seed"> = {},
+) => {
+  const upstream = fakeUpstream({
+    seed: 4,
+    standInAuditoriums: true,
+    standInTheaters: true,
+    ...script,
+  });
   await page.route("**/napi/**", async (route) => {
     const answer = await upstream(new URL(route.request().url()).pathname);
     await route.fulfill({
@@ -19,17 +27,27 @@ export const answeredByTheCorpus = async (page: Page) => {
   return upstream;
 };
 
+export const requestsTo = (
+  upstream: ReturnType<typeof fakeUpstream>,
+  prefix: string,
+) =>
+  upstream.requests.filter((request) => request.path.startsWith(prefix)).length;
+
 export const hitAreasUnder = (page: Page, least: number) =>
   page.evaluate((floor) => {
-    const grown = (element: Element, edge: "top" | "left") => {
+    const areaOf = (element: Element) => {
+      const box = element.getBoundingClientRect();
       const after = getComputedStyle(element, "::after");
-      if (after.content === "none" || after.position !== "absolute") return 0;
-      return 2 * Math.abs(Number.parseFloat(after[edge]));
+      if (after.content === "none" || after.position !== "absolute") return box;
+      return {
+        width: Math.max(box.width, Number.parseFloat(after.width)),
+        height: Math.max(box.height, Number.parseFloat(after.height)),
+      };
     };
     return [...document.querySelectorAll("button, a[href], input")]
       .filter((element) => element.closest("dialog:not([open])") === null)
       .map((element) => {
-        const box = element.getBoundingClientRect();
+        const area = areaOf(element);
         return {
           name: (
             element.getAttribute("aria-label") ??
@@ -38,8 +56,8 @@ export const hitAreasUnder = (page: Page, least: number) =>
           )
             .trim()
             .slice(0, 32),
-          width: box.width + grown(element, "left"),
-          height: box.height + grown(element, "top"),
+          width: area.width,
+          height: area.height,
         };
       })
       .filter((area) => area.width < floor || area.height < floor);

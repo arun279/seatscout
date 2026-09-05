@@ -84,12 +84,7 @@ export const Results = ({
         <Partial snapshot={snapshot} onRetry={onRetry} onEdit={onEdit} />
       )}
       {settled && !partial && results.length === 0 ? (
-        <Empty
-          snapshot={snapshot}
-          terms={terms}
-          when={when}
-          onEdit={onEdit}
-        />
+        <Empty snapshot={snapshot} terms={terms} when={when} onEdit={onEdit} />
       ) : (
         <ListHead snapshot={snapshot} tie={tie} />
       )}

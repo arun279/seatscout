@@ -13,6 +13,7 @@ import { fakeUpstream, type UpstreamScript } from "@seatscout/client/testing";
 import { act, cleanup, render, screen, within } from "@testing-library/react";
 import { useState } from "react";
 import { App, type AppProps } from "./app.js";
+import type { ProgrammeState } from "./programme.js";
 import type { Terms } from "./terms.js";
 
 export const TODAY = "2026-08-28";
@@ -246,6 +247,17 @@ export const staged = (options: Staged = {}) => {
     },
     searches,
   };
+};
+
+export const programmeRead = async (): Promise<ProgrammeState> => {
+  const reading = await createSeatScout({
+    fetch: fakeUpstream({ seed: 4, standInTheaters: true }),
+    now: () => 0,
+    wait: () => Promise.resolve(),
+    random: () => 0.5,
+  }).programme("75006", TODAY);
+  if (!reading.ok) throw new Error("the corpus would not name what is playing");
+  return { phase: "read", ...reading.payload };
 };
 
 export const settledAlone = async (options: Staged = {}) => {

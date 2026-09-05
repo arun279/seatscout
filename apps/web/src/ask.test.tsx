@@ -9,8 +9,8 @@ import {
   within,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { ask, NEARBY, SCHEDULES, staged, TODAY } from "./app.fixtures.js";
 import { Ask } from "./ask.js";
+import { ask, NEARBY, SCHEDULES, staged, TODAY } from "./search.fixtures.js";
 import { type Terms, termsFrom } from "./terms.js";
 
 const TERMS = {

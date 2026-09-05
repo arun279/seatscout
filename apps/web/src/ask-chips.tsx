@@ -1,5 +1,5 @@
 import type { Theater } from "@seatscout/client";
-import type { Term } from "./title-card.js";
+import type { Term } from "./title-card-terms.js";
 
 interface ChipsProps<Named extends string> {
   readonly term: Term;
