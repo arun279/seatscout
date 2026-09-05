@@ -4,12 +4,13 @@ import {
   type RecentSearch,
   type Search,
   type SearchTerms,
+  type SeatGroupResult,
   type SeatProfile,
   type SeatScout,
 } from "@seatscout/client";
 import { fakeUpstream, type UpstreamScript } from "@seatscout/client/testing";
 import { act, cleanup, render, screen, within } from "@testing-library/react";
-import { useState } from "react";
+import { Profiler, useState } from "react";
 import { App, type AppProps } from "./app.js";
 import type { Terms } from "./terms.js";
 
@@ -103,8 +104,13 @@ export const staged = (options: Staged = {}) => {
   const searches: Search[] = [];
   const aborted: Search[] = [];
   const asked: SearchTerms[] = [];
+  const handedOff: SeatGroupResult[] = [];
   const seatscout: SeatScout = {
     ...real,
+    verify: (result) => {
+      handedOff.push(result);
+      return real.verify(result);
+    },
     search: (terms) => {
       asked.push(terms);
       const search = real.search(terms);
@@ -121,16 +127,19 @@ export const staged = (options: Staged = {}) => {
   };
   const chosen: Terms[] = [];
   const profiles: SeatProfile[] = [];
+  const commits: string[] = [];
   const rendered = render(
-    <Harness
-      seatscout={seatscout}
-      terms={options.terms ?? TONIGHT}
-      profile={options.profile ?? REFERENCE}
-      recent={options.recent ?? []}
-      clock={time.clock}
-      onTerms={(terms) => chosen.push(terms)}
-      onProfile={(profile) => profiles.push(profile)}
-    />,
+    <Profiler id="app" onRender={(_, phase) => commits.push(phase)}>
+      <Harness
+        seatscout={seatscout}
+        terms={options.terms ?? TONIGHT}
+        profile={options.profile ?? REFERENCE}
+        recent={options.recent ?? []}
+        clock={time.clock}
+        onTerms={(terms) => chosen.push(terms)}
+        onProfile={(profile) => profiles.push(profile)}
+      />
+    </Profiler>,
   );
   return {
     unmount: rendered.unmount,
@@ -138,6 +147,9 @@ export const staged = (options: Staged = {}) => {
     chosen,
     profiles,
     aborted,
+    commits,
+    handedOff,
+    verify: real.verify,
     advance: time.advance,
     resumeRetries: async () => {
       for (const resume of retries.splice(0)) resume();

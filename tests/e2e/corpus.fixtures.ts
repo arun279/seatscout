@@ -19,26 +19,33 @@ export const answeredByTheCorpus = (page: Page) => {
 
 export const hitAreasUnder = (page: Page, least: number) =>
   page.evaluate((floor) => {
-    const grown = (element: Element, edge: "top" | "left") => {
+    const containing = (element: Element): Element => {
+      for (let at: Element | null = element; at !== null; at = at.parentElement)
+        if (getComputedStyle(at).position !== "static") return at;
+      return document.documentElement;
+    };
+    const reach = (element: Element) => {
+      const own = element.getBoundingClientRect();
       const after = getComputedStyle(element, "::after");
-      if (after.content === "none" || after.position !== "absolute") return 0;
-      return 2 * Math.abs(Number.parseFloat(after[edge]));
+      if (after.content === "none" || after.position !== "absolute") return own;
+      const edges = [after.top, after.right, after.bottom, after.left].map(
+        Number.parseFloat,
+      );
+      if (!edges.every(Number.isFinite)) return own;
+      const [top = 0, right = 0, bottom = 0, left = 0] = edges;
+      const base = containing(element).getBoundingClientRect();
+      return {
+        width: Math.max(own.width, base.width - left - right),
+        height: Math.max(own.height, base.height - top - bottom),
+      };
     };
     return [...document.querySelectorAll("button, a[href], input")]
       .filter((element) => element.closest("dialog:not([open])") === null)
-      .map((element) => {
-        const box = element.getBoundingClientRect();
-        return {
-          name: (
-            element.getAttribute("aria-label") ??
-            element.textContent ??
-            ""
-          )
-            .trim()
-            .slice(0, 32),
-          width: box.width + grown(element, "left"),
-          height: box.height + grown(element, "top"),
-        };
-      })
+      .map((element) => ({
+        name: (element.getAttribute("aria-label") ?? element.textContent ?? "")
+          .trim()
+          .slice(0, 32),
+        ...reach(element),
+      }))
       .filter((area) => area.width < floor || area.height < floor);
   }, least);

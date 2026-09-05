@@ -1,13 +1,15 @@
 import type { SeatGroupResult } from "@seatscout/client";
+import { seatsOf } from "./derived.js";
 import { ageOf, clockOf, whyOf } from "./phrases.js";
 import { RoomPlan } from "./room-plan.js";
 
 interface CardProps {
   readonly result: SeatGroupResult;
   readonly now: number;
+  readonly onRoom: (result: SeatGroupResult) => void;
 }
 
-export const Card = ({ result, now }: CardProps) => {
+export const Card = ({ result, now, onRoom }: CardProps) => {
   const { theater, formats } = result.showtime.presentation;
   const clock = clockOf(result.showtime.startsAt);
   return (
@@ -18,14 +20,19 @@ export const Card = ({ result, now }: CardProps) => {
       >
         <RoomPlan result={result} />
         <div className="mid">
-          <p className="place">
+          <button
+            type="button"
+            className="open place"
+            aria-label={`See ${seatsOf(result)} in the room at ${theater.name}, ${clock}`}
+            onClick={() => onRoom(result)}
+          >
             {theater.name}
             {formats.map((format) => (
               <span key={format} className="fmt">
                 {format}
               </span>
             ))}
-          </p>
+          </button>
           <p className="why">
             <span>{clock}</span>
             {" · "}
@@ -38,9 +45,7 @@ export const Card = ({ result, now }: CardProps) => {
           </p>
         </div>
         <div className="side">
-          <span className="seats">
-            {result.seats.map((seat) => seat.id).join("·")}
-          </span>
+          <span className="seats">{seatsOf(result)}</span>
           <span className="prov">1 source</span>
           <time
             className="age"

@@ -14,6 +14,8 @@ const SHELL = [
   "/ask.css",
   "/results.css",
   "/coverage.css",
+  "/auditorium.css",
+  "/seat-map.css",
   "/icon.svg",
   "/fonts/big-shoulders-display.woff2",
   "/fonts/schibsted-grotesk.woff2",

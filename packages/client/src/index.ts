@@ -1,6 +1,11 @@
+export type { AuditoriumMap } from "@seatscout/core";
+export { nearestInRow } from "@seatscout/core";
+export type { PositionedSeat } from "@seatscout/core";
 export { REFERENCE, type SeatProfile } from "@seatscout/core";
+export type { SeatRow } from "@seatscout/core";
 export { isReference } from "./profile.js";
 export type { SeatGroupResult } from "./ranking.js";
+export type { Auditorium } from "./search.js";
 export type { Coverage } from "./search.js";
 export type { Search } from "./search.js";
 export type { SearchTerms } from "./search.js";
@@ -11,3 +16,4 @@ export type { CachedCatalogue } from "./store.js";
 export type { KeyValueStore } from "./store.js";
 export type { RecentSearch } from "./store.js";
 export { storeContract } from "./store-contract.js";
+export type { Verified } from "./verify.js";

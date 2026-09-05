@@ -390,6 +390,22 @@ and refuses a run that weighed no bundle or weighed one against no ratchet.
 `@size-limit/file` compresses each matched file on its own and adds the results, so the
 figure is a sum of per-file brotli rather than the brotli of everything concatenated.
 
+**A gesture in the room** is measured the same way and for the same reason.
+`tests/e2e/auditorium.spec.ts` opens the 304-seat Auditorium at a phone's size under a
+four-times-slower CPU, pinches, wheels and drags it, and holds the 75th percentile of the
+frame intervals to one frame of the display's own idle cadence, measured first on the same
+page under the same throttle. The unit is the display's own frame and the percentile is the
+one Core Web Vitals are defined at, which is the convention the journey above already
+reports, so neither is a figure chosen here. It is a percentile because the gate's first
+shape, every interval inside one frame, went red twice on a single 33.3 ms interval out of
+forty-five, on machines that were also driving a second browser: one dropped frame in
+forty-five is the runner and not the room, and a gate with no tolerance for a host's own
+noise reports the host. Forty milliseconds of blocking added to the pointer handler takes
+the percentile to two frames and the gate refuses it, watched, which is the shape of the
+defect it exists for. The annotation carries the worst interval and the count of dropped
+frames beside the percentile, so the tail is reported rather than hidden, and two counts
+beside it say only that the gesture produced something, so a run cannot pass over nothing.
+
 **The journey** is measured on the built tree served by the deployment's own worker, in
 Chromium, ten times over, and it is judged two ways. The three Core Web Vitals are held at
 their 75th percentile to the thresholds Google publishes as good, 2.5 s for LCP, 200 ms for

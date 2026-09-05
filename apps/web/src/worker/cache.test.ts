@@ -25,7 +25,7 @@ describe("the shell cache", () => {
     vi.unstubAllGlobals();
   });
 
-  it("holds the page, its module, its manifest, its six stylesheets, its icon and its three faces, and nothing else", async () => {
+  it("holds the page, its module, its manifest, its eight stylesheets, its icon and its three faces, and nothing else", async () => {
     const storage = cacheStorage();
     await precacheShell();
 
@@ -40,6 +40,8 @@ describe("the shell cache", () => {
       "/ask.css",
       "/results.css",
       "/coverage.css",
+      "/auditorium.css",
+      "/seat-map.css",
       "/icon.svg",
       "/fonts/big-shoulders-display.woff2",
       "/fonts/schibsted-grotesk.woff2",
@@ -73,12 +75,14 @@ describe("the shell cache", () => {
         "/ask.css",
         "/results.css",
         "/coverage.css",
+        "/auditorium.css",
+        "/seat-map.css",
         "/icon.svg",
         "/fonts/big-shoulders-display.woff2",
         "/fonts/schibsted-grotesk.woff2",
         "/fonts/spline-sans-mono.woff2",
       ].map(isShellPath),
-    ).toEqual(Array.from({ length: 13 }, () => true));
+    ).toEqual(Array.from({ length: 15 }, () => true));
     expect(isShellPath(SEAT_MAP)).toBe(false);
     expect(isShellPath("/icon-192.png")).toBe(false);
   });

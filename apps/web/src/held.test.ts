@@ -28,6 +28,9 @@ const searching = () => {
     },
     done: Promise.resolve(EMPTY),
     abort: () => {},
+    auditorium: () => {
+      throw new Error("no room was read");
+    },
   };
   return {
     search,

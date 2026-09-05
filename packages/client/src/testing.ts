@@ -1,1 +1,6 @@
-export { fakeUpstream, type UpstreamScript } from "@seatscout/core/testing";
+export {
+  fakeUpstream,
+  routeOf,
+  seatMapCaptures,
+  type UpstreamScript,
+} from "@seatscout/core/testing";

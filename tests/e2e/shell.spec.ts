@@ -9,6 +9,7 @@ const SHELL = [
   "/",
   "/app.css",
   "/ask.css",
+  "/auditorium.css",
   "/coverage.css",
   "/fonts/big-shoulders-display.woff2",
   "/fonts/schibsted-grotesk.woff2",
@@ -19,6 +20,7 @@ const SHELL = [
   "/manifest.webmanifest",
   "/query.css",
   "/results.css",
+  "/seat-map.css",
 ];
 
 const cachedPaths = (page: Page) =>

@@ -1,6 +1,14 @@
 export type { NormalisedPosition } from "./domain/auditorium.js";
 export { normalised } from "./domain/auditorium.js";
-export { type AuditoriumPlan, planOf } from "./domain/auditorium-map.js";
+export {
+  type AuditoriumMap,
+  type AuditoriumPlan,
+  auditoriumMap,
+  nearestInRow,
+  planOf,
+  type PositionedSeat,
+  type SeatRow,
+} from "./domain/auditorium-map.js";
 export {
   type Catalogue,
   narrowed,
