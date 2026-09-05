@@ -1,6 +1,6 @@
 import { isReference, REFERENCE, type SeatProfile } from "@seatscout/client";
 import { type PointerEvent, useId } from "react";
-import { dotAt, rowsOf, targetAt } from "./plan.js";
+import { marksOf, targetAt } from "./plan.js";
 import type { Term } from "./title-card.js";
 
 interface ProfileProps {
@@ -69,7 +69,11 @@ const Room = ({ profile, onChange }: ProfileProps) => {
       ),
     });
   };
-  const mark = dotAt(profile.targetLateral, profile.targetDepth);
+  const marks = marksOf(
+    ROOM,
+    { depth: profile.targetDepth, lateral: profile.targetLateral },
+    profile,
+  );
   return (
     <svg
       className="room"
@@ -81,7 +85,7 @@ const Room = ({ profile, onChange }: ProfileProps) => {
       }}
     >
       <line x1="14" y1="2.5" x2="50" y2="2.5" className="mp-screen" />
-      {rowsOf(ROOM).map((row) => (
+      {marks.rows.map((row) => (
         <line
           key={row.y}
           x1={row.x1}
@@ -91,8 +95,13 @@ const Room = ({ profile, onChange }: ProfileProps) => {
           className="mp-row"
         />
       ))}
-      <circle cx={mark.cx} cy={mark.cy} r="4.5" className="mp-target" />
-      <circle cx={mark.cx} cy={mark.cy} r="3" className="mp-pair" />
+      <circle
+        cx={marks.target.cx}
+        cy={marks.target.cy}
+        r="4.5"
+        className="mp-target"
+      />
+      <circle cx={marks.pair.cx} cy={marks.pair.cy} r="3" className="mp-pair" />
     </svg>
   );
 };
