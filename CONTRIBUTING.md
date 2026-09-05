@@ -116,6 +116,12 @@ local run: the job measures the merge of your branch with `main` rather than the
 so the bundle's bytes and the sum of the unit and end-to-end counts are what that merge weighs,
 and a floor derived locally read 25 too high the moment `main` had dropped a package's tests.
 
+A pull request that changes what a person sees or does carries its headed pass as images or
+video: drive the built tree in a real browser at a phone's size, screenshot each state the
+change adds or alters, and attach them with `gh pr create --attach`, `gh pr edit --attach` or
+`gh pr comment --attach`, one flag per file with alt text after a `#`, so a reviewer sees the
+screen rather than reads about it. The flag needs GitHub CLI 2.99 or later.
+
 [ADR 6](docs/adr/0006-gates-cite-a-standard-or-measure-a-regression.md) says where each of
 those numbers comes from, and
 [ADR 7](docs/adr/0007-prose-is-held-to-the-repository.md) says why prose is gated at all.
