@@ -65,11 +65,10 @@ describe("panning and zooming the drawn room", () => {
     drag(group, { x: 200, y: 200 }, { x: 150, y: 170 });
     const panned = group.getAttribute("transform");
 
-    expect(zoomedIn).toMatch(
-      /^translate\(-\d+(\.\d+)? -\d+(\.\d+)?\) scale\(2\)$/,
+    expect(zoomedIn).toBe("translate(-277.9 -166.74) scale(2)");
+    expect(panned).toBe(
+      "translate(-441.3705882352941 -264.82235294117646) scale(2)",
     );
-    expect(panned).not.toBe(zoomedIn);
-    expect(panned).toMatch(/ scale\(2\)$/);
     expect(stage.commits).toEqual([]);
     expect([...stage.dialog.querySelectorAll('[role="gridcell"]')]).toEqual(
       cells,
@@ -193,6 +192,25 @@ describe("panning and zooming the drawn room", () => {
     expect(Number(first?.getAttribute("y1"))).toBeCloseTo(2.8532, 3);
     expect(Number(first?.getAttribute("y2"))).toBeCloseTo(11.4128, 3);
   });
+
+  it("gives every Seat the classes its vocabulary is drawn from, and rounds a Seat by its own width", async () => {
+    const pods = await opened(VILLAGE_1);
+    const classOf = (id: string) =>
+      pods.dialog.querySelector(`[data-seat="${id}"]`)?.getAttribute("class");
+    const lit = pods.dialog.querySelector('[data-seat="G14"]');
+    expect(classOf("G14")).toBe("seat bookable recommended lit");
+    expect(classOf("E23")).toBe("seat unbookable");
+    expect(classOf("WC17")).toBe("seat bookable space");
+    expect(classOf("A30")).toBe("seat bookable");
+    expect(Number(lit?.getAttribute("rx"))).toBeCloseTo(
+      0.18 * Number(lit?.getAttribute("width")),
+      10,
+    );
+    expect(lit?.getAttribute("tabindex")).toBe("0");
+    expect([
+      ...pods.dialog.querySelectorAll('[role="gridcell"][tabindex="-1"]'),
+    ]).toHaveLength(293);
+  });
 });
 
 describe("the roving cell under D45's keys", () => {
@@ -220,6 +238,35 @@ describe("the roving cell under D45's keys", () => {
       ).toHaveLength(1);
     },
   );
+
+  it("leaves a key D45 does not bind alone, and keeps what the bar says when the Seat the cursor already holds takes focus again", async () => {
+    const stage = await opened(WEST_PLANO_28);
+
+    stage.press("a");
+    stage.press("Escape");
+    expect(nameOf(stage.focused())).toMatch(/^Seat H14\. /);
+    expect(stage.rowBar()).toHaveTextContent(
+      "ROW H8th row of 14 from the front. 20 seats, 12 bookable.",
+    );
+
+    stage.press("Enter");
+    expect(stage.rowBar()).toHaveTextContent(
+      "H14 and H13 chosen. They are re-checked when you continue.",
+    );
+
+    const here = stage.dialog.querySelector<SVGElement>('[data-seat="H14"]');
+    act(() => here?.focus());
+    expect(stage.rowBar()).toHaveTextContent(
+      "H14 and H13 chosen. They are re-checked when you continue.",
+    );
+
+    const neighbour =
+      stage.dialog.querySelector<SVGElement>('[data-seat="H13"]');
+    act(() => neighbour?.focus());
+    expect(stage.rowBar()).toHaveTextContent(
+      "ROW H8th row of 14 from the front. 20 seats, 12 bookable.",
+    );
+  });
 
   it("takes Ctrl+Home to the front row's first Seat and Ctrl+End to the back row's last, in the numeric room", async () => {
     const stage = await opened(LAKE_HIGHLANDS_1);

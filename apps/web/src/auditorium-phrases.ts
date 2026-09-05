@@ -9,6 +9,10 @@ import { capitalised, clockOf, lateralOf, wordOf } from "./phrases.js";
 
 type Accessible = Exclude<PositionedSeat["designation"], "standard">;
 
+const LIST = new Intl.ListFormat("en");
+
+const TEENS = new Set([11, 12, 13]);
+
 const SUFFIXES: Readonly<Record<number, string>> = {
   1: "st",
   2: "nd",
@@ -38,18 +42,14 @@ const groupWordOf = (partySize: number) =>
   GROUP_WORDS[partySize] ?? wordOf(partySize);
 
 export const ordinalOf = (count: number) => {
-  const rest = count % 100;
-  const suffix = rest > 10 && rest < 14 ? "th" : (SUFFIXES[count % 10] ?? "th");
+  const suffix = TEENS.has(count % 100) ? "th" : (SUFFIXES[count % 10] ?? "th");
   return `${count}${suffix}`;
 };
 
 const ordinalWordOf = (count: number) =>
   ORDINALS[count - 1] ?? ordinalOf(count);
 
-const listOf = (ids: readonly string[]) =>
-  ids.length < 2
-    ? ids.join("")
-    : `${ids.slice(0, -1).join(", ")} and ${ids.at(-1)}`;
+const listOf = (ids: readonly string[]) => LIST.format(ids);
 
 const isAccessible = (
   seat: PositionedSeat,

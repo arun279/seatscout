@@ -1,11 +1,6 @@
 import type { Search, SeatGroupResult } from "@seatscout/client";
 import { useMemo, useState } from "react";
-import {
-  chosenOf,
-  groupsOf,
-  refusalOf,
-  rowTextOf,
-} from "./auditorium-phrases.js";
+import { chosenOf, groupsOf, refusalOf } from "./auditorium-phrases.js";
 import { seatsOf } from "./derived.js";
 import { modal } from "./modal.js";
 import {
@@ -18,6 +13,7 @@ import {
   penaltiesOf,
   whyOf,
 } from "./phrases.js";
+import { RowBar } from "./row-bar.js";
 import { holds, SeatMap } from "./seat-map.js";
 import { type Cursor, opened, type Place, rowAt, seatAt } from "./traversal.js";
 
@@ -160,16 +156,12 @@ export const Auditorium = ({
           {theater.name}
         </h2>
       </header>
-      <button type="button" className="row-bar" onClick={refocus}>
-        <span role="status">
-          {notice ?? (
-            <>
-              {row.label !== null && <b>ROW {row.label}</b>}
-              <span>{rowTextOf(row, auditorium.map)}</span>
-            </>
-          )}
-        </span>
-      </button>
+      <RowBar
+        row={row}
+        map={auditorium.map}
+        notice={notice}
+        onPress={refocus}
+      />
       <button
         type="button"
         className="btn-return"
@@ -197,7 +189,7 @@ export const Auditorium = ({
         accessibleSeating={accessibleSeating}
         consoles={consoles}
       />
-      <Billing result={result} />
+      <Billing result={candidate} />
       <fieldset className="alternates">
         <legend className="eyebrow">Your seats in this room</legend>
         {listed.map((group) => (

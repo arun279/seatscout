@@ -94,6 +94,52 @@ describe("panning and zooming the room", () => {
     ).toEqual(view);
   });
 
+  it("holds the edge, the growth and the midpoint at a scale and an offset where each is its own arithmetic", () => {
+    expect(panned({ scale: 3, tx: -400, ty: -200 }, -600, -400, ROOM)).toEqual({
+      scale: 3,
+      tx: -1000,
+      ty: -600,
+    });
+    expect(
+      zoomed(
+        { scale: 2, tx: -250, ty: -150 },
+        1.5,
+        { x: 100, y: 60 },
+        ROOM,
+        MOST,
+      ),
+    ).toEqual({ scale: 3, tx: -425, ty: -255 });
+    expect(
+      pinched(
+        { scale: 2, tx: -250, ty: -150 },
+        [
+          { x: 100, y: 100 },
+          { x: 200, y: 100 },
+        ],
+        [
+          { x: 140, y: 160 },
+          { x: 260, y: 160 },
+        ],
+        ROOM,
+        MOST,
+      ),
+    ).toEqual({ scale: 2.4, tx: -280, ty: -140 });
+    expect(
+      revealed(
+        { scale: 3, tx: -300, ty: -200 },
+        { x: 20, y: 10, width: 18, height: 18 },
+        ROOM,
+      ),
+    ).toEqual({ scale: 3, tx: -60, ty: -30 });
+    expect(
+      revealed(
+        { scale: 2, tx: 0, ty: 0 },
+        { x: 0, y: 0, width: 600, height: 400 },
+        ROOM,
+      ),
+    ).toEqual({ scale: 2, tx: -500, ty: -300 });
+  });
+
   it("derives the most zoom from the tap target a Seat has to reach", () => {
     expect(mostZoomFor(18, 500, 340)).toBeCloseTo(3.595, 3);
     expect(mostZoomFor(82.6, 1189.1, 340)).toBeCloseTo(1.863, 3);
