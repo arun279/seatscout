@@ -124,7 +124,7 @@ describe("what the gate says", () => {
         "  a.md: a.md says three, and there are 4\n" +
         "  b.md: b.md says two, and there are 5\n\n" +
         "Correct the sentence, or the structure. If a sentence has moved or been reworded,\n" +
-        "follow it in tools/counts-in-prose/src/claims.ts, where every pair is declared.\n",
+        "follow it in tools/counts-in-prose/claims.ts, where every pair is declared.\n",
     );
   });
 

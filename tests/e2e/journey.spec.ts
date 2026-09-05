@@ -95,6 +95,14 @@ const journey = async (page: Page): Promise<Journey> => {
   ).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toBeHidden();
+  await page
+    .getByRole("article")
+    .first()
+    .getByRole("button", { name: /in the room at/ })
+    .click();
+  await expect(page.getByRole("grid")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toBeHidden();
   await page.waitForFunction(() => window.journey.inp !== null);
   const measured = await page.evaluate(() => window.journey);
   if (

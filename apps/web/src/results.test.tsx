@@ -59,6 +59,7 @@ const listing = (snapshot: Snapshot) => {
       online={true}
       onRetry={() => {}}
       onEdit={() => {}}
+      onRoom={() => {}}
       onHandOff={() => {}}
     />,
   );

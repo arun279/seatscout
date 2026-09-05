@@ -7,10 +7,11 @@ interface CardProps {
   readonly result: SeatGroupResult;
   readonly now: number;
   readonly online: boolean;
+  readonly onRoom: (result: SeatGroupResult) => void;
   readonly onHandOff: (result: SeatGroupResult) => void;
 }
 
-export const Card = ({ result, now, online, onHandOff }: CardProps) => {
+export const Card = ({ result, now, online, onRoom, onHandOff }: CardProps) => {
   const { theater, formats } = result.showtime.presentation;
   const clock = clockOf(result.showtime.startsAt);
   return (
@@ -21,14 +22,19 @@ export const Card = ({ result, now, online, onHandOff }: CardProps) => {
       >
         <RoomPlan result={result} scale={1} />
         <div className="mid">
-          <p className="place">
+          <button
+            type="button"
+            className="open place"
+            aria-label={`See ${labelOf(seatsOf(result))} in the room at ${theater.name}, ${clock}`}
+            onClick={() => onRoom(result)}
+          >
             {theater.name}
             {formats.map((format) => (
               <span key={format} className="fmt">
                 {format}
               </span>
             ))}
-          </p>
+          </button>
           <p className="why">
             <span>{clock}</span>
             {" · "}

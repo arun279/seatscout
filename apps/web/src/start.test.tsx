@@ -95,7 +95,7 @@ describe("starting the application in a browser", () => {
     fireEvent.click(
       within(screen.getAllByRole("article")[0] ?? document.body).getByRole(
         "button",
-        { name: /G6·G7/ },
+        { name: /G6·G7$/ },
       ),
     );
     fireEvent.click(screen.getByRole("button", { name: "Take G6 and G7" }));

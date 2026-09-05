@@ -1,0 +1,143 @@
+:root {
+  --seat-tick: oklch(0.62 0.035 265);
+  --ink: oklch(0.1 0.012 275);
+}
+
+.map-frame {
+  position: relative;
+  background: var(--house-deep);
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  padding: 8px 10px 12px;
+  overflow: hidden;
+}
+
+.screen-edge {
+  position: relative;
+  height: 22px;
+  margin: 2px 6px 8px;
+}
+
+.screen-edge .lamp {
+  position: absolute;
+  left: 50%;
+  top: 4px;
+  transform: translateX(-50%);
+  width: 84%;
+  height: 2.5px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--beam-dim) 10%,
+    var(--silver) 50%,
+    var(--beam-dim) 90%,
+    transparent
+  );
+  box-shadow: 0 2px 14px oklch(0.88 0.055 230 / 0.55);
+}
+
+.screen-edge .word {
+  position: absolute;
+  left: 50%;
+  top: 10px;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.5em;
+  text-indent: 0.5em;
+  color: var(--silver-faint);
+}
+
+.seat-map {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 52dvh;
+  touch-action: none;
+  overflow: hidden;
+  cursor: grab;
+}
+
+.seat-map .ground {
+  fill: var(--house-deep);
+}
+
+.seat-map .row-label {
+  fill: var(--silver-faint);
+  font-family: var(--mono);
+  text-anchor: middle;
+  dominant-baseline: central;
+  user-select: none;
+}
+
+.seat-map .tick {
+  stroke: var(--seat-tick);
+  stroke-width: 1.5px;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.seat {
+  outline: none;
+}
+
+.seat.bookable {
+  fill: var(--seat-free);
+}
+
+.seat.unbookable {
+  fill: none;
+  stroke: var(--seat-gone);
+  stroke-width: 1.2px;
+  vector-effect: non-scaling-stroke;
+}
+
+.seat.space.bookable {
+  fill: url("#space-bookable");
+}
+
+.seat.space.unbookable {
+  fill: url("#space-unbookable");
+  stroke: var(--seat-gone);
+}
+
+.seat.recommended {
+  stroke: var(--beam-dim);
+  stroke-width: 1.4px;
+  vector-effect: non-scaling-stroke;
+}
+
+.seat.lit {
+  fill: var(--beam);
+  stroke: none;
+  filter: drop-shadow(0 0 5px oklch(0.88 0.055 230 / 0.95));
+}
+
+.seat.space.lit {
+  fill: url("#space-lit");
+}
+
+.space-ground.bookable {
+  fill: var(--seat-free);
+}
+
+.space-ground.unbookable {
+  fill: none;
+}
+
+.space-ground.lit {
+  fill: var(--beam);
+}
+
+.space-dot {
+  fill: var(--house-deep);
+}
+
+.seat:focus {
+  stroke: var(--ink);
+  stroke-width: 2px;
+  vector-effect: non-scaling-stroke;
+  outline: 2px solid var(--beam);
+  outline-offset: 1px;
+}

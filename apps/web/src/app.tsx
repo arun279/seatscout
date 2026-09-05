@@ -2,7 +2,6 @@ import type {
   RecentSearch,
   Search,
   SearchTerms,
-  SeatGroupResult,
   SeatProfile,
   SeatScout,
   TicketingUrl,
@@ -104,9 +103,10 @@ const Searching = ({
           void session.search.retry();
         }}
         onEdit={(focus) => overlays.open({ kind: "ask", focus })}
-        onHandOff={(candidate: SeatGroupResult) =>
-          overlays.open({ kind: "handOff", candidate })
+        onRoom={(result) =>
+          overlays.open({ kind: "room", result, search: session.search })
         }
+        onHandOff={(candidate) => overlays.open({ kind: "handOff", candidate })}
       />
     </>
   );
@@ -202,11 +202,13 @@ const Screen = ({
         recent={recent}
         today={today}
         clock={clock}
+        online={online}
         verify={seatscout.verify}
         checkout={checkout}
         onClose={overlays.close}
         onTerms={onTerms}
         onProfile={onProfile}
+        onHandOff={(candidate) => overlays.open({ kind: "handOff", candidate })}
       />
     </>
   );
