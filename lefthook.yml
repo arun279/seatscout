@@ -22,6 +22,12 @@ pre-commit:
 pre-push:
   parallel: true
   commands:
+    format:
+      run: pnpm format:check
+    lint:
+      run: pnpm lint
+    spell:
+      run: pnpm spell
     typecheck:
       run: pnpm typecheck
     complexity:

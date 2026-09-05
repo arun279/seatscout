@@ -128,7 +128,7 @@ rather than as a zero.
 
 The pre-commit hook runs six checks over staged files: it formats, lints and spell checks
 them, holds each one to the cyclomatic complexity limit, refuses a reach for Cache Storage
-under `apps/`, and scans for secrets. The pre-push hook runs six over the whole workspace:
+under `apps/`, and scans for secrets. The pre-push hook runs nine over the whole workspace:
 it type checks, holds every function to the cyclomatic complexity limit, runs unit tests,
 checks for dead code, holds the counts stated in prose, and holds every claim an ADR makes
 about this repository to the repository. `lefthook.yml` is where both are declared.
