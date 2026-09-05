@@ -52,6 +52,24 @@ accepted. The upstream admits a request on its `Referer` and refuses one without
 session it carries, and `Referer` is a forbidden request-header name that page script cannot
 set. The proxy therefore names the upstream as the referer itself.
 
+Only `accept`, `content-type` and `user-agent` cross to the upstream. The caller's own
+cookies, the access assertion and the platform's `cf-` headers belong to this hop and stay
+here, and synthesising the referer rather than passing the caller's through is what keeps
+the forwarding list an allowlist. An upstream redirect is handed back rather than followed,
+because one call to the proxy is one upstream request. An upstream `Set-Cookie` is stripped
+from the answer rather than planted on the caller's own origin. Three variables configure
+the whole of it and none is committed; missing any of them, the proxy serves nothing, so a
+half-configured deployment fails closed.
+
+One Worker is the whole deployment: `apps/proxy/wrangler.json` declares an asset directory
+that is everything `apps/web` builds, and a script that is the proxy. A request matching a
+built file is served by the platform without invoking the Worker at all, and every other
+request reaches the proxy. That is the platform's default routing and it is why the
+configuration is five keys rather than a routing table. `assets` declares a directory and
+nothing else: naming a binding would hand the Worker a reader for what it publishes, and
+putting the Worker in front of every asset is what a Worker that needed to transform assets
+would do. Both are one reviewed line away if a reason arrives.
+
 Everything else happens on the device: parsing, seat normalisation, scoring, filtering,
 ranking, and caching.
 
@@ -87,7 +105,23 @@ The requirement that no user data is stored on a server is structural rather tha
 policy that must be enforced. There is nowhere for such data to go.
 
 Free tier hosting is sufficient rather than a compromise, and static asset requests do
-not consume the request quota.
+not consume the request quota. The assertion the proxy verifies is therefore checked on
+proxy requests and not on asset requests, which is correct: the access layer is what gates
+what `apps/web` builds, and that is this repository's own compiled source, with no user data
+in it and no reach upstream. `/` is served from `index.html` by that same default routing,
+which is what closed it as a path into the proxy.
+
+A second instance stands up from this repository alone, and two checks hold that rather than
+a promise. The `quality` job runs `wrangler deploy --dry-run`, which needs no credentials, no
+account and no network: it bundles the Worker, reads the asset directory and reports the
+bindings, so a configuration that no longer produces a deployable Worker fails a pull request
+rather than a deploy. Beside it, a test asserts the configuration's whole key set and the
+asset block's own against the file rather than against intent, which is what keeps a value
+belonging to one deployment out of the configuration in the first place. Neither substitutes
+for a real deploy against a real account, and neither claims to.
+
+The adapter carries no session and opens nothing before reading, so a read is one request,
+and a rejection is treated as a refusal like any other rather than as a session to re-open.
 
 Native clients need no backend at all. Search, seat maps, and booking hand off work with
 no server involved, which removes an entire class of availability failure for them.

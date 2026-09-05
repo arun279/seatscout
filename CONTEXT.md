@@ -35,6 +35,23 @@ many Chains. Coverage of a Chain and the number of Sources are independent quant
 adding a Source does not necessarily add Chains, and a Chain may be covered without
 having a Source of its own.
 
+## Reading
+
+What one read of a Source answers with: either the payload that was asked for, or one of
+four reasons there is none.
+
+The reasons are `noSeatMap`, `started`, `soldOut` and `unreachable`, and each names its own
+remedy: the operator's own page, the next screening, another time at that Theater, and a
+retry. Only a seat map read ever answers with the first three. A 404 on a showtime listing
+is not a screening that has begun, so on the other operations those statuses are failures
+like any other.
+
+Every Reading carries the moment it was fetched and how many attempts it took, for one that
+failed as much as for one that read.
+
+**No upstream word crosses it.** No status code, route or upstream field name exists above a
+Reading.
+
 ## Theater
 
 One physical venue at one address, operated by a Chain, whether or not this application has a
@@ -73,6 +90,11 @@ none this application has named.
 One screening: a Presentation, at a specific time, in a specific Auditorium.
 
 This is the thing a ticket is for. Some providers call it a "performance".
+
+A Showtime is **bookable** when its Presentation has reserved seating, it has not begun, it
+is not sold out, and the listing does not say the Theater has stopped selling. Anything else
+is carried with the reason it is not, so a Showtime the catalogue already knows to be
+unbookable costs no request to find out.
 
 **Not a Presentation.** A Presentation is the offering; a Showtime is one instance of it.
 
