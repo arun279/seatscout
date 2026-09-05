@@ -2,7 +2,7 @@ import "@testing-library/jest-dom/vitest";
 import type { RecentSearch } from "@seatscout/client";
 import { cleanup, fireEvent, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { FRONT_ROW, staged, TODAY } from "./app.fixtures.js";
+import { FRONT_ROW, staged, TODAY } from "./search.fixtures.js";
 import type { Terms } from "./terms.js";
 
 const NOTHING_ASKED: Terms = { date: TODAY, partySize: 2 };
@@ -43,8 +43,8 @@ describe("recent searches, on the first screen", () => {
     });
 
     expect(again().map((button) => button.textContent)).toEqual([
-      "243819Tomorrow · Near 75234 · Four seats together",
-      "245569Today · Near 75006 · Two seats together",
+      "2438194 seats · tomorrow · 75234",
+      "2455692 seats · today · 75006",
     ]);
 
     fireEvent.click(again()[1] ?? document.body);
@@ -59,20 +59,24 @@ describe("recent searches, on the first screen", () => {
 
     expect(
       screen.getByRole("button", {
-        name: "245569, today, near 75006, two seats together",
+        name: "245569, 2 seats · today · 75006",
       }),
     ).toBeVisible();
   });
 
-  it("leaves out a search for a day that has passed, and the whole surface when none is left", () => {
+  it("leaves out a search for a day that has passed, and says so plainly when none is left", () => {
     staged({ terms: NOTHING_ASKED, recent: [YESTERDAY, TONIGHT] });
     expect(again().map((button) => button.textContent)).toEqual([
-      "245569Today · Near 75006 · Two seats together",
+      "2455692 seats · today · 75006",
     ]);
     cleanup();
 
     staged({ terms: NOTHING_ASKED, recent: [YESTERDAY] });
-    expect(screen.queryByRole("region", { name: "Run again" })).toBeNull();
+    expect(
+      within(screen.getByRole("region", { name: "Run again" })).getByText(
+        /Nothing yet/,
+      ),
+    ).toBeVisible();
     expect(screen.queryByText("Run again")).toBeNull();
   });
 
@@ -80,12 +84,16 @@ describe("recent searches, on the first screen", () => {
     const stage = staged({ recent: [TONIGHT, TOMORROW], profile: FRONT_ROW });
     await stage.settled();
 
-    expect(screen.queryByRole("region", { name: "Run again" })).toBeNull();
+    expect(
+      within(screen.getByRole("region", { name: "Run again" })).getByText(
+        /Nothing yet/,
+      ),
+    ).toBeVisible();
 
     fireEvent.click(screen.getByRole("button", { name: /custom seat/i }));
     fireEvent.click(
       screen.getByRole("button", {
-        name: "243819, tomorrow, near 75234, four seats together",
+        name: "243819, 4 seats · tomorrow · 75234",
       }),
     );
 

@@ -4,7 +4,7 @@ import type { Root } from "react-dom/client";
 import { expect, vi } from "vitest";
 import { startApp } from "./start.js";
 
-export const SEAT_MAP = "/napi/seatMap/";
+const SEAT_MAP = "/napi/seatMap/";
 export const TONIGHT = "?movie=245569&date=2026-08-28&area=75006&partySize=2";
 export const NO_AREA = "?movie=245569&date=2026-08-28&partySize=2";
 export const PROFILE = "seatscout.profile.v1";

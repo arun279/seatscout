@@ -116,6 +116,7 @@ export const Ask = ({
         </p>
       </form>
       <Recent
+        heading="Or run one of these again"
         recent={recent}
         today={today}
         onRun={(asked) => {

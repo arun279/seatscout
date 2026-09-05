@@ -1,42 +1,50 @@
 import type { RecentSearch } from "@seatscout/client";
-import { dayOf, partyOf } from "./phrases.js";
+import { dayOf } from "./phrases.js";
 import { type Terms, termsOf } from "./terms.js";
 
 interface RecentProps {
   readonly recent: readonly RecentSearch[];
   readonly today: string;
+  readonly heading: string;
   readonly onRun: (terms: Terms) => void;
 }
 
-const askedOf = (search: RecentSearch, today: string) => [
-  dayOf(search.date, today),
-  `Near ${search.area}`,
-  partyOf(search.partySize),
-];
+const saidOf = (search: RecentSearch, today: string) =>
+  [
+    `${search.partySize} seat${search.partySize === 1 ? "" : "s"}`,
+    dayOf(search.date, today).toLowerCase(),
+    search.area,
+  ].join(" · ");
 
-export const Recent = ({ recent, today, onRun }: RecentProps) => {
+export const Recent = ({ recent, today, heading, onRun }: RecentProps) => {
   const offered = recent.filter((search) => search.date >= today);
-  if (offered.length === 0) return null;
   return (
     <section className="recent" aria-labelledby="recent-title">
       <h2 id="recent-title" className="eyebrow">
-        Run again
+        {heading}
       </h2>
-      <ul className="again">
-        {offered.map((search) => (
-          <li key={JSON.stringify(search)}>
-            <button
-              type="button"
-              className="rerun"
-              aria-label={`${search.movie}, ${askedOf(search, today).join(", ").toLowerCase()}`}
-              onClick={() => onRun(termsOf(search, today))}
-            >
-              <span className="display">{search.movie}</span>
-              <span className="line">{askedOf(search, today).join(" · ")}</span>
-            </button>
-          </li>
-        ))}
-      </ul>
+      {offered.length === 0 ? (
+        <p className="micro">
+          Nothing yet. Searches are kept on this phone once you have run one,
+          and never anywhere else.
+        </p>
+      ) : (
+        <ul className="again">
+          {offered.map((search) => (
+            <li key={JSON.stringify(search)}>
+              <button
+                type="button"
+                className="rerun"
+                aria-label={`${search.movie}, ${saidOf(search, today)}`}
+                onClick={() => onRun(termsOf(search, today))}
+              >
+                <span className="display">{search.movie}</span>
+                <span className="line">{saidOf(search, today)}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 };

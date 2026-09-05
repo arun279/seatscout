@@ -10,8 +10,10 @@ const ROWS_SPAN = 32;
 const CENTRE = 32;
 const HALF_WIDTH = 30;
 
-const x = (lateral: number) => CENTRE + lateral * HALF_WIDTH;
-const y = (depth: number) => FRONT + depth * ROWS_SPAN;
+const hundredths = (value: number) => Math.round(value * 100) / 100;
+
+const x = (lateral: number) => hundredths(CENTRE + lateral * HALF_WIDTH);
+const y = (depth: number) => hundredths(FRONT + depth * ROWS_SPAN);
 
 export const targetAt = ({
   cx,

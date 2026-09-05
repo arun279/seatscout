@@ -91,6 +91,12 @@ a:hover {
   stroke-dasharray: 2 2.5;
 }
 
+.mp-was {
+  fill: none;
+  stroke: var(--silver-faint);
+  stroke-width: 1;
+}
+
 .mp-pair {
   fill: var(--beam);
   filter: drop-shadow(0 0 3.5px oklch(0.88 0.055 230 / 0.9));

@@ -1,3 +1,4 @@
+import type { SeatProfile } from "@seatscout/client";
 import { Fragment } from "react";
 import type { Terms } from "./terms.js";
 import {
@@ -8,6 +9,7 @@ import {
 
 interface TitleCardProps {
   readonly terms: Terms;
+  readonly profile: SeatProfile;
   readonly today: string;
   readonly onEdit: (term: Term) => void;
 }
@@ -38,8 +40,13 @@ const Entries = ({
   </>
 );
 
-export const TitleCard = ({ terms, today, onEdit }: TitleCardProps) => {
-  const [party, movie, details] = termLinesOf(terms, today);
+export const TitleCard = ({
+  terms,
+  profile,
+  today,
+  onEdit,
+}: TitleCardProps) => {
+  const [party, movie, details] = termLinesOf(terms, today, profile);
   return (
     <header className="title-card">
       <p className="eyebrow">Your query · tap any line to change it</p>

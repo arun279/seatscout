@@ -94,8 +94,8 @@ describe("what the running application remembers on the device", () => {
         .getAllByRole("button")
         .map((button) => button.textContent),
     ).toEqual([
-      "245569Today · Near 75006 · Two seats together",
-      "245569Today · Near 75006 · Three seats together",
+      "2455692 seats · today · 75006",
+      "2455693 seats · today · 75006",
     ]);
   });
 
@@ -111,7 +111,11 @@ describe("what the running application remembers on the device", () => {
       vi.advanceTimersByTime(2_000);
     });
 
-    expect(screen.queryByRole("region", { name: "Run again" })).toBeNull();
+    expect(
+      within(screen.getByRole("region", { name: "Run again" })).getByText(
+        /Nothing yet/,
+      ),
+    ).toBeVisible();
     expect(screen.getByRole("button", { name: "Today" })).toBeVisible();
   });
 
@@ -123,7 +127,7 @@ describe("what the running application remembers on the device", () => {
     expect(page.seatMapsRead()).toBe(0);
     fireEvent.click(
       screen.getByRole("button", {
-        name: "245569, today, near 75006, two seats together",
+        name: "245569, 2 seats · today · 75006",
       }),
     );
 

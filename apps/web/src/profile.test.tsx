@@ -2,14 +2,14 @@ import "@testing-library/jest-dom/vitest";
 import { REFERENCE } from "@seatscout/client";
 import { cleanup, fireEvent, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ask, cards, FRONT_ROW, staged } from "./app.fixtures.js";
+import { ask, cards, FRONT_ROW, staged } from "./search.fixtures.js";
 
 const WEIGHTS = [
-  ["Rows away from your target", "1", "depthWeight"],
-  ["Off to the side", "1", "offAxisWeight"],
+  ["Missing your spot", "1", "depthWeight"],
+  ["Watching at an angle", "1", "offAxisWeight"],
   ["The front rows", "0.25", "frontBandWeight"],
-  ["Against a wall", "0.25", "wallBandWeight"],
-  ["A console between you", "0.25", "podDividerWeight"],
+  ["A wall, or the back row", "0.25", "wallBandWeight"],
+  ["A console between seats", "0.25", "podDividerWeight"],
 ] as const;
 
 const rowOf = (card: HTMLElement) =>
@@ -51,7 +51,7 @@ describe("where you sit, on the Ask sheet", () => {
       editor.getByRole("button", { name: "Back to Reference" }),
     ).toBeDisabled();
     expect(
-      editor.getByText(/Reference sits two thirds back on the centreline/),
+      editor.getByText(/Reference aims two thirds back on the centreline/),
     ).toBeVisible();
     expect(
       editor.getByText(
@@ -117,11 +117,11 @@ describe("where you sit, on the Ask sheet", () => {
   it("keeps a weight between not minding at all and twice what Reference minds most", async () => {
     const { editor } = await opened();
 
-    slide(editor.getByLabelText("Off to the side"), -1);
-    expect(editor.getByLabelText("Off to the side")).toHaveValue("0");
+    slide(editor.getByLabelText("Watching at an angle"), -1);
+    expect(editor.getByLabelText("Watching at an angle")).toHaveValue("0");
 
-    slide(editor.getByLabelText("Off to the side"), 9);
-    expect(editor.getByLabelText("Off to the side")).toHaveValue("2");
+    slide(editor.getByLabelText("Watching at an angle"), 9);
+    expect(editor.getByLabelText("Watching at an angle")).toHaveValue("2");
 
     slide(editor.getByLabelText("How far back"), 2);
     expect(editor.getByLabelText("How far back")).toHaveValue("1");
@@ -171,12 +171,23 @@ describe("where you sit, on the Ask sheet", () => {
   it("labels the ends of every control in words and never with a number", async () => {
     const { editor } = await opened();
 
-    expect(editor.getByText("Front")).toBeInTheDocument();
-    expect(editor.getByText("Back")).toBeInTheDocument();
-    expect(editor.getByText("Left")).toBeInTheDocument();
-    expect(editor.getByText("Right")).toBeInTheDocument();
-    expect(editor.getAllByText("Don't mind")).toHaveLength(WEIGHTS.length);
-    expect(editor.getAllByText("Avoid")).toHaveLength(WEIGHTS.length);
+    expect(editor.getByText("Front row")).toBeInTheDocument();
+    expect(editor.getByText("Back row")).toBeInTheDocument();
+    expect(editor.getByText("House left")).toBeInTheDocument();
+    expect(editor.getByText("House right")).toBeInTheDocument();
+    expect(editor.getAllByText("Don't mind")).toHaveLength(1);
+    expect(
+      [...document.querySelectorAll("dialog .ends span")].map(
+        (end) => end.textContent ?? "",
+      ),
+    ).toEqual([
+      "Front row",
+      "Back row",
+      "House left",
+      "House right",
+      "Don't mind",
+      "Avoid",
+    ]);
   });
 
   it("draws the room as ten rows behind the screen, two thirds of the width at the front and the whole of it at the back, with the target ringed and lit, and moves the mark as the target does", async () => {

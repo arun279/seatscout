@@ -1,7 +1,7 @@
 import { isReference, REFERENCE, type SeatProfile } from "@seatscout/client";
 import { type PointerEvent, useId } from "react";
 import { marksOf, targetAt } from "./plan.js";
-import type { Term } from "./title-card.js";
+import type { Term } from "./title-card-terms.js";
 
 interface ProfileProps {
   readonly profile: SeatProfile;
@@ -16,7 +16,7 @@ interface Span {
 
 interface RangeProps {
   readonly label: string;
-  readonly ends: readonly [string, string];
+  readonly ends?: readonly [string, string];
   readonly span: Span;
   readonly value: number;
   readonly text?: string;
@@ -32,12 +32,21 @@ type Weight =
   | "podDividerWeight";
 
 const WEIGHTS: readonly { readonly field: Weight; readonly label: string }[] = [
-  { field: "depthWeight", label: "Rows away from your target" },
-  { field: "offAxisWeight", label: "Off to the side" },
+  { field: "depthWeight", label: "Missing your spot" },
+  { field: "offAxisWeight", label: "Watching at an angle" },
   { field: "frontBandWeight", label: "The front rows" },
-  { field: "wallBandWeight", label: "Against a wall" },
-  { field: "podDividerWeight", label: "A console between you" },
+  { field: "wallBandWeight", label: "A wall, or the back row" },
+  { field: "podDividerWeight", label: "A console between seats" },
 ];
+
+const REFERENCE_AT = {
+  depth: REFERENCE.targetDepth,
+  lateral: REFERENCE.targetLateral,
+  seatsOffCentre: 0,
+};
+
+const WIDTH = 64;
+const HEIGHT = 46;
 
 const WEIGHT: Span = { min: 0, max: 2, step: 0.05 };
 const DEPTH: Span = { min: 0, max: 1, step: 0.01 };
@@ -53,25 +62,40 @@ const percent = (fraction: number) => `${Math.round(fraction * 100)}%`;
 
 const depthText = (depth: number) => `${percent(depth)} of the way back`;
 
+const mindText = (weight: number) => {
+  if (weight === 0) return "Don't mind";
+  return weight < 1 ? "A little" : "Avoid";
+};
+
 const lateralText = (lateral: number) =>
   lateral === 0
     ? "on the centreline"
     : `${percent(Math.abs(lateral))} of the way to house ${Math.sign(lateral) === -1 ? "left" : "right"}`;
 
+const held = (value: number, low: number, high: number) =>
+  Math.round(Math.min(high, Math.max(low, value)) * 100) / 100;
+
 const Room = ({ profile, onChange }: ProfileProps) => {
   const place = (event: PointerEvent<SVGSVGElement>) => {
     const box = event.currentTarget.getBoundingClientRect();
+    const at = targetAt({
+      cx: ((event.clientX - box.left) / box.width) * WIDTH,
+      cy: ((event.clientY - box.top) / box.height) * HEIGHT,
+    });
     onChange({
       ...profile,
-      ...targetAt(
-        (event.clientX - box.left) / box.width,
-        (event.clientY - box.top) / box.height,
-      ),
+      targetDepth: held(at.targetDepth, 0, 1),
+      targetLateral: held(at.targetLateral, -1, 1),
     });
   };
+  const was = marksOf(ROOM, REFERENCE_AT, REFERENCE);
   const marks = marksOf(
     ROOM,
-    { depth: profile.targetDepth, lateral: profile.targetLateral },
+    {
+      depth: profile.targetDepth,
+      lateral: profile.targetLateral,
+      seatsOffCentre: 0,
+    },
     profile,
   );
   return (
@@ -95,6 +119,14 @@ const Room = ({ profile, onChange }: ProfileProps) => {
           className="mp-row"
         />
       ))}
+      {isReference(profile) ? null : (
+        <circle
+          cx={was.target.cx}
+          cy={was.target.cy}
+          r="2"
+          className="mp-was"
+        />
+      )}
       <circle
         cx={marks.target.cx}
         cy={marks.target.cy}
@@ -118,9 +150,14 @@ const Range = ({
   const id = useId();
   return (
     <div className="field range">
-      <label className="eyebrow" htmlFor={id}>
-        {label}
-      </label>
+      <span className="top">
+        <label className="name" htmlFor={id}>
+          {label}
+        </label>
+        <span className="said" aria-hidden="true">
+          {text}
+        </span>
+      </span>
       <input
         id={id}
         type="range"
@@ -133,10 +170,12 @@ const Range = ({
         data-term={term}
         onChange={(event) => onChange(Number(event.target.value))}
       />
-      <span className="ends" aria-hidden="true">
-        <span>{ends[0]}</span>
-        <span>{ends[1]}</span>
-      </span>
+      {ends === undefined ? null : (
+        <span className="ends" aria-hidden="true">
+          <span>{ends[0]}</span>
+          <span>{ends[1]}</span>
+        </span>
+      )}
     </div>
   );
 };
@@ -146,9 +185,13 @@ export const Profile = ({ profile, onChange }: ProfileProps) => (
     <fieldset className="field">
       <legend className="eyebrow">Where you sit</legend>
       <Room profile={profile} onChange={onChange} />
+      <p className="micro">
+        Drag the dot, or use the two ranges below. The faint circle is
+        Reference, where it was.
+      </p>
       <Range
         label="How far back"
-        ends={["Front", "Back"]}
+        ends={["Front row", "Back row"]}
         span={DEPTH}
         value={profile.targetDepth}
         text={depthText(profile.targetDepth)}
@@ -157,7 +200,7 @@ export const Profile = ({ profile, onChange }: ProfileProps) => (
       />
       <Range
         label="Left or right"
-        ends={["Left", "Right"]}
+        ends={["House left", "House right"]}
         span={LATERAL}
         value={profile.targetLateral}
         text={lateralText(profile.targetLateral)}
@@ -172,22 +215,28 @@ export const Profile = ({ profile, onChange }: ProfileProps) => (
         Back to Reference
       </button>
       <p className="micro">
-        Reference sits two thirds back on the centreline, where the standards
-        tune the room. Change it and this phone remembers.
+        Reference aims two thirds back on the centreline, where cinema standards
+        tune the room. Saved on this phone once you move it, and sent nowhere.
+        Changing it runs the search again against live availability, because
+        seats are never re-ranked from a reading that has aged.
       </p>
     </fieldset>
     <fieldset className="field">
-      <legend className="eyebrow">What to avoid</legend>
+      <legend className="eyebrow">And what you mind</legend>
       {WEIGHTS.map(({ field, label }) => (
         <Range
           key={field}
           label={label}
-          ends={["Don't mind", "Avoid"]}
           span={WEIGHT}
           value={profile[field]}
+          text={mindText(profile[field])}
           onChange={(weight) => onChange({ ...profile, [field]: weight })}
         />
       ))}
+      <span className="ends" aria-hidden="true">
+        <span>Don't mind</span>
+        <span>Avoid</span>
+      </span>
     </fieldset>
   </>
 );

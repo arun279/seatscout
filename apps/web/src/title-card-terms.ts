@@ -1,7 +1,8 @@
-import { dayOf, partyOf } from "./phrases.js";
+import type { SeatProfile } from "@seatscout/client";
+import { dayOf, partyOf, seatOf } from "./phrases.js";
 import type { Terms } from "./terms.js";
 
-export type Term = "partySize" | "movie" | "date" | "area";
+export type Term = "partySize" | "movie" | "date" | "area" | "profile";
 
 export interface TitleCardEntry {
   readonly term?: Term;
@@ -14,7 +15,11 @@ type TitleCardLines = readonly [
   readonly TitleCardEntry[],
 ];
 
-export const termLinesOf = (terms: Terms, today: string): TitleCardLines => [
+export const termLinesOf = (
+  terms: Terms,
+  today: string,
+  profile: SeatProfile,
+): TitleCardLines => [
   [{ term: "partySize", words: partyOf(terms.partySize) }],
   [{ term: "movie", words: terms.movie ?? "Which movie?" }],
   [
@@ -24,6 +29,6 @@ export const termLinesOf = (terms: Terms, today: string): TitleCardLines => [
       words: terms.area === undefined ? "Near where?" : `Near ${terms.area}`,
     },
     { words: "Any format" },
-    { words: "Reference seat" },
+    { term: "profile", words: seatOf(profile) },
   ],
 ];

@@ -1,7 +1,10 @@
-import type { SearchTerms } from "@seatscout/client";
+import type { SearchTerms, SeatProfile } from "@seatscout/client";
 import type { Terms } from "./terms.js";
 
-export const askedFrom = (terms: Terms): SearchTerms | null =>
+export const askedFrom = (
+  terms: Terms,
+  profile: SeatProfile,
+): SearchTerms | null =>
   terms.movie === undefined || terms.area === undefined
     ? null
     : {
@@ -10,4 +13,5 @@ export const askedFrom = (terms: Terms): SearchTerms | null =>
         area: terms.area,
         partySize: terms.partySize,
         accessibleSeating: false,
+        profile,
       };

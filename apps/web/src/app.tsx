@@ -1,11 +1,18 @@
-import type { Search, SearchTerms, SeatScout } from "@seatscout/client";
+import type {
+  RecentSearch,
+  Search,
+  SearchTerms,
+  SeatProfile,
+  SeatScout,
+} from "@seatscout/client";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { askedFrom } from "./asked.js";
 import { Strip } from "./coverage.js";
 import { type HeldSnapshots, heldSnapshots } from "./held.js";
 import { type Overlays as OverlayState, useOverlays } from "./overlay.js";
 import { Overlays } from "./overlays.js";
-import { partyOf, whenOf } from "./phrases.js";
+import { partyOf, seatSetOf, whenOf } from "./phrases.js";
+import { Recent } from "./recent.js";
 import { Results } from "./results.js";
 import { queryOf, type Terms } from "./terms.js";
 import { TitleCard } from "./title-card.js";
@@ -16,10 +23,13 @@ export interface Clock {
   readonly subscribe: (tick: () => void) => () => void;
 }
 
-interface AppProps {
+export interface AppProps {
   readonly seatscout: SeatScout;
   readonly terms: Terms;
   readonly onTerms: (terms: Terms) => void;
+  readonly profile: SeatProfile;
+  readonly onProfile: (profile: SeatProfile) => void;
+  readonly recent: readonly RecentSearch[];
   readonly today: string;
   readonly clock: Clock;
 }
@@ -92,40 +102,71 @@ const Searching = ({
 
 const Prompt = ({
   terms,
+  profile,
+  recent,
   today,
   onEdit,
+  onTerms,
 }: {
   readonly terms: Terms;
+  readonly profile: SeatProfile;
+  readonly recent: readonly RecentSearch[];
   readonly today: string;
   readonly onEdit: (term: Term) => void;
+  readonly onTerms: (terms: Terms) => void;
 }) => (
-  <section className="verdict">
-    <p className="lede">
-      Name a movie and an area to search. {partyOf(terms.partySize)},{" "}
-      {whenOf(terms.date, today)} and the Reference seat are already set.
-    </p>
-    <button
-      type="button"
-      className="btn btn-velvet"
-      onClick={() => onEdit(terms.movie === undefined ? "movie" : "area")}
-    >
-      Find seats
-    </button>
-  </section>
+  <>
+    <section className="verdict">
+      <p className="lede">
+        Name a movie and an area to search. {partyOf(terms.partySize)},{" "}
+        {whenOf(terms.date, today)} and {seatSetOf(profile)} are already set.
+      </p>
+      <button
+        type="button"
+        className="btn btn-velvet"
+        onClick={() => onEdit(terms.movie === undefined ? "movie" : "area")}
+      >
+        Find seats
+      </button>
+    </section>
+    <Recent recent={recent} today={today} heading="Run again" onRun={onTerms} />
+  </>
 );
 
-const Screen = ({ seatscout, terms, onTerms, today, clock }: AppProps) => {
-  const asked = askedFrom(terms);
+const Screen = ({
+  seatscout,
+  terms,
+  onTerms,
+  profile,
+  onProfile,
+  recent,
+  today,
+  clock,
+}: AppProps) => {
+  const asked = askedFrom(terms, profile);
   const overlays = useOverlays();
   const openAsk = (focus: Term) => overlays.open({ kind: "ask", focus });
 
   return (
     <>
-      <TitleCard terms={terms} today={today} onEdit={openAsk} />
+      <TitleCard
+        terms={terms}
+        profile={profile}
+        today={today}
+        onEdit={openAsk}
+      />
       {asked === null ? (
-        <Prompt terms={terms} today={today} onEdit={openAsk} />
+        <Prompt
+          terms={terms}
+          profile={profile}
+          recent={recent}
+          today={today}
+          onEdit={openAsk}
+          onTerms={onTerms}
+        />
       ) : (
         <Searching
+          key={JSON.stringify(asked)}
           seatscout={seatscout}
           asked={asked}
           terms={terms}
@@ -137,8 +178,12 @@ const Screen = ({ seatscout, terms, onTerms, today, clock }: AppProps) => {
       <Overlays
         stack={overlays.stack}
         terms={terms}
+        profile={profile}
+        recent={recent}
+        today={today}
         onClose={overlays.close}
         onTerms={onTerms}
+        onProfile={onProfile}
       />
     </>
   );
