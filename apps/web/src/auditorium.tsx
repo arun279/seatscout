@@ -226,7 +226,7 @@ export const Auditorium = ({
       </p>
       <p className="prov">
         <span>1 source · read {ageOf(result.fetchedAt, now)} ago</span>
-        <span className="p2">Not confirmed by a second source</span>
+        <span className="unconfirmed">Not confirmed by a second source</span>
       </p>
       <div className="dock">
         <p className="micro">

@@ -176,7 +176,7 @@
   color: var(--silver-dim);
 }
 
-.room .prov .p2 {
+.room .prov .unconfirmed {
   color: var(--velvet-lit);
 }
 
