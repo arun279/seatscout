@@ -106,9 +106,8 @@ describe("where you sit, on the Ask sheet", () => {
     const { stage, editor } = await opened();
     const moved = [1.35, 0.85, 0.05, 0.45, 0.65];
 
-    WEIGHTS.forEach(([label], at) =>
-      slide(editor.getByLabelText(label), moved[at] ?? 0),
-    );
+    for (const [at, [label]] of WEIGHTS.entries())
+      slide(editor.getByLabelText(label), moved[at] ?? 0);
     fireEvent.click(editor.getByRole("button", { name: /find seats/i }));
 
     expect(stage.profiles).toEqual([
