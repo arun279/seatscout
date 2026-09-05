@@ -5,14 +5,20 @@ import {
   fireEvent,
   render,
   screen,
+  waitFor,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ask, cards, staged, TODAY, TONIGHT } from "./app.fixtures.js";
+import { ask, cards, NEARBY, staged, TODAY, TONIGHT } from "./app.fixtures.js";
 import { modal } from "./modal.js";
-import type { Terms } from "./terms.js";
+import { type Terms, termsFrom } from "./terms.js";
 
-const NO_MOVIE: Terms = { date: TODAY, partySize: 2 };
+const NOTHING: Terms = { date: TODAY, partySize: 2 };
+const NO_MOVIE: Terms = { date: TODAY, area: "75006", partySize: 2 };
 const NO_AREA: Terms = { movie: "245569", date: TODAY, partySize: 2 };
+const EVERYTHING = termsFrom(
+  "?movie=245569&date=2026-08-28&area=75006&partySize=2&chain=AMC&chain=Landmark&theater=aacbt&theater=aaxju&format=Dolby+Cinema&format=IMAX&amenity=Recliners&from=19:00&until=21:00&accessibleSeating=true",
+  TODAY,
+);
 
 const windowListeners = (calls: readonly unknown[][]) =>
   calls
@@ -25,27 +31,28 @@ describe("the first screen", () => {
     vi.restoreAllMocks();
   });
 
-  it("opens on the query as a title card and a prompt, with the Movie and the area waiting to be filled", () => {
-    staged({ terms: NO_MOVIE });
+  it("opens on the query as a title card and a prompt, with the area and the Movie waiting to be filled", () => {
+    staged({ terms: NOTHING });
 
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
       "Two seats together",
     );
     expect(screen.getByRole("button", { name: "Which movie?" })).toBeVisible();
     expect(document.querySelector("header")).toHaveTextContent(
-      "Today · Near where? · Any format · Reference seat",
+      "Today · Near where? · Any showtime · Reference seat",
     );
     expect(
       screen.getByText(
-        "Name a movie and an area to search. Two seats together, today and the Reference seat are already set.",
+        "Name an area, then a movie playing near it. Two seats together, today and the Reference seat are already set.",
       ),
     ).toBeVisible();
     expect(cards()).toEqual([]);
   });
 
   it.each([
-    ["the movie", NO_MOVIE, "Movie number"],
+    ["anything", NOTHING, "Near, by postal code"],
     ["the area", NO_AREA, "Near, by postal code"],
+    ["the movie", NO_MOVIE, "Film"],
   ])(
     "asks first for what is missing when the prompt is pressed without %s",
     (_, terms, control) => {
@@ -57,29 +64,78 @@ describe("the first screen", () => {
     },
   );
 
-  it("names the area once it has one", async () => {
+  it("names the area and the film once the programme near it is read", async () => {
     const stage = staged();
-    await stage.settled();
+    await stage.programmed();
 
     expect(document.querySelector("header")).toHaveTextContent(
-      "Today · Near 75006 · Any format · Reference seat",
+      "Today · Near 75006 · Any showtime · Reference seat",
     );
+    expect(
+      screen.getByRole("button", { name: "The Dog Stars (2026)" }),
+    ).toBeVisible();
+  });
+
+  it("shows the film's identity until the programme names it, and keeps it when the programme cannot be read", async () => {
+    const stage = staged({
+      script: { sequences: { [NEARBY]: [500, 500, 500] } },
+    });
+
+    expect(screen.getByRole("button", { name: "245569" })).toBeVisible();
+
+    await stage.programmed();
+
+    expect(screen.getByRole("button", { name: "245569" })).toBeVisible();
+  });
+
+  it("states every term on the card, each a line that opens the sheet at that term", async () => {
+    const stage = staged({ terms: EVERYTHING });
+    await stage.programmed();
+
+    expect(document.querySelector("header")).toHaveTextContent(
+      "Today · 7:00p to 9:00p · Near 75006 · Dolby Cinema or IMAX · Recliners · AMC or Landmark · Cinemark Dallas XD and IMAX or AMC Village on the Parkway 9 · Accessible seating · Reference seat",
+    );
+    for (const [line, control] of [
+      [/7:00p to 9:00p/i, () => ask().getByLabelText("From")],
+      [
+        /dolby cinema or imax/i,
+        () => ask().getByRole("button", { name: "3D" }),
+      ],
+      [
+        /^recliners$/i,
+        () => ask().getByRole("button", { name: "Accessibility Devices" }),
+      ],
+      [/amc or landmark/i, () => ask().getByRole("button", { name: "AMC" })],
+      [
+        /cinemark dallas xd and imax or/i,
+        () =>
+          ask().getByRole("button", { name: "Cinemark Dallas XD and IMAX" }),
+      ],
+      [/accessible seating/i, () => ask().getByLabelText("Accessible seating")],
+    ] as const) {
+      fireEvent.click(screen.getByRole("button", { name: line }));
+      expect(control()).toHaveFocus();
+      fireEvent.click(ask().getByRole("button", { name: /keep as it was/i }));
+      await waitFor(() =>
+        expect(screen.queryByRole("dialog", { hidden: true })).toBeNull(),
+      );
+    }
   });
 
   it.each([
     [/two seats together/i, "More seats"],
-    [/^245569$/, "Movie number"],
+    [/the dog stars/i, "Film"],
     [/^today$/i, "Date"],
     [/near 75006/i, "Near, by postal code"],
   ])(
     "opens the query for editing from the title card's %s line, with that term ready to change",
     async (line, control) => {
       const stage = staged();
-      await stage.settled();
+      await stage.programmed();
       fireEvent.click(screen.getByRole("button", { name: line }));
 
       const editor = ask();
-      expect(editor.getByLabelText("Movie number")).toHaveValue("245569");
+      expect(editor.getByLabelText("Film")).toHaveValue("The Dog Stars (2026)");
       expect(editor.getByLabelText("Near, by postal code")).toHaveValue(
         "75006",
       );
@@ -89,6 +145,14 @@ describe("the first screen", () => {
     },
   );
 
+  it("opens the sheet at the Formats from the line that says any showtime", async () => {
+    const stage = staged();
+    await stage.programmed();
+    fireEvent.click(screen.getByRole("button", { name: /any showtime/i }));
+
+    expect(ask().getByRole("button", { name: "3D" })).toHaveFocus();
+  });
+
   it("keeps the query as it was on the way back, and closes", async () => {
     const stage = staged();
     await stage.settled();
@@ -97,20 +161,22 @@ describe("the first screen", () => {
     );
     fireEvent.click(ask().getByRole("button", { name: /keep as it was/i }));
 
-    expect(screen.queryByRole("dialog", { hidden: true })).toBeNull();
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog", { hidden: true })).toBeNull(),
+    );
     expect(stage.chosen).toEqual([]);
   });
 
-  it("runs the query as edited, with the party stepped and the Movie and area retyped, and closes", async () => {
+  it("runs the query as edited, with the party stepped and the film's number and the area retyped, and closes", async () => {
     const stage = staged();
-    await stage.settled();
-    fireEvent.click(screen.getByRole("button", { name: /^245569$/ }));
+    await stage.programmed();
+    fireEvent.click(screen.getByRole("button", { name: /the dog stars/i }));
 
     const editor = ask();
     fireEvent.click(editor.getByLabelText("More seats"));
     fireEvent.click(editor.getByLabelText("More seats"));
     fireEvent.click(editor.getByLabelText("Fewer seats"));
-    fireEvent.change(editor.getByLabelText("Movie number"), {
+    fireEvent.change(editor.getByLabelText("Film"), {
       target: { value: "243819" },
     });
     fireEvent.change(editor.getByLabelText("Near, by postal code"), {

@@ -195,3 +195,10 @@
 .fail-box .eyebrow {
   margin: 0;
 }
+
+.card .designations {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--beam-dim);
+}

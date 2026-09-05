@@ -2,6 +2,7 @@ import { seatMapCaptures } from "../corpus/captures.js";
 import { gapBetween, rowsOf } from "../domain/seat-group.js";
 import { ON_SALE, sellabilityFrom, theatersFrom } from "../source/catalogue.js";
 import { decoded, isRecord } from "../source/json.js";
+import { moviesFrom } from "../source/movies.js";
 import {
   fieldsMissingFrom,
   isUpstreamSeat,
@@ -141,6 +142,15 @@ export const areaDivergencesIn = (answer: Answer): readonly Divergence[] => {
   const theaters = theatersFrom(answer.body);
   if (theaters === null) return diverging("missing", ["theaters"]);
   return theaters.length === 0 ? diverging("empty", ["theaters"]) : [];
+};
+
+export const scheduleDivergencesIn = (
+  answer: Answer,
+): readonly Divergence[] => {
+  if (decoded(answer.body) === null) return diverging("unreadable", ["json"]);
+  const movies = moviesFrom(answer.body);
+  if (movies === null) return diverging("missing", ["movies"]);
+  return movies.length === 0 ? diverging("empty", ["movies"]) : [];
 };
 
 export const listingDivergencesIn = (answer: Answer): readonly Divergence[] => {

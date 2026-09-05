@@ -14,7 +14,7 @@ import type {
   UnbookableReason,
   Unidentified,
 } from "../domain/catalogue.js";
-import { decoded, isRecord } from "./json.js";
+import { carries, decoded, isRecord, type Kind } from "./json.js";
 
 interface UpstreamNamedTheater {
   readonly formattedID: TheaterId;
@@ -60,8 +60,6 @@ export interface Sellability {
   readonly rows: number;
   readonly notRefused: readonly (string | undefined)[];
 }
-
-type Kind = "boolean" | "number" | "string";
 
 const THEATER_FIELDS: Readonly<
   Record<Exclude<keyof UpstreamNamedTheater, "chainCode">, Kind>
@@ -132,13 +130,6 @@ const FORMATS: Readonly<Record<string, Format>> = {
   XD: "XD",
   "XL at AMC": "XL",
 };
-
-const carries = (
-  value: unknown,
-  fields: Readonly<Record<string, Kind>>,
-): value is Readonly<Record<string, unknown>> =>
-  isRecord(value) &&
-  Object.entries(fields).every(([field, kind]) => typeof value[field] === kind);
 
 const isAmenity = (value: unknown): value is UpstreamAmenity =>
   carries(value, AMENITY_FIELDS);

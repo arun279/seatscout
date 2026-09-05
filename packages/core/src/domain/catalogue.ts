@@ -44,10 +44,52 @@ export type Format =
   | "XD"
   | "XL";
 
+export const EVERY_AMENITY = [
+  "Accessibility Devices",
+  "Closed Captioning",
+  "Dine-In",
+  "Recliners",
+] as const satisfies readonly Amenity[];
+
+export const EVERY_CHAIN = [
+  "AMC",
+  "Alamo Drafthouse Cinemas",
+  "Angelika Film Center",
+  "Cinemark Theatres",
+  "Cinepolis",
+  "Galaxy Theatres",
+  "Hooky Entertainment",
+  "Landmark",
+  "Studio Movie Grill",
+] as const satisfies readonly Chain[];
+
+export const EVERY_FORMAT = [
+  "3D",
+  "D-BOX",
+  "DFX",
+  "Dolby Atmos",
+  "Dolby Cinema",
+  "HDR by Barco",
+  "IMAX",
+  "IMAX with Laser",
+  "Laser",
+  "SDX",
+  "ScreenX",
+  "Sony Digital",
+  "The Big Show",
+  "XD",
+  "XL",
+] as const satisfies readonly Format[];
+
 export interface Theater {
   readonly id: TheaterId;
   readonly name: string;
   readonly chain?: Chain;
+}
+
+export interface Movie {
+  readonly id: string;
+  readonly title: string;
 }
 
 export interface Presentation {
@@ -80,18 +122,18 @@ export interface Catalogue {
 }
 
 export interface ShowtimeTerms {
-  readonly theaters?: readonly TheaterId[];
+  readonly theaters?: readonly string[];
   readonly chains?: readonly Chain[];
   readonly formats?: readonly Format[];
   readonly amenities?: readonly Amenity[];
-  readonly from?: number;
-  readonly until?: number;
+  readonly from?: string;
+  readonly until?: string;
 }
 
 const within = (
-  at: number,
-  from: number | undefined,
-  until: number | undefined,
+  at: string,
+  from: string | undefined,
+  until: string | undefined,
 ) => (from === undefined || at >= from) && (until === undefined || at < until);
 
 const satisfied = <Term>(
@@ -110,7 +152,7 @@ const admits =
     satisfied(terms.amenities, (amenity) =>
       presentation.amenities.includes(amenity),
     ) &&
-    within(Date.parse(startsAt), terms.from, terms.until);
+    within(startsAt, terms.from, terms.until);
 
 export const narrowed = (
   catalogue: Catalogue,

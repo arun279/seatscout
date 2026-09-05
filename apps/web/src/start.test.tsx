@@ -9,22 +9,33 @@ import {
   within,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { Root } from "react-dom/client";
 import { browserClock, browserSeatScout } from "./browser.js";
 import { startApp } from "./start.js";
 
 const SEAT_MAP = "/napi/seatMap/";
 
+let mounted: Root | null = null;
+
 const opened = (query: string) => {
-  const upstream = fakeUpstream({ seed: 4, standInAuditoriums: true });
+  const upstream = fakeUpstream({
+    seed: 4,
+    standInAuditoriums: true,
+    standInTheaters: true,
+  });
   vi.stubGlobal("fetch", upstream);
   window.history.replaceState(null, "", `/${query}`);
   document.body.replaceChildren(
     Object.assign(document.createElement("div"), { id: "app" }),
   );
   act(() => {
-    startApp();
+    mounted = startApp();
   });
   return {
+    unmount: () => {
+      act(() => mounted?.unmount());
+      mounted = null;
+    },
     seatMapsRead: () =>
       upstream.requests.filter((request) => request.path.startsWith(SEAT_MAP))
         .length,
@@ -38,6 +49,8 @@ describe("starting the application in a browser", () => {
     localStorage.clear();
   });
   afterEach(() => {
+    act(() => mounted?.unmount());
+    mounted = null;
     cleanup();
     vi.unstubAllGlobals();
     vi.useRealTimers();
@@ -53,7 +66,10 @@ describe("starting the application in a browser", () => {
     await waitFor(() =>
       expect(screen.getAllByRole("article").length).toBeGreaterThan(0),
     );
-    expect(page.cached()).toHaveLength(1);
+    expect(page.cached().toSorted()).toEqual([
+      'seatscout.catalogue.v1.["245569","2026-08-28","75006"]',
+      'seatscout.programme.v1.["2026-08-28","75006"]',
+    ]);
     expect(
       within(screen.getAllByRole("article")[0] ?? document.body).getByText(
         /^\d+s$/,
@@ -104,18 +120,52 @@ describe("starting the application in a browser", () => {
       "Three seats together",
     );
 
+    const traversed = new Promise((settle) =>
+      window.addEventListener("popstate", settle, { once: true }),
+    );
     window.history.back();
+    await act(() => traversed);
 
-    await waitFor(() =>
-      expect(window.location.search).toBe(
-        "?movie=245569&date=2026-08-28&area=75006&partySize=2",
-      ),
+    expect(window.location.search).toBe(
+      "?movie=245569&date=2026-08-28&area=75006&partySize=2",
     );
-    await waitFor(() =>
-      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-        "Two seats together",
-      ),
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
+      "Two seats together",
     );
+  });
+
+  it("closes the sheet once a query naming another date is found, rather than opening it again on the new query", async () => {
+    const page = opened("?movie=245569&date=2026-08-28&area=75006&partySize=2");
+    await waitFor(() => expect(page.seatMapsRead()).toBeGreaterThan(0));
+    fireEvent.click(
+      screen.getByRole("button", { name: /two seats together/i }),
+    );
+    const ask = within(
+      screen.getByRole("dialog", { name: /what are we seeing/i }),
+    );
+    fireEvent.change(ask.getByLabelText("Date"), {
+      target: { value: "2026-08-29" },
+    });
+    fireEvent.click(ask.getByRole("button", { name: /find seats/i }));
+
+    expect(window.location.search).toBe(
+      "?movie=245569&date=2026-08-29&area=75006&partySize=2",
+    );
+    expect(screen.queryByRole("dialog", { hidden: true })).toBeNull();
+    await act(() => new Promise((settle) => setTimeout(settle)));
+    expect(screen.queryByRole("dialog", { hidden: true })).toBeNull();
+  });
+
+  it("hands back the root it mounted, so unmounting stops the clock ticking into a torn-down tree", () => {
+    vi.useFakeTimers();
+    const page = opened("?movie=245569&date=2026-08-28&area=75006&partySize=2");
+
+    expect(vi.getTimerCount()).toBe(1);
+
+    page.unmount();
+
+    expect(vi.getTimerCount()).toBe(0);
+    expect(document.getElementById("app")?.childElementCount).toBe(0);
   });
 
   it("ticks its clock once a second while someone listens, and not after", () => {

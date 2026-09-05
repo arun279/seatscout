@@ -43,8 +43,8 @@ describe("the catalogue phase", () => {
       counted(
         await resolve({
           ...TERMS,
-          from: Date.parse("2026-08-28T19:00:00-05:00"),
-          until: Date.parse("2026-08-28T22:00:00-05:00"),
+          from: "2026-08-28T19:00",
+          until: "2026-08-28T22:00",
         }),
       ),
     ).toEqual({ bookable: 46, unbookable: 0, unidentified: 0 });

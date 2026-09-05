@@ -186,7 +186,7 @@ dialog {
   max-height: 100dvh;
   height: 100dvh;
   margin: 0 auto;
-  padding: 12px 22px 32px;
+  padding: 12px 22px 0;
   border: 0;
   background: var(--house);
   color: var(--silver);

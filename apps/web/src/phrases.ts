@@ -40,12 +40,28 @@ const capitalised = (phrase: string) =>
 
 export const twoDigits = (value: number) => `${value}`.padStart(2, "0");
 
-export const clockOf = (startsAt: string): string => {
-  const hours = Number(startsAt.slice(11, 13));
-  const minutes = startsAt.slice(14, 16);
+const timeOf = (clock: string): string => {
+  const hours = Number(clock.slice(0, 2));
+  const minutes = clock.slice(3, 5);
   const onClock = hours % 12 === 0 ? 12 : hours % 12;
   return `${onClock}:${minutes}${hours < 12 ? "a" : "p"}`;
 };
+
+export const clockOf = (startsAt: string): string =>
+  timeOf(startsAt.slice(11, 16));
+
+export const windowOf = (
+  from: string | undefined,
+  until: string | undefined,
+): string | undefined => {
+  if (from !== undefined && until !== undefined)
+    return `${timeOf(from)} to ${timeOf(until)}`;
+  if (from !== undefined) return `from ${timeOf(from)}`;
+  return until === undefined ? undefined : `until ${timeOf(until)}`;
+};
+
+export const retryOf = (unreached: number): string =>
+  `Retry the ${wordOf(unreached)} unreached`;
 
 export const ageOf = (fetchedAt: number, now: number): string => {
   const seconds = Math.max(0, Math.floor((now - fetchedAt) / 1000));

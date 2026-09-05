@@ -4,6 +4,7 @@ import { Ask } from "./ask.js";
 import { Ledger, Strip } from "./coverage.js";
 import { type HeldSnapshots, heldSnapshots } from "./held.js";
 import { partyOf, whenOf } from "./phrases.js";
+import { programmeNear } from "./programme.js";
 import { Results } from "./results.js";
 import { queryOf, searchTermsOf, type Terms } from "./terms.js";
 import { type Term, TitleCard } from "./title-card.js";
@@ -19,6 +20,11 @@ interface AppProps {
   readonly onTerms: (terms: Terms) => void;
   readonly today: string;
   readonly clock: Clock;
+}
+
+interface QueryProps extends AppProps {
+  readonly editing: Term | null;
+  readonly onEdit: (term: Term | null) => void;
 }
 
 interface SearchingProps {
@@ -59,11 +65,15 @@ const Searching = ({
   clock,
   onEdit,
 }: SearchingProps) => {
-  const [session, setSession] = useState(() => opened(seatscout, asked));
+  const [session] = useState(() => opened(seatscout, asked));
   const [ledger, setLedger] = useState(false);
   const snapshot = useSyncExternalStore(
     session.held.subscribe,
     session.held.snapshot,
+  );
+  const painted = useSyncExternalStore(
+    session.held.subscribe,
+    session.held.painted,
   );
   const now = useSyncExternalStore(clock.subscribe, clock.now);
 
@@ -74,11 +84,14 @@ const Searching = ({
       <Strip snapshot={snapshot} onLedger={() => setLedger(true)} />
       <Results
         snapshot={snapshot}
+        painted={painted}
         terms={terms}
         today={today}
         now={now}
         held={session.held}
-        onRetry={() => setSession(opened(seatscout, asked))}
+        onRetry={() => {
+          void session.search.retry();
+        }}
         onEdit={onEdit}
       />
       {ledger && (
@@ -99,21 +112,70 @@ const Prompt = ({
 }) => (
   <section className="verdict">
     <p className="lede">
-      Name a movie and an area to search. {partyOf(terms.partySize)},{" "}
+      Name an area, then a movie playing near it. {partyOf(terms.partySize)},{" "}
       {whenOf(terms.date, today)} and the Reference seat are already set.
     </p>
     <button
       type="button"
       className="btn btn-velvet"
-      onClick={() => onEdit(terms.movie === undefined ? "movie" : "area")}
+      onClick={() => onEdit(terms.area === undefined ? "area" : "movie")}
     >
       Find seats
     </button>
   </section>
 );
 
-export const App = ({ seatscout, terms, onTerms, today, clock }: AppProps) => {
+const Query = ({
+  seatscout,
+  terms,
+  onTerms,
+  today,
+  clock,
+  editing,
+  onEdit,
+}: QueryProps) => {
+  const [programme] = useState(() =>
+    programmeNear(seatscout, terms.area, terms.date),
+  );
+  const playing = useSyncExternalStore(programme.subscribe, programme.snapshot);
   const asked = searchTermsOf(terms);
+
+  return (
+    <>
+      <TitleCard
+        terms={terms}
+        programme={playing}
+        today={today}
+        onEdit={onEdit}
+      />
+      {asked === null ? (
+        <Prompt terms={terms} today={today} onEdit={onEdit} />
+      ) : (
+        <Searching
+          key={queryOf(terms)}
+          seatscout={seatscout}
+          asked={asked}
+          terms={terms}
+          today={today}
+          clock={clock}
+          onEdit={onEdit}
+        />
+      )}
+      {editing !== null && (
+        <Ask
+          terms={terms}
+          programme={programme}
+          onProgramme={(area, date) => programmeNear(seatscout, area, date)}
+          focus={editing}
+          onClose={() => onEdit(null)}
+          onFind={onTerms}
+        />
+      )}
+    </>
+  );
+};
+
+export const App = (props: AppProps) => {
   const [editing, setEditing] = useState<Term | null>(null);
   const online = useSyncExternalStore(connectionChanges, isOnline);
 
@@ -130,28 +192,12 @@ export const App = ({ seatscout, terms, onTerms, today, clock }: AppProps) => {
         <span className="fall" />
         <span className="word">SEATSCOUT</span>
       </div>
-      <TitleCard terms={terms} today={today} onEdit={setEditing} />
-      {asked === null ? (
-        <Prompt terms={terms} today={today} onEdit={setEditing} />
-      ) : (
-        <Searching
-          key={queryOf(terms)}
-          seatscout={seatscout}
-          asked={asked}
-          terms={terms}
-          today={today}
-          clock={clock}
-          onEdit={setEditing}
-        />
-      )}
-      {editing !== null && (
-        <Ask
-          terms={terms}
-          focus={editing}
-          onClose={() => setEditing(null)}
-          onFind={onTerms}
-        />
-      )}
+      <Query
+        key={`${props.terms.area}|${props.terms.date}`}
+        {...props}
+        editing={editing}
+        onEdit={setEditing}
+      />
     </main>
   );
 };

@@ -54,6 +54,11 @@ Auditorium is not a fixed seating chart.
 
 The film itself, independent of where or how it is shown.
 
+A person knows it by its title, which the Source states beside it on a Theater's schedule
+for a date; a Query names it by the identity a listing is asked by, which is what a title
+resolves to. The Movies playing near an area on a date, titled, are read once per area
+and date, and that reading is not a Catalogue: it names films and Theaters and no Showtime.
+
 ## Presentation
 
 A Movie shown in a particular set of Formats at a particular Theater.

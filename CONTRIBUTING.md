@@ -372,8 +372,8 @@ The mutation gate judges the code against the tests. Nothing above it judges the
 other test runs against the committed corpus, so the whole suite stays green while the
 upstream quietly changes shape underneath it. `packages/core/src/testing/contract.ts` is what
 notices. It reads one seat map answer and reports every way it diverges from what the corpus
-recorded, and it reads a live area and a live listing and reports either one that no longer
-becomes a domain object or arrives with nothing in it. `contract.live.test.ts` holds the live
+recorded, and it reads a live area, a live Theater schedule and a live listing and reports any
+of them that no longer becomes a domain object or arrives with nothing in it. `contract.live.test.ts` holds the live
 aggregator to that, and `.github/workflows/contract.yml` runs it nightly.
 
 The same lane carries one more reading of the world: the live search timing described under
@@ -756,10 +756,13 @@ and the adapter behind it. It is internal on purpose: no caller varies across it
 publishing it would oblige every caller to learn its retry semantics to use
 it. See [ADR 1](docs/adr/0001-single-aggregating-source.md).
 
-Its three operations are domain questions rather than upstream routes: theaters near an area,
-showtimes for a movie on a date in an area, and seats for a showtime. Discovery asks for 25
-theaters, which is the number the corpus capture asks for. Every value the caller supplies is
-escaped before it reaches a route, so an area holding an ampersand cannot rewrite the request.
+Its four operations are domain questions rather than upstream routes: theaters near an area,
+movies playing at a theater on a date, showtimes for a movie on a date in an area, and seats
+for a showtime. Discovery asks for 25 theaters, which is the number the corpus capture asks
+for. The movies read asks for the date and no chain code, because the code the route survey's
+request carried was measured on 2026-09-04 to change nothing the Source answers. Every value
+the caller supplies is escaped before it reaches a route, so an area holding an ampersand
+cannot rewrite the request.
 
 What comes back is a reading: either the payload, or one of four reasons there is none.
 

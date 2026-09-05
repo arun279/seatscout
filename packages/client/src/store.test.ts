@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  type Cached,
   type CachedCatalogue,
   inMemoryStore,
   type KeyValueStore,
@@ -65,7 +66,7 @@ const oneSlot = (): KeyValueStore => {
 };
 
 const byReference = (): KeyValueStore => {
-  const held = new Map<string, CachedCatalogue>();
+  const held = new Map<string, Cached>();
   return {
     read: async (key) => held.get(key),
     write: async (key, value) => {

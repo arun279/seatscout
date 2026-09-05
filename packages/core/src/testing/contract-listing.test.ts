@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   nearbyTheatersCaptures,
   showtimeGroupingCaptures,
+  theaterMovieShowtimesCaptures,
 } from "../corpus/captures.js";
 import { answerOf, FETCHED_AT } from "./contract.fixtures.js";
 import {
@@ -9,7 +10,16 @@ import {
   areaDivergencesIn,
   divergencesIn,
   listingDivergencesIn,
+  scheduleDivergencesIn,
 } from "./contract.js";
+
+const scheduleCapture = () => {
+  const capture = theaterMovieShowtimesCaptures.get(
+    "showtimes/theater-showtimes-aacbt-2026-08-28.json",
+  );
+  if (capture === undefined) throw new Error("the schedule was never captured");
+  return capture.body;
+};
 
 const listingCapture = () => {
   const capture = showtimeGroupingCaptures.get(
@@ -118,6 +128,33 @@ describe("the contract an area and a listing recorded", () => {
       "a word nobody has met": [{ kind: "sellability", name: "reopening" }],
       "no word at all": [{ kind: "missing", name: "sellability" }],
     });
+  });
+
+  it("judges a Theater's schedule the way it judges an area: unreadable, short of a Movie, or empty", () => {
+    const schedule = scheduleCapture();
+    const { viewModel } = schedule;
+
+    expect(scheduleDivergencesIn(answerOf(schedule, 200))).toEqual([]);
+    expect(
+      scheduleDivergencesIn({
+        status: 200,
+        body: "<html>not today</html>",
+        fetchedAt: FETCHED_AT,
+      }),
+    ).toEqual([{ kind: "unreadable", name: "json" }]);
+    expect(
+      scheduleDivergencesIn(
+        answerOf(
+          { viewModel: { ...viewModel, movies: [...viewModel.movies, {}] } },
+          200,
+        ),
+      ),
+    ).toEqual([{ kind: "missing", name: "movies" }]);
+    expect(
+      scheduleDivergencesIn(
+        answerOf({ viewModel: { ...viewModel, movies: [] } }, 200),
+      ),
+    ).toEqual([{ kind: "empty", name: "movies" }]);
   });
 
   it("counts a Showtime a listing holds whether or not it was identified", () => {

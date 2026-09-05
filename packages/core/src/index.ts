@@ -2,10 +2,18 @@ export type { NormalisedPosition } from "./domain/auditorium.js";
 export { normalised } from "./domain/auditorium.js";
 export { type AuditoriumPlan, planOf } from "./domain/auditorium-map.js";
 export {
+  type Amenity,
   type Catalogue,
+  type Chain,
+  EVERY_AMENITY,
+  EVERY_CHAIN,
+  EVERY_FORMAT,
+  type Format,
+  type Movie,
   narrowed,
   type Showtime,
   type ShowtimeTerms,
+  type Theater,
   type TicketingUrl,
   type UnbookableReason,
   type Unidentified,

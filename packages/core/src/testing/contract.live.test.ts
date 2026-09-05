@@ -6,12 +6,14 @@ import {
   type Divergence,
   divergencesIn,
   listingDivergencesIn,
+  scheduleDivergencesIn,
 } from "./contract.js";
 
 declare module "vitest" {
   interface ProvidedContext {
     readonly liveSeatMaps: readonly Answer[];
     readonly liveArea: Answer;
+    readonly liveSchedule: Answer;
     readonly liveListing: Answer;
   }
   interface TaskMeta {
@@ -56,11 +58,12 @@ describe("the live Source against the contract the corpus recorded", () => {
     expect(task.meta.contract).toEqual([]);
   });
 
-  it("answers an area of Theaters and a listing of Showtimes, neither of them empty", ({
+  it("answers an area of Theaters, a Theater's schedule of Movies and a listing of Showtimes, none of them empty", ({
     task,
   }) => {
     task.meta.contract = saying([
       ...areaDivergencesIn(inject("liveArea")),
+      ...scheduleDivergencesIn(inject("liveSchedule")),
       ...listingDivergencesIn(inject("liveListing")),
     ]);
     expect(task.meta.contract).toEqual([]);

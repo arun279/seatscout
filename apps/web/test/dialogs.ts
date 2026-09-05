@@ -1,10 +1,16 @@
+import { act } from "@testing-library/react";
+
 Object.assign(HTMLDialogElement.prototype, {
   showModal(this: HTMLDialogElement) {
     this.setAttribute("open", "");
   },
   close(this: HTMLDialogElement) {
     this.removeAttribute("open");
-    this.dispatchEvent(new Event("close"));
+    setTimeout(() =>
+      act(() => {
+        this.dispatchEvent(new Event("close"));
+      }),
+    );
   },
 });
 

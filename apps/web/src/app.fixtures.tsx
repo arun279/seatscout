@@ -3,6 +3,7 @@ import {
   type Search,
   type SearchTerms,
   type SeatScout,
+  type Snapshot,
 } from "@seatscout/client";
 import { fakeUpstream, type UpstreamScript } from "@seatscout/client/testing";
 import { act, cleanup, render, screen, within } from "@testing-library/react";
@@ -11,7 +12,9 @@ import type { Terms } from "./terms.js";
 
 export const TODAY = "2026-08-28";
 export const LISTING = "/napi/theaterShowtimeGroupings/245569/2026-08-28";
-const SEAT_MAP = "/napi/seatMap/";
+export const NEARBY = "/napi/nearbyTheaters";
+export const SCHEDULES = "/napi/theaterMovieShowtimes/";
+export const SEAT_MAP = "/napi/seatMap/";
 const STONEBRIAR_4_20 = 558117351;
 const STONEBRIAR_6_00 = 558782900;
 const FAILING = [STONEBRIAR_4_20, STONEBRIAR_6_00];
@@ -33,7 +36,10 @@ export const ASKED: SearchTerms = {
 
 interface Staged {
   readonly terms?: Terms;
-  readonly script?: Omit<UpstreamScript, "seed" | "standInAuditoriums">;
+  readonly script?: Omit<
+    UpstreamScript,
+    "seed" | "standInAuditoriums" | "standInTheaters"
+  >;
   readonly holdRetries?: boolean;
 }
 
@@ -59,6 +65,7 @@ export const staged = (options: Staged = {}) => {
   const upstream = fakeUpstream({
     seed: 4,
     standInAuditoriums: true,
+    standInTheaters: true,
     ...options.script,
   });
   const time = ticking();
@@ -75,13 +82,26 @@ export const staged = (options: Staged = {}) => {
   const searches: Search[] = [];
   const aborted: Search[] = [];
   const asked: SearchTerms[] = [];
+  const settling: Promise<Snapshot>[] = [];
+  const programmes: Promise<unknown>[] = [];
   const seatscout: SeatScout = {
     ...real,
+    programme: (area, date) => {
+      const programme = real.programme(area, date);
+      programmes.push(programme);
+      return programme;
+    },
     search: (terms) => {
       asked.push(terms);
       const search = real.search(terms);
+      settling.push(search.done);
       const watched: Search = {
         ...search,
+        retry: () => {
+          const retried = search.retry();
+          settling.push(retried);
+          return retried;
+        },
         abort: () => {
           aborted.push(watched);
           search.abort();
@@ -107,14 +127,22 @@ export const staged = (options: Staged = {}) => {
     chosen,
     aborted,
     advance: time.advance,
+    requested: (prefix: string) =>
+      upstream.requests.filter((request) => request.path.startsWith(prefix))
+        .length,
+    heldRetries: () => retries.length,
     resumeRetries: async () => {
       for (const resume of retries.splice(0)) resume();
       await act(() => Promise.resolve());
     },
+    programmed: async () => {
+      await Promise.all(programmes);
+      await act(() => Promise.resolve());
+    },
     settled: async () => {
-      const search = searches.at(-1);
-      if (search === undefined) throw new Error("no search was opened");
-      const snapshot = await search.done;
+      const last = settling.at(-1);
+      if (last === undefined) throw new Error("no search was opened");
+      const snapshot = await last;
       await act(() => Promise.resolve());
       return snapshot;
     },

@@ -46,10 +46,12 @@ const listing = (snapshot: Snapshot) => {
     subscribe: () => () => {},
     hold: () => {},
     release: () => {},
+    painted: () => snapshot,
   };
   render(
     <Results
       snapshot={snapshot}
+      painted={snapshot}
       terms={TONIGHT}
       today={TODAY}
       now={0}
@@ -187,6 +189,39 @@ describe("the list on the first screen", () => {
       expect(cards()).toHaveLength(results.length);
     },
   );
+
+  it("names the wheelchair or companion Seat on every card of an accessible-seating Query, and on none of an ordinary one", async () => {
+    const ordinary = staged();
+    await ordinary.settled();
+    const plain = cards();
+
+    expect(plain.length).toBeGreaterThan(0);
+    for (const card of plain)
+      expect(within(card).queryByText(/wheelchair|companion/)).toBeNull();
+
+    cleanup();
+    const stage = staged({ terms: { ...TONIGHT, accessibleSeating: true } });
+    await stage.settled();
+
+    expect(stage.asked[0]?.accessibleSeating).toBe(true);
+    expect(cards().length).toBeGreaterThan(0);
+    const named = cards().map((card) => ({
+      ids: card.querySelector(".seats")?.textContent?.split("·"),
+      pairs:
+        card.querySelector(".designations")?.textContent?.split(" · ") ?? [],
+    }));
+    for (const { ids, pairs } of named) {
+      expect(pairs.map((pair) => pair.split(" ")[0])).toEqual(ids);
+      expect(pairs.some((pair) => /wheelchair|companion/.test(pair))).toBe(
+        true,
+      );
+    }
+    expect(
+      named.some(({ pairs }) =>
+        pairs.some((pair) => pair.endsWith(" standard")),
+      ),
+    ).toBe(true);
+  });
 
   it("counts freshness up as the clock moves", async () => {
     const stage = staged();

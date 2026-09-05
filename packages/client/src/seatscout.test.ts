@@ -15,7 +15,11 @@ const TONIGHT: SearchTerms = {
 };
 
 const composed = (overrides: Partial<SeatScoutDependencies> = {}) => {
-  const upstream = fakeUpstream({ seed: 4, standInAuditoriums: true });
+  const upstream = fakeUpstream({
+    seed: 4,
+    standInAuditoriums: true,
+    standInTheaters: true,
+  });
   const seatscout = createSeatScout({
     fetch: upstream,
     now: () => AT,
@@ -52,6 +56,45 @@ describe("a SeatScout", () => {
     await seatscout.search(TONIGHT).done;
 
     expect(listingsRead()).toBe(1);
+  });
+
+  it("names what is playing near an area on a date through the same Source, titled", async () => {
+    const { seatscout } = composed();
+
+    const reading = await seatscout.programme("75006", "2026-08-28");
+    if (!reading.ok)
+      throw new Error(`the programme answered ${reading.reason}`);
+
+    expect(reading.payload.theaters).toHaveLength(25);
+    expect(reading.payload.movies).toContainEqual({
+      id: "245569",
+      title: "The Dog Stars (2026)",
+    });
+  });
+
+  it("keeps a programme whose every schedule fails from darkening the search that follows", async () => {
+    const nearby = await composed().seatscout.programme("75006", "2026-08-28");
+    if (!nearby.ok) throw new Error("the corpus lost its area");
+    const { seatscout } = composed({
+      fetch: fakeUpstream({
+        seed: 4,
+        standInAuditoriums: true,
+        standInTheaters: true,
+        sequences: Object.fromEntries(
+          nearby.payload.theaters.map((theater) => [
+            `/napi/theaterMovieShowtimes/${theater.id}`,
+            [500, 500, 500],
+          ]),
+        ),
+      }),
+    });
+
+    const programme = await seatscout.programme("75006", "2026-08-28");
+    const settled = await seatscout.search(TONIGHT).done;
+
+    expect(programme.ok && programme.payload.unreached).toHaveLength(25);
+    expect(settled.phase).toBe("settled");
+    expect(settled.coverage.checked).toBe(172);
   });
 
   it("re-verifies a result it found through the same Source", async () => {

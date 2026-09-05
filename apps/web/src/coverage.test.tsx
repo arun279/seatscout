@@ -127,7 +127,9 @@ describe("the account the first screen keeps", () => {
 
     fireEvent.click(ledger.getByRole("button", { name: /back to the list/i }));
 
-    expect(screen.queryByRole("dialog", { hidden: true })).toBeNull();
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog", { hidden: true })).toBeNull(),
+    );
   });
 
   it("explains every outcome, links the operator's page only where a retry can never help, and says what is still to come", async () => {
