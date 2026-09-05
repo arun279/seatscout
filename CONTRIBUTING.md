@@ -293,10 +293,30 @@ does not judge shows up as an uncovered mutant and fails the run just as a survi
 
 It runs twice. On every pull request, inside the `footprint` job, incrementally: the run
 reuses what an earlier run already judged about code that has not changed, and the score
-goes in the pull request comment beside the other figures. And every night on `main`,
-inheriting nothing, which is what the incremental results are checked against. The nightly
-run leaves its incremental file in the Actions cache, so the first push of a new branch
-starts from what `main` was last judged to be rather than from nothing.
+goes in the pull request comment beside the other figures. And on every push to `main`, in
+the `Baseline` workflow, which restores no incremental file and so judges the whole tree
+with nothing to inherit from. That run leaves its incremental file in the Actions cache
+under `main`'s commit, and every branch's run starts from it. Nothing cross-checks the two:
+the branch run reuses the baseline's verdicts rather than reaching them again, so what the
+baseline got wrong a branch inherits until the file it wrote is replaced.
+
+`main`'s run follows the merge that changed `main` rather than a clock. On a schedule it
+re-judged a tree that had not moved, and the seed a branch started from was always as old
+as the last night rather than as old as the last merge. A merge landing while one is still
+running cancels it, because the whole point is a seed at the tip and a run for a commit that
+is no longer the tip cannot produce one. Without that a busy day queues twenty-minute runs
+behind each other and the seed lags further than the schedule ever left it: `main` took
+seventeen pushes on 2026-08-29 and five to seven on a normal day.
+
+The `footprint` job saves its incremental file immediately after the mutation step and on
+any outcome, rather than in a step that runs after everything else and only when everything
+else passed. A job that judges every mutant and then fails or is cancelled in a later step
+used to throw that work away: the cache action's own save is skipped on both, twice costing
+a branch a nineteen-minute run it had already finished.
+
+What this does not do is bank a run cut short in the middle of judging. The runner starts
+the save as soon as the step is cancelled and terminates the mutation process afterwards, so
+the file saved is the one that was restored, and the work in flight is lost either way.
 
 The run's exit status is not what fails the pull request. Stryker writes its report, the
 footprint report reads the score out of that report and holds it to the break threshold the
@@ -333,13 +353,14 @@ rejected, and a fail-closed check is exactly the kind most worth proving can fai
 
 The incremental mode is Stryker's own, and it is a reuse of earlier results rather than a
 second opinion about them: it matches a mutant by the content of the file it sits in and of
-the tests that covered it, and re-runs anything that does not match. That is why the nightly
-full run stays. A pull request whose cache is cold pays the whole run, which is the honest
-cost of the first push on a branch that `main`'s nightly seed usually spares it.
+the tests that covered it, and re-runs anything that does not match. That is why the whole
+run on `main` stays. A pull request whose cache is cold pays the whole run, which is the
+honest cost of the first push on a branch that `main`'s seed usually spares it.
 
-Run it locally with `pnpm test:mutation`, which inherits nothing;
-`pnpm test:mutation:incremental` is the pull request's form and is what writes and reuses
-`reports/stryker-incremental.json`. Two of its settings are less redundant than they
+Run it locally with `pnpm test:mutation`, which inherits nothing and writes nothing to
+inherit from. `pnpm test:mutation:incremental` is what both jobs run, and is what writes and
+reuses `reports/stryker-incremental.json`; on `main` it inherits nothing because no earlier
+file is restored there, which is the whole difference between the two jobs. Two of its settings are less redundant than they
 look. The vitest runner is named in `plugins` because Stryker resolves its own plugin
 search against its package directory, which under pnpm holds no siblings to find. And
 `ignorePatterns` keeps the root `tsconfig.json` out of the sandbox, because Stryker rewrites
@@ -2177,8 +2198,9 @@ cost the quota exemption above. Both are one reviewed line away if a reason arri
 `.github/workflows/deploy.yml` deploys on merge to `main` and on manual dispatch. It runs
 `wrangler` from the workspace rather than through a deploy action, so the version that
 deploys is the version the lockfile pins and the dry run below already exercised. With
-neither `CLOUDFLARE_API_TOKEN` nor `CLOUDFLARE_ACCOUNT_ID` set it skips the deploy job and
-says so in the run summary, so a fork gets a green build rather than a confusing red one;
+neither `CLOUDFLARE_API_TOKEN` nor `CLOUDFLARE_ACCOUNT_ID` set its first step skips every
+step after it and says so in the run summary, so a fork gets a green build rather than a
+confusing red one;
 with one of the two set it fails and names the other, because that is a half-configured
 repository rather than one nobody has set up.
 

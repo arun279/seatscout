@@ -46,8 +46,9 @@ export const mutation = (weighed: Mutation): Section => {
       "Stryker's own score over the run that wrote the report, held to the threshold named in",
       "that same report rather than to one restated here. A run that weighed no mutant is",
       "refused instead of scored, because such a run scores NaN and NaN is never below a",
-      "threshold. The run is incremental across pushes of one branch; the nightly run on the",
-      "default branch re-judges everything and is what the incremental results are checked by.",
+      "threshold. The run is incremental: it starts from what the run on `main` last judged,",
+      "and from this branch's own last run after that. Nothing cross-checks the two, so a",
+      "verdict reused here is one that run reached rather than one reached again.",
       "",
       ...table(
         ["Score", "Detected", "Weighed", "Break"],

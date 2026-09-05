@@ -4,7 +4,11 @@ Date: 2026-08-28
 
 ## Status
 
-Accepted
+Deprecated
+
+The lanes below are not built, and the resolver written ahead of them has been deleted
+rather than kept as tooling nothing calls; the counter rule returns with the workflow that
+needs it.
 
 ## Context
 
@@ -41,9 +45,9 @@ is to reach the platform jobs through it, so that no trigger carries release log
 own.
 
 No release workflow exists yet, and this decision is the design for one rather than a
-description of one. The resolver and its property tests are built and nothing calls them;
-the workflows that will are a separate piece of work, blocked on account setup no automated
-step can perform. Everything below describes what that workflow must do when it is written.
+description of one. Nothing in the repository implements it: the workflows that would are a
+separate piece of work, blocked on account setup no automated step can perform. Everything
+below describes what that workflow must do when it is written.
 
 The build number is the attempt's position in run history: one less than the run number,
 multiplied by a hundred, plus the attempt. Ordering it that way makes it strictly
@@ -99,7 +103,7 @@ shipped, the number offered is below what the store already holds and the store 
 That costs a run. It is the recoverable half of the trade, taken so that the unrecoverable
 half cannot happen.
 
-The resolver is build tooling rather than product code, so it lives in `tools/` and not
-under the layout ADR 3 defines for the application. `packages/core` does not depend on it,
+The resolver is build tooling rather than product code, so it belongs in `tools/` and not
+under the layout ADR 3 defines for the application. `packages/core` would not depend on it,
 and in a pnpm workspace a package can only resolve what it depends on, so there is no path
 by which Core could import it.

@@ -7,7 +7,6 @@ const NARRATIVE = ["CONTEXT.md", "README.md"];
 const BIOME = "biome.json";
 const PRODUCT = ["packages", ":!*.test.ts", ":!*.fixtures.ts"];
 const RATCHET = ".size-limit.json";
-const RELEASE = "tools/release-plan/src/index.ts";
 const STRYKER = "stryker.config.json";
 const CYCLOMATIC = ".oxlintrc.json";
 
@@ -58,15 +57,6 @@ const CLAIMS = [
     files: 1,
   },
   {
-    adr: "0005-build-numbers-come-from-the-run-counter.md",
-    says: /No release workflow exists yet/,
-    holds: "workflow files naming the release resolver",
-    pattern: "release-plan",
-    paths: [".github"],
-    files: 0,
-    witness: ["tools/release-plan"],
-  },
-  {
     adr: "0001-single-aggregating-source.md",
     says: /Ship a single implementation of it: the aggregator\./,
     holds: "modules that build a Source, tests aside",
@@ -98,22 +88,6 @@ const CLAIMS = [
     paths: ["apps"],
     files: 0,
     witness: ["packages/client"],
-  },
-  {
-    adr: "0005-build-numbers-come-from-the-run-counter.md",
-    says: /A hundred attempts leaves room for 21000000 runs, and the two together land on Google Play's ceiling exactly\./,
-    holds: "the ceiling the resolver refuses past",
-    pattern: "2_100_000_000",
-    paths: [RELEASE],
-    files: 1,
-  },
-  {
-    adr: "0005-build-numbers-come-from-the-run-counter.md",
-    says: /so the resolver imposes its own and refuses anything past it/,
-    holds: "the bound the resolver imposes on re-run attempts",
-    pattern: "ATTEMPTS_PER_RUN = 100",
-    paths: [RELEASE],
-    files: 1,
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
@@ -191,6 +165,9 @@ const CLAIMS = [
 ];
 
 const UNCHECKED = {
+  "0005-build-numbers-come-from-the-run-counter.md":
+    "it is deprecated, and the resolver its pairs were held to has been deleted, so the " +
+    "tree holds nothing for a search to reach; the pairs return with the release workflow",
   "CONTEXT.md":
     "it is the domain glossary, and the sets and counts it states are held term by term " +
     "by tools/counts-in-prose.mjs, which is the right instrument for a count",
