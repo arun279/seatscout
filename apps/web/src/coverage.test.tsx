@@ -130,6 +130,26 @@ describe("the account the first screen keeps", () => {
     expect(screen.queryByRole("dialog", { hidden: true })).toBeNull();
   });
 
+  it("accounts for the search on screen after a retry, not the one the retry replaced", async () => {
+    const stage = staged({
+      script: { sequences: failing([500, 500, 500]) },
+    });
+    await stage.settled();
+    fireEvent.click(screen.getByRole("button", { name: /retry/i }));
+    await stage.settled();
+    fireEvent.click(screen.getByRole("button", { name: /ledger/i }));
+
+    const ledger = within(screen.getByRole("dialog", { name: /accounted/i }));
+    expect(
+      ledger.getByRole("listitem", { name: "Could not be reached" }),
+    ).toHaveTextContent("0Could not be reached");
+    expect(
+      ledger.getByText(
+        "172 + 0 + 3 + 1 + 0 + 0 + 0 = 176 · nothing unaccounted",
+      ),
+    ).toBeVisible();
+  });
+
   it("explains every outcome, links the operator's page only where a retry can never help, and says what is still to come", async () => {
     const settled = await settledAlone({
       script: { sequences: failing([500, 500, 500]) },

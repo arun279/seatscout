@@ -31,7 +31,6 @@ interface SearchingProps {
   readonly today: string;
   readonly clock: Clock;
   readonly overlays: OverlayState;
-  readonly onHeld: (held: HeldSnapshots) => void;
 }
 
 interface Session {
@@ -62,10 +61,8 @@ const Searching = ({
   today,
   clock,
   overlays,
-  onHeld,
 }: SearchingProps) => {
   const [session, setSession] = useState(() => opened(seatscout, asked));
-  useEffect(() => onHeld(session.held), [onHeld, session.held]);
   const snapshot = useSyncExternalStore(
     session.held.subscribe,
     session.held.snapshot,
@@ -78,7 +75,7 @@ const Searching = ({
     <>
       <Strip
         snapshot={snapshot}
-        onLedger={() => overlays.open({ kind: "ledger" })}
+        onLedger={() => overlays.open({ kind: "ledger", held: session.held })}
       />
       <Results
         snapshot={snapshot}
@@ -120,7 +117,6 @@ const Prompt = ({
 export const App = ({ seatscout, terms, onTerms, today, clock }: AppProps) => {
   const asked = askedFrom(terms);
   const overlays = useOverlays();
-  const [held, setHeld] = useState<HeldSnapshots>();
   const online = useSyncExternalStore(connectionChanges, isOnline);
   const openAsk = (focus: Term) => overlays.open({ kind: "ask", focus });
 
@@ -149,12 +145,10 @@ export const App = ({ seatscout, terms, onTerms, today, clock }: AppProps) => {
           today={today}
           clock={clock}
           overlays={overlays}
-          onHeld={setHeld}
         />
       )}
       <Overlays
         stack={overlays.stack}
-        held={held}
         terms={terms}
         onClose={overlays.close}
         onTerms={onTerms}

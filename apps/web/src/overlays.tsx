@@ -7,7 +7,6 @@ import type { Terms } from "./terms.js";
 
 interface OverlaysProps {
   readonly stack: readonly Overlay[];
-  readonly held: HeldSnapshots | undefined;
   readonly terms: Terms;
   readonly onClose: () => void;
   readonly onTerms: (terms: Terms) => void;
@@ -26,14 +25,8 @@ const CurrentLedger = ({
   />
 );
 
-const requiredHeld = (held: HeldSnapshots | undefined): HeldSnapshots => {
-  if (held === undefined) throw new TypeError();
-  return held;
-};
-
 const Current = ({
   overlay,
-  held,
   terms,
   onClose,
   onTerms,
@@ -49,23 +42,16 @@ const Current = ({
         />
       );
     case "ledger":
-      return <CurrentLedger held={requiredHeld(held)} onClose={onClose} />;
+      return <CurrentLedger held={overlay.held} onClose={onClose} />;
   }
 };
 
-export const Overlays = ({
-  stack,
-  held,
-  terms,
-  onClose,
-  onTerms,
-}: OverlaysProps) => (
+export const Overlays = ({ stack, terms, onClose, onTerms }: OverlaysProps) => (
   <>
     {stack.map((overlay, at) => (
       <div key={String(at)}>
         <Current
           overlay={overlay}
-          held={held}
           terms={terms}
           onClose={onClose}
           onTerms={onTerms}
