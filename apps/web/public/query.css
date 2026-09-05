@@ -26,7 +26,6 @@
   color: var(--silver-dim);
   letter-spacing: 0.08em;
   line-height: 1.8;
-  text-transform: uppercase;
 }
 
 .term {
