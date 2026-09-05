@@ -1,13 +1,16 @@
 import type { SeatGroupResult } from "@seatscout/client";
-import { ageOf, clockOf, whyOf } from "./phrases.js";
+import { seatsOf } from "./derived.js";
+import { ageOf, clockOf, labelOf, whyOf } from "./phrases.js";
 import { RoomPlan } from "./room-plan.js";
 
 interface CardProps {
   readonly result: SeatGroupResult;
   readonly now: number;
+  readonly online: boolean;
+  readonly onHandOff: (result: SeatGroupResult) => void;
 }
 
-export const Card = ({ result, now }: CardProps) => {
+export const Card = ({ result, now, online, onHandOff }: CardProps) => {
   const { theater, formats } = result.showtime.presentation;
   const clock = clockOf(result.showtime.startsAt);
   return (
@@ -16,7 +19,7 @@ export const Card = ({ result, now }: CardProps) => {
         className="card"
         aria-label={[theater.name, clock, ...formats].join(", ")}
       >
-        <RoomPlan result={result} />
+        <RoomPlan result={result} scale={1} />
         <div className="mid">
           <p className="place">
             {theater.name}
@@ -38,9 +41,17 @@ export const Card = ({ result, now }: CardProps) => {
           </p>
         </div>
         <div className="side">
-          <span className="seats">
-            {result.seats.map((seat) => seat.id).join("·")}
-          </span>
+          {online ? (
+            <button
+              type="button"
+              className="seats"
+              onClick={() => onHandOff(result)}
+            >
+              {labelOf(seatsOf(result))}
+            </button>
+          ) : (
+            <span className="seats">{labelOf(seatsOf(result))}</span>
+          )}
           <span className="prov">1 source</span>
           <time
             className="age"

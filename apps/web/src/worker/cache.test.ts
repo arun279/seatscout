@@ -40,6 +40,7 @@ describe("the shell cache", () => {
       "/ask.css",
       "/results.css",
       "/coverage.css",
+      "/hand-off.css",
       "/icon.svg",
       "/fonts/big-shoulders-display.woff2",
       "/fonts/schibsted-grotesk.woff2",
@@ -73,12 +74,13 @@ describe("the shell cache", () => {
         "/ask.css",
         "/results.css",
         "/coverage.css",
+        "/hand-off.css",
         "/icon.svg",
         "/fonts/big-shoulders-display.woff2",
         "/fonts/schibsted-grotesk.woff2",
         "/fonts/spline-sans-mono.woff2",
       ].map(isShellPath),
-    ).toEqual(Array.from({ length: 13 }, () => true));
+    ).toEqual(Array.from({ length: 14 }, () => true));
     expect(isShellPath(SEAT_MAP)).toBe(false);
     expect(isShellPath("/icon-192.png")).toBe(false);
   });

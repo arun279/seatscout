@@ -2,8 +2,10 @@ import type {
   RecentSearch,
   Search,
   SearchTerms,
+  SeatGroupResult,
   SeatProfile,
   SeatScout,
+  TicketingUrl,
 } from "@seatscout/client";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { askedFrom } from "./asked.js";
@@ -11,6 +13,7 @@ import { Strip } from "./coverage.js";
 import { type HeldSnapshots, heldSnapshots } from "./held.js";
 import { type Overlays as OverlayState, useOverlays } from "./overlay.js";
 import { Overlays } from "./overlays.js";
+import { useOnline } from "./online.js";
 import { partyOf, seatSetOf, whenOf } from "./phrases.js";
 import { Recent } from "./recent.js";
 import { Results } from "./results.js";
@@ -23,6 +26,8 @@ export interface Clock {
   readonly subscribe: (tick: () => void) => () => void;
 }
 
+export type Checkout = (ticketing: TicketingUrl) => void;
+
 export interface AppProps {
   readonly seatscout: SeatScout;
   readonly terms: Terms;
@@ -32,6 +37,7 @@ export interface AppProps {
   readonly recent: readonly RecentSearch[];
   readonly today: string;
   readonly clock: Clock;
+  readonly checkout: Checkout;
 }
 
 interface SearchingProps {
@@ -40,6 +46,7 @@ interface SearchingProps {
   readonly terms: Terms;
   readonly today: string;
   readonly clock: Clock;
+  readonly online: boolean;
   readonly overlays: OverlayState;
 }
 
@@ -53,23 +60,13 @@ const opened = (seatscout: SeatScout, asked: SearchTerms): Session => {
   return { search, held: heldSnapshots(search) };
 };
 
-const connectionChanges = (tick: () => void) => {
-  window.addEventListener("online", tick);
-  window.addEventListener("offline", tick);
-  return () => {
-    window.removeEventListener("online", tick);
-    window.removeEventListener("offline", tick);
-  };
-};
-
-const isOnline = () => navigator.onLine;
-
 const Searching = ({
   seatscout,
   asked,
   terms,
   today,
   clock,
+  online,
   overlays,
 }: SearchingProps) => {
   const [session, setSession] = useState(() => opened(seatscout, asked));
@@ -93,8 +90,12 @@ const Searching = ({
         today={today}
         now={now}
         held={session.held}
+        online={online}
         onRetry={() => setSession(opened(seatscout, asked))}
         onEdit={(focus) => overlays.open({ kind: "ask", focus })}
+        onHandOff={(candidate: SeatGroupResult) =>
+          overlays.open({ kind: "handOff", candidate })
+        }
       />
     </>
   );
@@ -142,7 +143,9 @@ const Screen = ({
   recent,
   today,
   clock,
-}: AppProps) => {
+  checkout,
+  online,
+}: AppProps & { readonly online: boolean }) => {
   const asked = askedFrom(terms, profile);
   const overlays = useOverlays();
   const openAsk = (focus: Term) => overlays.open({ kind: "ask", focus });
@@ -172,6 +175,7 @@ const Screen = ({
           terms={terms}
           today={today}
           clock={clock}
+          online={online}
           overlays={overlays}
         />
       )}
@@ -181,6 +185,9 @@ const Screen = ({
         profile={profile}
         recent={recent}
         today={today}
+        clock={clock}
+        verify={seatscout.verify}
+        checkout={checkout}
         onClose={overlays.close}
         onTerms={onTerms}
         onProfile={onProfile}
@@ -190,7 +197,7 @@ const Screen = ({
 };
 
 export const App = ({ terms, ...rest }: AppProps) => {
-  const online = useSyncExternalStore(connectionChanges, isOnline);
+  const online = useOnline();
 
   return (
     <main className="stage">
@@ -205,7 +212,7 @@ export const App = ({ terms, ...rest }: AppProps) => {
         <span className="fall" />
         <span className="word">SEATSCOUT</span>
       </div>
-      <Screen key={queryOf(terms)} terms={terms} {...rest} />
+      <Screen key={queryOf(terms)} terms={terms} online={online} {...rest} />
     </main>
   );
 };

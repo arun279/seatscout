@@ -123,6 +123,33 @@ there is nothing to ask a seat map with, and an answer it cannot judge must not 
 buy. What that costs is the operator's-own-page remedy the Coverage entry would have offered,
 which is the price of having two ways to answer no; a fresh search restores it.
 
+### The hand-off on screen
+
+A card's seat label is the control that opens the hand-off, on the inset hit area the other
+inline controls have, so the card's own body stays free for the room that opens from it. They
+are siblings and two tab stops rather than one control inside another.
+
+The sheet is a `handOff` variant on the overlay stack of
+[ADR 19](0019-the-list-is-painted-once.md), carrying the result it draws, so a query change
+unmounts it with the search it belonged to and one close request pops it. Adding it touched the
+variant, the one switch over variants, and the sheet's own files.
+
+One tap on the velvet button calls the verification above and nothing else until the Source
+answers. An ok answer hands the URL it returned to a `checkout` dependency, which in the browser
+is `window.location.assign`: a navigation of the page itself, in the same tab, so the back
+button returns to the search address and re-runs the search. `taken` redraws the room and offers
+the Auditorium's other Groups, ranked, the best already chosen, each going through the same
+verification; `taken` with nothing left offers only the way back; `unreachable` offers to check
+again and opens nothing. A sheet closed before the answer arrives opens nothing either.
+
+The control is not offered at all while the phone is offline, so the hand-off is unreachable
+rather than reachable and refusing. That is the interface never offering an action it already
+knows cannot succeed, and it only holds while the reason is legible: the offline notice is
+fixed at the foot of every surface and layered over the list, because a positioned card
+otherwise paints over it while it still answers hit testing in the gaps between cards. An
+end-to-end test samples the notice across its width and requires it topmost at every point,
+which refuses anything painting over it rather than one instance of it.
+
 ## Consequences
 
 No payment card compliance scope. No credential store. No fraud system to contend with.

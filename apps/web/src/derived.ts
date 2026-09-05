@@ -15,6 +15,9 @@ export const accountOf = (coverage: Coverage) => {
   };
 };
 
+export const seatsOf = (result: SeatGroupResult): readonly string[] =>
+  result.seats.map((seat) => seat.id);
+
 export const unreachedIn = (snapshot: Snapshot): number =>
   snapshot.coverage.failed.length + accountOf(snapshot.coverage).remaining;
 

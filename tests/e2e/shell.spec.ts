@@ -13,6 +13,7 @@ const SHELL = [
   "/fonts/big-shoulders-display.woff2",
   "/fonts/schibsted-grotesk.woff2",
   "/fonts/spline-sans-mono.woff2",
+  "/hand-off.css",
   "/house.css",
   "/icon.svg",
   "/index.js",

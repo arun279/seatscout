@@ -1,6 +1,6 @@
 import type { RecentSearch, SeatProfile, SeatScout } from "@seatscout/client";
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { App, type Clock } from "./app.js";
+import { App, type Checkout, type Clock } from "./app.js";
 import type { Address } from "./browser.js";
 import { twoDigits } from "./phrases.js";
 import { queryOf, type Terms, termsFrom } from "./terms.js";
@@ -15,6 +15,7 @@ interface RootProps {
   readonly address: Address;
   readonly clock: Clock;
   readonly remembered: Remembered;
+  readonly checkout: Checkout;
 }
 
 const localDate = (at: number) => {
@@ -32,7 +33,13 @@ export const rememberedBy = async (
   return { profile, recent };
 };
 
-export const Root = ({ seatscout, address, clock, remembered }: RootProps) => {
+export const Root = ({
+  seatscout,
+  address,
+  clock,
+  remembered,
+  checkout,
+}: RootProps) => {
   const query = useSyncExternalStore(address.subscribe, address.query);
   const today = localDate(useSyncExternalStore(clock.subscribe, clock.now));
   const [profile, setProfile] = useState(remembered.profile);
@@ -63,6 +70,7 @@ export const Root = ({ seatscout, address, clock, remembered }: RootProps) => {
       recent={recent}
       today={today}
       clock={clock}
+      checkout={checkout}
     />
   );
 };

@@ -1,7 +1,9 @@
-import type { RecentSearch, SeatProfile } from "@seatscout/client";
+import type { RecentSearch, SeatProfile, SeatScout } from "@seatscout/client";
 import { useSyncExternalStore } from "react";
+import type { Checkout, Clock } from "./app.js";
 import { Ask } from "./ask.js";
 import { Ledger } from "./coverage.js";
+import { HandOff } from "./hand-off.js";
 import type { HeldSnapshots } from "./held.js";
 import type { Overlay } from "./overlay.js";
 import type { Terms } from "./terms.js";
@@ -12,6 +14,9 @@ interface OverlaysProps {
   readonly profile: SeatProfile;
   readonly recent: readonly RecentSearch[];
   readonly today: string;
+  readonly clock: Clock;
+  readonly verify: SeatScout["verify"];
+  readonly checkout: Checkout;
   readonly onClose: () => void;
   readonly onTerms: (terms: Terms) => void;
   readonly onProfile: (profile: SeatProfile) => void;
@@ -36,6 +41,9 @@ const Current = ({
   profile,
   recent,
   today,
+  clock,
+  verify,
+  checkout,
   onClose,
   onTerms,
   onProfile,
@@ -58,6 +66,17 @@ const Current = ({
       );
     case "ledger":
       return <CurrentLedger held={overlay.held} onClose={onClose} />;
+    case "handOff":
+      return (
+        <HandOff
+          candidate={overlay.candidate}
+          verify={verify}
+          checkout={checkout}
+          clock={clock}
+          today={today}
+          onClose={onClose}
+        />
+      );
   }
 };
 
@@ -67,6 +86,9 @@ export const Overlays = ({
   profile,
   recent,
   today,
+  clock,
+  verify,
+  checkout,
   onClose,
   onTerms,
   onProfile,
@@ -80,6 +102,9 @@ export const Overlays = ({
           profile={profile}
           recent={recent}
           today={today}
+          clock={clock}
+          verify={verify}
+          checkout={checkout}
           onClose={onClose}
           onTerms={onTerms}
           onProfile={onProfile}

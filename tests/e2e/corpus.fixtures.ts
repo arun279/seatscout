@@ -4,10 +4,11 @@ import { fakeUpstream } from "@seatscout/core/testing";
 export const TONIGHT = "/?movie=245569&date=2026-08-28&area=75006&partySize=2";
 export const HIT_AREA = 44;
 export const WCAG = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
+export const SEAT_MAP = "/napi/seatMap/";
 
-export const answeredByTheCorpus = (page: Page) => {
+export const answeredByTheCorpus = async (page: Page) => {
   const upstream = fakeUpstream({ seed: 4, standInAuditoriums: true });
-  return page.route("**/napi/**", async (route) => {
+  await page.route("**/napi/**", async (route) => {
     const answer = await upstream(new URL(route.request().url()).pathname);
     await route.fulfill({
       status: answer.status,
@@ -15,6 +16,7 @@ export const answeredByTheCorpus = (page: Page) => {
       body: await answer.text(),
     });
   });
+  return upstream;
 };
 
 export const hitAreasUnder = (page: Page, least: number) =>
