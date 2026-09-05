@@ -25,9 +25,12 @@ describe("the marks a card's room plan is drawn from", () => {
     ]);
     expect(marks.pair).toEqual({ cx: 32, cy: 25 });
     expect(marks.target).toEqual({ cx: 32, cy: 30.44 });
-    expect(targetAt(marks.target)).toEqual({
-      targetDepth: 0.67,
-      targetLateral: 0,
+  });
+
+  it("recovers both the depth and lateral target from a mark off centre", () => {
+    expect(targetAt({ cx: 17, cy: 25 })).toEqual({
+      targetDepth: 0.5,
+      targetLateral: -0.5,
     });
   });
 });

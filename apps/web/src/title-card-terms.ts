@@ -8,33 +8,22 @@ export interface TitleCardEntry {
   readonly words: string;
 }
 
-export interface TitleCardLine {
-  readonly kind: "party" | "movie" | "details";
-  readonly entries: readonly TitleCardEntry[];
-}
+type TitleCardLines = readonly [
+  readonly TitleCardEntry[],
+  readonly TitleCardEntry[],
+  readonly TitleCardEntry[],
+];
 
-export const termLinesOf = (
-  terms: Terms,
-  today: string,
-): readonly TitleCardLine[] => [
-  {
-    kind: "party",
-    entries: [{ term: "partySize", words: partyOf(terms.partySize) }],
-  },
-  {
-    kind: "movie",
-    entries: [{ term: "movie", words: terms.movie ?? "Which movie?" }],
-  },
-  {
-    kind: "details",
-    entries: [
-      { term: "date", words: dayOf(terms.date, today) },
-      {
-        term: "area",
-        words: terms.area === undefined ? "Near where?" : `Near ${terms.area}`,
-      },
-      { words: "Any format" },
-      { words: "Reference seat" },
-    ],
-  },
+export const termLinesOf = (terms: Terms, today: string): TitleCardLines => [
+  [{ term: "partySize", words: partyOf(terms.partySize) }],
+  [{ term: "movie", words: terms.movie ?? "Which movie?" }],
+  [
+    { term: "date", words: dayOf(terms.date, today) },
+    {
+      term: "area",
+      words: terms.area === undefined ? "Near where?" : `Near ${terms.area}`,
+    },
+    { words: "Any format" },
+    { words: "Reference seat" },
+  ],
 ];

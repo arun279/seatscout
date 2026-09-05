@@ -1,11 +1,10 @@
 import { Fragment } from "react";
+import type { Terms } from "./terms.js";
 import {
   type Term,
-  type TitleCardEntry,
-  type TitleCardLine,
   termLinesOf,
+  type TitleCardEntry,
 } from "./title-card-terms.js";
-import type { Terms } from "./terms.js";
 
 interface TitleCardProps {
   readonly terms: Terms;
@@ -13,63 +12,46 @@ interface TitleCardProps {
   readonly onEdit: (term: Term) => void;
 }
 
-const Entry = ({
-  entry,
-  onEdit,
-}: {
-  readonly entry: TitleCardEntry;
-  readonly onEdit: (term: Term) => void;
-}) => {
-  const { term } = entry;
-  return term === undefined ? (
-    <span>{entry.words}</span>
-  ) : (
-    <button type="button" className="term" onClick={() => onEdit(term)}>
-      {entry.words}
-    </button>
-  );
-};
-
 const Entries = ({
-  line,
+  entries,
   onEdit,
 }: {
-  readonly line: TitleCardLine;
+  readonly entries: readonly TitleCardEntry[];
   readonly onEdit: (term: Term) => void;
 }) => (
   <>
-    {line.entries.map((entry, at) => (
-      <Fragment key={entry.term ?? entry.words}>
-        {at > 0 && " · "}
-        <Entry entry={entry} onEdit={onEdit} />
-      </Fragment>
-    ))}
+    {entries.map((entry, at) => {
+      const term = entry.term;
+      return (
+        <Fragment key={term ?? entry.words}>
+          {at > 0 && " · "}
+          {term === undefined ? (
+            <span>{entry.words}</span>
+          ) : (
+            <button type="button" className="term" onClick={() => onEdit(term)}>
+              {entry.words}
+            </button>
+          )}
+        </Fragment>
+      );
+    })}
   </>
 );
 
-const Line = ({
-  line,
-  onEdit,
-}: {
-  readonly line: TitleCardLine;
-  readonly onEdit: (term: Term) => void;
-}) => {
-  const entries = <Entries line={line} onEdit={onEdit} />;
-  switch (line.kind) {
-    case "party":
-      return <h1 className="display line1">{entries}</h1>;
-    case "movie":
-      return <p className="display line2">{entries}</p>;
-    case "details":
-      return <p className="line3">{entries}</p>;
-  }
+export const TitleCard = ({ terms, today, onEdit }: TitleCardProps) => {
+  const [party, movie, details] = termLinesOf(terms, today);
+  return (
+    <header className="title-card">
+      <p className="eyebrow">Your query · tap any line to change it</p>
+      <h1 className="display line1">
+        <Entries entries={party} onEdit={onEdit} />
+      </h1>
+      <p className="display line2">
+        <Entries entries={movie} onEdit={onEdit} />
+      </p>
+      <p className="line3">
+        <Entries entries={details} onEdit={onEdit} />
+      </p>
+    </header>
+  );
 };
-
-export const TitleCard = ({ terms, today, onEdit }: TitleCardProps) => (
-  <header className="title-card">
-    <p className="eyebrow">Your query · tap any line to change it</p>
-    {termLinesOf(terms, today).map((line) => (
-      <Line key={line.kind} line={line} onEdit={onEdit} />
-    ))}
-  </header>
-);

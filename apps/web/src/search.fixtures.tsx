@@ -5,7 +5,7 @@ import {
   type SeatScout,
 } from "@seatscout/client";
 import { fakeUpstream, type UpstreamScript } from "@seatscout/client/testing";
-import { act, cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, render, screen, within } from "@testing-library/react";
 import { App } from "./app.js";
 import type { Terms } from "./terms.js";
 
@@ -137,3 +137,6 @@ export const cards = () => screen.queryAllByRole("article");
 export const before = (first: Element, second: Element) =>
   (first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING) !==
   0;
+
+export const ask = () =>
+  within(screen.getByRole("dialog", { name: /what are we seeing/i }));

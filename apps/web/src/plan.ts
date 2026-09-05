@@ -13,7 +13,13 @@ const HALF_WIDTH = 30;
 const x = (lateral: number) => CENTRE + lateral * HALF_WIDTH;
 const y = (depth: number) => FRONT + depth * ROWS_SPAN;
 
-export const targetAt = ({ cx, cy }: Dot) => ({
+export const targetAt = ({
+  cx,
+  cy,
+}: Dot): {
+  readonly targetDepth: number;
+  readonly targetLateral: number;
+} => ({
   targetDepth: (cy - FRONT) / ROWS_SPAN,
   targetLateral: (cx - CENTRE) / HALF_WIDTH,
 });

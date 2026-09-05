@@ -8,8 +8,8 @@ import { Overlays } from "./overlays.js";
 import { partyOf, whenOf } from "./phrases.js";
 import { Results } from "./results.js";
 import { queryOf, type Terms } from "./terms.js";
-import type { Term } from "./title-card-terms.js";
 import { TitleCard } from "./title-card.js";
+import type { Term } from "./title-card-terms.js";
 
 export interface Clock {
   readonly now: () => number;
@@ -30,8 +30,8 @@ interface SearchingProps {
   readonly terms: Terms;
   readonly today: string;
   readonly clock: Clock;
-  readonly onEdit: (term: Term) => void;
   readonly overlays: OverlayState;
+  readonly onHeld: (held: HeldSnapshots) => void;
 }
 
 interface Session {
@@ -61,10 +61,11 @@ const Searching = ({
   terms,
   today,
   clock,
-  onEdit,
   overlays,
+  onHeld,
 }: SearchingProps) => {
   const [session, setSession] = useState(() => opened(seatscout, asked));
+  useEffect(() => onHeld(session.held), [onHeld, session.held]);
   const snapshot = useSyncExternalStore(
     session.held.subscribe,
     session.held.snapshot,
@@ -77,7 +78,7 @@ const Searching = ({
     <>
       <Strip
         snapshot={snapshot}
-        onLedger={() => overlays.open({ kind: "ledger", held: session.held })}
+        onLedger={() => overlays.open({ kind: "ledger" })}
       />
       <Results
         snapshot={snapshot}
@@ -86,7 +87,7 @@ const Searching = ({
         now={now}
         held={session.held}
         onRetry={() => setSession(opened(seatscout, asked))}
-        onEdit={onEdit}
+        onEdit={(focus) => overlays.open({ kind: "ask", focus })}
       />
     </>
   );
@@ -119,7 +120,9 @@ const Prompt = ({
 export const App = ({ seatscout, terms, onTerms, today, clock }: AppProps) => {
   const asked = askedFrom(terms);
   const overlays = useOverlays();
+  const [held, setHeld] = useState<HeldSnapshots>();
   const online = useSyncExternalStore(connectionChanges, isOnline);
+  const openAsk = (focus: Term) => overlays.open({ kind: "ask", focus });
 
   return (
     <main className="stage">
@@ -134,17 +137,9 @@ export const App = ({ seatscout, terms, onTerms, today, clock }: AppProps) => {
         <span className="fall" />
         <span className="word">SEATSCOUT</span>
       </div>
-      <TitleCard
-        terms={terms}
-        today={today}
-        onEdit={(focus) => overlays.open({ kind: "ask", focus })}
-      />
+      <TitleCard terms={terms} today={today} onEdit={openAsk} />
       {asked === null ? (
-        <Prompt
-          terms={terms}
-          today={today}
-          onEdit={(focus) => overlays.open({ kind: "ask", focus })}
-        />
+        <Prompt terms={terms} today={today} onEdit={openAsk} />
       ) : (
         <Searching
           key={queryOf(terms)}
@@ -153,12 +148,13 @@ export const App = ({ seatscout, terms, onTerms, today, clock }: AppProps) => {
           terms={terms}
           today={today}
           clock={clock}
-          onEdit={(focus) => overlays.open({ kind: "ask", focus })}
           overlays={overlays}
+          onHeld={setHeld}
         />
       )}
       <Overlays
-        overlay={overlays.stack.at(-1)}
+        stack={overlays.stack}
+        held={held}
         terms={terms}
         onClose={overlays.close}
         onTerms={onTerms}
