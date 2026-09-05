@@ -34,6 +34,10 @@ export interface AppProps {
   readonly clock: Clock;
 }
 
+interface ScreenProps extends AppProps {
+  readonly online: boolean;
+}
+
 interface SearchingProps {
   readonly seatscout: SeatScout;
   readonly asked: SearchTerms;
@@ -145,7 +149,8 @@ const Screen = ({
   recent,
   today,
   clock,
-}: AppProps) => {
+  online,
+}: ScreenProps) => {
   const asked = askedFrom(terms, profile);
   const overlays = useOverlays();
   const openAsk = (focus: Term) => overlays.open({ kind: "ask", focus });
@@ -185,6 +190,7 @@ const Screen = ({
         recent={recent}
         today={today}
         clock={clock}
+        online={online}
         onClose={overlays.close}
         onTerms={onTerms}
         onProfile={onProfile}
@@ -210,7 +216,7 @@ export const App = ({ terms, ...rest }: AppProps) => {
         <span className="fall" />
         <span className="word">SEATSCOUT</span>
       </div>
-      <Screen key={queryOf(terms)} terms={terms} {...rest} />
+      <Screen key={queryOf(terms)} terms={terms} online={online} {...rest} />
     </main>
   );
 };

@@ -1,5 +1,5 @@
 import { act, fireEvent, screen, within } from "@testing-library/react";
-import { staged } from "./app.fixtures.js";
+import { staged } from "./search.fixtures.js";
 import { type CapturedRoom, roomRoutes } from "./rooms.fixtures.js";
 
 const stopOf = (element: HTMLElement) => {

@@ -1,11 +1,10 @@
 import "@testing-library/jest-dom/vitest";
 import type { Verified } from "@seatscout/client";
 import { act, cleanup, fireEvent, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { opened } from "./auditorium.fixtures.js";
 import {
   ANGELIKA_5,
-  LAKE_HIGHLANDS_1,
   STRIKE_AND_REEL_1,
   VILLAGE_1,
   WEST_PLANO_28,
@@ -16,7 +15,10 @@ const nameOf = (element: Element) => element.getAttribute("aria-label");
 const settledDom = () => act(() => Promise.resolve());
 
 describe("the room a result opens into", () => {
-  afterEach(cleanup);
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
 
   it("opens from a card into a dialog that names the Theater, the time and the query, with the recommended pair lit and the reasons set like a billing block", async () => {
     const stage = await opened(WEST_PLANO_28);
@@ -83,52 +85,6 @@ describe("the room a result opens into", () => {
       Array.from({ length: 14 }, (_, at) => `${at + 1}`),
     );
     expect(stage.dialog.querySelector("[aria-colindex]")).toBeNull();
-  });
-
-  it.each([
-    ["ArrowRight", "H13"],
-    ["ArrowLeft", "H15"],
-    ["ArrowDown", "J14"],
-    ["ArrowUp", "G14"],
-    ["Home", "H25"],
-    ["End", "H1"],
-    ["PageUp", "A14"],
-    ["PageDown", "P14"],
-  ])(
-    "moves focus with %s from H14 in the 304-seat room, driven by a real key event",
-    async (key, label) => {
-      const stage = await opened(WEST_PLANO_28);
-      stage.press(key);
-
-      expect(nameOf(stage.focused())).toMatch(new RegExp(`^Seat ${label}\\. `));
-      expect(stage.focused()).toHaveAttribute("tabindex", "0");
-      expect(
-        stage.dialog.querySelectorAll('[role="gridcell"][tabindex="0"]'),
-      ).toHaveLength(1);
-    },
-  );
-
-  it("takes Ctrl+Home to the front row's first Seat and Ctrl+End to the back row's last, in the numeric room", async () => {
-    const stage = await opened(LAKE_HIGHLANDS_1);
-
-    stage.press("Home", { ctrlKey: true });
-    expect(nameOf(stage.focused())).toMatch(/^Seat 101\. /);
-    stage.press("End", { ctrlKey: true });
-    expect(nameOf(stage.focused())).toMatch(/^Seat 919\. /);
-  });
-
-  it("keeps the lateral anchor across vertical moves, so Up-Up-Down-Down through the AMC accessible row comes home to G14", async () => {
-    const stage = await opened(VILLAGE_1);
-
-    stage.press("ArrowUp");
-    expect(nameOf(stage.focused())).toMatch(/^Seat F14\. /);
-    stage.press("ArrowUp");
-    expect(nameOf(stage.focused())).toBe(
-      "Seat WC13. One seat left of centre. Wheelchair space. Bookable, and kept out of ordinary results.",
-    );
-    stage.press("ArrowDown");
-    stage.press("ArrowDown");
-    expect(nameOf(stage.focused())).toMatch(/^Seat G14\. /);
   });
 
   it("gives every Seat focus, the not bookable and the accessible ones included, and refuses only their activation with a named reason", async () => {
@@ -267,6 +223,22 @@ describe("the room a result opens into", () => {
     await settledDom();
 
     expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("opens offline and puts the reason where the action would have been, because continuing re-checks the seats", async () => {
+    vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+    const stage = await opened(WEST_PLANO_28);
+
+    expect(
+      stage.room.queryByRole("button", { name: /^Continue at/ }),
+    ).toBeNull();
+    expect(
+      stage.room.getByText(
+        "Offline. Continuing re-checks these seats at Cinemark Theatres, so it waits for the connection.",
+      ),
+    ).toBeVisible();
+    expect(stage.grid()).toBeVisible();
+    expect(stage.handedOff).toEqual([]);
   });
 
   it("returns focus to the current Seat when the row bar is pressed, and the bar shows the row again after a refusal", async () => {

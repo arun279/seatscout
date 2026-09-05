@@ -56,7 +56,7 @@ const listing = (snapshot: Snapshot) => {
       held={held}
       onRetry={() => {}}
       onEdit={() => {}}
-      onOpen={() => {}}
+      onRoom={() => {}}
     />,
   );
 };

@@ -26,6 +26,7 @@ interface AuditoriumProps {
   readonly search: Search;
   readonly today: string;
   readonly now: number;
+  readonly online: boolean;
   readonly onClose: () => void;
   readonly onHandOff: (candidate: SeatGroupResult) => unknown;
 }
@@ -92,6 +93,7 @@ export const Auditorium = ({
   search,
   today,
   now,
+  online,
   onClose,
   onHandOff,
 }: AuditoriumProps) => {
@@ -229,17 +231,26 @@ export const Auditorium = ({
         <span className="unconfirmed">Not confirmed by a second source</span>
       </p>
       <div className="dock">
-        <p className="micro">
-          Availability is re-checked the instant you tap. SeatScout never holds
-          seats.
-        </p>
-        <button
-          type="button"
-          className="btn btn-velvet"
-          onClick={() => onHandOff(candidate)}
-        >
-          Continue at {theater.chain ?? theater.name}
-        </button>
+        {online ? (
+          <>
+            <p className="micro">
+              Availability is re-checked the instant you tap. SeatScout never
+              holds seats.
+            </p>
+            <button
+              type="button"
+              className="btn btn-velvet"
+              onClick={() => onHandOff(candidate)}
+            >
+              Continue at {theater.chain ?? theater.name}
+            </button>
+          </>
+        ) : (
+          <p className="micro">
+            Offline. Continuing re-checks these seats at{" "}
+            {theater.chain ?? theater.name}, so it waits for the connection.
+          </p>
+        )}
       </div>
     </dialog>
   );

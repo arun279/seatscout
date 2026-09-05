@@ -20,6 +20,7 @@ interface OverlaysProps {
   readonly recent: readonly RecentSearch[];
   readonly today: string;
   readonly clock: Clock;
+  readonly online: boolean;
   readonly onClose: () => void;
   readonly onTerms: (terms: Terms) => void;
   readonly onProfile: (profile: SeatProfile) => void;
@@ -43,12 +44,14 @@ const CurrentRoom = ({
   overlay,
   today,
   clock,
+  online,
   onClose,
   onHandOff,
 }: {
   readonly overlay: Extract<Overlay, { kind: "room" }>;
   readonly today: string;
   readonly clock: Clock;
+  readonly online: boolean;
   readonly onClose: () => void;
   readonly onHandOff: (candidate: SeatGroupResult) => Promise<Verified>;
 }) => (
@@ -57,6 +60,7 @@ const CurrentRoom = ({
     search={overlay.search}
     today={today}
     now={useSyncExternalStore(clock.subscribe, clock.now)}
+    online={online}
     onClose={onClose}
     onHandOff={onHandOff}
   />
@@ -69,6 +73,7 @@ const Current = ({
   recent,
   today,
   clock,
+  online,
   onClose,
   onTerms,
   onProfile,
@@ -98,6 +103,7 @@ const Current = ({
           overlay={overlay}
           today={today}
           clock={clock}
+          online={online}
           onClose={onClose}
           onHandOff={onHandOff}
         />
