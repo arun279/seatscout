@@ -206,9 +206,22 @@ under `tools/` used to, and that was the same shape as sitting outside the mutat
 scope: work that happens as a module loads is work nothing can call, so nothing can judge it.
 Each of the three gates written here is now a package under `tools/<name>/src`, with its work
 in functions a test calls and an entry point that only wires them together, which puts them
-inside both the unit suite and the mutation gate. What is left directly under `tools/` is the
-corpus capture, the corpus indexer, the upstream constant, the live suite's setup and the icon
-renderer, none of which gates a merge.
+inside both the unit suite and the mutation gate.
+
+**Each of those packages carries a planted red the unit suite runs on every commit.** A
+fixture the gate must refuse sits beside one it must accept, so a gate that stops detecting
+its own fixture fails the build instead of waiting to be watched by hand. The fixtures live
+outside `src`, where they are neither product code nor mutated, and the reach check's planted
+red builds a throwaway repository of its own and runs the entry point inside it, so it
+depends on no checkout but its own.
+
+One gate is outside all of that and it is worth naming rather than leaving to be found. The
+claims gate is two modules directly under `tools/` rather than a package, so it has no
+planted red, nothing in the unit suite judges it, and the mutation gate's glob does not reach
+it, while it does gate a merge in `quality` and on pre-push. The rest of what sits directly under
+`tools/` is the corpus capture and the modules it reads, the corpus indexer, the upstream
+constant, the live suite's setup, the nightly alarm and the icon renderer, none of which
+gates a merge.
 
 **Lines per file** may not exceed 300, by Biome's
 [`noExcessiveLinesPerFile`](https://biomejs.dev/linter/rules/no-excessive-lines-per-file/) at
@@ -249,9 +262,10 @@ in this repository sit comfortably under the limit.
 The rule reaches JavaScript, TypeScript and CSS, which was measured rather than assumed with a
 320-line file of each kind; it does not reach JSON or Markdown, which Biome does not lint.
 Markdown is deliberately left outside it: no published tool sets a default length for prose,
-and transplanting a source-file convention onto a document would be inventing a number. That
-`CONTRIBUTING.md` needs splitting is true and is recorded elsewhere on its subject matter
-rather than its length.
+and transplanting a source-file convention onto a document would be inventing a number. What
+decides whether a document should be split is what it is for rather than how long it is. This
+record is the longest in the directory and stays one record, because what it settles is a
+single rule applied to every gate.
 
 **Lines per function is measured and not gated**, and the evidence is worth keeping because it
 is the sort that decays. At the default of 50 that ESLint and Biome share, this tree yields 33
@@ -276,8 +290,8 @@ second place for it to drift. What the figures are is headroom under a limit tha
 a reader can act on "9 against 10" without weighing anything, which is the test this
 decision sets for a figure that gates nothing.
 
-The values are read by asking each linter for the same rule a second time at a threshold of
-one and parsing its machine output, never by counting anything here.
+The values are read by asking each linter for the same rule a second time at the lowest
+threshold it takes and parsing its machine output, never by counting anything here.
 `.oxlintrc.report.json` and `biome.report.json` sit beside the gating configurations and
 differ from them in the threshold alone; the Biome one extends `biome.json`, so the file set
 and the ignore rules are the same bytes rather than a second copy that can drift. Biome's
@@ -393,6 +407,41 @@ by a margin that grows with every end-to-end test the branch adds. The absolute 
 either way, a merge base with no journey is reported rather than passed over, and a journey
 that renders no result fails, because a pass has to entail a measurement.
 
+**Accessibility has a published standard, so it is gated against that one.**
+`@axe-core/playwright` scans the shell and the results screen against WCAG 2.2 at levels A
+and AA, which is the [W3C Recommendation](https://www.w3.org/TR/WCAG22/) rather than a bar
+this project invented, and any violation fails `quality`. It was watched failing before it
+was trusted, on a colour contrast of 1.91:1 against the 4.5:1 success criterion 1.4.3
+requires. Every control's hit area is measured against the same document, its own box plus
+the area the stylesheet gives inline controls, on the list and inside the open ledger, and
+fails under 44 px. Biome lints the page for the half a static reader can compute and gets
+there first: a missing or invalid `lang` fails before the browser is even installed. The two
+overlap deliberately, and what is only axe's is contrast, computed roles, and anything a
+script renders.
+
+**Those scans are named so that they cannot be deleted quietly.** `tests/e2e` is outside the
+unit runner's include and outside the mutation gate's scope, so nothing judges what is in it,
+and for one revision the end-to-end run passed with no tests at all, which left a file
+deletable with every gate green. So `pnpm test:e2e` lists the tests tagged `@accessibility`
+before it runs anything and `pnpm test:journey` lists the ones tagged `@performance` before
+it runs anything, and Playwright's own answer to a filter matching nothing is to exit
+non-zero. Deleting one, or untagging it, fails the job. What is asked for is a name and not a
+number: a floor on how many tests `tests/e2e` holds is a figure this decision would have to
+justify, it would calcify whatever the suite held on the day it was written, and a count does
+not protect a particular scan in any case.
+
+**One question gets one gate.** The `dependencies` job scans the lockfile against the OSV
+database and fails on any advisory. It once also ran `pnpm audit`, which since 2021 has been
+a proxy in front of the same GitHub Advisory Database that OSV mirrors, so the two steps
+asked one database the same question through two doors, and the job failed whenever the
+weaker door did.
+
+**A rule reported at a severity the linter exits zero on is no gate at all.** Biome's
+recommended preset reports `useNodejsImportProtocol` as information, and `noOctalEscape` and
+`noUnusedVariables` as warnings; all three are errors here. `biome.json` names them beside
+the rules from outside the preset that this workspace asks for, so one file says everything
+the linter gates on.
+
 The mutation gate has the same shape one tool along, and takes the same answer. Stryker
 computes its score as mutants detected over mutants valid, scores `NaN` when none was valid,
 and breaks on `score < threshold`, which `NaN` never satisfies: a run that weighed no mutant
@@ -483,9 +532,9 @@ what the application had grown by. The total is over the first three, because th
 hold generated and written-down lines: a lock file rewrite is real footprint and is
 reported, but adding it to the total would drown the lines somebody actually wrote. And
 prose is its own bucket rather than part of the data one, because the comment count sat at
-zero for the project's whole history while `CONTRIBUTING.md` grew past 1,800 lines, three
-fifths of the markdown in the repository, holding sections named for the domain rather than
-for how to contribute. Explanation did not stop being written; it moved somewhere no gate
+zero for the project's whole history while one document grew past 1,800 lines, three fifths
+of the markdown in the repository, holding sections named for the domain rather than for how
+to contribute. Explanation did not stop being written; it moved somewhere no gate
 looked, and a comment gate that cannot see prose is measuring where the explaining is not.
 It is reported and not gated, because the number a ratchet would hold it to depends on where
 that prose ends up living.

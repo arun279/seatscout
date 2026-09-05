@@ -1,19 +1,15 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { exit, stderr, stdout } from "node:process";
+import { CLAIMS, UNCHECKED } from "./claims-in-prose.pairs.mjs";
 
 const RECORDS = "docs/adr";
 const NARRATIVE = ["CONTEXT.md", "README.md"];
-const BIOME = "biome.json";
-const PRODUCT = ["packages", ":!*.test.ts", ":!*.fixtures.ts"];
-const RATCHET = ".size-limit.json";
-const STRYKER = "stryker.config.json";
-const CYCLOMATIC = ".oxlintrc.json";
+const DECLARED_IN = "tools/claims-in-prose.pairs.mjs";
+const DECLARING = ["tools/claims-in-prose.mjs", DECLARED_IN];
 
 const git = (...args) =>
   execFileSync("git", args, { encoding: "utf8", maxBuffer: Infinity });
-
-const DECLARING = "tools/claims-in-prose.mjs";
 
 const filesHolding = (pattern, paths) => {
   try {
@@ -27,7 +23,7 @@ const filesHolding = (pattern, paths) => {
       pattern,
       "--",
       ...paths,
-      `:!${DECLARING}`,
+      ...DECLARING.map((declaring) => `:!${declaring}`),
     )
       .split("\n")
       .filter(Boolean);
@@ -37,144 +33,6 @@ const filesHolding = (pattern, paths) => {
       `git grep refused: ${refusal.stderr?.trim() ?? refusal.status}`,
     );
   }
-};
-
-const CLAIMS = [
-  {
-    adr: "0001-single-aggregating-source.md",
-    says: /The one chain with a public catalogue API is the second implementation whenever it is built\./,
-    holds: "modules that build a Source, tests aside",
-    pattern: "): Source =>",
-    paths: PRODUCT,
-    files: 1,
-  },
-  {
-    adr: "0004-booking-ends-at-a-deep-link.md",
-    says: /A result carries the showtime without its ticketing URL/,
-    holds: "the result view that drops the ticketing URL",
-    pattern: 'Omit<Showtime, "ticketing">',
-    paths: ["packages/client/src/ranking.ts"],
-    files: 1,
-  },
-  {
-    adr: "0001-single-aggregating-source.md",
-    says: /Ship a single implementation of it: the aggregator\./,
-    holds: "modules that build a Source, tests aside",
-    pattern: "): Source =>",
-    paths: PRODUCT,
-    files: 1,
-  },
-  {
-    adr: "0002-computation-on-the-client.md",
-    says: /forwards the request upstream, and streams/,
-    holds: "the header allowlist the proxy forwards",
-    pattern: 'const FORWARDED = ["accept", "content-type", "user-agent"]',
-    paths: ["apps/proxy/src/index.ts"],
-    files: 1,
-  },
-  {
-    adr: "0003-separate-view-layers-shared-core.md",
-    says: /That constraint is enforced by dependency rules in the build, not by convention\./,
-    holds: "the import ban the build declares over Core",
-    pattern: "noRestrictedImports",
-    paths: [BIOME],
-    files: 1,
-  },
-  {
-    adr: "0003-separate-view-layers-shared-core.md",
-    says: /`core` and `client` are shared without modification\./,
-    holds: "files under apps naming Core's package directly",
-    pattern: "@seatscout/core",
-    paths: ["apps"],
-    files: 0,
-    witness: ["packages/client"],
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /by Biome's \[`noExcessiveCognitiveComplexity`\]/,
-    holds: "the complexity rule that gates the build",
-    pattern: "noExcessiveCognitiveComplexity",
-    paths: [BIOME],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /that rules out scc, and it rules out `lizard` for the same reason/,
-    holds: "the toolchain naming the counter that reported it",
-    pattern: "scc",
-    paths: ["package.json", ".github", "tools"],
-    files: 0,
-    witness: [RECORDS],
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /\*\*The number and its exception process\.\*\*/,
-    holds: "the cyclomatic limit that gates the build",
-    pattern: '"max": 10',
-    paths: [CYCLOMATIC],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /the same documented meaning of `classic`/,
-    holds: "the counting variant the limit is defined over",
-    pattern: '"variant": "classic"',
-    paths: [CYCLOMATIC],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /\*\*Lines per file\*\* may not exceed 300, by Biome's/,
-    holds: "the file length rule that gates the build",
-    pattern: "noExcessiveLinesPerFile",
-    paths: [BIOME],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /calls it greater than or equal to a break threshold of 100, and exits/,
-    holds: "the mutation gate's breaking threshold",
-    pattern: '"break": 100',
-    paths: [STRYKER],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /\*\*Bundle size\*\* is a ratchet recorded in `\.size-limit\.json`/,
-    holds: "the ratchet a reviewer last accepted",
-    pattern: '"limit"',
-    paths: [RATCHET],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /The glob covers every emitted script rather than an entry point/,
-    holds: "the glob the ratchet weighs",
-    pattern: "dist/**/*.js",
-    paths: [RATCHET],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /\*\*The journey\*\* is measured on the built tree served by the deployment's own worker/,
-    holds: "the script that holds the head's journey to the merge base's",
-    pattern: "tools/journey/src/index.ts",
-    paths: ["package.json"],
-    files: 1,
-  },
-];
-
-const UNCHECKED = {
-  "0005-build-numbers-come-from-the-run-counter.md":
-    "it is deprecated, and the resolver its pairs were held to has been deleted, so the " +
-    "tree holds nothing for a search to reach; the pairs return with the release workflow",
-  "CONTEXT.md":
-    "it is the domain glossary, and the sets and counts it states are held term by term " +
-    "by tools/counts-in-prose.mjs, which is the right instrument for a count",
-  "README.md":
-    "it describes the product to a reader, and the one thing in it a command can hold, " +
-    "what the Reference profile penalises, is a count and is held by " +
-    "tools/counts-in-prose.mjs",
 };
 
 const documents = () => [
@@ -232,7 +90,7 @@ const classified = new Set([
 for (const adr of documents())
   if (!classified.has(adr))
     structural.push(
-      `${adr} is neither paired with a search nor recorded as carrying no claim a search can hold; classify it in tools/claims-in-prose.mjs`,
+      `${adr} is neither paired with a search nor recorded as carrying no claim a search can hold; classify it in ${DECLARED_IN}`,
     );
 for (const adr of classified)
   if (!documents().includes(adr))
@@ -252,7 +110,7 @@ if (disagreements.length > 0) {
     `${disagreements.length} claim(s) about this repository could not be held to it:\n` +
       disagreements.map((disagreement) => `  ${disagreement}\n`).join("") +
       "\nCorrect the decision, or correct the repository. If a sentence has been reworded," +
-      "\nfollow it in tools/claims-in-prose.mjs, where every pair is declared.\n",
+      `\nfollow it in ${DECLARED_IN}, where every pair is declared.\n`,
   );
   exit(1);
 }
