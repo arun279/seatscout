@@ -177,7 +177,7 @@ describe("starting the application in a browser", () => {
 
   it("takes the sheet a search opened off the screen when Back returns to the query before it", async () => {
     const page = await opened(
-      "?movie=245569&date=2026-08-28&area=75006&partySize=2",
+      "?movie=245569&date=2026-08-28&area=75006&partySize=2&theater=aacbt",
     );
     await waitFor(() => expect(page.seatMapsRead()).toBeGreaterThan(0));
     fireEvent.click(

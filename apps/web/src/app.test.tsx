@@ -10,6 +10,7 @@ import {
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   ask,
+  AT_ONE_THEATER,
   cards,
   NEARBY,
   staged,
@@ -186,7 +187,7 @@ describe("the first screen", () => {
   });
 
   it("runs the query as edited, with the party stepped and the film's number and the area retyped, and closes", async () => {
-    const stage = staged();
+    const stage = staged({ terms: AT_ONE_THEATER });
     await stage.programmed();
     fireEvent.click(screen.getByRole("button", { name: /the dog stars/i }));
 
@@ -206,7 +207,13 @@ describe("the first screen", () => {
     fireEvent.click(editor.getByRole("button", { name: /find seats/i }));
 
     expect(stage.chosen).toEqual([
-      { movie: "243819", date: "2026-08-29", area: "75234", partySize: 3 },
+      {
+        movie: "243819",
+        date: "2026-08-29",
+        area: "75234",
+        partySize: 3,
+        theaters: ["aacbt"],
+      },
     ]);
     expect(screen.queryByRole("dialog", { hidden: true })).toBeNull();
   });
