@@ -7,6 +7,13 @@ import type { Terms } from "./terms.js";
 
 const NOTHING_ASKED: Terms = { date: TODAY, partySize: 2 };
 
+const SMALLEST_LISTING: Terms = {
+  movie: "245569",
+  date: "2026-08-27",
+  area: "75006",
+  partySize: 2,
+};
+
 const TONIGHT: RecentSearch = {
   movie: "245569",
   date: TODAY,
@@ -91,9 +98,16 @@ describe("recent searches, on the first screen", () => {
   });
 
   it("is not on the screen while a search is, and is on the sheet instead, where one press runs it under the sheet's Profile and closes the sheet", async () => {
-    const stage = staged({ recent: [TONIGHT, TOMORROW], profile: FRONT_ROW });
+    const stage = staged({
+      terms: SMALLEST_LISTING,
+      recent: [TONIGHT, TOMORROW],
+      profile: FRONT_ROW,
+    });
     await stage.settled();
 
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "80 candidates · 0 checked",
+    );
     expect(screen.queryByRole("region", { name: "Run again" })).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: /custom seat/i }));
