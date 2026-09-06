@@ -38,6 +38,8 @@ pre-push:
         VITEST_MAX_WORKERS: 3
     dead-code:
       run: pnpm dead-code
+    classes:
+      run: pnpm classes
     counts:
       run: pnpm counts
     claims:

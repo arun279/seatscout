@@ -7,5 +7,11 @@
     "tsBuildInfoFile": "tsconfig.tsbuildinfo"
   },
   "include": ["src"],
-  "exclude": ["src/worker"]
+  "exclude": [
+    "src/worker",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/*.fixtures.ts",
+    "src/**/*.fixtures.tsx"
+  ]
 }

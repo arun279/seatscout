@@ -77,6 +77,10 @@
   text-wrap: pretty;
 }
 
+.centred {
+  text-align: center;
+}
+
 .room {
   display: block;
   width: 100%;
@@ -97,7 +101,27 @@
   gap: 4px;
 }
 
-.range .ends {
+.range .top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.range .name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--silver);
+}
+
+.range .said {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--beam-dim);
+  white-space: nowrap;
+}
+
+.ends {
   display: flex;
   justify-content: space-between;
   font-family: var(--mono);

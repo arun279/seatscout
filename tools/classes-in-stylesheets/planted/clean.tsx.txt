@@ -1,0 +1,5 @@
+export const Clean = () => (
+  <div className="card">
+    <span className="said lit">every one of these is ruled</span>
+  </div>
+);

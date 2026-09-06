@@ -11,6 +11,7 @@
     "build": "tsc --build --pretty false && pnpm --filter @seatscout/web build",
     "cache-storage": "node tools/no-cache-storage-reach/src/index.ts",
     "claims": "node tools/claims-in-prose.mjs",
+    "classes": "node tools/classes-in-stylesheets/src/index.ts",
     "complexity": "oxlint",
     "contract:alarm": "node tools/contract-alarm.mjs",
     "corpus:refresh": "node tools/capture-corpus.mjs && node tools/corpus-index.mjs && biome format --write packages/core/src/corpus/captures.ts",
