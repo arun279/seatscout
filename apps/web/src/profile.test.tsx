@@ -2,7 +2,10 @@ import "@testing-library/jest-dom/vitest";
 import { REFERENCE } from "@seatscout/client";
 import { cleanup, fireEvent, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ask, cards, FRONT_ROW, staged } from "./search.fixtures.js";
+import { ask, cards, FRONT_ROW, staged, TODAY } from "./search.fixtures.js";
+import type { Terms } from "./terms.js";
+
+const NO_MOVIE: Terms = { date: TODAY, area: "75006", partySize: 2 };
 
 const WEIGHTS = [
   ["Missing your spot", "1", "depthWeight"],
@@ -24,7 +27,7 @@ const ringOf = (card: Element) =>
 
 const opened = async (options: Parameters<typeof staged>[0] = {}) => {
   const stage = staged(options);
-  await stage.settled();
+  if (stage.searches.length > 0) await stage.settled();
   fireEvent.click(screen.getByRole("button", { name: /seat$/i }));
   return { stage, editor: ask() };
 };
@@ -256,7 +259,10 @@ describe("where you sit, on the Ask sheet", () => {
   });
 
   it("goes back to Reference in one press, and the press is offered only while the Profile differs from it", async () => {
-    const { stage, editor } = await opened({ profile: FRONT_ROW });
+    const { stage, editor } = await opened({
+      terms: NO_MOVIE,
+      profile: FRONT_ROW,
+    });
     const reset = editor.getByRole("button", { name: "Back to Reference" });
 
     expect(reset).toBeEnabled();
@@ -271,7 +277,7 @@ describe("where you sit, on the Ask sheet", () => {
   });
 
   it("keeps the Profile as it was on the way back", async () => {
-    const { stage, editor } = await opened();
+    const { stage, editor } = await opened({ terms: NO_MOVIE });
 
     slide(editor.getByLabelText("How far back"), 0);
     fireEvent.click(editor.getByRole("button", { name: /keep as it was/i }));
