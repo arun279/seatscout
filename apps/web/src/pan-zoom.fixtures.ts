@@ -21,7 +21,7 @@ export const viewOf = (group: SVGElement) => {
 
 export const scaleOf = (group: SVGElement) => viewOf(group).scale;
 
-export const framedBy = (element: SVGElement) => {
+const framedBy = (element: SVGElement) => {
   const [, , width = 1, height = 1] = (
     element.ownerSVGElement?.getAttribute("viewBox") ?? ""
   )
