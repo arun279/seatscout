@@ -195,18 +195,18 @@ describe("what the room calls things", () => {
 
     expect(
       together.map((id) =>
-        seatNameOf(seatNamed(room, id), together, false).split(". ").at(-2),
+        seatNameOf(seatNamed(room, id), together, false).split(". ").at(-1),
       ),
     ).toEqual([
-      "First of your nine recommended seats",
-      "Second of your nine recommended seats",
-      "Third of your nine recommended seats",
-      "Fourth of your nine recommended seats",
-      "Fifth of your nine recommended seats",
-      "Sixth of your nine recommended seats",
-      "Seventh of your nine recommended seats",
-      "Eighth of your nine recommended seats",
-      "Ninth of your nine recommended seats",
+      "First of your nine recommended seats.",
+      "Second of your nine recommended seats.",
+      "Third of your nine recommended seats.",
+      "Fourth of your nine recommended seats.",
+      "Fifth of your nine recommended seats.",
+      "Sixth of your nine recommended seats.",
+      "Seventh of your nine recommended seats.",
+      "Eighth of your nine recommended seats.",
+      "Ninth of your nine recommended seats.",
     ]);
   });
 });
