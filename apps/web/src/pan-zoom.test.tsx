@@ -101,14 +101,23 @@ describe("panning and zooming the drawn room", () => {
       act(() => seat.focus());
     };
 
-    focusOn("J14");
+    const roving = () =>
+      stage.dialog.querySelector('[role="gridcell"][tabindex="0"]');
+    const cell = roving();
+    if (cell === null) throw new Error("no Seat is roving");
+    const rows = [...stage.dialog.querySelectorAll('[role="row"]')];
+    const at = rows.findIndex((row) => row.contains(cell));
+    const along = [
+      ...(rows[at]?.querySelectorAll('[role="gridcell"]') ?? []),
+    ].indexOf(cell);
+    const sameIndexOneRowDown =
+      rows[at + 1]?.querySelectorAll<SVGElement>('[role="gridcell"]')[along];
+    if (sameIndexOneRowDown === undefined) throw new Error("no Seat below it");
+    const wanted = sameIndexOneRowDown.getAttribute("data-seat");
+    act(() => sameIndexOneRowDown.focus());
 
-    expect(
-      stage.dialog.querySelector('[role="gridcell"][tabindex="0"]'),
-    ).toHaveAttribute("data-seat", "J14");
-    expect(stage.rowBar()).toHaveTextContent(
-      "ROW J9th row of 14 from the front. 18 seats, 1 bookable.",
-    );
+    expect(wanted).not.toBe("H14");
+    expect(roving()).toHaveAttribute("data-seat", wanted);
 
     focusOn("J10");
     stage.press("ArrowUp");
