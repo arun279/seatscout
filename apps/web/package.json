@@ -8,8 +8,8 @@
   },
   "dependencies": {
     "@seatscout/client": "workspace:*",
-    "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
   },
   "devDependencies": {
     "@types/react": "19.2.18",
