@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { act, cleanup, fireEvent } from "@testing-library/react";
+import { act, cleanup, createEvent, fireEvent } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { opened } from "./auditorium.fixtures.js";
 import {
@@ -111,5 +111,20 @@ describe("the roving cell under D45's keys", () => {
     stage.press("ArrowUp");
 
     expect(nameOf(stage.focused())).toMatch(/^Seat F17\. /);
+  });
+
+  it("answers the keys it binds itself, so the page neither scrolls nor submits under them", async () => {
+    const stage = await opened(WEST_PLANO_28);
+    const moved = createEvent.keyDown(stage.focused(), { key: "ArrowDown" });
+    const chosen = createEvent.keyDown(stage.focused(), { key: "Enter" });
+    const spare = createEvent.keyDown(stage.focused(), { key: "a" });
+
+    fireEvent(stage.focused(), moved);
+    fireEvent(stage.focused(), chosen);
+    fireEvent(stage.focused(), spare);
+
+    expect(moved.defaultPrevented).toBe(true);
+    expect(chosen.defaultPrevented).toBe(true);
+    expect(spare.defaultPrevented).toBe(false);
   });
 });

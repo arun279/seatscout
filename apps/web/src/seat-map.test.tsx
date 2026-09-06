@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import type { Auditorium } from "@seatscout/client";
+import type { Auditorium, SeatGroupResult } from "@seatscout/client";
 import { cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { opened } from "./auditorium.fixtures.js";
@@ -12,10 +12,23 @@ import {
 import { SeatMap } from "./seat-map.js";
 import { opened as openedAt } from "./traversal.js";
 
+const drawn = (auditorium: Auditorium, result: SeatGroupResult) =>
+  render(
+    <SeatMap
+      auditorium={auditorium}
+      result={result}
+      candidate={result}
+      cursor={openedAt(auditorium)}
+      accessibleSeating={false}
+      onCursor={() => {}}
+      onActivate={() => {}}
+    />,
+  );
+
 describe("the drawn room", () => {
   afterEach(cleanup);
 
-  it("draws each labelled row's label as its row header, a console tick between two pods, and the frame padded by the seats' own width", async () => {
+  it("draws each labelled row's label as its row header, and the frame padded by the seats' own width", async () => {
     const large = await opened(WEST_PLANO_28);
     const labels = [...large.dialog.querySelectorAll('[role="rowheader"]')];
     const viewBox = (
@@ -68,8 +81,9 @@ describe("the drawn room", () => {
     expect(labels[0]).toHaveAttribute("font-size", "12.6");
     expect(large.dialog.querySelector('[role="row"]')?.textContent).toBe("A");
     expect(large.dialog.querySelectorAll("svg.seat-map .tick")).toHaveLength(0);
-    cleanup();
+  });
 
+  it("draws a console tick between two Seats a pod band separates, and no label on a row nobody agreed one for", async () => {
     const pods = await opened(VILLAGE_1);
     const ticks = [...pods.dialog.querySelectorAll("svg.seat-map .tick")];
     const [first] = ticks;
@@ -170,17 +184,7 @@ describe("the drawn room", () => {
         ],
       },
     };
-    render(
-      <SeatMap
-        auditorium={stretched}
-        result={room.result}
-        candidate={room.result}
-        cursor={openedAt(stretched)}
-        accessibleSeating={false}
-        onCursor={() => {}}
-        onActivate={() => {}}
-      />,
-    );
+    drawn(stretched, room.result);
     const label = document.querySelector('[role="rowheader"]');
 
     expect(Number(label?.getAttribute("x"))).toBeCloseTo(
@@ -195,5 +199,27 @@ describe("the drawn room", () => {
       corner.y - 4 + (corner.height + 10) / 2,
       10,
     );
+  });
+
+  it("draws no console where a row claims a gap past its own last Seat", async () => {
+    const [room] = await openedRooms(undefined, [VILLAGE_1]);
+    if (room === undefined) throw new Error("the room offered nothing");
+    const [first, ...rest] = room.auditorium.map.rows;
+    if (first === undefined) throw new Error("the room has no rows");
+    const overrun: Auditorium = {
+      ...room.auditorium,
+      map: {
+        ...room.auditorium.map,
+        rows: [
+          { ...first, gapAfter: [...first.gapAfter, "pod", "pod"] },
+          ...rest,
+        ],
+      },
+    };
+    drawn(overrun, room.result);
+
+    expect(
+      document.querySelectorAll('[role="row"]')[0]?.querySelectorAll(".tick"),
+    ).toHaveLength(first.gapAfter.filter((gap) => gap === "pod").length);
   });
 });

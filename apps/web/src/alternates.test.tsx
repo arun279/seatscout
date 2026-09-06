@@ -55,7 +55,7 @@ describe("the Seat Groups a room offers, as one choice", () => {
     expect(stage.room.getByRole("radio", { name: /^A16·A15/ })).toBeChecked();
   });
 
-  it("names the console only where a room has pods, and names every amenity a room has", async () => {
+  it("names the console in a room whose pods are in only some of its rows", async () => {
     await opened(HOOKY_ADDISON);
 
     expect(legend()).toEqual([
@@ -65,15 +65,17 @@ describe("the Seat Groups a room offers, as one choice", () => {
       "wheelchair or companion, kept out of ordinary results",
       "console",
     ]);
-    cleanup();
+  });
 
+  it("names both amenities of a room that has two", async () => {
     const alamo = await opened(LAKE_HIGHLANDS_1);
 
     expect(alamo.dialog.querySelector(".facts")).toHaveTextContent(
       "0 of 155 not bookableAccessibility Devices · Closed Captioning",
     );
-    cleanup();
+  });
 
+  it("leaves the console out of a room with no pods, and says nothing where a room has no amenity", async () => {
     const plain = await opened(WEST_PLANO_28);
 
     expect(legend()).toEqual([

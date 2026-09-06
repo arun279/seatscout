@@ -58,14 +58,15 @@ const drag = (
   group: SVGElement,
   from: { readonly x: number; readonly y: number },
   to: { readonly x: number; readonly y: number },
+  pointerId = 1,
 ) => {
   fireEvent.pointerDown(group, {
-    pointerId: 1,
+    pointerId,
     clientX: from.x,
     clientY: from.y,
   });
-  fireEvent.pointerMove(group, { pointerId: 1, clientX: to.x, clientY: to.y });
-  fireEvent.pointerUp(group, { pointerId: 1, clientX: to.x, clientY: to.y });
+  fireEvent.pointerMove(group, { pointerId, clientX: to.x, clientY: to.y });
+  fireEvent.pointerUp(group, { pointerId, clientX: to.x, clientY: to.y });
 };
 
 describe("panning and zooming the drawn room", () => {
@@ -255,7 +256,7 @@ describe("panning and zooming the drawn room", () => {
     fireEvent.pointerDown(group, { pointerId: 1, clientX: 100, clientY: 200 });
     fireEvent.pointerUp(group, { pointerId: 1, clientX: 100, clientY: 200 });
     const before = group.getAttribute("transform");
-    drag(group, { x: 200, y: 200 }, { x: 150, y: 170 });
+    drag(group, { x: 200, y: 200 }, { x: 150, y: 170 }, 2);
 
     expect(before).toBe("translate(-277.9 -166.74) scale(2)");
     expect(group.getAttribute("transform")).toBe(

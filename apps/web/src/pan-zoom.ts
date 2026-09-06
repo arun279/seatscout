@@ -87,7 +87,7 @@ export const usePanZoom = (
       );
       group.setAttribute("transform", transformOf(view.current));
     };
-    group.addEventListener("wheel", wheeled, { passive: false });
+    group.addEventListener("wheel", wheeled);
     return () => group.removeEventListener("wheel", wheeled);
   }, [group, frame]);
 
