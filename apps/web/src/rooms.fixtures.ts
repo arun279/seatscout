@@ -1,6 +1,7 @@
 import {
   type Auditorium,
   createSeatScout,
+  type Search,
   type SearchTerms,
   type SeatGroupResult,
 } from "@seatscout/client";
@@ -59,6 +60,14 @@ export const STRIKE_AND_REEL_1: CapturedRoom = {
   card: "AMC Grapevine Mills 24, 9:00p",
 };
 
+export const HOOKY_ADDISON: CapturedRoom = {
+  name: "Hooky Addison, 10 rows with consoles in two of them and 30 Seat Groups",
+  showtime: 558016664,
+  capture: "561644741",
+  seats: "G14·G13",
+  card: "Cinemark West Plano and XD, 9:45p",
+};
+
 const FIVE_ROOMS: readonly CapturedRoom[] = [
   WEST_PLANO_28,
   ANGELIKA_5,
@@ -85,8 +94,10 @@ const capturedBody = (capture: string) => {
   return { status: captured.status, body: JSON.stringify(captured.body) };
 };
 
+const DRAWN_ROOMS: readonly CapturedRoom[] = [...FIVE_ROOMS, HOOKY_ADDISON];
+
 export const roomRoutes = (
-  rooms: readonly CapturedRoom[] = FIVE_ROOMS,
+  rooms: readonly CapturedRoom[] = DRAWN_ROOMS,
 ): NonNullable<UpstreamScript["routes"]> =>
   Object.fromEntries(
     rooms.map((room) => [
@@ -99,10 +110,12 @@ export interface OpenedRoom {
   readonly room: CapturedRoom;
   readonly result: SeatGroupResult;
   readonly auditorium: Auditorium;
+  readonly search: Search;
 }
 
 export const openedRooms = async (
   terms: SearchTerms = CORPUS_QUERY,
+  rooms: readonly CapturedRoom[] = FIVE_ROOMS,
 ): Promise<readonly OpenedRoom[]> => {
   const seatscout = createSeatScout({
     fetch: fakeUpstream({
@@ -116,12 +129,12 @@ export const openedRooms = async (
   });
   const search = seatscout.search(terms);
   const settled = await search.done;
-  return FIVE_ROOMS.map((room) => {
+  return rooms.map((room) => {
     const result = settled.results.find(
       (found) => found.showtime.id === room.showtime,
     );
     if (result === undefined) throw new Error(`${room.name} offered nothing`);
-    return { room, result, auditorium: search.auditorium(result) };
+    return { room, result, auditorium: search.auditorium(result), search };
   });
 };
 

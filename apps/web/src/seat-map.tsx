@@ -4,7 +4,7 @@ import type {
   SeatGroupResult,
   SeatRow,
 } from "@seatscout/client";
-import { type KeyboardEvent, type ReactNode, useMemo } from "react";
+import { type KeyboardEvent, type ReactNode, useState } from "react";
 import { gridLabelOf, seatNameOf } from "./auditorium-phrases.js";
 import { type Frame, usePanZoom } from "./pan-zoom.js";
 import { type Cursor, isMove, moved, type Place, placed } from "./traversal.js";
@@ -121,18 +121,14 @@ export const SeatMap = ({
   onActivate,
 }: SeatMapProps) => {
   const { map } = auditorium;
-  const frame = useMemo(() => frameOf(auditorium), [auditorium]);
+  const [{ frame, offered }] = useState(() => ({
+    frame: frameOf(auditorium),
+    offered: new Set(
+      auditorium.offered.flatMap((group) => group.seats.map((seat) => seat.id)),
+    ),
+  }));
   const { setGroup, handlers, dragged } = usePanZoom(map, frame, cursor);
   const recommended = result.seats.map((seat) => seat.id);
-  const offered = useMemo(
-    () =>
-      new Set(
-        auditorium.offered.flatMap((group) =>
-          group.seats.map((seat) => seat.id),
-        ),
-      ),
-    [auditorium],
-  );
 
   const keyed = (event: KeyboardEvent<SVGSVGElement>) => {
     if (event.key === "Enter" || event.key === " ") {

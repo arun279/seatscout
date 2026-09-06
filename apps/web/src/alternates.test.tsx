@@ -1,0 +1,117 @@
+import "@testing-library/jest-dom/vitest";
+import { cleanup, render, screen, within } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
+import { Auditorium } from "./auditorium.js";
+import { opened } from "./auditorium.fixtures.js";
+import {
+  HOOKY_ADDISON,
+  LAKE_HIGHLANDS_1,
+  openedRooms,
+  WEST_PLANO_28,
+} from "./rooms.fixtures.js";
+
+const room = () => within(screen.getByRole("dialog"));
+
+const chips = () =>
+  room()
+    .getAllByRole("radio")
+    .map((radio) => radio.closest("label")?.textContent);
+
+const legend = () =>
+  room()
+    .getAllByRole("listitem")
+    .map((entry) => entry.textContent);
+
+describe("the Seat Groups a room offers, as one choice", () => {
+  afterEach(cleanup);
+
+  it("lists the recommendation and three alternates however many the room holds, and names the room's amenities beside what is not bookable", async () => {
+    const stage = await opened(HOOKY_ADDISON);
+
+    expect(chips()).toEqual([
+      "G14·G13 Row 7 of 10 · on the centreline",
+      "H14·H13 Row 8 of 10 · on the centreline",
+      "F12·F11 Row 6 of 10 · on the centreline",
+      "J14·J13 Row 9 of 10 · on the centreline",
+    ]);
+    expect(stage.room.getByText("30 pairs in this room.")).toBeVisible();
+    expect(stage.dialog.querySelector(".facts")).toHaveTextContent(
+      "2 of 250 not bookableRecliners",
+    );
+  });
+
+  it("appends a Seat Group chosen from outside the three, so the radios always tell the truth about the candidate", async () => {
+    const stage = await opened(HOOKY_ADDISON);
+    stage.press("PageUp");
+    stage.press("Enter");
+
+    expect(chips()).toEqual([
+      "G14·G13 Row 7 of 10 · on the centreline",
+      "H14·H13 Row 8 of 10 · on the centreline",
+      "F12·F11 Row 6 of 10 · on the centreline",
+      "J14·J13 Row 9 of 10 · on the centreline",
+      "A16·A15 Row 1 of 10 · on the centreline · in the front rows",
+    ]);
+    expect(stage.room.getByRole("radio", { name: /^A16·A15/ })).toBeChecked();
+  });
+
+  it("names the console only where a room has pods, and names every amenity a room has", async () => {
+    await opened(HOOKY_ADDISON);
+
+    expect(legend()).toEqual([
+      "G14·G13, yours",
+      "bookable",
+      "not bookable",
+      "wheelchair or companion, kept out of ordinary results",
+      "console",
+    ]);
+    cleanup();
+
+    const alamo = await opened(LAKE_HIGHLANDS_1);
+
+    expect(alamo.dialog.querySelector(".facts")).toHaveTextContent(
+      "0 of 155 not bookableAccessibility Devices · Closed Captioning",
+    );
+    cleanup();
+
+    const plain = await opened(WEST_PLANO_28);
+
+    expect(legend()).toEqual([
+      "H14·H13, yours",
+      "bookable",
+      "not bookable",
+      "wheelchair or companion, kept out of ordinary results",
+    ]);
+    expect(plain.dialog.querySelectorAll(".facts span")).toHaveLength(1);
+    expect(plain.dialog.querySelector(".facts")).toHaveTextContent(
+      "279 of 304 not bookable",
+    );
+  });
+
+  it("drops 'kept out of ordinary results' from the legend when the Query asked for accessible seating", async () => {
+    const [asked] = await openedRooms(
+      {
+        movie: "245569",
+        date: "2026-08-28",
+        area: "75006",
+        partySize: 2,
+        accessibleSeating: true,
+      },
+      [LAKE_HIGHLANDS_1],
+    );
+    if (asked === undefined) throw new Error("the Alamo room offered nothing");
+    render(
+      <Auditorium
+        result={asked.result}
+        search={asked.search}
+        today="2026-08-28"
+        now={1000}
+        online={true}
+        onClose={() => {}}
+        onHandOff={() => {}}
+      />,
+    );
+
+    expect(legend()[3]).toBe("wheelchair or companion");
+  });
+});

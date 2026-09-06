@@ -8,11 +8,10 @@ import {
   Gone,
   type Phase,
   Provenance,
-  spokenOf,
   Unreached,
 } from "./hand-off-verdicts.js";
 import { modal } from "./modal.js";
-import { ageOf, clockOf, dayOf, labelOf, whyOf } from "./phrases.js";
+import { ageOf, clockOf, dayOf, labelOf, spokenOf, whyOf } from "./phrases.js";
 import { RoomPlan } from "./room-plan.js";
 
 interface HandOffProps {

@@ -1,5 +1,5 @@
 import type { Search, SeatGroupResult } from "@seatscout/client";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { chosenOf, groupsOf, refusalOf } from "./auditorium-phrases.js";
 import { seatsOf } from "./derived.js";
 import { modal } from "./modal.js";
@@ -25,7 +25,7 @@ interface AuditoriumProps {
   readonly now: number;
   readonly online: boolean;
   readonly onClose: () => void;
-  readonly onHandOff: (candidate: SeatGroupResult) => unknown;
+  readonly onHandOff: (candidate: SeatGroupResult) => void;
 }
 
 const ALTERNATES_SHOWN = 3;
@@ -40,11 +40,15 @@ const Billing = ({ result }: { readonly result: SeatGroupResult }) => {
       <span className="credit">
         {capitalised(lateralOf(result.reasons.seatsOffCentre))}
       </span>
-      <span className="credit">
-        {penalties.length === 0
-          ? "Clear of the front rows and the walls"
-          : capitalised(penalties.join(" · "))}
-      </span>
+      {penalties.length === 0 ? (
+        <span className="credit">Clear of the front rows and the walls</span>
+      ) : (
+        penalties.map((penalty) => (
+          <span key={penalty} className="credit">
+            {capitalised(penalty)}
+          </span>
+        ))
+      )}
     </div>
   );
 };
@@ -94,7 +98,7 @@ export const Auditorium = ({
   onClose,
   onHandOff,
 }: AuditoriumProps) => {
-  const auditorium = useMemo(() => search.auditorium(result), [search, result]);
+  const [auditorium] = useState(() => search.auditorium(result));
   const [cursor, holdCursor] = useState<Cursor>(() => opened(auditorium));
   const [candidate, setCandidate] = useState(result);
   const [notice, setNotice] = useState<string | null>(null);

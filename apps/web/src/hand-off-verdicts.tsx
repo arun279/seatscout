@@ -1,10 +1,14 @@
 import type { SeatGroupResult } from "@seatscout/client";
 import { seatsOf } from "./derived.js";
-import { ageOf, clockOf, labelOf, lateralOf, partyOf } from "./phrases.js";
+import {
+  ageOf,
+  clockOf,
+  labelOf,
+  lateralOf,
+  partyOf,
+  spokenOf,
+} from "./phrases.js";
 import { RoomPlan } from "./room-plan.js";
-
-export const spokenOf = (seats: readonly string[]): string =>
-  [seats.slice(0, -1).join(", "), seats.at(-1)].filter(Boolean).join(" and ");
 
 export interface Taken {
   readonly kind: "taken";

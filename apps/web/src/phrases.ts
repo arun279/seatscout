@@ -79,6 +79,9 @@ export const lateralOf = (seatsOffCentre: number): string => {
 
 export const labelOf = (seats: readonly string[]): string => seats.join("·");
 
+export const spokenOf = (seats: readonly string[]): string =>
+  [seats.slice(0, -1).join(", "), seats.at(-1)].filter(Boolean).join(" and ");
+
 export const partyOf = (party: number): string =>
   party === 1 ? "One seat" : `${capitalised(wordOf(party))} seats together`;
 

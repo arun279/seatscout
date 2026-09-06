@@ -5,11 +5,15 @@ import type {
   SeatGroupResult,
   SeatRow,
 } from "@seatscout/client";
-import { capitalised, clockOf, lateralOf, wordOf } from "./phrases.js";
+import {
+  capitalised,
+  clockOf,
+  lateralOf,
+  spokenOf,
+  wordOf,
+} from "./phrases.js";
 
 type Accessible = Exclude<PositionedSeat["designation"], "standard">;
-
-const LIST = new Intl.ListFormat("en");
 
 const TEENS = new Set([11, 12, 13]);
 
@@ -48,8 +52,6 @@ export const ordinalOf = (count: number) => {
 
 const ordinalWordOf = (count: number) =>
   ORDINALS[count - 1] ?? ordinalOf(count);
-
-const listOf = (ids: readonly string[]) => LIST.format(ids);
 
 const isAccessible = (
   seat: PositionedSeat,
@@ -108,7 +110,7 @@ export const gridLabelOf = (
 ) => {
   const { map } = auditorium;
   const { theater } = result.showtime.presentation;
-  return `Seat map of ${theater.name} at ${clockOf(result.showtime.startsAt)}. ${map.seatCount} seats in ${map.rows.length} rows, ${map.bookableCount} bookable. Recommended: ${listOf(result.seats.map((seat) => seat.id))}, ${ordinalOf(result.reasons.rowFromFront)} row of ${result.reasons.rowCount}, ${lateralOf(result.reasons.seatsOffCentre)}. Arrow keys move one seat.`;
+  return `Seat map of ${theater.name} at ${clockOf(result.showtime.startsAt)}. ${map.seatCount} seats in ${map.rows.length} rows, ${map.bookableCount} bookable. Recommended: ${spokenOf(result.seats.map((seat) => seat.id))}, ${ordinalOf(result.reasons.rowFromFront)} row of ${result.reasons.rowCount}, ${lateralOf(result.reasons.seatsOffCentre)}. Arrow keys move one seat.`;
 };
 
 export const refusalOf = (
@@ -124,7 +126,7 @@ export const refusalOf = (
 };
 
 export const chosenOf = (result: SeatGroupResult) =>
-  `${listOf(result.seats.map((seat) => seat.id))} chosen. ${result.seats.length === 1 ? "It is" : "They are"} re-checked when you continue.`;
+  `${spokenOf(result.seats.map((seat) => seat.id))} chosen. ${result.seats.length === 1 ? "It is" : "They are"} re-checked when you continue.`;
 
 export const groupsOf = (count: number, partySize: number) => {
   const word = groupWordOf(partySize);
