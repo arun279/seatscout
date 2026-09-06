@@ -60,25 +60,26 @@ const OVERRIDDEN: Content = { body: () => "" };
 const SEAT_MAP = /^\/napi\/seatMap\/(\d+)$/;
 const SCHEDULE = /^\/napi\/theaterMovieShowtimes\/\w+$/;
 
-const replayOfCapture = (capture: Capture<unknown>): Replay => ({
-  status: capture.status,
-  body: () => JSON.stringify(capture.body),
-});
+const replayOfCapture = (capture: Capture<unknown>): Replay => {
+  const body = JSON.stringify(capture.body);
+  return { status: capture.status, body: () => body };
+};
 
-const standingIn = (script: UpstreamScript) => {
-  const auditoriums = [...seatMapCaptures.values()].map(replayOfCapture);
-  const [schedule] = [...theaterMovieShowtimesCaptures.values()].map(
-    replayOfCapture,
-  );
-  return (route: string): Replay | undefined => {
+const AUDITORIUMS = [...seatMapCaptures.values()].map(replayOfCapture);
+const [SCHEDULE_REPLAY] = [...theaterMovieShowtimesCaptures.values()].map(
+  replayOfCapture,
+);
+
+const standingIn =
+  (script: UpstreamScript) =>
+  (route: string): Replay | undefined => {
     const seatMap = SEAT_MAP.exec(route);
     if (seatMap !== null && script.standInAuditoriums)
-      return auditoriums[Number(seatMap[1]) % auditoriums.length];
+      return AUDITORIUMS[Number(seatMap[1]) % AUDITORIUMS.length];
     return script.standInTheaters && SCHEDULE.test(route)
-      ? schedule
+      ? SCHEDULE_REPLAY
       : undefined;
   };
-};
 
 const lowercased = (headers: Readonly<Record<string, string>>) =>
   Object.fromEntries(
@@ -104,14 +105,16 @@ export const recordedCaptures = (): readonly Capture<unknown>[] => [
   ...nearbyTheatersCaptures.values(),
 ];
 
+const RECORDED: ReadonlyMap<string, Replay> = new Map(
+  recordedCaptures().map((capture) => [
+    routeOf(capture.request.path),
+    replayOfCapture(capture),
+  ]),
+);
+
 export const fakeUpstream = (script: UpstreamScript): FakeUpstream => {
   const draws = xoroshiro128plus(script.seed);
-  const replays = new Map<string, Replay>(
-    recordedCaptures().map((capture) => [
-      routeOf(capture.request.path),
-      { status: capture.status, body: () => JSON.stringify(capture.body) },
-    ]),
-  );
+  const replays = new Map<string, Replay>(RECORDED);
   for (const [path, route] of Object.entries(script.routes ?? {}))
     replays.set(routeOf(path), {
       status: route.status,
