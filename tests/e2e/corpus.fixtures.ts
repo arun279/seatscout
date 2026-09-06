@@ -66,3 +66,22 @@ export const hitAreasUnder = (page: Page, least: number) =>
       })
       .filter((area) => area.width < floor || area.height < floor);
   }, least);
+
+export const clippedFieldsIn = (page: Page) =>
+  page.evaluate(() =>
+    [...document.querySelectorAll("dialog[open] input, main input")]
+      .map((field) => {
+        const drawn = field.getBoundingClientRect().width;
+        const style = field.getAttribute("style");
+        field.setAttribute("style", `${style ?? ""};width:max-content`);
+        const needed = field.getBoundingClientRect().width;
+        if (style === null) field.removeAttribute("style");
+        else field.setAttribute("style", style);
+        return {
+          name: field.getAttribute("aria-label") ?? field.getAttribute("type"),
+          drawn,
+          needed,
+        };
+      })
+      .filter((field) => field.drawn + 0.5 < field.needed),
+  );

@@ -2,6 +2,7 @@ import { AxeBuilder } from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
 import {
   answeredByTheCorpus,
+  clippedFieldsIn,
   HIT_AREA,
   hitAreasUnder,
   requestsTo,
@@ -15,6 +16,8 @@ const LISTINGS = "/napi/theaterShowtimeGroupings/";
 const EVERYTHING =
   "?movie=245569&date=2026-08-28&area=75006&partySize=2&chain=AMC&chain=Landmark&theater=aacbt&theater=aaxju&format=Dolby+Cinema&format=IMAX&amenity=Recliners&from=19%3A00&until=21%3A00&accessibleSeating=true";
 const STONEBRIAR = ["558117351", "558782900"];
+const BLOCKED_BY_THE_HARNESS =
+  "Service Worker registration blocked by Playwright";
 
 const settled = async (page: Page) => {
   await expect(page.getByRole("status").first()).toHaveText(/172 checked$/);
@@ -28,6 +31,14 @@ test.use({ serviceWorkers: "block", viewport: PHONE });
 test("every Query term composes in one search on a phone, one-handed, and the card states all of them", {
   tag: "@accessibility",
 }, async ({ page }) => {
+  const complaints: string[] = [];
+  page.on("console", (message) => {
+    if (
+      ["error", "warning"].includes(message.type()) &&
+      message.text() !== BLOCKED_BY_THE_HARNESS
+    )
+      complaints.push(`${message.type()}: ${message.text()}`);
+  });
   await answeredByTheCorpus(page);
   await page.goto(TONIGHT);
   await settled(page);
@@ -49,6 +60,7 @@ test("every Query term composes in one search on a phone, one-handed, and the ca
   await sheet(page).getByLabel("Accessible seating").check();
   const scan = await new AxeBuilder({ page }).withTags(WCAG).analyze();
   const onTheSheet = await hitAreasUnder(page, HIT_AREA);
+  const clipped = await clippedFieldsIn(page);
   const submit = await sheet(page).locator(".cta").boundingBox();
   await sheet(page).getByRole("button", { name: "Find seats" }).click();
 
@@ -57,6 +69,7 @@ test("every Query term composes in one search on a phone, one-handed, and the ca
 
   expect(scan.violations).toEqual([]);
   expect(onTheSheet).toEqual([]);
+  expect(clipped).toEqual([]);
   expect(new URL(page.url()).search).toBe(EVERYTHING);
   await expect(page.locator("header")).toContainText(
     "Fri 28 Aug · 7:00p to 9:00p · Near 75006 · Dolby Cinema or IMAX · Recliners · AMC or Landmark · Cinemark Dallas XD and IMAX or AMC Village on the Parkway 9 · Accessible seating · Reference seat",
@@ -69,6 +82,7 @@ test("every Query term composes in one search on a phone, one-handed, and the ca
     ),
   ).toBe(true);
   expect(await hitAreasUnder(page, HIT_AREA)).toEqual([]);
+  expect(complaints).toEqual([]);
   test.info().annotations.push({
     type: "title card height with every term active, px",
     description: `${card?.height.toFixed(0)}`,

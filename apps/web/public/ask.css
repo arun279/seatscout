@@ -173,12 +173,16 @@
 
 .when {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
 .when .field {
   flex: 1;
-  min-width: 0;
+}
+
+.when .day {
+  flex-basis: 100%;
 }
 
 .switch {

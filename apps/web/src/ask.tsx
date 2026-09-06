@@ -35,11 +35,11 @@ interface Patch {
   readonly patch: (change: Partial<Terms>) => void;
 }
 
-const areaOf = (draft: Terms) => draft.area?.trim() || undefined;
+const areaOf = ({ area = "" }: Terms) => area.trim() || undefined;
 
 const When = ({ draft, patch }: Patch) => (
   <div className="when">
-    <label className="field">
+    <label className="field day">
       <span className="eyebrow">Date</span>
       <input
         className="input"
@@ -131,8 +131,9 @@ export const Ask = ({
   );
   const patch = (change: Partial<Terms>) => setDraft({ ...draft, ...change });
   const follow = () => {
-    if (held.area !== areaOf(draft) || held.date !== draft.date)
-      setHeld(onProgramme(areaOf(draft), draft.date));
+    const area = areaOf(draft);
+    if (held.area !== area || held.date !== draft.date)
+      setHeld(onProgramme(area, draft.date));
   };
 
   return (
@@ -149,8 +150,8 @@ export const Ask = ({
         </button>
       </form>
       <form
-        method="dialog"
-        onSubmit={() => {
+        onSubmit={(event) => {
+          event.preventDefault();
           onFind(
             termsOf(
               { ...draft, movie: movieOf(film, playing.movies) },
