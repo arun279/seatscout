@@ -91,10 +91,9 @@ const Row = ({ row, frame, children }: RowProps) => (
         {row.label}
       </text>
     )}
-    {row.gapAfter.flatMap((gap, at) => {
-      const left = row.seats[at];
+    {row.seats.flatMap((left, at) => {
       const right = row.seats[at + 1];
-      if (gap !== "pod" || left === undefined || right === undefined) return [];
+      if (row.gapAfter[at] !== "pod" || right === undefined) return [];
       const x = (left.x + left.width + right.x) / 2;
       return [
         <line

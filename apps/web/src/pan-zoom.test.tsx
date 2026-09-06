@@ -2,72 +2,17 @@ import "@testing-library/jest-dom/vitest";
 import { act, cleanup, createEvent, fireEvent } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { opened } from "./auditorium.fixtures.js";
+import {
+  drag,
+  MAP_ON_SCREEN,
+  onScreen,
+  scaleOf,
+  spanOf,
+  underPointer,
+  viewOf,
+  wrapper,
+} from "./pan-zoom.fixtures.js";
 import { WEST_PLANO_28 } from "./rooms.fixtures.js";
-
-const MAP_ON_SCREEN = { left: 20, top: 100, width: 340 };
-
-const wrapper = (dialog: HTMLElement) => {
-  const group = dialog.querySelector<SVGGElement>("svg > g");
-  if (group === null) throw new Error("the map has no wrapping group");
-  return group;
-};
-
-const viewOf = (group: SVGElement) => {
-  const [tx = 0, ty = 0, scale = 1] = (
-    /translate\(([-\d.]+) ([-\d.]+)\) scale\(([\d.]+)\)/.exec(
-      group.getAttribute("transform") ?? "",
-    ) ?? []
-  )
-    .slice(1)
-    .map(Number);
-  return { tx, ty, scale };
-};
-
-const scaleOf = (group: SVGElement) => viewOf(group).scale;
-
-const framedBy = (element: SVGElement) => {
-  const [, , width = 1, height = 1] = (
-    element.ownerSVGElement?.getAttribute("viewBox") ?? ""
-  )
-    .split(" ")
-    .map(Number);
-  return { width, height, perUnit: MAP_ON_SCREEN.width / width };
-};
-
-const onScreen = function (this: SVGElement) {
-  const { tx, ty, scale } = viewOf(this);
-  const { height, perUnit } = framedBy(this);
-  return new DOMRect(
-    MAP_ON_SCREEN.left + tx * perUnit,
-    MAP_ON_SCREEN.top + ty * perUnit,
-    MAP_ON_SCREEN.width * scale,
-    height * perUnit * scale,
-  );
-};
-
-const underPointer = (group: SVGElement, client: { x: number; y: number }) => {
-  const { tx, ty, scale } = viewOf(group);
-  const { perUnit } = framedBy(group);
-  return {
-    x: ((client.x - MAP_ON_SCREEN.left) / perUnit - tx) / scale,
-    y: ((client.y - MAP_ON_SCREEN.top) / perUnit - ty) / scale,
-  };
-};
-
-const drag = (
-  group: SVGElement,
-  from: { readonly x: number; readonly y: number },
-  to: { readonly x: number; readonly y: number },
-  pointerId = 1,
-) => {
-  fireEvent.pointerDown(group, {
-    pointerId,
-    clientX: from.x,
-    clientY: from.y,
-  });
-  fireEvent.pointerMove(group, { pointerId, clientX: to.x, clientY: to.y });
-  fireEvent.pointerUp(group, { pointerId, clientX: to.x, clientY: to.y });
-};
 
 describe("panning and zooming the drawn room", () => {
   beforeEach(() => {
@@ -146,12 +91,23 @@ describe("panning and zooming the drawn room", () => {
     expect(stage.room.getByRole("radio", { name: /^H14·H13/ })).toBeChecked();
   });
 
-  it("moves the roving cell to a Seat the pointer focuses, with the anchor on that Seat", async () => {
+  it("moves the roving cell to any Seat the pointer focuses, one row down as readily as one row and four seats over, with the anchor on that Seat", async () => {
     const stage = await opened(WEST_PLANO_28);
-    const seat = stage.dialog.querySelector<SVGElement>('[data-seat="J10"]');
-    if (seat === null) throw new Error("J10 is not drawn");
+    const focusOn = (id: string) => {
+      const seat = stage.dialog.querySelector<SVGElement>(
+        `[data-seat="${id}"]`,
+      );
+      if (seat === null) throw new Error(`${id} is not drawn`);
+      act(() => seat.focus());
+    };
 
-    act(() => seat.focus());
+    focusOn("J14");
+
+    expect(stage.rowBar()).toHaveTextContent(
+      "ROW J9th row of 14 from the front. 18 seats, 1 bookable.",
+    );
+
+    focusOn("J10");
     stage.press("ArrowUp");
 
     expect(stage.focused().getAttribute("aria-label")).toMatch(/^Seat H10\. /);
@@ -197,10 +153,14 @@ describe("panning and zooming the drawn room", () => {
     fireEvent.wheel(group, { deltaY: -480, clientX: 190, clientY: 202 });
     const zoomed = viewOf(group);
     stage.press("Home");
+    const home = spanOf(group, stage.focused());
+    stage.press("PageDown");
+    const back = spanOf(group, stage.focused());
 
-    expect(stage.focused().getAttribute("aria-label")).toMatch(/^Seat H25\. /);
+    expect(stage.focused().getAttribute("aria-label")).toMatch(/^Seat P25\. /);
     expect(viewOf(group).scale).toBe(zoomed.scale);
-    expect(viewOf(group).tx).toBeGreaterThan(zoomed.tx);
+    expect(home.left).toBeCloseTo(MAP_ON_SCREEN.left, 6);
+    expect(back.bottom).toBeCloseTo(back.frame.bottom, 6);
   });
 
   it("answers a press and a wheel itself, so the browser neither selects nor scrolls the page", async () => {
