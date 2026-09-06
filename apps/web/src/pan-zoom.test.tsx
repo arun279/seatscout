@@ -103,6 +103,9 @@ describe("panning and zooming the drawn room", () => {
 
     focusOn("J14");
 
+    expect(
+      stage.dialog.querySelector('[role="gridcell"][tabindex="0"]'),
+    ).toHaveAttribute("data-seat", "J14");
     expect(stage.rowBar()).toHaveTextContent(
       "ROW J9th row of 14 from the front. 18 seats, 1 bookable.",
     );

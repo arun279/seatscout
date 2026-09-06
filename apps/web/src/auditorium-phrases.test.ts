@@ -178,4 +178,35 @@ describe("what the room calls things", () => {
     expect(groupsOf(12, 1)).toBe("12 seats in this room.");
     expect(groupsOf(1, 1)).toBe("The only seat in this room.");
   });
+
+  it("counts a Seat's place in the recommendation in words, as far as a party can be booked together", () => {
+    const room = openedRoom(WEST_PLANO_28).auditorium;
+    const together = [
+      "H18",
+      "H17",
+      "H16",
+      "H15",
+      "H14",
+      "H13",
+      "H12",
+      "H11",
+      "H10",
+    ];
+
+    expect(
+      together.map((id) =>
+        seatNameOf(seatNamed(room, id), together, false).split(". ").at(-2),
+      ),
+    ).toEqual([
+      "First of your nine recommended seats",
+      "Second of your nine recommended seats",
+      "Third of your nine recommended seats",
+      "Fourth of your nine recommended seats",
+      "Fifth of your nine recommended seats",
+      "Sixth of your nine recommended seats",
+      "Seventh of your nine recommended seats",
+      "Eighth of your nine recommended seats",
+      "Ninth of your nine recommended seats",
+    ]);
+  });
 });
