@@ -19,8 +19,9 @@ export const bundles = (weighed: readonly Bundle[]): Section => {
       "### Bundle size",
       "",
       "Brotli, summed per file, over every script an application's own bundler",
-      "emits, with the workspace packages it reaches inlined. Every emitted chunk",
-      "counts, including one no page has loaded, so this is what a build publishes",
+      "emits, with the workspace packages it reaches inlined, and over every",
+      "stylesheet the built directory serves. Every emitted chunk counts,",
+      "including one no page has loaded, so this is what a build publishes",
       "rather than what a page weighs.",
       "",
       ...table(

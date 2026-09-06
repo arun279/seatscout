@@ -352,6 +352,14 @@ emitted script rather than an entry point, so deferring bytes into a chunk that 
 later does not move the number. The measured size is printed beside the ratchet, so a
 ratchet that has drifted above the real size is visible from the two figures.
 
+Both halves of what the built directory serves are weighed, each against a ratchet of its
+own: the scripts the bundler emits, and the stylesheets beside them. A page costs a reader
+its scripts and its stylesheets together, so gating one and leaving the other unbounded
+would let bytes move from the weighed half to the free one, which is the deferred chunk
+under another name. The stylesheets arrive in `apps/web/dist` copied from
+`apps/web/public` unchanged, and `apps/web/dist/**/*.css` is pointed at the copy rather
+than the source because the copy is what the deployment serves.
+
 Their difference is not printed as a third. The ratchet is not a budget derived from a
 device, a network or a page, so the room left under it is distance to a number this
 project chose rather than a quantity about the world: no published standard sets a point
@@ -361,8 +369,9 @@ there is no earlier headroom to compare a branch's against. What is left is a fi
 reader cannot act on without weighing it, which is the test this decision sets for
 anything it does not gate.
 
-What the glob is pointed at has to be the output of the application's own bundler, and
-that is the load-bearing half of this gate. The web application had none at first: its
+What a glob is pointed at has to be what the deployment serves rather than a stand-in for
+it, and for the scripts that means the output of the application's own bundler. That is
+the load-bearing half of this gate. The web application had none at first: its
 build was `tsc`, which emits a file per source file and rewrites no import specifier,
 so the directory being weighed held modules no browser could resolve, and the workspace
 packages those modules imported were named in an import statement rather than present in
