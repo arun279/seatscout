@@ -1,12 +1,14 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { exit, stderr, stdout } from "node:process";
-import { CLAIMS, UNCHECKED } from "./claims-in-prose.pairs.mjs";
+import { CLAIMS } from "./claims-in-prose.pairs.mjs";
+import { UNCHECKED } from "./claims-in-prose.unchecked.mjs";
 
 const RECORDS = "docs/adr";
 const NARRATIVE = ["CONTEXT.md", "README.md"];
-const DECLARED_IN = "tools/claims-in-prose.pairs.mjs";
-const DECLARING = ["tools/claims-in-prose.mjs", DECLARED_IN];
+const PAIRED_IN = "tools/claims-in-prose.pairs.mjs";
+const UNPAIRED_IN = "tools/claims-in-prose.unchecked.mjs";
+const DECLARING = ["tools/claims-in-prose.mjs", PAIRED_IN, UNPAIRED_IN];
 
 const git = (...args) =>
   execFileSync("git", args, { encoding: "utf8", maxBuffer: Infinity });
@@ -90,7 +92,7 @@ const classified = new Set([
 for (const adr of documents())
   if (!classified.has(adr))
     structural.push(
-      `${adr} is neither paired with a search nor recorded as carrying no claim a search can hold; classify it in ${DECLARED_IN}`,
+      `${adr} is neither paired with a search nor recorded as carrying no claim a search can hold; pair it in ${PAIRED_IN} or say in ${UNPAIRED_IN} why it carries none`,
     );
 for (const adr of classified)
   if (!documents().includes(adr))
@@ -110,7 +112,7 @@ if (disagreements.length > 0) {
     `${disagreements.length} claim(s) about this repository could not be held to it:\n` +
       disagreements.map((disagreement) => `  ${disagreement}\n`).join("") +
       "\nCorrect the decision, or correct the repository. If a sentence has been reworded," +
-      `\nfollow it in ${DECLARED_IN}, where every pair is declared.\n`,
+      `\nfollow it in ${PAIRED_IN}, where every pair is declared.\n`,
   );
   exit(1);
 }

@@ -50,8 +50,9 @@ repository itself**, over `docs/adr/`, `CONTEXT.md` and `README.md`.
 one search, how many tracked files under these paths hold this fixed string, and the declared
 number is what the record says.
 
-Two rules keep that from being decoration. Every record is classified, with pairs or with a
-stated reason it can carry none, so a new one fails until somebody decides which it is. And
+Two rules keep that from being decoration. Every record is classified, with pairs in that
+file or with a reason in `tools/claims-in-prose.unchecked.mjs` that it can carry none, so a
+new one fails until somebody decides which it is. And
 a claim expecting no match names where the same pattern must still be found, because a
 search that finds nothing because the name is misspelled or the directory was renamed looks
 exactly like a search that finds nothing because the claim holds. That witness has to sit
@@ -62,7 +63,7 @@ positive one over the thing that is there, and where there is neither there is n
 is why `CONTEXT.md` and `README.md` carry none: what a command can hold in either is a count,
 and a count belongs to the gate built for one.
 
-Every search excludes the gate's own two modules, because a pattern written down in order to
+Every search excludes the gate's own modules, because a pattern written down in order to
 be searched for is not an occurrence of the thing. The gate found that on its own first run,
 having reported its own source as evidence that the toolchain still named `scc`.
 

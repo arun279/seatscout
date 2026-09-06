@@ -98,7 +98,8 @@ Each of these has one way through and no exemption to grant.
 - **A count stated in prose, or a claim a record makes about this repository.** Correct the
   sentence or correct the tree, then follow the sentence into
   `tools/counts-in-prose/claims.ts` or `tools/claims-in-prose.pairs.mjs`, where every pair is
-  declared. A new ADR fails `pnpm claims` until it is classified in the second of those.
+  declared. A new ADR fails `pnpm claims` until it is paired in the second of those or
+  recorded in `tools/claims-in-prose.unchecked.mjs` as carrying no claim a search can hold.
 - **A word the spell check does not know.** Put it in the `words` list in `cspell.json`. The
   `flagWords` list beside it is the opposite and has no remedy; ADR 8 says what it refuses and
   why.
@@ -115,6 +116,8 @@ Take a ratchet's new value from the `footprint` comment on the pull request rath
 local run: the job measures the merge of your branch with `main` rather than the branch alone,
 so the bundle's bytes and the sum of the unit and end-to-end counts are what that merge weighs,
 and a floor derived locally read 25 too high the moment `main` had dropped a package's tests.
+`.size-limit.json` holds one ratchet over the scripts the build emits and another over the
+stylesheets it serves, and the comment prints each measured figure beside its own ratchet.
 
 A pull request that changes what a person sees or does carries its headed pass as images or
 video: drive the built tree in a real browser at a phone's size, screenshot each state the

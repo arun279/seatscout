@@ -48,13 +48,15 @@ held still holds a file. Holds.
 ### Bundle size
 
 Brotli, summed per file, over every script an application's own bundler
-emits, with the workspace packages it reaches inlined. Every emitted chunk
-counts, including one no page has loaded, so this is what a build publishes
+emits, with the workspace packages it reaches inlined, and over every
+stylesheet the built directory serves. Every emitted chunk counts,
+including one no page has loaded, so this is what a build publishes
 rather than what a page weighs.
 
 | Bundle | Brotli | Ratchet |
 | --- | ---: | ---: |
 | web app | 15 B | 15 B |
+| stylesheets | 4 B | 4 B |
 
 Bundle size may not exceed the ratchet in \`.size-limit.json\`. Within it.
 
@@ -139,7 +141,10 @@ const MEASURED: Measurement = {
     removed: { "packages/core/src/label.ts": counts(5, 1) },
     modified: { "vitest.config.ts": counts(2, 0) },
   },
-  bundles: [{ name: "web app", size: 15, sizeLimit: 15, passed: true }],
+  bundles: [
+    { name: "web app", size: 15, sizeLimit: 15, passed: true },
+    { name: "stylesheets", size: 4, sizeLimit: 4, passed: true },
+  ],
   gates: GATES,
   limits: LIMITS,
   suites: SUITES,
