@@ -34,6 +34,8 @@ pre-push:
       run: pnpm complexity
     unit:
       run: pnpm test:unit
+      env:
+        VITEST_MAX_WORKERS: 3
     dead-code:
       run: pnpm dead-code
     counts:
