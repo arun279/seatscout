@@ -24,6 +24,7 @@ interface ResultsProps {
   readonly online: boolean;
   readonly onRetry: () => void;
   readonly onEdit: (term: Term) => void;
+  readonly onRoom: (result: SeatGroupResult) => void;
   readonly onHandOff: (result: SeatGroupResult) => void;
 }
 
@@ -74,6 +75,7 @@ export const Results = ({
   online,
   onRetry,
   onEdit,
+  onRoom,
   onHandOff,
 }: ResultsProps) => {
   const when = whenOf(terms.date, today);
@@ -118,6 +120,7 @@ export const Results = ({
               result={result}
               now={now}
               online={online}
+              onRoom={onRoom}
               onHandOff={onHandOff}
             />
           </Fragment>

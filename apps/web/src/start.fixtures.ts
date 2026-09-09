@@ -1,5 +1,5 @@
 import { fakeUpstream } from "@seatscout/client/testing";
-import { act, screen, waitFor, within } from "@testing-library/react";
+import { act, screen, within } from "@testing-library/react";
 import type { Root } from "react-dom/client";
 import { expect, vi } from "vitest";
 import { startApp } from "./start.js";
@@ -30,12 +30,10 @@ export const opened = async (query: string) => {
   document.body.replaceChildren(
     Object.assign(document.createElement("div"), { id: "app" }),
   );
-  act(() => {
-    void startApp().then((root) => running.push(root));
+  await act(async () => {
+    running.push(await startApp());
   });
-  await waitFor(() =>
-    expect(screen.getByRole("heading", { level: 1 })).toBeVisible(),
-  );
+  expect(screen.getByRole("heading", { level: 1 })).toBeVisible();
   return {
     seatMapsRead: () =>
       upstream.requests.filter((request) => request.path.startsWith(SEAT_MAP))

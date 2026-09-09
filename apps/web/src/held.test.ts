@@ -30,6 +30,9 @@ const searching = () => {
     done: Promise.resolve(EMPTY),
     retry: () => Promise.resolve(EMPTY),
     abort: () => aborted.push(true),
+    auditorium: () => {
+      throw new Error("no room was read");
+    },
   };
   return {
     search,

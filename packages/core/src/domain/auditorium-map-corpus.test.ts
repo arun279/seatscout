@@ -188,15 +188,13 @@ describe("the Auditorium map over the captured corpus", () => {
             ? []
             : [
                 {
-                  row: recommended.row,
-                  found: map.rows
-                    .filter((_, index) => index === recommended.row)
-                    .flatMap((row) =>
-                      row.seats.filter((_, index) =>
-                        recommended.seats.includes(index),
-                      ),
+                  row: recommended.row.ordinalFromFront,
+                  found: recommended.row.seats
+                    .filter((seat) =>
+                      group.seats.some((held) => held.id === seat.id),
                     )
                     .map((seat) => seat.id),
+                  opensOn: recommended.seat.id,
                   wanted: group.seats.map((seat) => seat.id),
                 },
               ];
@@ -206,6 +204,9 @@ describe("the Auditorium map over the captured corpus", () => {
     expect(located).toHaveLength(42);
     expect(located.map((entry) => entry.found)).toEqual(
       located.map((entry) => entry.wanted),
+    );
+    expect(located.map((entry) => entry.opensOn)).toEqual(
+      located.map((entry) => entry.wanted[0]),
     );
     expect(new Set(located.map((entry) => entry.row)).size).toBeGreaterThan(1);
   });

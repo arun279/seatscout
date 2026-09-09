@@ -1,7 +1,13 @@
-import type { RecentSearch, SeatProfile, SeatScout } from "@seatscout/client";
+import type {
+  RecentSearch,
+  SeatGroupResult,
+  SeatProfile,
+  SeatScout,
+} from "@seatscout/client";
 import { useSyncExternalStore } from "react";
 import type { Checkout, Clock } from "./app.js";
 import { Ask } from "./ask.js";
+import { Room } from "./auditorium.js";
 import { Ledger } from "./coverage.js";
 import { HandOff } from "./hand-off.js";
 import type { HeldSnapshots } from "./held.js";
@@ -16,6 +22,7 @@ interface OverlaysProps {
   readonly recent: readonly RecentSearch[];
   readonly today: string;
   readonly clock: Clock;
+  readonly online: boolean;
   readonly verify: SeatScout["verify"];
   readonly checkout: Checkout;
   readonly programme: HeldProgramme;
@@ -26,6 +33,7 @@ interface OverlaysProps {
   readonly onClose: () => void;
   readonly onTerms: (terms: Terms) => void;
   readonly onProfile: (profile: SeatProfile) => void;
+  readonly onHandOff: (candidate: SeatGroupResult) => void;
 }
 
 const CurrentLedger = ({
@@ -41,6 +49,32 @@ const CurrentLedger = ({
   />
 );
 
+const CurrentRoom = ({
+  overlay,
+  today,
+  clock,
+  online,
+  onClose,
+  onHandOff,
+}: {
+  readonly overlay: Extract<Overlay, { kind: "room" }>;
+  readonly today: string;
+  readonly clock: Clock;
+  readonly online: boolean;
+  readonly onClose: () => void;
+  readonly onHandOff: (candidate: SeatGroupResult) => void;
+}) => (
+  <Room
+    result={overlay.result}
+    search={overlay.search}
+    today={today}
+    now={useSyncExternalStore(clock.subscribe, clock.now)}
+    online={online}
+    onClose={onClose}
+    onHandOff={onHandOff}
+  />
+);
+
 const Current = ({
   overlay,
   terms,
@@ -48,6 +82,7 @@ const Current = ({
   recent,
   today,
   clock,
+  online,
   verify,
   checkout,
   programme,
@@ -55,6 +90,7 @@ const Current = ({
   onClose,
   onTerms,
   onProfile,
+  onHandOff,
 }: Omit<OverlaysProps, "stack"> & { readonly overlay: Overlay }) => {
   switch (overlay.kind) {
     case "ask":
@@ -76,6 +112,17 @@ const Current = ({
       );
     case "ledger":
       return <CurrentLedger held={overlay.held} onClose={onClose} />;
+    case "room":
+      return (
+        <CurrentRoom
+          overlay={overlay}
+          today={today}
+          clock={clock}
+          online={online}
+          onClose={onClose}
+          onHandOff={onHandOff}
+        />
+      );
     case "handOff":
       return (
         <HandOff
@@ -90,39 +137,11 @@ const Current = ({
   }
 };
 
-export const Overlays = ({
-  stack,
-  terms,
-  profile,
-  recent,
-  today,
-  clock,
-  verify,
-  checkout,
-  programme,
-  onProgramme,
-  onClose,
-  onTerms,
-  onProfile,
-}: OverlaysProps) => (
+export const Overlays = ({ stack, ...rest }: OverlaysProps) => (
   <>
     {stack.map((overlay, at) => (
       <div key={String(at)}>
-        <Current
-          overlay={overlay}
-          terms={terms}
-          profile={profile}
-          recent={recent}
-          today={today}
-          clock={clock}
-          verify={verify}
-          checkout={checkout}
-          programme={programme}
-          onProgramme={onProgramme}
-          onClose={onClose}
-          onTerms={onTerms}
-          onProfile={onProfile}
-        />
+        <Current overlay={overlay} {...rest} />
       </div>
     ))}
   </>

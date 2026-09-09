@@ -152,3 +152,70 @@ a:hover {
   text-transform: uppercase;
   color: var(--silver-dim);
 }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 0 15px;
+  border-radius: 12px;
+  border: 1px solid var(--hairline);
+  background: var(--raised);
+  color: var(--silver);
+  font-family: var(--body);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.chip .sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--silver-faint);
+}
+
+.chip:has(:checked),
+.chip[aria-pressed="true"] {
+  border-color: var(--silver);
+  background: var(--silver);
+  color: var(--house-deep);
+}
+
+.chip:has(:checked) .sub,
+.chip[aria-pressed="true"] .sub {
+  color: oklch(from var(--house-deep) 0.35 c h);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--silver-dim);
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend i {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex: none;
+}
+
+.legend .lit {
+  background: var(--beam);
+  box-shadow: 0 0 6px var(--beam);
+}

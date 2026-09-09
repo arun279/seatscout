@@ -2,11 +2,11 @@
   {
     "name": "web app",
     "path": "apps/web/dist/**/*.js",
-    "limit": "73554 B"
+    "limit": "77903 B"
   },
   {
     "name": "stylesheets",
     "path": "apps/web/dist/**/*.css",
-    "limit": "5177 B"
+    "limit": "6681 B"
   }
 ]

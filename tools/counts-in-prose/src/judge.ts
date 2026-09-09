@@ -69,7 +69,7 @@ export const refusal = (found: readonly Disagreement[]): string =>
     .map(({ claim, disagreement }) => `  ${claim.document}: ${disagreement}\n`)
     .join(
       "",
-    )}\nCorrect the sentence, or the structure. If a sentence has moved or been reworded,\nfollow it in tools/counts-in-prose/src/claims.ts, where every pair is declared.\n`;
+    )}\nCorrect the sentence, or the structure. If a sentence has moved or been reworded,\nfollow it in tools/counts-in-prose/claims.ts, where every pair is declared.\n`;
 
 export const agreement = (claims: readonly Claim[]): string =>
   `Every count stated in prose matches the structure it counts, over ${claims.length} declared pairs:\n${[

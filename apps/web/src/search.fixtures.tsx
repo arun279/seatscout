@@ -11,7 +11,7 @@ import {
 } from "@seatscout/client";
 import { fakeUpstream, type UpstreamScript } from "@seatscout/client/testing";
 import { act, cleanup, render, screen, within } from "@testing-library/react";
-import { useState } from "react";
+import { Profiler, useState } from "react";
 import { App, type AppProps } from "./app.js";
 import type { ProgrammeState } from "./programme.js";
 import type { Terms } from "./terms.js";
@@ -197,17 +197,20 @@ export const staged = (options: Staged = {}) => {
   const chosen: Terms[] = [];
   const profiles: SeatProfile[] = [];
   const checkouts: string[] = [];
+  const commits: string[] = [];
   const rendered = render(
-    <Harness
-      seatscout={seatscout}
-      terms={options.terms ?? TONIGHT}
-      profile={options.profile ?? REFERENCE}
-      recent={options.recent ?? []}
-      clock={time.clock}
-      onTerms={(terms) => chosen.push(terms)}
-      onProfile={(profile) => profiles.push(profile)}
-      checkout={(ticketing) => checkouts.push(ticketing)}
-    />,
+    <Profiler id="app" onRender={(_, phase) => commits.push(phase)}>
+      <Harness
+        seatscout={seatscout}
+        terms={options.terms ?? TONIGHT}
+        profile={options.profile ?? REFERENCE}
+        recent={options.recent ?? []}
+        clock={time.clock}
+        onTerms={(terms) => chosen.push(terms)}
+        onProfile={(profile) => profiles.push(profile)}
+        checkout={(ticketing) => checkouts.push(ticketing)}
+      />
+    </Profiler>,
   );
   return {
     unmount: rendered.unmount,
@@ -216,6 +219,7 @@ export const staged = (options: Staged = {}) => {
     profiles,
     aborted,
     checkouts,
+    commits,
     advance: time.advance,
     roomAtHandOff: (answer: Room) => {
       room = answer;

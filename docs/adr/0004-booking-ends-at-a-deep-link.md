@@ -125,14 +125,19 @@ which is the price of having two ways to answer no; a fresh search restores it.
 
 ### The hand-off on screen
 
-A card's seat label is the control that opens the hand-off, on the inset hit area the other
-inline controls have, so the card's own body stays free for the room that opens from it. They
-are siblings and two tab stops rather than one control inside another.
+A card's body is the control that opens the room, stretched over the card by an `::after`, and
+its seat label is the control that opens the hand-off, on the inset hit area the other inline
+controls have. They are siblings rather than one control inside another, because a button inside
+a button is not HTML, and the card is two tab stops with the body first: a person looks at the
+room before committing to the seats.
 
 The sheet is a `handOff` variant on the overlay stack of
 [ADR 19](0019-the-list-is-painted-once.md), carrying the result it draws, so a query change
 unmounts it with the search it belonged to and one close request pops it. Adding it touched the
-variant, the one switch over variants, and the sheet's own files.
+variant, the one switch over variants, and the sheet's own files. The room is a `room` variant
+on the same stack, carrying the result and the Search that found it, so the screen draws the
+room that Search already read. Opening the seats from inside the room pushes the sheet on top of
+it, and each close request pops one, so the way back out is the way in reversed.
 
 One tap on the velvet button calls the verification above and nothing else until the Source
 answers. An ok answer hands the URL it returned to a `checkout` dependency, which in the browser

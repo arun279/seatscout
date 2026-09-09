@@ -124,4 +124,66 @@ describe("the command line", () => {
       "Refusing a run over a pattern that matches no module",
     );
   });
+
+  it("refuses a class two surface stylesheets rule on their own, naming both", async () => {
+    const run = await gate(
+      {
+        "apps/web/public/index.html": `${PAGE}\n<link rel="stylesheet" href="/room.css" />`,
+        "apps/web/public/house.css": ".card {\n  display: flex;\n}",
+        "apps/web/public/ask.css": ".said {\n  color: red;\n}",
+        "apps/web/public/room.css": ".said {\n  color: blue;\n}",
+        "one.tsx": '<p className="said card" />',
+      },
+      ["one.tsx"],
+    );
+
+    expect(run.status).toBe(1);
+    expect(run.said).toBe(
+      "Refusing 1 class(es) ruled on their own by more than one surface stylesheet:\n" +
+        "  .said in /ask.css and /room.css\n" +
+        "\nOne class means one thing, and a bare rule in two surface sheets means whichever loads\n" +
+        "last draws both. Name the surfaces' classes apart, or move the rule they share to\n" +
+        "/house.css, which is where what two or more surfaces draw belongs.\n",
+    );
+  });
+
+  it("lets the shared stylesheet rule a class a surface also rules, and lets two surfaces scope the same class", async () => {
+    const run = await gate(
+      {
+        "apps/web/public/index.html": `${PAGE}\n<link rel="stylesheet" href="/room.css" />`,
+        "apps/web/public/house.css": ".card {\n  display: flex;\n}",
+        "apps/web/public/ask.css":
+          ".card {\n  gap: 8px;\n}\n.ask .said {\n  color: red;\n}",
+        "apps/web/public/room.css": ".room .said {\n  color: blue;\n}",
+        "one.tsx": '<p className="said card" />',
+      },
+      ["one.tsx"],
+    );
+
+    expect(run.status).toBe(0);
+    expect(run.said).toBe("");
+  });
+
+  it("says both refusals when a class is named with no rule and two surfaces rule another on their own", async () => {
+    const run = await gate(
+      {
+        "apps/web/public/index.html": `${PAGE}\n<link rel="stylesheet" href="/room.css" />`,
+        "apps/web/public/house.css": ".card {\n  display: flex;\n}",
+        "apps/web/public/ask.css":
+          ".said {\n  color: red;\n}\n.lit {\n  color: red;\n}",
+        "apps/web/public/room.css":
+          ".said {\n  color: blue;\n}\n.lit {\n  color: blue;\n}",
+        "one.tsx": '<p className="ghost" />',
+      },
+      ["one.tsx"],
+    );
+
+    expect(run.status).toBe(1);
+    expect(run.said).toContain("  one.tsx:1 .ghost\n");
+    expect(run.said).toContain(
+      "Refusing 2 class(es) ruled on their own by more than one surface stylesheet:\n" +
+        "  .said in /ask.css and /room.css\n" +
+        "  .lit in /ask.css and /room.css\n",
+    );
+  });
 });

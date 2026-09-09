@@ -47,7 +47,7 @@ const DEPTH: Span = { min: 0, max: 1, step: 0.01 };
 const LATERAL: Span = { min: -1, max: 1, step: 0.01 };
 const ROWS = 10;
 
-const ROOM = Array.from({ length: ROWS }, (_, row) => {
+const SEAT_PICKER = Array.from({ length: ROWS }, (_, row) => {
   const reach = 0.66 + (0.34 * row) / (ROWS - 1);
   return { depth: row / (ROWS - 1), runs: [{ from: -reach, to: reach }] };
 });
@@ -69,7 +69,7 @@ const lateralText = (lateral: number) =>
 const held = (value: number, low: number, high: number) =>
   Math.round(Math.min(high, Math.max(low, value)) * 100) / 100;
 
-const Room = ({ profile, onChange }: ProfileProps) => {
+const SeatPicker = ({ profile, onChange }: ProfileProps) => {
   const place = (event: PointerEvent<SVGSVGElement>) => {
     const box = event.currentTarget.getBoundingClientRect();
     const at = targetAt({
@@ -87,11 +87,11 @@ const Room = ({ profile, onChange }: ProfileProps) => {
     lateral: profile.targetLateral,
     seatsOffCentre: 0,
   };
-  const was = marksOf(ROOM, sitting, REFERENCE);
-  const marks = marksOf(ROOM, sitting, profile);
+  const was = marksOf(SEAT_PICKER, sitting, REFERENCE);
+  const marks = marksOf(SEAT_PICKER, sitting, profile);
   return (
     <svg
-      className="room"
+      className="seat-picker"
       viewBox="0 0 64 46"
       aria-hidden="true"
       onPointerDown={place}
@@ -175,7 +175,7 @@ export const Profile = ({ profile, onChange }: ProfileProps) => (
   <>
     <fieldset className="field">
       <legend className="eyebrow">Where you sit</legend>
-      <Room profile={profile} onChange={onChange} />
+      <SeatPicker profile={profile} onChange={onChange} />
       <p className="micro">
         Drag the dot, or use the two ranges below. The faint circle is
         Reference, where it was.

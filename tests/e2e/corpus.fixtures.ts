@@ -35,13 +35,26 @@ export const requestsTo = (
 
 export const hitAreasUnder = (page: Page, least: number) =>
   page.evaluate((floor) => {
-    const areaOf = (element: Element) => {
-      const box = element.getBoundingClientRect();
+    const containing = (element: Element): Element => {
+      for (let at: Element | null = element; at !== null; at = at.parentElement)
+        if (getComputedStyle(at).position !== "static") return at;
+      return document.documentElement;
+    };
+    const reach = (element: Element) => {
+      const own = element.getBoundingClientRect();
+      const drawn = { width: own.width, height: own.height };
       const after = getComputedStyle(element, "::after");
-      if (after.content === "none" || after.position !== "absolute") return box;
+      if (after.content === "none" || after.position !== "absolute")
+        return drawn;
+      const edges = [after.top, after.right, after.bottom, after.left].map(
+        Number.parseFloat,
+      );
+      if (!edges.every(Number.isFinite)) return drawn;
+      const [top = 0, right = 0, bottom = 0, left = 0] = edges;
+      const base = containing(element).getBoundingClientRect();
       return {
-        width: Math.max(box.width, Number.parseFloat(after.width)),
-        height: Math.max(box.height, Number.parseFloat(after.height)),
+        width: Math.max(drawn.width, base.width - left - right),
+        height: Math.max(drawn.height, base.height - top - bottom),
       };
     };
     return [
@@ -50,20 +63,12 @@ export const hitAreasUnder = (page: Page, least: number) =>
       ),
     ]
       .filter((element) => element.closest("dialog:not([open])") === null)
-      .map((element) => {
-        const area = areaOf(element);
-        return {
-          name: (
-            element.getAttribute("aria-label") ??
-            element.textContent ??
-            ""
-          )
-            .trim()
-            .slice(0, 32),
-          width: area.width,
-          height: area.height,
-        };
-      })
+      .map((element) => ({
+        name: (element.getAttribute("aria-label") ?? element.textContent ?? "")
+          .trim()
+          .slice(0, 32),
+        ...reach(element),
+      }))
       .filter((area) => area.width < floor || area.height < floor);
   }, least);
 

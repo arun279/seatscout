@@ -18,7 +18,7 @@ const HOOKY_TICKETING =
 const addison = (page: Page) =>
   page
     .getByRole("article", { name: `${HOOKY}, 9:00a, SDX` })
-    .getByRole("button", { name: "G6·G7" });
+    .getByRole("button", { name: "G6·G7", exact: true });
 
 const opened = async (page: Page) => {
   const upstream = await answeredByTheCorpus(page);

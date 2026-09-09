@@ -1,4 +1,4 @@
-import type { SeatGroupResult } from "@seatscout/client";
+import type { Search, SeatGroupResult } from "@seatscout/client";
 import { useState } from "react";
 import type { HeldSnapshots } from "./held.js";
 import type { Term } from "./title-card-terms.js";
@@ -6,7 +6,12 @@ import type { Term } from "./title-card-terms.js";
 export type Overlay =
   | { readonly kind: "ask"; readonly focus: Term }
   | { readonly kind: "ledger"; readonly held: HeldSnapshots }
-  | { readonly kind: "handOff"; readonly candidate: SeatGroupResult };
+  | { readonly kind: "handOff"; readonly candidate: SeatGroupResult }
+  | {
+      readonly kind: "room";
+      readonly result: SeatGroupResult;
+      readonly search: Search;
+    };
 
 export interface Overlays {
   readonly stack: readonly Overlay[];
