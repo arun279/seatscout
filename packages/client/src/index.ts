@@ -1,9 +1,19 @@
 export {
+  type Amenity,
+  type Chain,
+  EVERY_AMENITY,
+  EVERY_CHAIN,
+  EVERY_FORMAT,
+  type Format,
+  type Movie,
   REFERENCE,
   type SeatProfile,
+  type Theater,
+  type TheaterId,
   type TicketingUrl,
 } from "@seatscout/core";
 export { isReference } from "./profile.js";
+export type { Programme } from "./programme.js";
 export type { SeatGroupResult } from "./ranking.js";
 export type { Coverage } from "./search.js";
 export type { Search } from "./search.js";

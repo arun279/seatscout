@@ -37,19 +37,22 @@ const MONTHS = [
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-const wordOf = (count: number) => WORDS[count - 1] ?? `${count}`;
+export const wordOf = (count: number) => WORDS[count - 1] ?? `${count}`;
 
 const capitalised = (phrase: string) =>
   phrase.charAt(0).toUpperCase() + phrase.slice(1);
 
 export const twoDigits = (value: number) => `${value}`.padStart(2, "0");
 
-export const clockOf = (startsAt: string): string => {
-  const hours = Number(startsAt.slice(11, 13));
-  const minutes = startsAt.slice(14, 16);
+export const timeOf = (clock: string): string => {
+  const hours = Number(clock.slice(0, 2));
+  const minutes = clock.slice(3, 5);
   const onClock = hours % 12 === 0 ? 12 : hours % 12;
   return `${onClock}:${minutes}${hours < 12 ? "a" : "p"}`;
 };
+
+export const clockOf = (startsAt: string): string =>
+  timeOf(startsAt.slice(11, 16));
 
 export const ageOf = (fetchedAt: number, now: number): string => {
   const seconds = Math.max(0, Math.floor((now - fetchedAt) / 1000));

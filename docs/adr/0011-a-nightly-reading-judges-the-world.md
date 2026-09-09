@@ -27,8 +27,9 @@ on a night nobody can act on, and a red nobody can act on is a check people lear
 ## Decision
 
 `packages/core/src/testing/contract.ts` reads one seat map answer and reports every way it
-diverges from what the corpus recorded, and it reads a live area and a live listing and
-reports either one that no longer becomes a domain object or arrives with nothing in it.
+diverges from what the corpus recorded, and it reads a live area, a live Theater schedule and
+a live listing and reports any of them that no longer becomes a domain object or arrives with
+nothing in it.
 `contract.live.test.ts` holds the live aggregator to that, and
 `.github/workflows/contract.yml` runs it nightly. It is not a required check and never gates
 a pull request. [ADR 12](0012-every-mutant-must-die.md) says why the mutation gate is off that

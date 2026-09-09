@@ -59,7 +59,17 @@ policies rather than from anything else. A 403 is in no refusal table, so a refu
 three requests where a clean one spends one; three refused reads in a row then open the circuit
 `theatersNear`, `showtimesFor` and `seatsFor` share, for five seconds at a time and re-armed by
 every probe that meets another refusal, so while the Source goes on refusing the whole area
-answers `unreachable` rather than only the reads it refused. That is why the sellability word in
+answers `unreachable` rather than only the reads it refused.
+
+**The programme reads through a Source of its own, so its breaker is its own.** Reading what is
+playing near an area is one schedule request per Theater the discovery route names, which was 25
+in the reading that settled it. Twenty-five reads are twenty-five chances to trip a breaker, and
+a typeahead that took the search down with it would be a worse bargain than a film list that
+fails alone: the search is what the person asked for, and the list only helps them name a film.
+So `createSeatScout` gives the programme its own `openSource`, and the breaker the search shares
+is untouched by a schedule the Source refuses. The two Sources still read through the same proxy
+under the same retry policy, and `seatscout.test.ts` holds the separation by refusing every
+schedule and asserting the search still answers. That is why the sellability word in
 [ADR 9](0009-no-upstream-word-crosses-the-boundary.md) is read at all, and why
 [ADR 1](0001-single-aggregating-source.md) records a fan-out width this Source will not answer.
 

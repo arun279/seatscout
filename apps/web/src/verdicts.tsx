@@ -1,7 +1,7 @@
 import type { Snapshot } from "@seatscout/client";
 import { nameOf } from "./coverage.js";
 import { accountOf, unreachedIn } from "./derived.js";
-import { noneOf } from "./phrases.js";
+import { noneOf, wordOf } from "./phrases.js";
 import type { Terms } from "./terms.js";
 import type { Term } from "./title-card-terms.js";
 
@@ -10,10 +10,17 @@ interface RemedyProps {
   readonly onEdit: (term: Term) => void;
 }
 
-const Remedy = ({ onRetry, onEdit }: RemedyProps) => (
+const retryOf = (unreached: number): string =>
+  `Retry the ${wordOf(unreached)} unreached`;
+
+const Remedy = ({
+  retry,
+  onRetry,
+  onEdit,
+}: RemedyProps & { readonly retry: string }) => (
   <>
     <button type="button" className="btn btn-velvet" onClick={onRetry}>
-      Retry the search
+      {retry}
     </button>
     <button
       type="button"
@@ -35,7 +42,7 @@ export const Unreachable = ({
       Nothing was looked at, so this is not an answer about {when}.
     </p>
     <div className="fail-box">
-      <Remedy {...remedy} />
+      <Remedy {...remedy} retry="Retry the search" />
     </div>
   </section>
 );
@@ -72,23 +79,20 @@ export const Partial = ({
             </li>
           ))}
         </ul>
-        <Remedy {...remedy} />
+        <Remedy {...remedy} retry={retryOf(snapshot.coverage.failed.length)} />
       </div>
     </section>
   );
 };
 
-export const NoneAnywhere = ({
-  snapshot,
-  terms,
-  when,
-  onEdit,
-}: {
+interface EmptyProps {
   readonly snapshot: Snapshot;
   readonly terms: Terms;
   readonly when: string;
   readonly onEdit: (term: Term) => void;
-}) => (
+}
+
+const NoneAnywhere = ({ snapshot, terms, when, onEdit }: EmptyProps) => (
   <section className="verdict">
     <h2 className="display">
       {noneOf(terms.partySize)}, anywhere {when}.
@@ -109,3 +113,27 @@ export const NoneAnywhere = ({
     </button>
   </section>
 );
+
+const NoneListed = ({ terms, when, onEdit }: EmptyProps) => (
+  <section className="verdict">
+    <h2 className="display">No showtime matches this query {when}.</h2>
+    <p className="lede">
+      Nothing listed near {terms.area} carries every term at once, so nothing
+      was checked. Fewer terms would change it.
+    </p>
+    <button
+      type="button"
+      className="btn btn-ghost"
+      onClick={() => onEdit("formats")}
+    >
+      Change the query
+    </button>
+  </section>
+);
+
+export const Empty = (props: EmptyProps) =>
+  props.snapshot.coverage.candidates === 0 ? (
+    <NoneListed {...props} />
+  ) : (
+    <NoneAnywhere {...props} />
+  );

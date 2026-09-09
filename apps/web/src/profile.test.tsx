@@ -2,10 +2,14 @@ import "@testing-library/jest-dom/vitest";
 import { REFERENCE } from "@seatscout/client";
 import { cleanup, fireEvent, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ask, cards, FRONT_ROW, staged, TODAY } from "./search.fixtures.js";
-import type { Terms } from "./terms.js";
-
-const NO_MOVIE: Terms = { date: TODAY, area: "75006", partySize: 2 };
+import {
+  ask,
+  AT_ONE_THEATER,
+  cards,
+  FRONT_ROW,
+  NO_MOVIE,
+  staged,
+} from "./search.fixtures.js";
 
 const WEIGHTS = [
   ["Missing your spot", "1", "depthWeight"],
@@ -26,7 +30,7 @@ const ringOf = (card: Element) =>
   card.querySelector(".mp-target")?.getAttribute("cy");
 
 const opened = async (options: Parameters<typeof staged>[0] = {}) => {
-  const stage = staged(options);
+  const stage = staged({ terms: NO_MOVIE, ...options });
   if (stage.searches.length > 0) await stage.settled();
   fireEvent.click(screen.getByRole("button", { name: /seat$/i }));
   return { stage, editor: ask() };
@@ -72,7 +76,7 @@ describe("where you sit, on the Ask sheet", () => {
   });
 
   it("re-ranks the results under the adjusted target once found, moves the ring on every card to it, and says the seat is custom", async () => {
-    const { stage, editor } = await opened();
+    const { stage, editor } = await opened({ terms: AT_ONE_THEATER });
     const [first] = cards();
     if (first === undefined) throw new Error("no card to compare against");
     const before = { row: rowOf(first), ring: ringOf(first) };
@@ -259,10 +263,7 @@ describe("where you sit, on the Ask sheet", () => {
   });
 
   it("goes back to Reference in one press, and the press is offered only while the Profile differs from it", async () => {
-    const { stage, editor } = await opened({
-      terms: NO_MOVIE,
-      profile: FRONT_ROW,
-    });
+    const { stage, editor } = await opened({ profile: FRONT_ROW });
     const reset = editor.getByRole("button", { name: "Back to Reference" });
 
     expect(reset).toBeEnabled();
@@ -277,7 +278,7 @@ describe("where you sit, on the Ask sheet", () => {
   });
 
   it("keeps the Profile as it was on the way back", async () => {
-    const { stage, editor } = await opened({ terms: NO_MOVIE });
+    const { stage, editor } = await opened();
 
     slide(editor.getByLabelText("How far back"), 0);
     fireEvent.click(editor.getByRole("button", { name: /keep as it was/i }));
@@ -289,7 +290,7 @@ describe("where you sit, on the Ask sheet", () => {
   });
 
   it("does not run the search again when the sheet closes with nothing changed", async () => {
-    const { stage, editor } = await opened();
+    const { stage, editor } = await opened({ terms: AT_ONE_THEATER });
 
     fireEvent.click(editor.getByRole("button", { name: /find seats/i }));
 

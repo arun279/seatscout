@@ -1,0 +1,180 @@
+import { AxeBuilder } from "@axe-core/playwright";
+import { expect, type Locator, type Page, test } from "@playwright/test";
+import {
+  answeredByTheCorpus,
+  clippedFieldsIn,
+  HIT_AREA,
+  hitAreasUnder,
+  requestsTo,
+  SEAT_MAP,
+  TONIGHT,
+  WCAG,
+} from "./corpus.fixtures.js";
+
+const PHONE = { width: 390, height: 844 };
+const LISTINGS = "/napi/theaterShowtimeGroupings/";
+const EVERYTHING =
+  "?movie=245569&date=2026-08-28&area=75006&partySize=2&chain=AMC&chain=Landmark&theater=aacbt&theater=aaxju&format=Dolby+Cinema&format=IMAX&amenity=Recliners&from=19%3A00&until=21%3A00&accessibleSeating=true";
+const STONEBRIAR = ["558117351", "558782900"];
+const BLOCKED_BY_THE_HARNESS =
+  "Service Worker registration blocked by Playwright";
+
+const settled = async (page: Page) => {
+  await expect(page.getByRole("status").first()).toHaveText(/172 checked$/);
+};
+
+const boxOf = async (locator: Locator) => {
+  const box = await locator.boundingBox();
+  if (box === null) throw new Error("nothing was drawn to measure");
+  return box;
+};
+
+const sheet = (page: Page) =>
+  page.getByRole("dialog", { name: "What are we seeing?" });
+
+test.use({ serviceWorkers: "block", viewport: PHONE });
+
+test("every Query term composes in one search on a phone, one-handed, every target 44 px including the label that wraps a checkbox, and the card states all of them", {
+  tag: "@accessibility",
+}, async ({ page }) => {
+  const complaints: string[] = [];
+  page.on("console", (message) => {
+    if (
+      ["error", "warning"].includes(message.type()) &&
+      message.text() !== BLOCKED_BY_THE_HARNESS
+    )
+      complaints.push(`${message.type()}: ${message.text()}`);
+  });
+  await answeredByTheCorpus(page);
+  await page.goto(TONIGHT);
+  await settled(page);
+
+  await page.getByRole("button", { name: "Any showtime" }).click();
+  await expect(sheet(page).getByRole("button", { name: "3D" })).toBeFocused();
+  for (const chip of [
+    "IMAX",
+    "Dolby Cinema",
+    "Recliners",
+    "AMC",
+    "Landmark",
+    "Cinemark Dallas XD and IMAX",
+    "AMC Village on the Parkway 9",
+  ])
+    await sheet(page).getByRole("button", { name: chip, exact: true }).click();
+  await sheet(page).getByLabel("From").fill("19:00");
+  await sheet(page).getByLabel("Until").fill("21:00");
+  await sheet(page).getByLabel("Accessible seating").check();
+  const scan = await new AxeBuilder({ page }).withTags(WCAG).analyze();
+  const onTheSheet = await hitAreasUnder(page, HIT_AREA);
+  const clipped = await clippedFieldsIn(page);
+  const bar = sheet(page).locator(".cta");
+  const atTheTop = await boxOf(bar);
+  const scrolled = await sheet(page).evaluate((dialog) => {
+    dialog.scrollTop = dialog.scrollHeight;
+    return dialog.scrollTop;
+  });
+  const atTheFoot = await boxOf(bar);
+  const lastBlock = await boxOf(
+    sheet(page).getByRole("heading", { name: /run one of these again/i }),
+  );
+  await sheet(page).getByRole("button", { name: "Find seats" }).click();
+
+  expect(scrolled).toBeGreaterThan(0);
+  expect(atTheTop.y).toBeGreaterThan(0);
+  expect(atTheTop.y + atTheTop.height).toBe(PHONE.height);
+  expect(atTheFoot.y + atTheFoot.height).toBeCloseTo(PHONE.height, 0);
+  expect(lastBlock.y).toBeLessThan(atTheFoot.y);
+
+  expect(scan.violations).toEqual([]);
+  expect(onTheSheet).toEqual([]);
+  expect(clipped).toEqual([]);
+  expect(new URL(page.url()).search).toBe(EVERYTHING);
+  await expect(page.locator("header")).toContainText(
+    "Fri 28 Aug · 7:00p to 9:00p · Near 75006 · Dolby Cinema or IMAX · Recliners · AMC or Landmark · Cinemark Dallas XD and IMAX or AMC Village on the Parkway 9 · Accessible seating · Reference seat",
+  );
+  const card = await boxOf(page.locator("header"));
+  expect(card.width).toBeLessThanOrEqual(PHONE.width);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+  expect(await hitAreasUnder(page, HIT_AREA)).toEqual([]);
+  expect(complaints).toEqual([]);
+  test.info().annotations.push({
+    type: "title card height with every term active, px",
+    description: `${card.height.toFixed(0)}`,
+  });
+});
+
+test("a half-remembered title resolves as typed", async ({ page }) => {
+  await answeredByTheCorpus(page);
+  await page.goto(TONIGHT);
+  await settled(page);
+  await expect(
+    page.getByRole("button", { name: "The Dog Stars (2026)" }),
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "The Dog Stars (2026)" }).click();
+  await sheet(page).getByLabel("Film").fill("co");
+  await expect(
+    sheet(page)
+      .getByRole("list", { name: /playing near/ })
+      .getByRole("button"),
+  ).toHaveText(["Colony (2026)", "Coyote vs. Acme"]);
+  await sheet(page).getByRole("button", { name: "Coyote vs. Acme" }).click();
+  await sheet(page).getByRole("button", { name: "Find seats" }).click();
+
+  expect(new URL(page.url()).searchParams.get("movie")).toBe("246329");
+  await expect(
+    page.getByRole("button", { name: "Coyote vs. Acme" }),
+  ).toBeVisible();
+});
+
+test("an accessible-seating Query returns wheelchair Seats", async ({
+  page,
+}) => {
+  await answeredByTheCorpus(page);
+  await page.goto(`${TONIGHT}&accessibleSeating=true`);
+  await settled(page);
+
+  const seats = await page.locator("article .seats").allTextContents();
+  const designations = await page
+    .locator("article .designations")
+    .allTextContents();
+  expect(seats.length).toBeGreaterThan(0);
+  expect(designations).toHaveLength(seats.length);
+  expect(
+    designations.map((text) =>
+      text
+        .split(" · ")
+        .map((pair) => pair.split(" ")[0])
+        .join("·"),
+    ),
+  ).toEqual(seats);
+  expect(
+    designations.filter((text) => !/wheelchair|companion/.test(text)),
+  ).toEqual([]);
+});
+
+test("the retry re-checks only the failed Showtimes, and Coverage updates accordingly", async ({
+  page,
+}) => {
+  const upstream = await answeredByTheCorpus(page, {
+    sequences: Object.fromEntries(
+      STONEBRIAR.map((id) => [`${SEAT_MAP}${id}`, [500, 500, 500]]),
+    ),
+  });
+  await page.goto(TONIGHT);
+  await expect(page.getByRole("status").first()).toHaveText(/170 checked$/);
+  await expect(page.getByText("Not everywhere yet.")).toBeVisible();
+  const seatMaps = requestsTo(upstream, SEAT_MAP);
+  const listings = requestsTo(upstream, LISTINGS);
+
+  await page.getByRole("button", { name: "Retry the two unreached" }).click();
+  await settled(page);
+
+  expect(requestsTo(upstream, SEAT_MAP) - seatMaps).toBe(2);
+  expect(requestsTo(upstream, LISTINGS)).toBe(listings);
+  await expect(page.getByText("Not everywhere yet.")).toBeHidden();
+});

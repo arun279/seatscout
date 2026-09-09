@@ -1,9 +1,24 @@
 import "@testing-library/jest-dom/vitest";
 import { readFile } from "node:fs/promises";
 import { REFERENCE } from "@seatscout/client";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
+import {
+  asking,
+  chip,
+  chipsIn,
+  find,
+  NOTHING_PLAYING,
+  opened,
+} from "./ask.fixtures.js";
 import { Ask } from "./ask.js";
+import { ask, EVERYTHING } from "./search.fixtures.js";
 
 const TERMS = {
   movie: "245569",
@@ -12,10 +27,12 @@ const TERMS = {
   partySize: 2,
 };
 
-const opened = () => {
+const rendered = () => {
   render(
     <Ask
       terms={TERMS}
+      programme={NOTHING_PLAYING}
+      onProgramme={() => NOTHING_PLAYING}
       profile={REFERENCE}
       recent={[]}
       today={TERMS.date}
@@ -40,7 +57,7 @@ describe("the Ask sheet, as the stylesheet it is served with draws it", () => {
   afterEach(cleanup);
 
   it("puts every control's name and what it says on one line, the value at the end of it", async () => {
-    const editor = opened();
+    const editor = rendered();
 
     const rows = await drawn(() =>
       editor.getAllByRole("slider").map((slider) => {
@@ -76,7 +93,7 @@ describe("the Ask sheet, as the stylesheet it is served with draws it", () => {
   });
 
   it("spreads the words at both ends of every scale across one line, the weights' own included", async () => {
-    opened();
+    rendered();
 
     const ends = await drawn(() =>
       [...document.querySelectorAll("dialog .ends")].map((row) => {
@@ -94,7 +111,7 @@ describe("the Ask sheet, as the stylesheet it is served with draws it", () => {
   });
 
   it("centres the line under the button that says nothing leaves the phone", async () => {
-    const editor = opened();
+    const editor = rendered();
 
     const said = await drawn(
       () =>
@@ -106,5 +123,115 @@ describe("the Ask sheet, as the stylesheet it is served with draws it", () => {
     );
 
     expect(said).toBe("center");
+  });
+});
+
+describe("the Ask sheet", () => {
+  afterEach(cleanup);
+
+  it("offers every Format and Comfort the closed sets hold, every Chain, and the Theaters near the area by name", async () => {
+    await asking();
+
+    expect(chipsIn("Format")).toHaveLength(15);
+    expect(chipsIn("Comfort")).toHaveLength(4);
+    expect(chipsIn("Chain")).toHaveLength(9);
+    expect(chipsIn("Theater")).toHaveLength(25);
+    expect(chipsIn("Theater")[0]).toHaveTextContent(
+      "Cinemark Dallas XD and IMAX",
+    );
+    for (const pressed of chipsIn("Format"))
+      expect(pressed).toHaveAttribute("aria-pressed", "false");
+    for (const group of ["Format", "Comfort", "Chain", "Theater"])
+      expect(
+        chipsIn(group).filter((chip) => chip.hasAttribute("data-term")),
+      ).toHaveLength(1);
+  });
+
+  it("composes every term in one search: format, comfort, chain, theater, a window and accessible seating", async () => {
+    const stage = await asking();
+    fireEvent.change(ask().getByLabelText("Film"), {
+      target: { value: "245569" },
+    });
+    for (const name of [
+      "IMAX",
+      "Dolby Cinema",
+      "Recliners",
+      "Landmark",
+      "AMC",
+      "AMC Village on the Parkway 9",
+      "Cinemark Dallas XD and IMAX",
+    ])
+      fireEvent.click(chip(name));
+    fireEvent.change(ask().getByLabelText("From"), {
+      target: { value: "19:00" },
+    });
+    fireEvent.change(ask().getByLabelText("Until"), {
+      target: { value: "21:00" },
+    });
+    fireEvent.click(ask().getByLabelText("Accessible seating"));
+
+    expect(chip("IMAX")).toHaveAttribute("aria-pressed", "true");
+    expect(chip("3D")).toHaveAttribute("aria-pressed", "false");
+
+    find();
+
+    expect(stage.chosen).toEqual([EVERYTHING]);
+  });
+
+  it("shows every term it already holds when it opens, and lets one go", async () => {
+    const stage = await opened({ terms: EVERYTHING });
+
+    for (const name of [
+      "IMAX",
+      "Dolby Cinema",
+      "Recliners",
+      "AMC",
+      "Landmark",
+      "Cinemark Dallas XD and IMAX",
+      "AMC Village on the Parkway 9",
+    ])
+      expect(chip(name)).toHaveAttribute("aria-pressed", "true");
+    expect(ask().getByLabelText("From")).toHaveValue("19:00");
+    expect(ask().getByLabelText("Until")).toHaveValue("21:00");
+    expect(ask().getByLabelText("Accessible seating")).toBeChecked();
+
+    fireEvent.click(chip("IMAX"));
+    fireEvent.click(chip("AMC Village on the Parkway 9"));
+    fireEvent.click(ask().getByLabelText("Accessible seating"));
+    find();
+
+    expect(stage.chosen).toEqual([
+      {
+        ...EVERYTHING,
+        formats: ["Dolby Cinema"],
+        theaters: ["aacbt"],
+        accessibleSeating: undefined,
+      },
+    ]);
+    expect(stage.chosen[0]).not.toHaveProperty("accessibleSeating");
+  });
+
+  it("answers its own submit, so no submission is left for the browser to make against a form the search has taken away", async () => {
+    const stage = await asking();
+    const answered: boolean[] = [];
+    const watch = (event: SubmitEvent) => answered.push(event.defaultPrevented);
+    document.addEventListener("submit", watch);
+
+    find();
+    document.removeEventListener("submit", watch);
+
+    expect(answered).toEqual([true]);
+    expect(stage.chosen).toHaveLength(1);
+  });
+
+  it("explains accessible seating in the board's own words, and keeps the film list out of the way of a one-handed thumb", async () => {
+    await asking();
+
+    expect(
+      ask().getByText(
+        "Wheelchair and companion seats stay out of ordinary results. Turning this on searches for them deliberately.",
+      ),
+    ).toBeVisible();
+    expect(ask().getByRole("button", { name: /find seats/i })).toBeVisible();
   });
 });

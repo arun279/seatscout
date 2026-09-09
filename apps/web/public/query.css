@@ -26,7 +26,6 @@
   color: var(--silver-dim);
   letter-spacing: 0.08em;
   line-height: 1.8;
-  text-transform: uppercase;
 }
 
 .term {
@@ -52,5 +51,9 @@
 .term::after {
   content: "";
   position: absolute;
-  inset: -15px -6px;
+  top: -15px;
+  bottom: -15px;
+  left: 50%;
+  translate: -50%;
+  width: max(100% + 12px, 44px);
 }

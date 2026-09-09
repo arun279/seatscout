@@ -1,5 +1,6 @@
 import type {
   Catalogue,
+  Movie,
   Theater,
   UnbookableReason,
 } from "../domain/catalogue.js";
@@ -23,6 +24,10 @@ export type Reading<Payload> =
 
 export interface Source {
   readonly theatersNear: (area: string) => Promise<Reading<readonly Theater[]>>;
+  readonly moviesAt: (
+    theater: string,
+    date: string,
+  ) => Promise<Reading<readonly Movie[]>>;
   readonly showtimesFor: (
     movie: string,
     date: string,

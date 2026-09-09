@@ -127,7 +127,9 @@ describe("the account the first screen keeps", () => {
 
     fireEvent.click(ledger.getByRole("button", { name: /back to the list/i }));
 
-    expect(screen.queryByRole("dialog", { hidden: true })).toBeNull();
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog", { hidden: true })).toBeNull(),
+    );
   });
 
   it("accounts for the search on screen after a retry, not the one the retry replaced", async () => {

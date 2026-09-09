@@ -73,7 +73,12 @@ sketch has a catalogue of an area and a date beside the search. The aggregator's
 theater-centric route is the only captured answer that could serve it directly, and it
 cannot. It states no instant: its rows carry a wall-clock time and the date the request
 asked for, with no offset, no zone and no UTC time anywhere, while a Showtime carries the
-instant its listing states and the narrowing filter parses it. And it states no Movie the
+instant its listing states. A time window narrows against that instant as the Theater's own
+clock reads it, comparing the listing's local wall-clock prefix with the `from` and `until` a
+person typed, because those two are wall-clock times in the Theater's town and turning them
+into instants would need a zone the address does not carry and the Source does not state.
+A window is therefore the same window in every Theater the Query names, which is what a person
+setting one means by it. And it states no Movie the
 way a Presentation is built from one, because `MovieId` is branded as the type of a field
 it does not carry and the movie identity it does carry is a number one level up, so minting
 one would need the type assertion this workspace refuses. `captures.test.ts` holds both

@@ -1,15 +1,22 @@
 import type { SeatGroupResult, Snapshot } from "@seatscout/client";
 import { Fragment } from "react";
 import { Card } from "./card.js";
-import { accountOf, listed, tiedIn, unreachedIn } from "./derived.js";
+import {
+  accountOf,
+  beingReadIn,
+  listed,
+  tiedIn,
+  unreachedIn,
+} from "./derived.js";
 import type { HeldSnapshots } from "./held.js";
 import { whenOf } from "./phrases.js";
 import type { Terms } from "./terms.js";
 import type { Term } from "./title-card-terms.js";
-import { NoneAnywhere, Partial, Unreachable } from "./verdicts.js";
+import { Empty, Partial, Unreachable } from "./verdicts.js";
 
 interface ResultsProps {
   readonly snapshot: Snapshot;
+  readonly painted: Snapshot | null;
   readonly terms: Terms;
   readonly today: string;
   readonly now: number;
@@ -31,7 +38,9 @@ const ListHead = ({
   if (snapshot.phase !== "settled")
     return (
       <p className="list-head">
-        <span className="eyebrow">Reading {account.remaining} seat maps</span>
+        <span className="eyebrow">
+          Reading {beingReadIn(snapshot)} seat maps
+        </span>
         <span className="eyebrow count">
           {snapshot.results.length} showtimes so far
         </span>
@@ -57,6 +66,7 @@ const ListHead = ({
 
 export const Results = ({
   snapshot,
+  painted,
   terms,
   today,
   now,
@@ -68,8 +78,8 @@ export const Results = ({
 }: ResultsProps) => {
   const when = whenOf(terms.date, today);
   const settled = snapshot.phase === "settled";
-  const results = settled ? listed(snapshot.results) : [];
-  const tied = tiedIn(snapshot.results);
+  const results = painted === null ? [] : listed(painted.results);
+  const tied = tiedIn(results);
   const tie = tied > 1;
   const partial = settled && unreachedIn(snapshot) > 0;
 
@@ -82,12 +92,7 @@ export const Results = ({
         <Partial snapshot={snapshot} onRetry={onRetry} onEdit={onEdit} />
       )}
       {settled && !partial && results.length === 0 ? (
-        <NoneAnywhere
-          snapshot={snapshot}
-          terms={terms}
-          when={when}
-          onEdit={onEdit}
-        />
+        <Empty snapshot={snapshot} terms={terms} when={when} onEdit={onEdit} />
       ) : (
         <ListHead snapshot={snapshot} tie={tie} />
       )}

@@ -6,6 +6,7 @@ import { Ledger } from "./coverage.js";
 import { HandOff } from "./hand-off.js";
 import type { HeldSnapshots } from "./held.js";
 import type { Overlay } from "./overlay.js";
+import type { HeldProgramme } from "./programme.js";
 import type { Terms } from "./terms.js";
 
 interface OverlaysProps {
@@ -17,6 +18,11 @@ interface OverlaysProps {
   readonly clock: Clock;
   readonly verify: SeatScout["verify"];
   readonly checkout: Checkout;
+  readonly programme: HeldProgramme;
+  readonly onProgramme: (
+    area: string | undefined,
+    date: string,
+  ) => HeldProgramme;
   readonly onClose: () => void;
   readonly onTerms: (terms: Terms) => void;
   readonly onProfile: (profile: SeatProfile) => void;
@@ -44,6 +50,8 @@ const Current = ({
   clock,
   verify,
   checkout,
+  programme,
+  onProgramme,
   onClose,
   onTerms,
   onProfile,
@@ -56,6 +64,8 @@ const Current = ({
           profile={profile}
           recent={recent}
           today={today}
+          programme={programme}
+          onProgramme={onProgramme}
           focus={overlay.focus}
           onClose={onClose}
           onFind={(next, chosen) => {
@@ -89,6 +99,8 @@ export const Overlays = ({
   clock,
   verify,
   checkout,
+  programme,
+  onProgramme,
   onClose,
   onTerms,
   onProfile,
@@ -105,6 +117,8 @@ export const Overlays = ({
           clock={clock}
           verify={verify}
           checkout={checkout}
+          programme={programme}
+          onProgramme={onProgramme}
           onClose={onClose}
           onTerms={onTerms}
           onProfile={onProfile}

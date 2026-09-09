@@ -21,6 +21,11 @@ export const seatsOf = (result: SeatGroupResult): readonly string[] =>
 export const unreachedIn = (snapshot: Snapshot): number =>
   snapshot.coverage.failed.length + accountOf(snapshot.coverage).remaining;
 
+export const beingReadIn = (snapshot: Snapshot): number => {
+  const { remaining } = accountOf(snapshot.coverage);
+  return remaining > 0 ? remaining : snapshot.coverage.failed.length;
+};
+
 const tied = (result: SeatGroupResult) => result.reasons.tiedAtRoomResolution;
 
 export const tiedIn = (results: readonly SeatGroupResult[]): number =>

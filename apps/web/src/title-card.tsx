@@ -1,5 +1,6 @@
 import type { SeatProfile } from "@seatscout/client";
 import { Fragment } from "react";
+import type { ProgrammeState } from "./programme.js";
 import type { Terms } from "./terms.js";
 import {
   type Term,
@@ -9,6 +10,7 @@ import {
 
 interface TitleCardProps {
   readonly terms: Terms;
+  readonly programme: ProgrammeState;
   readonly profile: SeatProfile;
   readonly today: string;
   readonly onEdit: (term: Term) => void;
@@ -22,31 +24,29 @@ const Entries = ({
   readonly onEdit: (term: Term) => void;
 }) => (
   <>
-    {entries.map((entry, at) => {
-      const term = entry.term;
-      return (
-        <Fragment key={term ?? entry.words}>
-          {at > 0 && " · "}
-          {term === undefined ? (
-            <span>{entry.words}</span>
-          ) : (
-            <button type="button" className="term" onClick={() => onEdit(term)}>
-              {entry.words}
-            </button>
-          )}
-        </Fragment>
-      );
-    })}
+    {entries.map((entry, at) => (
+      <Fragment key={entry.words}>
+        {at > 0 && (entry.joinedBy ?? " · ")}
+        <button
+          type="button"
+          className="term"
+          onClick={() => onEdit(entry.term)}
+        >
+          {entry.words}
+        </button>
+      </Fragment>
+    ))}
   </>
 );
 
 export const TitleCard = ({
   terms,
+  programme,
   profile,
   today,
   onEdit,
 }: TitleCardProps) => {
-  const [party, movie, details] = termLinesOf(terms, today, profile);
+  const [party, movie, details] = termLinesOf(terms, programme, today, profile);
   return (
     <header className="title-card">
       <p className="eyebrow">Your query · tap any line to change it</p>

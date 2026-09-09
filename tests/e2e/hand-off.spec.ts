@@ -4,6 +4,7 @@ import {
   answeredByTheCorpus,
   HIT_AREA,
   hitAreasUnder,
+  requestsTo,
   SEAT_MAP,
   TONIGHT,
   WCAG,
@@ -42,9 +43,7 @@ const opened = async (page: Page) => {
   return {
     sheet,
     order,
-    seatMapsRead: () =>
-      upstream.requests.filter((request) => request.path.startsWith(SEAT_MAP))
-        .length,
+    seatMapsRead: () => requestsTo(upstream, SEAT_MAP),
     roomWhere: (statuses: Readonly<Record<string, string>>) =>
       page.route(`**${SEAT_MAP}**`, async (route) => {
         order.push("seat map");

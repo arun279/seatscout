@@ -1,11 +1,29 @@
-import { REFERENCE } from "@seatscout/client";
 import { describe, expect, it } from "vitest";
-import { askedFrom } from "./asked.js";
-import { queryOf, termsFrom } from "./terms.js";
-
-const TODAY = "2026-08-28";
+import { queryOf, termsFrom, windowIn } from "./terms.js";
+import { EVERY_TERM, TODAY } from "./terms.fixtures.js";
 
 describe("the query terms a URL carries", () => {
+  it("gives the window's two fields the empty string when the query holds no window", () => {
+    expect(windowIn(termsFrom("", TODAY))).toEqual({ from: "", until: "" });
+    expect(windowIn(termsFrom("?from=19:00&until=21:00", TODAY))).toEqual({
+      from: "19:00",
+      until: "21:00",
+    });
+  });
+
+  it("holds a value the address names twice once, and writes it once", () => {
+    const twice = termsFrom(
+      "?theater=aacbt&theater=aacbt&chain=AMC&chain=AMC",
+      TODAY,
+    );
+
+    expect(twice.theaters).toEqual(["aacbt"]);
+    expect(twice.chains).toEqual(["AMC"]);
+    expect(queryOf(twice)).toBe(
+      "?date=2026-08-28&partySize=2&chain=AMC&theater=aacbt",
+    );
+  });
+
   it("reads Movie, date, area and party size from the query string", () => {
     expect(
       termsFrom("?movie=245569&date=2026-08-29&area=75006&partySize=4", TODAY),
@@ -61,30 +79,60 @@ describe("the query terms a URL carries", () => {
     ).toBe("?movie=a+b&date=2026-08-28&area=c%26d&partySize=3");
   });
 
-  it("becomes a search once it names a Movie and an area, and not before", () => {
-    expect(
-      askedFrom(
-        {
-          movie: "245569",
-          date: TODAY,
-          area: "75006",
-          partySize: 3,
-        },
-        REFERENCE,
-      ),
-    ).toEqual({
+  it("reads every narrowing term the glossary names: Chain, Theater, Format, Amenity, a time window and accessible seating", () => {
+    expect(termsFrom(EVERY_TERM, TODAY)).toEqual({
       movie: "245569",
-      date: TODAY,
+      date: "2026-08-28",
       area: "75006",
-      partySize: 3,
-      accessibleSeating: false,
-      profile: REFERENCE,
+      partySize: 2,
+      chains: ["AMC", "Landmark"],
+      theaters: ["aacbt", "aaxju"],
+      formats: ["Dolby Cinema", "IMAX"],
+      amenities: ["Recliners"],
+      from: "19:00",
+      until: "21:00",
+      accessibleSeating: true,
     });
+  });
+
+  it("keeps only what the closed sets hold, a clock in the form a window is asked by, and accessible seating only when it is asked for", () => {
     expect(
-      askedFrom({ movie: "245569", date: TODAY, partySize: 3 }, REFERENCE),
-    ).toBeNull();
+      termsFrom(
+        "?chain=Regal&format=IMAX+70mm&amenity=Popcorn&from=7pm&until=25:00&accessibleSeating=maybe",
+        TODAY,
+      ),
+    ).toEqual({ date: TODAY, partySize: 2 });
     expect(
-      askedFrom({ area: "75006", date: TODAY, partySize: 3 }, REFERENCE),
-    ).toBeNull();
+      termsFrom("?chain=AMC&chain=Regal&from=07:05&until=23:59", TODAY),
+    ).toEqual({
+      date: TODAY,
+      partySize: 2,
+      chains: ["AMC"],
+      from: "07:05",
+      until: "23:59",
+    });
+  });
+
+  it("takes a time only on the clock the address states, anchored end to end", () => {
+    expect(termsFrom("?from=19:00&until=21:00", TODAY)).toMatchObject({
+      from: "19:00",
+      until: "21:00",
+    });
+    for (const clock of ["7:00", "x19:00", "19:00x", "24:00", "19:60"])
+      expect(termsFrom(`?from=${clock}`, TODAY).from).toBeUndefined();
+  });
+
+  it("trims a Theater the address padded, and drops one it left empty", () => {
+    expect(
+      termsFrom("?theater=%20aacbt%20&theater=%20%20&theater=aaxju", TODAY)
+        .theaters,
+    ).toEqual(["aacbt", "aaxju"]);
+  });
+
+  it("writes every term back as the query string it read, and leaves out what was not asked", () => {
+    expect(queryOf(termsFrom(EVERY_TERM, TODAY))).toBe(EVERY_TERM);
+    expect(queryOf(termsFrom("?chain=AMC&chain=Regal&from=07:05", TODAY))).toBe(
+      "?date=2026-08-28&partySize=2&chain=AMC&from=07%3A05",
+    );
   });
 });
