@@ -1,29 +1,48 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
-import { AxeBuilder } from "@axe-core/playwright";
-import { expect, type Page, test } from "@playwright/test";
-import {
-  answeredByTheCorpus,
-  HIT_AREA,
-  hitAreasUnder,
-  TONIGHT,
-  WCAG,
-} from "./corpus.fixtures.js";
+import { type BrowserContext, expect, type Page, test } from "@playwright/test";
+import { accessible, answeredByTheCorpus, TONIGHT } from "./corpus.fixtures.js";
 
 const JOURNEYS = 10;
 const SAMPLES = "reports/journey/samples.json";
-const GOOD = { lcp: 2500, inp: 200, cls: 0.1 };
 const VITALS = join(
   dirname(createRequire(import.meta.url).resolve("web-vitals")),
   "web-vitals.iife.js",
 );
+
+const MID_TIER_PHONE = {
+  viewport: { width: 412, height: 823 },
+  deviceScaleFactor: 1.75,
+  isMobile: true,
+  hasTouch: true,
+  userAgent:
+    "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+  serviceWorkers: "block",
+} as const;
+
+const KBPS_IN_BYTES_A_SECOND = 1024 / 8;
+const SLOW_4G = {
+  offline: false,
+  latency: 150,
+  downloadThroughput: 1.6 * 1024 * KBPS_IN_BYTES_A_SECOND,
+  uploadThroughput: 750 * KBPS_IN_BYTES_A_SECOND,
+};
+
+const CONDITIONS = [
+  `${MID_TIER_PHONE.viewport.width} by ${MID_TIER_PHONE.viewport.height} at ${MID_TIER_PHONE.deviceScaleFactor}x`,
+  `${SLOW_4G.latency} ms round trip`,
+  `${SLOW_4G.downloadThroughput} B/s down`,
+  `${SLOW_4G.uploadThroughput} B/s up`,
+].join(", ");
 
 interface Journey {
   readonly firstSeatGroupsMs: number;
   readonly lcp: number;
   readonly inp: number;
   readonly cls: number;
+  readonly heapBytes: number;
+  readonly conditions: string;
 }
 
 declare const webVitals: {
@@ -42,9 +61,6 @@ declare global {
     };
   }
 }
-
-const p75 = (values: readonly number[]) =>
-  values.toSorted((a, b) => a - b)[Math.ceil(values.length * 0.75) - 1] ?? 0;
 
 const collector = () => {
   window.journey = {
@@ -81,8 +97,19 @@ const instrumented = (page: Page) =>
     content: `${readFileSync(VITALS, "utf8")}\n(${collector.toString()})();`,
   });
 
-const journey = async (page: Page): Promise<Journey> => {
+const onASlowConnection = async (context: BrowserContext, page: Page) => {
+  const devtools = await context.newCDPSession(page);
+  await devtools.send("Network.enable");
+  await devtools.send("Network.emulateNetworkConditions", SLOW_4G);
+  await devtools.send("Performance.enable");
+  await devtools.send("HeapProfiler.enable");
+  return devtools;
+};
+
+const journey = async (context: BrowserContext): Promise<Journey> => {
+  const page = await context.newPage();
   await answeredByTheCorpus(page);
+  const devtools = await onASlowConnection(context, page);
   await instrumented(page);
   await page.goto(TONIGHT);
   await expect(page.getByRole("article").first()).toBeVisible();
@@ -105,11 +132,15 @@ const journey = async (page: Page): Promise<Journey> => {
   await expect(page.getByRole("dialog")).toBeHidden();
   await page.waitForFunction(() => window.journey.inp !== null);
   const measured = await page.evaluate(() => window.journey);
+  await devtools.send("HeapProfiler.collectGarbage");
+  const { metrics } = await devtools.send("Performance.getMetrics");
+  const heap = metrics.find((metric) => metric.name === "JSHeapUsedSize");
   if (
     !measured.ready ||
     measured.firstSeatGroupsMs === null ||
     measured.lcp === null ||
-    measured.inp === null
+    measured.inp === null ||
+    heap === undefined
   )
     throw new Error(
       `the journey measured nothing on some axis: ${JSON.stringify(measured)}`,
@@ -119,39 +150,27 @@ const journey = async (page: Page): Promise<Journey> => {
     lcp: measured.lcp,
     inp: measured.inp,
     cls: measured.cls,
+    heapBytes: heap.value,
+    conditions: CONDITIONS,
   };
 };
 
 test.use({ serviceWorkers: "block" });
 
-test(
-  "a first search puts Seat Groups on screen, measured, and the journey meets the Core Web Vitals good thresholds",
-  { tag: "@performance" },
-  async ({ browser }, info) => {
-    const journeys: Journey[] = [];
-    for (let run = 0; run < JOURNEYS; run += 1) {
-      const context = await browser.newContext();
-      journeys.push(await journey(await context.newPage()));
-      await context.close();
-    }
-    mkdirSync("reports/journey", { recursive: true });
-    writeFileSync(SAMPLES, JSON.stringify(journeys, null, 2));
+test("a first search on a mid-tier phone over a slow connection puts Seat Groups on screen, measured on every axis the gate holds", {
+  tag: "@performance",
+}, async ({ browser }) => {
+  const journeys: Journey[] = [];
+  for (let run = 0; run < JOURNEYS; run += 1) {
+    const context = await browser.newContext(MID_TIER_PHONE);
+    journeys.push(await journey(context));
+    await context.close();
+  }
+  mkdirSync("reports/journey", { recursive: true });
+  writeFileSync(SAMPLES, JSON.stringify(journeys, null, 2));
 
-    info.annotations.push({
-      type: "first Seat Groups, p75 ms",
-      description: `${p75(journeys.map((run) => run.firstSeatGroupsMs)).toFixed(0)}`,
-    });
-    info.annotations.push({
-      type: "p75 LCP ms, INP ms, CLS",
-      description: `${p75(journeys.map((run) => run.lcp)).toFixed(0)}, ${p75(journeys.map((run) => run.inp)).toFixed(0)}, ${p75(journeys.map((run) => run.cls)).toFixed(3)}`,
-    });
-
-    expect(journeys).toHaveLength(JOURNEYS);
-    expect(p75(journeys.map((run) => run.lcp))).toBeLessThan(GOOD.lcp);
-    expect(p75(journeys.map((run) => run.inp))).toBeLessThan(GOOD.inp);
-    expect(p75(journeys.map((run) => run.cls))).toBeLessThan(GOOD.cls);
-  },
-);
+  expect(journeys).toHaveLength(JOURNEYS);
+});
 
 test("the results screen and its ledger carry no WCAG 2.2 AA violation axe can detect, and every control reaches 44 px", {
   tag: "@accessibility",
@@ -160,17 +179,12 @@ test("the results screen and its ledger carry no WCAG 2.2 AA violation axe can d
   await page.goto(TONIGHT);
   await expect(page.getByRole("status")).toHaveText(/172 checked$/);
 
-  const scan = await new AxeBuilder({ page }).withTags(WCAG).analyze();
-  const onTheList = await hitAreasUnder(page, HIT_AREA);
+  await accessible(page);
   await page.getByRole("button", { name: "ledger" }).click();
   await expect(
     page.getByRole("dialog", { name: "Every showtime, accounted for." }),
   ).toBeVisible();
-  const inTheLedger = await hitAreasUnder(page, HIT_AREA);
-
-  expect(scan.violations).toEqual([]);
-  expect(onTheList).toEqual([]);
-  expect(inTheLedger).toEqual([]);
+  await accessible(page);
 });
 
 test("a tap on a line of the title card opens the editor with that term focused, and Escape keeps the query", {

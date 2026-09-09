@@ -1,4 +1,6 @@
-import { firstSeatGroupsIn, judged } from "./ratchet.ts";
+import { heapReported, judged } from "./ratchet.ts";
+import { samplesIn } from "./samples.ts";
+import { vitalsJudged } from "./vitals.ts";
 
 interface Writer {
   readonly write: (text: string) => void;
@@ -33,12 +35,12 @@ export const main = (
       err.write(`${path} was never written\n`);
       return null;
     }
-    const moments = firstSeatGroupsIn(text);
-    if (moments === null)
+    const samples = samplesIn(text);
+    if (samples === null)
       err.write(
         `${path} holds no list of journeys carrying firstSeatGroupsMs\n`,
       );
-    return moments;
+    return samples;
   };
 
   const head = journeysAt(headPath);
@@ -46,7 +48,11 @@ export const main = (
   const base = basePath === undefined ? null : journeysAt(basePath);
   if (basePath !== undefined && base === null) return 1;
 
-  const verdict = judged(head, base);
-  (verdict.passed ? out : err).write(`${verdict.report}\n`);
-  return verdict.passed ? 0 : 1;
+  const vitals = vitalsJudged(head);
+  const moment = judged(head, base);
+  const passed = vitals.passed && moment.passed;
+  (passed ? out : err).write(
+    `${[vitals.report, moment.report, heapReported(head, base)].join("\n")}\n`,
+  );
+  return passed ? 0 : 1;
 };

@@ -20,6 +20,20 @@ describe("the planted red", () => {
     expect(run.stderr).toContain("slower");
   });
 
+  it("refuses a head whose p75 LCP is over the threshold Google publishes as good", () => {
+    const run = ratchet(
+      "--head",
+      `${PLANTED}/head-over-vitals.json`,
+      "--base",
+      `${PLANTED}/base.json`,
+    );
+
+    expect(run.status).toBe(1);
+    expect(run.stderr).toContain(
+      "LCP over the threshold Google publishes as good",
+    );
+  });
+
   it("refuses a head that measured no journey", () => {
     expect(
       ratchet("--head", `${PLANTED}/head-empty.json`, "--no-baseline").status,
@@ -37,7 +51,7 @@ describe("the planted red", () => {
     ).toBe(1);
   });
 
-  it("accepts a head no slower than the base, so it is not refusing everything", () => {
+  it("accepts a head no slower than the base and inside every threshold, so it is not refusing everything", () => {
     const run = ratchet(
       "--head",
       `${PLANTED}/head-faster.json`,
@@ -47,5 +61,6 @@ describe("the planted red", () => {
 
     expect(run.status).toBe(0);
     expect(run.stdout).toContain("ms");
+    expect(run.stdout).toContain("KiB");
   });
 });

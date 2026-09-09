@@ -416,10 +416,21 @@ frames beside the percentile, so the tail is reported rather than hidden, and tw
 beside it say only that the gesture produced something, so a run cannot pass over nothing.
 
 **The journey** is measured on the built tree served by the deployment's own worker, in
-Chromium, ten times over, and it is judged two ways. The three Core Web Vitals are held at
-their 75th percentile to the thresholds Google publishes as good, 2.5 s for LCP, 200 ms for
-INP and 0.1 for CLS, which is a standard rather than a figure chosen here. The moment the
-first Seat Group is painted has no published threshold, so it is held to the merge base:
+Chromium, ten times over, on the device stand-in Lighthouse publishes rather than on the
+runner as it comes: its mobile screen emulation, 412 by 823 CSS pixels at a device pixel
+ratio of 1.75 under the Moto G Power user agent, and its Slow 4G network profile, 150 ms of
+round-trip latency with 1.6 Mbps down and 750 Kbps up, applied through CDP's
+`Network.emulateNetworkConditions`. Those are Lighthouse's own constants rather than figures
+chosen here, and they are why the vitals are worth measuring at all: unthrottled, the
+largest paint on this journey measured 56 ms against a 2.5 s threshold, which is a figure no
+reader can act on. It is judged three ways. The three Core Web Vitals are held at their 75th
+percentile to the thresholds Google publishes as good, 2.5 s for LCP, 200 ms for INP and 0.1
+for CLS, which is a standard rather than a figure chosen here. That judgement is
+`tools/journey`'s and not the spec's, so the percentile and the three comparisons sit inside
+the mutation gate, with planted samples the command must refuse beside ones it must accept,
+and a gate that stops detecting its own red fails the build; the spec measures, refuses a
+journey that measured nothing on any axis, and leaves the verdict to the command. The moment
+the first Seat Group is painted has no published threshold, so it is held to the merge base:
 the job measures the base's own journey in a worktree and fails the branch when the head's
 median is slower than the base's slowest, a margin drawn from the base's spread rather than
 chosen. Under identical performance that verdict is wrong in under one run in a hundred,
@@ -428,9 +439,28 @@ drawn under the same conditions, so both are measured the same way: each side's 
 run in a step of their own, outside the end-to-end suite. Measured inside the suite, the
 branch's journey shares the runner with the rest of the suite while the merge base's has the
 runner to itself, and the gate reads that difference in load as a difference in the branch,
-by a margin that grows with every end-to-end test the branch adds. The absolute is reported
-either way, a merge base with no journey is reported rather than passed over, and a journey
-that renders no result fails, because a pass has to entail a measurement.
+by a margin that grows with every end-to-end test the branch adds. That assumption is
+checked rather than trusted: every journey writes down the emulation it ran under, built
+from the settings it applied rather than named by hand, and the ratchet holds one side to
+the other only where the two agree. A branch that changes the stand-in is reported and not
+held to a base measured another way, which is what this change itself needed. The absolute
+is reported either way, a merge base with no journey is reported rather than passed over,
+and a journey that renders no result fails, because a pass has to entail a measurement. The page's JS heap
+is read through CDP after a forced collection at that same instant and reported beside the
+moment with the same statistic, gated by neither threshold nor ratchet, because no publisher
+offers a byte budget and the projects that gate memory gate a leak invariant rather than a
+magnitude.
+
+**Lighthouse's fourth stand-in, the 4x CPU multiplier, is measured and deliberately not
+applied.** Lighthouse documents that default as calibrated for a high-end desktop host and
+tells a weaker machine to lower it, so the multiplier scales the host rather than the branch
+and a fixed one decides the verdict by whose machine ran it. Measured here over ten journeys
+a side on the stand-in above, the p75 largest paint reads about 1.6 s with the multiplier
+off and between 2.2 and 2.7 s with it at 4, against a threshold of 2.5 s, and the runner has
+measured about twice this machine on the same journey. A constant 4 would therefore fail the
+gate on the runner's speed. Lowering it instead would mean choosing a number no one
+publishes, which is what this record refuses everywhere else, so it is left off and the
+multiplier is what the gate is deliberately thrown by rather than what it runs under.
 
 **Accessibility has a published standard, so it is gated against that one.**
 `@axe-core/playwright` scans the shell and the results screen against WCAG 2.2 at levels A

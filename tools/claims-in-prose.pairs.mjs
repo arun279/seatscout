@@ -5,6 +5,7 @@ const STRYKER = "stryker.config.json";
 const CYCLOMATIC = ".oxlintrc.json";
 const SOURCES = ["*.ts", "*.tsx"];
 const CORPUS = "packages/core/src/corpus";
+const JOURNEY = "tests/e2e/journey.spec.ts";
 
 export const CLAIMS = [
   {
@@ -140,6 +141,14 @@ export const CLAIMS = [
     holds: "the script that holds the head's journey to the merge base's",
     pattern: "tools/journey/src/index.ts",
     paths: ["package.json"],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /its Slow 4G network profile, 150 ms of round-trip latency/,
+    holds: "the round-trip latency the journey emulates",
+    pattern: "latency: 150,",
+    paths: [JOURNEY],
     files: 1,
   },
   {
