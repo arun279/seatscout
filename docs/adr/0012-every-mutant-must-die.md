@@ -51,10 +51,10 @@ terminates the mutation process afterwards, so the file saved is the one that wa
 and the work in flight is lost either way.
 
 Before either workflow saves that file, it reads Stryker's own initial-run count and holds
-it to the unit-test floor implied by `.footprint.json`: the total test ratchet minus the
-Playwright tests collected by the footprint command. A short or missing count means the
-runner did not collect the whole suite, so the job fails and the partial report is not cached
-as a seed for later runs.
+it to Vitest's JSON count from `vitest related` over the files `stryker.config.json` mutates,
+using the same related-mode collection as Stryker's Vitest runner. A short or missing count
+means the runner did not collect the whole related unit suite, so the job fails and the
+partial report is not cached as a seed for later runs.
 
 The incremental mode is Stryker's own, and it is a reuse of earlier results rather than a
 second opinion about them: it matches a mutant by the content of the file it sits in and of

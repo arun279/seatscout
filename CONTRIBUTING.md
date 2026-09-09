@@ -115,8 +115,9 @@ Each of these has one way through and no exemption to grant.
   or take the class off the element. `house.css` holds what two or more surfaces draw, and
   every other sheet is named for the one surface it draws.
 - **The test count.** `.footprint.json` holds a floor under the tests the two runners collect,
-  by their own listings rather than by a run. Put the tests back, or lower the ratchet in the
-  same diff.
+  by their own listings rather than by a run; the mutation-cache guard separately compares
+  Stryker's initial run to Vitest's JSON count from `vitest related` over the files
+  `stryker.config.json` mutates. Put the tests back, or lower the ratchet in the same diff.
 
 Take a ratchet's new value from the `footprint` comment on the pull request rather than from a
 local run: the job measures the merge of your branch with `main` rather than the branch alone,

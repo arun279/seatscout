@@ -34,21 +34,24 @@ jobs:
       - name: Check that mutation saw every test file
         id: mutation_test_collection
         run: |
+          set -o pipefail
           ran_tests="$(sed -n 's/.*Initial test run succeeded\. Ran \([0-9][0-9]*\) tests.*/\1/p' "$RUNNER_TEMP/stryker-mutation.log" | tail -n 1)"
-          e2e_tests="$(pnpm exec playwright test --list --reporter=json 2>/dev/null | jq '[.. | objects | select(.specs? | type == "array") | .specs[] | .tests | length] | add // 0')"
-          test_floor="$(jq '.tests' .footprint.json)"
-          unit_floor=$((test_floor - e2e_tests))
+          expected_tests="$(
+            find apps packages tools -path "*/src/*" \( -name "*.ts" -o -name "*.tsx" \) ! -path "apps/native/src/*" ! -name "*.test.*" ! -name "*.spec.*" ! -name "*.fixtures.*" -print0 |
+              xargs -0 pnpm exec vitest related --config vitest.config.ts --run --reporter=json |
+              jq '.numTotalTests'
+          )"
           echo "Stryker initial tests: ${ran_tests:-missing}"
-          echo "Unit test floor: $unit_floor"
-          if [ -n "$ran_tests" ] && [ "$ran_tests" -ge "$unit_floor" ]; then
+          echo "Expected Stryker-related unit tests: $expected_tests"
+          if [ -n "$ran_tests" ] && [ "$ran_tests" -eq "$expected_tests" ]; then
             echo "complete=true" >> "$GITHUB_OUTPUT"
           else
             echo "complete=false" >> "$GITHUB_OUTPUT"
-            echo "::error::Stryker ran ${ran_tests:-no} tests, but the unit test floor is $unit_floor."
+            echo "::error::Stryker ran ${ran_tests:-no} tests, but the Stryker-related unit test count is $expected_tests."
             {
               echo "### Incomplete mutation test collection"
               echo
-              echo "Stryker ran ${ran_tests:-no} tests, but the unit test floor is $unit_floor. The incremental mutation report was not saved."
+              echo "Stryker ran ${ran_tests:-no} tests, but the Stryker-related unit test count is $expected_tests. The incremental mutation report was not saved."
             } >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
