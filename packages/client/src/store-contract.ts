@@ -1,12 +1,21 @@
-import type { KeyValueStore, Stored } from "./store.js";
+import type { SeatProfile } from "@seatscout/core";
+import type {
+  CachedCatalogue,
+  CachedProgramme,
+  KeyValueStore,
+  RecentSearch,
+  Remembered,
+  Stored,
+} from "./store.js";
 
 export interface ContractCheck {
   readonly name: string;
   readonly failure: string | null;
 }
 
-interface Sample {
-  readonly value: Stored;
+interface Sample<Kept extends Stored = Stored> {
+  readonly named: string;
+  readonly value: Kept;
   readonly text: string;
 }
 
@@ -17,7 +26,8 @@ interface Clause {
 
 const AWKWARD_KEY = 'a "quoted" \\ key with a ☃ in it';
 
-const PROFILE: Sample = {
+const PROFILE: Sample<SeatProfile> = {
+  named: "Seat Profile",
   value: {
     targetDepth: 0.5,
     targetLateral: -0.25,
@@ -33,18 +43,38 @@ const PROFILE: Sample = {
   text: '{"targetDepth":0.5,"targetLateral":-0.25,"depthWeight":1.5,"offAxisWeight":0.75,"frontBandWeight":0,"wallBandWeight":0.125,"podDividerWeight":2,"screenGap":6,"rowPitch":1.71,"frontBand":6.97}',
 };
 
-const RECENT: Sample = {
+const RECENT: Sample<readonly RecentSearch[]> = {
+  named: "history of searches",
   value: [{ movie: "245569", date: "2026-08-28", area: "75006", partySize: 2 }],
   text: '[{"movie":"245569","date":"2026-08-28","area":"75006","partySize":2}]',
 };
 
-const sample = (fetchedAt: number): Sample => ({
+const sample = (fetchedAt: number): Sample<CachedCatalogue> => ({
+  named: "listing",
   value: {
     fetchedAt,
     catalogue: { bookable: [], unbookable: [], unidentified: [] },
   },
   text: `{"fetchedAt":${fetchedAt},"catalogue":{"bookable":[],"unbookable":[],"unidentified":[]}}`,
 });
+
+const PROGRAMME: Sample<CachedProgramme> = {
+  named: "programme",
+  value: {
+    fetchedAt: 8,
+    programme: { theaters: [], movies: [], unreached: [] },
+  },
+  text: '{"fetchedAt":8,"programme":{"theaters":[],"movies":[],"unreached":[]}}',
+};
+
+const REMEMBERED: {
+  readonly [Kind in keyof Remembered]: Sample<Remembered[Kind]>;
+} = {
+  listing: sample(9),
+  programme: PROGRAMME,
+  profile: PROFILE,
+  recent: RECENT,
+};
 
 const reads = async (store: KeyValueStore, key: string, expected: string) => {
   const got = JSON.stringify(await store.read(key));
@@ -99,14 +129,10 @@ const CLAUSES: readonly Clause[] = [
     name: "a key carrying quotes, a backslash and a snowman is a key like any other",
     run: (store) => wrote(store, AWKWARD_KEY, sample(7)),
   },
-  {
-    name: "a remembered Seat Profile reads back unchanged",
-    run: (store) => wrote(store, "profile", PROFILE),
-  },
-  {
-    name: "a remembered history of searches reads back unchanged",
-    run: (store) => wrote(store, "recent", RECENT),
-  },
+  ...Object.entries(REMEMBERED).map(([key, item]) => ({
+    name: `a remembered ${item.named} reads back unchanged`,
+    run: (store: KeyValueStore) => wrote(store, key, item),
+  })),
 ];
 
 export const storeContract = async (

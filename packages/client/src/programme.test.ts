@@ -2,7 +2,7 @@ import { openSource, type Reading } from "@seatscout/core";
 import { type UpstreamScript, fakeUpstream } from "@seatscout/core/testing";
 import { describe, expect, it } from "vitest";
 import { openProgramme, type Programme } from "./programme.js";
-import { inMemoryStore, type KeyValueStore } from "./store.js";
+import { inMemoryStore, type KeyValueStore, type Stored } from "./store.js";
 
 const AREA = "75006";
 const TODAY = "2026-08-28";
@@ -29,6 +29,31 @@ const PLAYING_AT_THE_ANCHOR = [
   "The Odyssey (2026)",
   "Toxic: A Fairytale for Grownups (2026)",
 ];
+
+const fieldsIn = (value: unknown, at = ""): readonly string[] =>
+  Array.isArray(value)
+    ? value.flatMap((item) => fieldsIn(item, at))
+    : value instanceof Object
+      ? Object.entries(value).flatMap(([field, held]) => [
+          `${at}${field}`,
+          ...fieldsIn(held, `${at}${field}.`),
+        ])
+      : [];
+
+const watching = () => {
+  const held = inMemoryStore();
+  const written: { key: string; value: unknown }[] = [];
+  return {
+    written,
+    store: {
+      read: (key: string) => held.read(key),
+      write: (key: string, value: Stored) => {
+        written.push({ key, value });
+        return held.write(key, value);
+      },
+    },
+  };
+};
 
 const payloadOf = (reading: Reading<Programme>): Programme => {
   if (!reading.ok) throw new Error(`the programme answered ${reading.reason}`);
@@ -159,6 +184,31 @@ describe("the programme near an area on a date", () => {
 
     expect(reading.ok && reading.payload.theaters).toHaveLength(25);
     expect(requested()).toEqual({ areas: 1, schedules: 25 });
+  });
+
+  it("names its entry after the area, the date and the shape it stores", async () => {
+    const watched = watching();
+    const { programme } = opened({}, watched.store);
+
+    await programme(AREA, TODAY);
+
+    expect(watched.written.map((entry) => entry.key)).toEqual([
+      'seatscout.programme.v1.["2026-08-28","75006"]',
+    ]);
+    expect(
+      [...new Set(fieldsIn(watched.written[0]?.value))].toSorted(),
+    ).toEqual([
+      "fetchedAt",
+      "programme",
+      "programme.movies",
+      "programme.movies.id",
+      "programme.movies.title",
+      "programme.theaters",
+      "programme.theaters.chain",
+      "programme.theaters.id",
+      "programme.theaters.name",
+      "programme.unreached",
+    ]);
   });
 
   it("keeps no read that missed a Theater, so the next asks the Source again", async () => {

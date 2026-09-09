@@ -18,11 +18,14 @@ export interface RecentSearch {
   readonly partySize: number;
 }
 
-export type Stored =
-  | CachedCatalogue
-  | CachedProgramme
-  | SeatProfile
-  | readonly RecentSearch[];
+export interface Remembered {
+  readonly listing: CachedCatalogue;
+  readonly programme: CachedProgramme;
+  readonly profile: SeatProfile;
+  readonly recent: readonly RecentSearch[];
+}
+
+export type Stored = Remembered[keyof Remembered];
 
 export interface KeyValueStore {
   readonly read: (key: string) => Promise<unknown>;
