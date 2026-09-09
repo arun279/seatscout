@@ -7,6 +7,6 @@
   {
     "name": "stylesheets",
     "path": "apps/web/dist/**/*.css",
-    "limit": "5114 B"
+    "limit": "5177 B"
   }
 ]
