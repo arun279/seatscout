@@ -1,5 +1,5 @@
 import { AxeBuilder } from "@axe-core/playwright";
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type Locator, type Page, test } from "@playwright/test";
 import {
   answeredByTheCorpus,
   clippedFieldsIn,
@@ -23,12 +23,18 @@ const settled = async (page: Page) => {
   await expect(page.getByRole("status").first()).toHaveText(/172 checked$/);
 };
 
+const boxOf = async (locator: Locator) => {
+  const box = await locator.boundingBox();
+  if (box === null) throw new Error("nothing was drawn to measure");
+  return box;
+};
+
 const sheet = (page: Page) =>
   page.getByRole("dialog", { name: "What are we seeing?" });
 
 test.use({ serviceWorkers: "block", viewport: PHONE });
 
-test("every Query term composes in one search on a phone, one-handed, and the card states all of them", {
+test("every Query term composes in one search on a phone, one-handed, every target 44 px including the label that wraps a checkbox, and the card states all of them", {
   tag: "@accessibility",
 }, async ({ page }) => {
   const complaints: string[] = [];
@@ -61,11 +67,23 @@ test("every Query term composes in one search on a phone, one-handed, and the ca
   const scan = await new AxeBuilder({ page }).withTags(WCAG).analyze();
   const onTheSheet = await hitAreasUnder(page, HIT_AREA);
   const clipped = await clippedFieldsIn(page);
-  const submit = await sheet(page).locator(".cta").boundingBox();
+  const bar = sheet(page).locator(".cta");
+  const atTheTop = await boxOf(bar);
+  const scrolled = await sheet(page).evaluate((dialog) => {
+    dialog.scrollTop = dialog.scrollHeight;
+    return dialog.scrollTop;
+  });
+  const atTheFoot = await boxOf(bar);
+  const lastBlock = await boxOf(
+    sheet(page).getByRole("heading", { name: /run one of these again/i }),
+  );
   await sheet(page).getByRole("button", { name: "Find seats" }).click();
 
-  expect(submit?.y).toBeGreaterThan(0);
-  expect((submit?.y ?? 0) + (submit?.height ?? 0)).toBe(PHONE.height);
+  expect(scrolled).toBeGreaterThan(0);
+  expect(atTheTop.y).toBeGreaterThan(0);
+  expect(atTheTop.y + atTheTop.height).toBe(PHONE.height);
+  expect(atTheFoot.y + atTheFoot.height).toBe(PHONE.height);
+  expect(lastBlock.y).toBeLessThan(atTheFoot.y);
 
   expect(scan.violations).toEqual([]);
   expect(onTheSheet).toEqual([]);
@@ -74,8 +92,8 @@ test("every Query term composes in one search on a phone, one-handed, and the ca
   await expect(page.locator("header")).toContainText(
     "Fri 28 Aug · 7:00p to 9:00p · Near 75006 · Dolby Cinema or IMAX · Recliners · AMC or Landmark · Cinemark Dallas XD and IMAX or AMC Village on the Parkway 9 · Accessible seating · Reference seat",
   );
-  const card = await page.locator("header").boundingBox();
-  expect(card?.width).toBeLessThanOrEqual(PHONE.width);
+  const card = await boxOf(page.locator("header"));
+  expect(card.width).toBeLessThanOrEqual(PHONE.width);
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,
@@ -85,7 +103,7 @@ test("every Query term composes in one search on a phone, one-handed, and the ca
   expect(complaints).toEqual([]);
   test.info().annotations.push({
     type: "title card height with every term active, px",
-    description: `${card?.height.toFixed(0)}`,
+    description: `${card.height.toFixed(0)}`,
   });
 });
 

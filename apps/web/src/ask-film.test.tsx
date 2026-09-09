@@ -6,12 +6,18 @@ import {
   chip,
   film,
   find,
-  NOTHING,
   opened,
   suggested,
   typed,
 } from "./ask.fixtures.js";
-import { ask, NEARBY, SCHEDULES, staged, TODAY } from "./search.fixtures.js";
+import {
+  ask,
+  NEARBY,
+  NOTHING,
+  SCHEDULES,
+  staged,
+  TODAY,
+} from "./search.fixtures.js";
 
 describe("the Ask sheet's film field", () => {
   afterEach(cleanup);
@@ -96,6 +102,18 @@ describe("the Ask sheet's film field", () => {
     await stage.programmed();
 
     expect(stage.programmesRead()).toBe(reads + 2);
+  });
+
+  it("reads what is playing on the date it is given, without another field being touched", async () => {
+    const stage = await asking();
+    const reads = stage.programmesRead();
+
+    fireEvent.change(ask().getByLabelText("Date"), {
+      target: { value: "2026-08-29" },
+    });
+    await stage.programmed();
+
+    expect(stage.programmesRead()).toBe(reads + 1);
   });
 
   it("asks for nothing, and does not stumble, when the area it is blurred with was never named", async () => {

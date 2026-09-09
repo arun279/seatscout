@@ -32,12 +32,16 @@ interface AskProps {
 
 interface Patch {
   readonly draft: Terms;
-  readonly patch: (change: Partial<Terms>) => void;
+  readonly patch: (change: Partial<Terms>) => Terms;
+}
+
+interface WhenProps extends Patch {
+  readonly onDate: (date: string) => void;
 }
 
 const areaOf = ({ area = "" }: Terms) => area.trim() || undefined;
 
-const When = ({ draft, patch }: Patch) => (
+const When = ({ draft, patch, onDate }: WhenProps) => (
   <div className="when">
     <label className="field day">
       <span className="eyebrow">Date</span>
@@ -46,7 +50,7 @@ const When = ({ draft, patch }: Patch) => (
         type="date"
         data-term="date"
         value={draft.date}
-        onChange={(event) => patch({ date: event.target.value })}
+        onChange={(event) => onDate(event.target.value)}
       />
     </label>
     <label className="field">
@@ -55,7 +59,7 @@ const When = ({ draft, patch }: Patch) => (
         className="input"
         type="time"
         data-term="window"
-        defaultValue={draft.from}
+        value={draft.from ?? ""}
         onChange={(event) => patch({ from: event.target.value })}
       />
     </label>
@@ -64,7 +68,7 @@ const When = ({ draft, patch }: Patch) => (
       <input
         className="input"
         type="time"
-        defaultValue={draft.until}
+        value={draft.until ?? ""}
         onChange={(event) => patch({ until: event.target.value })}
       />
     </label>
@@ -129,11 +133,15 @@ export const Ask = ({
   const [film, setFilm] = useState(
     titleOf(playing.movies, terms.movie) ?? terms.movie ?? "",
   );
-  const patch = (change: Partial<Terms>) => setDraft({ ...draft, ...change });
-  const follow = () => {
-    const area = areaOf(draft);
-    if (held.area !== area || held.date !== draft.date)
-      setHeld(onProgramme(area, draft.date));
+  const patch = (change: Partial<Terms>) => {
+    const next = { ...draft, ...change };
+    setDraft(next);
+    return next;
+  };
+  const follow = (next: Terms) => {
+    const area = areaOf(next);
+    if (held.area !== area || held.date !== next.date)
+      setHeld(onProgramme(area, next.date));
   };
 
   return (
@@ -172,7 +180,7 @@ export const Ask = ({
             data-term="area"
             value={draft.area ?? ""}
             onChange={(event) => patch({ area: event.target.value })}
-            onBlur={follow}
+            onBlur={() => follow(draft)}
           />
         </label>
         <Film
@@ -181,7 +189,11 @@ export const Ask = ({
           typed={film}
           onTyped={setFilm}
         />
-        <When draft={draft} patch={patch} />
+        <When
+          draft={draft}
+          patch={patch}
+          onDate={(date) => follow(patch({ date }))}
+        />
         <Party draft={draft} patch={patch} />
         <Chips
           term="formats"
@@ -214,6 +226,15 @@ export const Ask = ({
           Every control holds what it already had, so closing this is a search
           too.
         </p>
+        <Recent
+          heading="Or run one of these again"
+          recent={recent}
+          today={today}
+          onRun={(asked) => {
+            onFind(asked, profile);
+            onClose();
+          }}
+        />
         <div className="cta">
           <button type="submit" className="btn btn-velvet">
             Find seats
@@ -223,15 +244,6 @@ export const Ask = ({
           </p>
         </div>
       </form>
-      <Recent
-        heading="Or run one of these again"
-        recent={recent}
-        today={today}
-        onRun={(asked) => {
-          onFind(asked, profile);
-          onClose();
-        }}
-      />
     </dialog>
   );
 };
