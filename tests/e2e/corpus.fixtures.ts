@@ -1,4 +1,5 @@
-import type { Page } from "@playwright/test";
+import { AxeBuilder } from "@axe-core/playwright";
+import { expect, type Page } from "@playwright/test";
 import { fakeUpstream, type UpstreamScript } from "@seatscout/core/testing";
 
 export const TONIGHT = "/?movie=245569&date=2026-08-28&area=75006&partySize=2";
@@ -90,3 +91,36 @@ export const clippedFieldsIn = (page: Page) =>
       })
       .filter((field) => field.drawn + 0.5 < field.needed),
   );
+
+const tapsAnsweredElsewhere = (page: Page) =>
+  page.evaluate(() => {
+    const open = [...document.querySelectorAll("dialog[open]")];
+    const named = (element: Element) =>
+      (element.getAttribute("aria-label") ?? element.textContent ?? "")
+        .trim()
+        .slice(0, 32);
+    return [
+      ...(open.at(-1) ?? document.body).querySelectorAll(
+        "button, a[href], input",
+      ),
+    ]
+      .map((element) => {
+        const box = element.getBoundingClientRect();
+        if (box.width === 0 || box.height === 0) return null;
+        const answered = document.elementFromPoint(
+          box.left + box.width / 2,
+          box.top + box.height / 2,
+        );
+        return answered === null || element.contains(answered)
+          ? null
+          : { asked: named(element), answered: named(answered) };
+      })
+      .filter((miss) => miss !== null);
+  });
+
+export const accessible = async (page: Page) => {
+  const scan = await new AxeBuilder({ page }).withTags(WCAG).analyze();
+  expect(scan.violations).toEqual([]);
+  expect(await hitAreasUnder(page, HIT_AREA)).toEqual([]);
+  expect(await tapsAnsweredElsewhere(page)).toEqual([]);
+};
