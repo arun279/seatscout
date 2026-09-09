@@ -12,6 +12,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { startApp } from "./start.js";
 
 const SEAT_MAP = "/napi/seatMap/";
+const NEARBY = "/napi/nearbyTheaters";
 
 const running: Root[] = [];
 
@@ -40,6 +41,9 @@ const opened = async (query: string) => {
   return {
     seatMapsRead: () =>
       upstream.requests.filter((request) => request.path.startsWith(SEAT_MAP))
+        .length,
+    areasRead: () =>
+      upstream.requests.filter((request) => request.path.startsWith(NEARBY))
         .length,
     cached: () =>
       Object.keys(localStorage).filter((key) =>
@@ -159,6 +163,26 @@ describe("starting the application in a browser", () => {
         "Two seats together",
       ),
     );
+  });
+
+  it("reads what is playing near the area the query moves to", async () => {
+    const page = await opened(
+      "?movie=245569&date=2026-08-28&area=75006&partySize=2&theater=aacbt",
+    );
+    await waitFor(() => expect(page.areasRead()).toBe(1));
+    fireEvent.click(
+      screen.getByRole("button", { name: /two seats together/i }),
+    );
+    const ask = within(
+      screen.getByRole("dialog", { name: /what are we seeing/i }),
+    );
+
+    fireEvent.change(ask.getByLabelText("Near, by postal code"), {
+      target: { value: "75234" },
+    });
+    fireEvent.click(ask.getByRole("button", { name: /find seats/i }));
+
+    await waitFor(() => expect(page.areasRead()).toBe(2));
   });
 
   it("keeps the film it has read when a chip changes the query and the area and the date do not", async () => {

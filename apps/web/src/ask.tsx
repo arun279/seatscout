@@ -12,7 +12,7 @@ import { modal } from "./modal.js";
 import { Profile } from "./profile.js";
 import { type HeldProgramme, movieOf, titleOf } from "./programme.js";
 import { Recent } from "./recent.js";
-import { type Terms, termsOf } from "./terms.js";
+import { type Terms, termsOf, windowIn } from "./terms.js";
 import type { Term } from "./title-card-terms.js";
 
 interface AskProps {
@@ -41,39 +41,43 @@ interface WhenProps extends Patch {
 
 const areaOf = ({ area = "" }: Terms) => area.trim() || undefined;
 
-const When = ({ draft, patch, onDate }: WhenProps) => (
-  <div className="when">
-    <label className="field day">
-      <span className="eyebrow">Date</span>
-      <input
-        className="input"
-        type="date"
-        data-term="date"
-        value={draft.date}
-        onChange={(event) => onDate(event.target.value)}
-      />
-    </label>
-    <label className="field">
-      <span className="eyebrow">From</span>
-      <input
-        className="input"
-        type="time"
-        data-term="window"
-        value={draft.from ?? ""}
-        onChange={(event) => patch({ from: event.target.value })}
-      />
-    </label>
-    <label className="field">
-      <span className="eyebrow">Until</span>
-      <input
-        className="input"
-        type="time"
-        value={draft.until ?? ""}
-        onChange={(event) => patch({ until: event.target.value })}
-      />
-    </label>
-  </div>
-);
+const When = ({ draft, patch, onDate }: WhenProps) => {
+  const window = windowIn(draft);
+
+  return (
+    <div className="when">
+      <label className="field day">
+        <span className="eyebrow">Date</span>
+        <input
+          className="input"
+          type="date"
+          data-term="date"
+          value={draft.date}
+          onChange={(event) => onDate(event.target.value)}
+        />
+      </label>
+      <label className="field">
+        <span className="eyebrow">From</span>
+        <input
+          className="input"
+          type="time"
+          data-term="window"
+          value={window.from}
+          onChange={(event) => patch({ from: event.target.value })}
+        />
+      </label>
+      <label className="field">
+        <span className="eyebrow">Until</span>
+        <input
+          className="input"
+          type="time"
+          value={window.until}
+          onChange={(event) => patch({ until: event.target.value })}
+        />
+      </label>
+    </div>
+  );
+};
 
 const Party = ({ draft, patch }: Patch) => (
   <>

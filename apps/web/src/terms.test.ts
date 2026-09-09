@@ -1,8 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { queryOf, termsFrom } from "./terms.js";
+import { queryOf, termsFrom, windowIn } from "./terms.js";
 import { EVERY_TERM, TODAY } from "./terms.fixtures.js";
 
 describe("the query terms a URL carries", () => {
+  it("gives the window's two fields the empty string when the query holds no window", () => {
+    expect(windowIn(termsFrom("", TODAY))).toEqual({ from: "", until: "" });
+    expect(windowIn(termsFrom("?from=19:00&until=21:00", TODAY))).toEqual({
+      from: "19:00",
+      until: "21:00",
+    });
+  });
+
   it("holds a value the address names twice once, and writes it once", () => {
     const twice = termsFrom(
       "?theater=aacbt&theater=aacbt&chain=AMC&chain=AMC",

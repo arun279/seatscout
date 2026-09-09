@@ -146,6 +146,13 @@ const LISTS: readonly (readonly [
   ["amenity", (terms) => terms.amenities],
 ];
 
+export const windowIn = (
+  terms: Terms,
+): { readonly from: string; readonly until: string } => ({
+  from: terms.from ?? "",
+  until: terms.until ?? "",
+});
+
 export const queryOf = (terms: Terms): string => {
   const params = new URLSearchParams();
   if (terms.movie !== undefined) params.set("movie", terms.movie);

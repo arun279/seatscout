@@ -67,14 +67,14 @@ const PROGRAMME: Sample<CachedProgramme> = {
   text: '{"fetchedAt":8,"programme":{"theaters":[],"movies":[],"unreached":[]}}',
 };
 
-const REMEMBERED: {
+const remembered = (): {
   readonly [Kind in keyof Remembered]: Sample<Remembered[Kind]>;
-} = {
+} => ({
   listing: sample(9),
   programme: PROGRAMME,
   profile: PROFILE,
   recent: RECENT,
-};
+});
 
 const reads = async (store: KeyValueStore, key: string, expected: string) => {
   const got = JSON.stringify(await store.read(key));
@@ -129,17 +129,19 @@ const CLAUSES: readonly Clause[] = [
     name: "a key carrying quotes, a backslash and a snowman is a key like any other",
     run: (store) => wrote(store, AWKWARD_KEY, sample(7)),
   },
-  ...Object.entries(REMEMBERED).map(([key, item]) => ({
+];
+
+const roundTrips = (): readonly Clause[] =>
+  Object.entries(remembered()).map(([key, item]) => ({
     name: `a remembered ${item.named} reads back unchanged`,
     run: (store: KeyValueStore) => wrote(store, key, item),
-  })),
-];
+  }));
 
 export const storeContract = async (
   store: KeyValueStore,
 ): Promise<readonly ContractCheck[]> => {
   const checks: ContractCheck[] = [];
-  for (const clause of CLAUSES)
+  for (const clause of [...CLAUSES, ...roundTrips()])
     checks.push({ name: clause.name, failure: await clause.run(store) });
   return checks;
 };
