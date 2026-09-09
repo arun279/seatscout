@@ -217,11 +217,6 @@
   align-self: flex-start;
 }
 
-.ask .chip:disabled {
-  color: var(--silver-faint);
-  cursor: default;
-}
-
 .ask .recent {
   padding: 24px 0 0;
   text-align: left;

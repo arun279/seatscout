@@ -176,6 +176,11 @@ a:hover {
   color: var(--silver-faint);
 }
 
+.chip:disabled {
+  color: var(--silver-faint);
+  cursor: default;
+}
+
 .chip:has(:checked),
 .chip[aria-pressed="true"] {
   border-color: var(--silver);

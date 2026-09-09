@@ -76,14 +76,11 @@ describe("the hand-off", () => {
   });
 
   it("draws the disabled Take button like a disabled chip", async () => {
-    const ask = document.createElement("div");
-    ask.className = "ask";
     const chip = document.createElement("button");
     chip.className = "chip";
     chip.disabled = true;
-    ask.append(chip);
-    document.body.append(ask);
-    const chipStyle = await drawn("apps/web/public/ask.css", () => {
+    document.body.append(chip);
+    const chipStyle = await drawn("apps/web/public/house.css", () => {
       const style = getComputedStyle(chip);
       return { color: style.color, cursor: style.cursor };
     });
