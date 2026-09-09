@@ -15,6 +15,7 @@ import {
   chipsIn,
   EVERYTHING,
   find,
+  NOTHING_PLAYING,
   opened,
 } from "./ask.fixtures.js";
 import { Ask } from "./ask.js";
@@ -31,6 +32,8 @@ const rendered = () => {
   render(
     <Ask
       terms={TERMS}
+      programme={NOTHING_PLAYING}
+      onProgramme={() => NOTHING_PLAYING}
       profile={REFERENCE}
       recent={[]}
       today={TERMS.date}
@@ -210,7 +213,7 @@ describe("the Ask sheet", () => {
   });
 
   it("explains accessible seating in the board's own words, and keeps the film list out of the way of a one-handed thumb", async () => {
-    await opened();
+    await asking();
 
     expect(
       ask().getByText(
@@ -218,3 +221,5 @@ describe("the Ask sheet", () => {
       ),
     ).toBeVisible();
     expect(ask().getByRole("button", { name: /find seats/i })).toBeVisible();
+  });
+});

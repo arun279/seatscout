@@ -34,6 +34,8 @@ export const TONIGHT: Terms = {
 
 export const AT_ONE_THEATER: Terms = { ...TONIGHT, theaters: ["aacbt"] };
 
+export const NO_MOVIE: Terms = { date: TODAY, area: "75006", partySize: 2 };
+
 export const ASKED: SearchTerms = {
   movie: "245569",
   date: TODAY,
