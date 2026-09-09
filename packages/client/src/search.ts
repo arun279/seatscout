@@ -102,6 +102,8 @@ export const openSearch = (deps: CatalogueDependencies) => {
     };
 
     const record = (showtime: Showtime, reading: Reading<readonly Seat[]>) => {
+      const unreached = failed.indexOf(showtime);
+      if (unreached >= 0) failed.splice(unreached, 1);
       if (!reading.ok) {
         if (reading.reason === "unreachable") failed.push(showtime);
         else named[reading.reason].push(showtime);
@@ -146,9 +148,8 @@ export const openSearch = (deps: CatalogueDependencies) => {
     };
 
     const recheck = async () => {
-      const unreached = failed.splice(0);
       publish("searching");
-      await fanOut(unreached);
+      await fanOut([...failed]);
       publish("settled");
       return current;
     };

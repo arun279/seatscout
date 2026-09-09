@@ -49,7 +49,7 @@ describe("retrying a search", () => {
   });
 
   it("counts a Showtime being retried as not reached until it answers, so the ledger stays closed", async () => {
-    const { run, settled } = await refusing(2);
+    const { refused, run, settled } = await refusing(2);
     const seen = run.snapshots.length;
 
     const again = await run.search.retry();
@@ -61,14 +61,14 @@ describe("retrying a search", () => {
       "searching",
       "settled",
     ]);
-    expect(during[0]?.coverage.failed).toEqual([]);
+    expect(during[0]?.coverage.failed).toEqual(refused);
     expect(during[0]?.coverage.checked).toBe(2);
     expect(
       during.map(
         (snapshot) =>
           snapshot.coverage.candidates - accountedIn(snapshot.coverage),
       ),
-    ).toEqual([2, 1, 0, 0]);
+    ).toEqual([0, 0, 0, 0]);
     expect(settled.results.length).toBeLessThan(again.results.length);
   });
 
@@ -122,6 +122,15 @@ describe("retrying a search", () => {
 
     expect(await retried).toBe(settled);
     expect(run.requested()).toHaveLength(4);
+  });
+
+  it("keeps the Showtimes it could not reach when the retry is abandoned part way", async () => {
+    const { refused, run } = await refusing(2);
+
+    const again = run.search.retry();
+    run.search.abort();
+
+    expect((await again).coverage.failed).toEqual(refused);
   });
 
   it("issues nothing once it has been aborted", async () => {

@@ -1,7 +1,13 @@
 import type { SeatGroupResult, Snapshot } from "@seatscout/client";
 import { Fragment } from "react";
 import { Card } from "./card.js";
-import { accountOf, listed, tiedIn, unreachedIn } from "./derived.js";
+import {
+  accountOf,
+  beingReadIn,
+  listed,
+  tiedIn,
+  unreachedIn,
+} from "./derived.js";
 import type { HeldSnapshots } from "./held.js";
 import { whenOf } from "./phrases.js";
 import type { Terms } from "./terms.js";
@@ -32,7 +38,9 @@ const ListHead = ({
   if (snapshot.phase !== "settled")
     return (
       <p className="list-head">
-        <span className="eyebrow">Reading {account.remaining} seat maps</span>
+        <span className="eyebrow">
+          Reading {beingReadIn(snapshot)} seat maps
+        </span>
         <span className="eyebrow count">
           {snapshot.results.length} showtimes so far
         </span>
