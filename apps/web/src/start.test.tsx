@@ -9,7 +9,7 @@ import {
 } from "@testing-library/react";
 import type { Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { browserClock, browserSeatScout } from "./browser.js";
+import { browserAddress, browserClock, browserSeatScout } from "./browser.js";
 import { startApp } from "./start.js";
 
 const SEAT_MAP = "/napi/seatMap/";
@@ -129,7 +129,7 @@ describe("starting the application in a browser", () => {
 
   it("writes an edited query to the address and searches it, and goes back to the one before", async () => {
     const page = await opened(
-      "?movie=245569&date=2026-08-28&area=75006&partySize=2",
+      "?movie=245569&date=2026-08-28&area=75006&partySize=2&theater=aacbt",
     );
     await waitFor(() => expect(page.seatMapsRead()).toBeGreaterThan(0));
     fireEvent.click(
@@ -142,7 +142,7 @@ describe("starting the application in a browser", () => {
     fireEvent.click(ask.getByRole("button", { name: /find seats/i }));
 
     expect(window.location.search).toBe(
-      "?movie=245569&date=2026-08-28&area=75006&partySize=3",
+      "?movie=245569&date=2026-08-28&area=75006&partySize=3&theater=aacbt",
     );
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
       "Three seats together",
@@ -152,7 +152,7 @@ describe("starting the application in a browser", () => {
 
     await waitFor(() =>
       expect(window.location.search).toBe(
-        "?movie=245569&date=2026-08-28&area=75006&partySize=2",
+        "?movie=245569&date=2026-08-28&area=75006&partySize=2&theater=aacbt",
       ),
     );
     await waitFor(() =>
@@ -222,6 +222,19 @@ describe("starting the application in a browser", () => {
 
     expect(vi.getTimerCount()).toBe(0);
     expect(document.getElementById("app")?.childElementCount).toBe(0);
+  });
+
+  it("tells its watchers the query before when the browser goes back to it", async () => {
+    window.history.replaceState(null, "", "/?partySize=2");
+    const address = browserAddress();
+    const seen: string[] = [];
+    const stop = address.subscribe(() => seen.push(address.query()));
+
+    address.go("?partySize=3");
+    window.history.back();
+
+    await waitFor(() => expect(seen).toEqual(["?partySize=3", "?partySize=2"]));
+    stop();
   });
 
   it("ticks its clock once a second while someone listens, and not after", () => {
