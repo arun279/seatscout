@@ -1,5 +1,5 @@
 import type { SeatGroupResult, SeatScout } from "@seatscout/client";
-import { useCallback, useRef, useState, useSyncExternalStore } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import type { Checkout, Clock } from "./app.js";
 import {
   type Answer,
@@ -162,14 +162,14 @@ export const HandOff = ({
     closed.current = true;
     onClose();
   };
-  const bindDialog = useCallback((node: HTMLDialogElement | null) => {
+  const bindDialog = useRef((node: HTMLDialogElement | null) => {
     if (node === null) return;
     const cleanup = modal(node);
     return () => {
       closed.current = true;
       cleanup();
     };
-  }, []);
+  }).current;
   const take = async () => {
     const { chosen } = sheet;
     setSheet((current) => ({ ...current, phase: "checking" }));
