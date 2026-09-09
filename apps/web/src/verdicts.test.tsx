@@ -3,6 +3,7 @@ import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   ask,
+  AT_NO_THEATER,
   before,
   cards,
   failing,
@@ -118,7 +119,7 @@ describe("what the first screen says when the answer is not a list", () => {
 
   it("says no Showtime matched when the terms narrowed the listing to nothing, and does not claim anywhere", async () => {
     const stage = staged({
-      terms: { ...TONIGHT, theaters: ["nowhere"] },
+      terms: AT_NO_THEATER,
     });
     await stage.settled();
 

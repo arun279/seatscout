@@ -70,8 +70,15 @@ describe("narrowing a catalogue", () => {
     ).toEqual({ ...none, unidentified: 46 });
   });
 
-  it("narrows to a Theater named by the string an address carries", () => {
-    expect(counted(narrowed(captured(), { theaters: ["aacbt"] }))).toEqual({
+  it("narrows to the one Theater a Query names", () => {
+    const catalogue = captured();
+    expect(
+      counted(
+        narrowed(catalogue, {
+          theaters: [theaterNamed(catalogue, "Cinemark Dallas XD and IMAX")],
+        }),
+      ),
+    ).toEqual({
       bookable: 14,
       unbookable: 0,
       unidentified: 0,

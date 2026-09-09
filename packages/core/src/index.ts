@@ -14,6 +14,7 @@ export {
   type Showtime,
   type ShowtimeTerms,
   type Theater,
+  type TheaterId,
   type TicketingUrl,
   type UnbookableReason,
   type Unidentified,

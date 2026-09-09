@@ -1,4 +1,4 @@
-import type { Theater } from "@seatscout/client";
+import type { Theater, TheaterId } from "@seatscout/client";
 import type { Term } from "./title-card-terms.js";
 
 interface ChipsProps<Named extends string> {
@@ -11,8 +11,8 @@ interface ChipsProps<Named extends string> {
 
 interface TheaterChipsProps {
   readonly theaters: readonly Theater[];
-  readonly chosen: readonly string[] | undefined;
-  readonly onChosen: (chosen: readonly string[]) => void;
+  readonly chosen: readonly TheaterId[] | undefined;
+  readonly onChosen: (chosen: readonly TheaterId[]) => void;
 }
 
 interface Chip<Named extends string> {

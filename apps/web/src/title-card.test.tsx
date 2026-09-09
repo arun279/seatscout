@@ -3,22 +3,17 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { REFERENCE } from "@seatscout/client";
 import type { ProgrammeState } from "./programme.js";
-import { programmeRead, TODAY, TONIGHT } from "./search.fixtures.js";
+import {
+  EVERYTHING,
+  NOTHING_READ,
+  programmeRead,
+  TODAY,
+  TONIGHT,
+} from "./search.fixtures.js";
 import { type Terms, termsFrom } from "./terms.js";
 import { TitleCard } from "./title-card.js";
 
-const NOTHING_READ: ProgrammeState = {
-  phase: "none",
-  theaters: [],
-  movies: [],
-};
-
 let PLAYING: ProgrammeState = NOTHING_READ;
-
-const EVERYTHING = termsFrom(
-  "?movie=245569&date=2026-08-28&area=75006&partySize=2&chain=AMC&chain=Landmark&theater=aacbt&theater=aaxju&format=Dolby+Cinema&format=IMAX&amenity=Recliners&from=19:00&until=21:00&accessibleSeating=true",
-  TODAY,
-);
 
 const card = (
   terms: Terms = TONIGHT,
@@ -42,6 +37,19 @@ describe("the title card", () => {
     PLAYING = await programmeRead();
   });
   afterEach(cleanup);
+
+  it("draws a Theater the address names twice as one control", () => {
+    const { container } = card(
+      termsFrom("?theater=aacbt&theater=aacbt", TODAY),
+      PLAYING,
+    );
+
+    expect(
+      [...container.querySelectorAll("button.term")].filter(
+        (term) => term.textContent === "Cinemark Dallas XD and IMAX",
+      ),
+    ).toHaveLength(1);
+  });
 
   it("reads the query back line by line, a middot between terms and never before the first", () => {
     const { container } = card();

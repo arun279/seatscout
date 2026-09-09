@@ -13,13 +13,12 @@ import {
   asking,
   chip,
   chipsIn,
-  EVERYTHING,
   find,
   NOTHING_PLAYING,
   opened,
 } from "./ask.fixtures.js";
 import { Ask } from "./ask.js";
-import { ask } from "./search.fixtures.js";
+import { ask, EVERYTHING } from "./search.fixtures.js";
 
 const TERMS = {
   movie: "245569",

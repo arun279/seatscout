@@ -9,6 +9,7 @@ export {
   REFERENCE,
   type SeatProfile,
   type Theater,
+  type TheaterId,
   type TicketingUrl,
 } from "@seatscout/core";
 export { isReference } from "./profile.js";

@@ -5,6 +5,7 @@ import {
   EVERY_CHAIN,
   EVERY_FORMAT,
   type Format,
+  type TheaterId,
 } from "@seatscout/client";
 
 export interface Terms {
@@ -14,7 +15,7 @@ export interface Terms {
   readonly partySize: number;
   readonly accessibleSeating?: boolean;
   readonly chains?: readonly Chain[];
-  readonly theaters?: readonly string[];
+  readonly theaters?: readonly TheaterId[];
   readonly formats?: readonly Format[];
   readonly amenities?: readonly Amenity[];
   readonly from?: string;
@@ -41,6 +42,8 @@ const DEFAULT_PARTY_SIZE = 2;
 
 const given = (value: string | null | undefined) => value?.trim() ?? "";
 
+const isTheaterId = (raw: string): raw is TheaterId => raw.length > 0;
+
 const partySizeOf = (value: string | number | null | undefined) => {
   const partySize = Number(value);
   return Number.isInteger(partySize) && partySize >= 1
@@ -55,7 +58,10 @@ const among =
 
 const anyOf = <Named extends string>(
   asked: readonly Named[],
-): readonly Named[] | undefined => (asked.length > 0 ? asked : undefined);
+): readonly Named[] | undefined => {
+  const once = [...new Set(asked)];
+  return once.length > 0 ? once : undefined;
+};
 
 const namedIn = <Named extends string>(
   asked: readonly string[] | undefined,
@@ -81,7 +87,7 @@ const identityOf = (raw: RawTerms, today: string) => {
 
 const askedFor = (raw: RawTerms) => {
   const chains = namedIn(raw.chains, EVERY_CHAIN);
-  const theaters = anyOf((raw.theaters ?? []).map(given).filter(Boolean));
+  const theaters = anyOf((raw.theaters ?? []).map(given).filter(isTheaterId));
   const formats = namedIn(raw.formats, EVERY_FORMAT);
   const amenities = namedIn(raw.amenities, EVERY_AMENITY);
   return {

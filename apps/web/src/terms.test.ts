@@ -1,11 +1,21 @@
 import { describe, expect, it } from "vitest";
 import { queryOf, termsFrom } from "./terms.js";
-
-const TODAY = "2026-08-28";
-const EVERYTHING =
-  "?movie=245569&date=2026-08-28&area=75006&partySize=2&chain=AMC&chain=Landmark&theater=aacbt&theater=aaxju&format=Dolby+Cinema&format=IMAX&amenity=Recliners&from=19%3A00&until=21%3A00&accessibleSeating=true";
+import { EVERY_TERM, TODAY } from "./terms.fixtures.js";
 
 describe("the query terms a URL carries", () => {
+  it("holds a value the address names twice once, and writes it once", () => {
+    const twice = termsFrom(
+      "?theater=aacbt&theater=aacbt&chain=AMC&chain=AMC",
+      TODAY,
+    );
+
+    expect(twice.theaters).toEqual(["aacbt"]);
+    expect(twice.chains).toEqual(["AMC"]);
+    expect(queryOf(twice)).toBe(
+      "?date=2026-08-28&partySize=2&chain=AMC&theater=aacbt",
+    );
+  });
+
   it("reads Movie, date, area and party size from the query string", () => {
     expect(
       termsFrom("?movie=245569&date=2026-08-29&area=75006&partySize=4", TODAY),
@@ -62,7 +72,7 @@ describe("the query terms a URL carries", () => {
   });
 
   it("reads every narrowing term the glossary names: Chain, Theater, Format, Amenity, a time window and accessible seating", () => {
-    expect(termsFrom(EVERYTHING, TODAY)).toEqual({
+    expect(termsFrom(EVERY_TERM, TODAY)).toEqual({
       movie: "245569",
       date: "2026-08-28",
       area: "75006",
@@ -112,7 +122,7 @@ describe("the query terms a URL carries", () => {
   });
 
   it("writes every term back as the query string it read, and leaves out what was not asked", () => {
-    expect(queryOf(termsFrom(EVERYTHING, TODAY))).toBe(EVERYTHING);
+    expect(queryOf(termsFrom(EVERY_TERM, TODAY))).toBe(EVERY_TERM);
     expect(queryOf(termsFrom("?chain=AMC&chain=Regal&from=07:05", TODAY))).toBe(
       "?date=2026-08-28&partySize=2&chain=AMC&from=07%3A05",
     );

@@ -2,10 +2,7 @@ import { describe, expect, it } from "vitest";
 import { REFERENCE } from "@seatscout/client";
 import { askedFrom } from "./asked.js";
 import { termsFrom } from "./terms.js";
-
-const TODAY = "2026-08-28";
-const EVERYTHING =
-  "?movie=245569&date=2026-08-28&area=75006&partySize=2&chain=AMC&chain=Landmark&theater=aacbt&theater=aaxju&format=Dolby+Cinema&format=IMAX&amenity=Recliners&from=19%3A00&until=21%3A00&accessibleSeating=true";
+import { EVERY_TERM, TODAY } from "./terms.fixtures.js";
 
 describe("the search a query becomes", () => {
   it("becomes a search once it names a Movie and an area, and not before", () => {
@@ -36,7 +33,7 @@ describe("the search a query becomes", () => {
   });
 
   it("becomes a search carrying every term, with the window on the date and no term where none was asked", () => {
-    expect(askedFrom(termsFrom(EVERYTHING, TODAY), REFERENCE)).toEqual({
+    expect(askedFrom(termsFrom(EVERY_TERM, TODAY), REFERENCE)).toEqual({
       movie: "245569",
       date: "2026-08-28",
       area: "75006",

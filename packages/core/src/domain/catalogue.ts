@@ -122,7 +122,7 @@ export interface Catalogue {
 }
 
 export interface ShowtimeTerms {
-  readonly theaters?: readonly string[];
+  readonly theaters?: readonly TheaterId[];
   readonly chains?: readonly Chain[];
   readonly formats?: readonly Format[];
   readonly amenities?: readonly Amenity[];

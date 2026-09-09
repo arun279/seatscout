@@ -1,13 +1,12 @@
 import { fireEvent, screen, within } from "@testing-library/react";
-import type { HeldProgramme, ProgrammeState } from "./programme.js";
-import { ask, NO_MOVIE, staged, TODAY } from "./search.fixtures.js";
-import { type Terms, termsFrom } from "./terms.js";
-
-const NOTHING_READ: ProgrammeState = {
-  phase: "none",
-  theaters: [],
-  movies: [],
-};
+import type { HeldProgramme } from "./programme.js";
+import {
+  ask,
+  NO_MOVIE,
+  NOTHING_READ,
+  staged,
+  TODAY,
+} from "./search.fixtures.js";
 
 export const NOTHING_PLAYING: HeldProgramme = {
   area: undefined,
@@ -15,13 +14,6 @@ export const NOTHING_PLAYING: HeldProgramme = {
   snapshot: () => NOTHING_READ,
   subscribe: () => () => {},
 };
-
-export const NOTHING: Terms = { date: TODAY, partySize: 2 };
-
-export const EVERYTHING = termsFrom(
-  "?movie=245569&date=2026-08-28&area=75006&partySize=2&chain=AMC&chain=Landmark&theater=aacbt&theater=aaxju&format=Dolby+Cinema&format=IMAX&amenity=Recliners&from=19:00&until=21:00&accessibleSeating=true",
-  TODAY,
-);
 
 type Staged = Parameters<typeof staged>[0];
 

@@ -15,8 +15,18 @@ import { useState } from "react";
 import { App, type AppProps } from "./app.js";
 import type { ProgrammeState } from "./programme.js";
 import type { Terms } from "./terms.js";
+import { TODAY, TONIGHT } from "./terms.fixtures.js";
 
-export const TODAY = "2026-08-28";
+export {
+  AT_NO_THEATER,
+  AT_ONE_THEATER,
+  EVERYTHING,
+  NO_MOVIE,
+  NOTHING,
+  TODAY,
+  TONIGHT,
+} from "./terms.fixtures.js";
+
 export const LISTING = "/napi/theaterShowtimeGroupings/245569/2026-08-28";
 export const NEARBY = "/napi/nearbyTheaters";
 export const SCHEDULES = "/napi/theaterMovieShowtimes/";
@@ -25,16 +35,11 @@ const STONEBRIAR_4_20 = 558117351;
 const STONEBRIAR_6_00 = 558782900;
 const FAILING = [STONEBRIAR_4_20, STONEBRIAR_6_00];
 
-export const TONIGHT: Terms = {
-  movie: "245569",
-  date: TODAY,
-  area: "75006",
-  partySize: 2,
+export const NOTHING_READ: ProgrammeState = {
+  phase: "none",
+  theaters: [],
+  movies: [],
 };
-
-export const AT_ONE_THEATER: Terms = { ...TONIGHT, theaters: ["aacbt"] };
-
-export const NO_MOVIE: Terms = { date: TODAY, area: "75006", partySize: 2 };
 
 export const ASKED: SearchTerms = {
   movie: "245569",
