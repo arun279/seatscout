@@ -275,7 +275,7 @@ export const CLAIMS = [
   },
   {
     adr: "0019-the-list-is-painted-once.md",
-    says: /The query lives in the address as `movie`, `date`, `area` and `partySize`/,
+    says: /The query lives in the address as `movie`, `date`, `area`, `partySize`, `chain`/,
     holds: "the module that reads a query out of the address",
     pattern: "partySize",
     paths: ["apps/web/src/terms.ts"],

@@ -59,15 +59,21 @@ to the operator's page where that is the remedy, and an arithmetic line that add
 candidates. A search that settles with rooms unreached says so in its heading before it shows a
 card, names those rooms, and offers the retry before it offers to change the query; a search
 that settles with every room answered and nothing to offer says that in a different heading; a
-search whose listing could not be read says the listing could not be read. The retry is a fresh
-search, which re-reads every room, and the button says so.
+search whose listing could not be read says the listing could not be read. The retry re-reads only the rooms the search could
+not reach, once each, and the button says how many those are; the listing is re-read only when
+it was the listing that failed. A room stays in the unreached count until its retry answers, so
+the ledger is closed while the retry is in flight and a retry abandoned part way leaves the
+rooms it had not reached still named.
 
-**A search is a URL.** The query lives in the address as `movie`, `date`, `area` and
-`partySize`, the glossary's own words, so the back button is the previous query and a test can
-open a journey by navigating to one. The title card shows the terms and each editable one is a
-button that opens the Ask sheet with that field focused. The Movie is the identity the Source
-states, because the domain carries no title and picking one by name would need a catalogue read
-[ADR 1](0001-single-aggregating-source.md) records as unavailable.
+**A search is a URL.** The query lives in the address as `movie`, `date`, `area`,
+`partySize`, `chain`, `theater`, `format`, `amenity`, `from`, `until` and `accessibleSeating`,
+the glossary's own words, so the back button is the previous query and a test can open a journey
+by navigating to one. The Seat Profile is not among them: it is the device's, not the query's.
+The title card states every term it holds, each value its own button that opens the Ask sheet
+with that field focused. The Movie is still the identity the Source states, and a title is now
+resolved against it: the Movies playing near the area on the date are read from the dated
+theater-centric route, so the sheet can offer a half-remembered title and the card can say the
+title rather than the number.
 
 **The dialogs are the platform's.** The editor and the ledger are `<dialog>` elements opened by
 one ref callback, `modal` in `apps/web/src/modal.ts`, which React 19 calls with the element

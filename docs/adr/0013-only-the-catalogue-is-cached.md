@@ -22,8 +22,8 @@ Every one of them is easy to reach for by accident, and none of them announces i
 
 ## Decision
 
-One thing in the workspace has a lifetime: the catalogue, for two hours. Everything else that
-touches Availability is read again.
+Two things in the workspace have a lifetime, the catalogue and the programme, each for two
+hours. Everything else that touches Availability is read again.
 
 **The catalogue is cached for two hours.** Two hours is the conservative end of "hours": one
 listing request costs 375 ms measured against the live aggregator and is dwarfed by the
@@ -34,6 +34,16 @@ re-verification before a booking hand-off is unconditional, so a stale catalogue
 one. A cache hit reports the moment the listing was actually fetched and an attempt count of
 zero, so the age a result carries is the age it has and a hit is told apart from a read.
 
+**The programme is cached for two hours under a key of its own.** The programme is the
+Theaters near an area and the Movies playing at them on a date, which the Ask sheet resolves a
+half-remembered title against. It is not part of a catalogue entry and could not ride one: a
+catalogue is keyed by Movie, date and area, and the programme is the read that happens before
+a Movie is known. It changes on the same scale as a listing, a schedule for a date, so it
+takes the same two hours rather than a number of its own. An entry is written only when every
+Theater answered, because a programme short a Theater is a shorter list of films and caching
+one would hide a partial read for two hours. It holds no Seat and no Showtime, so nothing
+about Availability is held over.
+
 A cached catalogue routinely offers Showtimes that have already begun. 80 of the 824
 Showtimes in the captured listing were already past at capture, so roughly one candidate in
 ten can be expected to have started. That is a Coverage outcome rather than a cache fault,
@@ -42,12 +52,15 @@ and the phase carries those Showtimes through with their reason.
 **A Seat cannot be written to the store, and that is a type error.** `KeyValueStore` is two
 operations. `read` answers `unknown`, because what a device hands back is not to be believed
 and the caller has to say what it will accept. `write` takes `Stored`, a closed union of the
-shapes this application remembers: a cached catalogue, a Seat Profile, and a history of recent
-searches. That union is the deny list, and none of its members holds a Seat.
+shapes this application remembers: a cached catalogue, a cached programme, a Seat Profile, and
+a history of recent searches. That union is the deny list, and none of its members holds a
+Seat.
 `store.write(key, seats)` is a type error, and so is
 `store.write(key, JSON.stringify(seats))`, which is the way round that a store of strings
-would have left open. Remembering a fourth thing is a line added to that union in a diff, and
-the contract below grows a clause with it. It is the technique
+would have left open. Remembering a fifth thing is a line added to `Remembered`, the record the
+union is derived from, and the contract below grows a clause with it because the compiler says
+so: the contract's samples are a record keyed by `Remembered`'s own keys, so a member with no
+sample and no clause does not build. It is the technique
 [ADR 8](0008-guarantees-are-made-at-compile-time.md) applies to what may be read, pointed at
 what may be written.
 
@@ -61,7 +74,8 @@ entry carrying the one and not the other passed the check and raised inside the 
 version moves once per stored shape; a probe moves once per field a reader touches, by hand.
 What moves the version is a test rather than a memory: `catalogue-cache.test.ts` holds
 `ENTRY_SHAPE` to the field paths a written entry actually carries, so a `Catalogue` that grows
-a field or moves one fails the suite beside the version that has to move with it. The
+a field or moves one fails the suite beside the version that has to move with it, and
+`programme.test.ts` holds the programme's entry to its own key and field paths the same way. The
 remembered Profile and the search history follow the same rule under their own keys, and each
 reads its entry back only when every field it needs is the type it needs, answering Reference
 or nothing rather than trusting what a device handed over.
