@@ -29,8 +29,8 @@ a Query that does not compile rather than one that quietly comes back empty.
 ## Chosen
 
 The Seat Group a person has picked to hand off, first the card's group and then any
-alternative they choose. This is the word the hand-off uses so that `candidate` keeps its
-Coverage meaning.
+alternative they choose in the sheet or in the room. `candidate` is left to Coverage,
+where it counts Showtimes.
 
 ## Source
 

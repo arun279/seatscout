@@ -17,7 +17,7 @@ const drawn = (auditorium: Auditorium, result: SeatGroupResult) =>
     <SeatMap
       auditorium={auditorium}
       result={result}
-      candidate={result}
+      chosen={result}
       cursor={openedAt(auditorium)}
       accessibleSeating={false}
       onCursor={() => {}}

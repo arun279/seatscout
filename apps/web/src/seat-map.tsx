@@ -12,7 +12,7 @@ import { type Cursor, isMove, moved, type Place, placed } from "./traversal.js";
 interface SeatMapProps {
   readonly auditorium: Auditorium;
   readonly result: SeatGroupResult;
-  readonly candidate: SeatGroupResult;
+  readonly chosen: SeatGroupResult;
   readonly cursor: Cursor;
   readonly accessibleSeating: boolean;
   readonly onCursor: (cursor: Cursor) => void;
@@ -113,7 +113,7 @@ const Row = ({ row, frame, children }: RowProps) => (
 export const SeatMap = ({
   auditorium,
   result,
-  candidate,
+  chosen,
   cursor,
   accessibleSeating,
   onCursor,
@@ -181,7 +181,7 @@ export const SeatMap = ({
                     className={classOf(
                       seat,
                       holds(result, seat),
-                      holds(candidate, seat),
+                      holds(chosen, seat),
                     )}
                     tabIndex={roving ? 0 : -1}
                     aria-label={seatNameOf(
@@ -189,7 +189,7 @@ export const SeatMap = ({
                       recommended,
                       accessibleSeating,
                     )}
-                    aria-selected={holds(candidate, seat)}
+                    aria-selected={holds(chosen, seat)}
                     aria-disabled={offered.has(seat.id) ? undefined : true}
                     data-seat={seat.id}
                     x={seat.x}
