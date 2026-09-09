@@ -23,4 +23,21 @@ describe("running a command", () => {
     expect(completed.ok).toBe(false);
     expect(completed.stderr).toBe("no such revision");
   });
+
+  it("hands back a report larger than a megabyte whole, because a truncated one parses as a syntax error somewhere else", () => {
+    const wide = 2_000_000;
+
+    const completed = run(node, [
+      "-e",
+      `process.stdout.write("x".repeat(${wide}))`,
+    ]);
+
+    expect(completed.stdout).toHaveLength(wide);
+  });
+
+  it("refuses a command it could not start, naming the command and the reason", () => {
+    expect(() =>
+      run("no-such-command-in-this-report", ["--json", "--quiet"]),
+    ).toThrow("no-such-command-in-this-report --json --quiet\nspawnSync");
+  });
 });
