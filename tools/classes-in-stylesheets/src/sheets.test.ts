@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { beside, linked, ruledIn, STYLESHEET } from "./sheets.ts";
+import { bareIn, beside, linked, ruledIn, STYLESHEET } from "./sheets.ts";
 
 describe("the stylesheets a page links", () => {
   it("takes the href of every stylesheet link and of no other link", () => {
@@ -65,5 +65,32 @@ describe("the classes a stylesheet rules", () => {
 
   it("rules nothing when the sheet holds no rule", () => {
     expect(ruledIn("")).toStrictEqual([]);
+  });
+
+  it("reads a class ruled on its own, and no class ruled only as part of a wider selector", () => {
+    expect(
+      bareIn(
+        ".card {\n  color: red;\n}\n" +
+          ".ask .chip {\n  color: red;\n}\n" +
+          ".chip:disabled {\n  color: red;\n}\n" +
+          ".lit,\n.card {\n  color: red;\n}\n",
+      ),
+    ).toStrictEqual(["card", "lit", "card"]);
+  });
+
+  it("reads a class ruled on its own inside a media query, and none out of the query itself", () => {
+    expect(
+      bareIn("@media (min-width: 20em) {\n.lit {\n  color: red;\n}\n}"),
+    ).toStrictEqual(["lit"]);
+  });
+
+  it("reads a comment as the separator it is, so what sat either side of one is not one bare class", () => {
+    expect(bareIn(".ca/* and */rd { color: red; }")).toStrictEqual([]);
+  });
+
+  it("reads nothing bare out of a sheet whose every rule is scoped", () => {
+    expect(
+      bareIn(".ask .chip { color: red; }\n.room > .legend { gap: 0; }"),
+    ).toStrictEqual([]);
   });
 });

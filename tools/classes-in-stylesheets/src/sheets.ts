@@ -31,12 +31,11 @@ export const ruledIn = (css: string): readonly string[] =>
   });
 
 export const bareIn = (css: string): readonly string[] =>
-  [...css.replace(COMMENT, " ").matchAll(PRELUDE)].flatMap(([prelude]) => {
-    const head = prelude.slice(0, -1).trim();
-    if (head.startsWith("@")) return [];
-    return head
+  [...css.replace(COMMENT, " ").matchAll(PRELUDE)].flatMap(([prelude]) =>
+    prelude
+      .slice(0, -1)
       .split(",")
       .map((one) => one.trim())
       .filter((one) => BARE.test(one))
-      .map((one) => one.slice(1));
-  });
+      .map((one) => one.slice(1)),
+  );

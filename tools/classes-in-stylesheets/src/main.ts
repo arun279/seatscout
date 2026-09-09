@@ -70,5 +70,5 @@ export const main = async (
   const twice = shared(sheets);
   if (unruled.length > 0) err.write(refusal(unruled));
   if (twice.length > 0) err.write(overlap(twice));
-  return unruled.length + twice.length === 0 ? 0 : 1;
+  return unruled.length === 0 && twice.length === 0 ? 0 : 1;
 };
