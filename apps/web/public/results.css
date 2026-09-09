@@ -177,7 +177,7 @@
   letter-spacing: 0.03em;
 }
 
-.card .seats::after {
+.card button.seats::after {
   content: "";
   position: absolute;
   inset: -16px -10px;

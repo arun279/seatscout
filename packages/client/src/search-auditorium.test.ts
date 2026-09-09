@@ -23,8 +23,9 @@ describe("the Auditorium a search opens for a result", () => {
     expect(auditorium.map.rows).toHaveLength(14);
     expect(auditorium.map.seatCount).toBe(304);
     expect(auditorium.map.bookableCount).toBe(25);
-    expect(auditorium.map.recommended).toEqual({ row: 7, seats: [9, 10] });
-    expect(auditorium.recommended).toEqual({ row: 7, seats: [9, 10] });
+    expect(auditorium.map.recommended?.row.ordinalFromFront).toBe(8);
+    expect(auditorium.map.recommended?.seat.id).toBe("H14");
+    expect(auditorium.recommended).toBe(auditorium.map.recommended);
     expect(row?.ordinalFromFront).toBe(8);
     expect(row?.label).toBe("H");
     expect(row?.seats[9]?.id).toBe("H14");

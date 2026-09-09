@@ -209,7 +209,7 @@ describe("the Auditorium map the keyboard walks", () => {
           map.rows.map((row) =>
             row.seats.map((seat) => nearestInRow(row, seat.lateral)),
           ),
-        ).toEqual(map.rows.map((row) => [...row.seats.keys()]));
+        ).toEqual(map.rows.map((row) => [...row.seats]));
       }),
       { numRuns: 300 },
     );
@@ -223,8 +223,10 @@ describe("the Auditorium map the keyboard walks", () => {
     );
 
     expect(map.rows.map((row) => lateralsOf(row.seats))).toEqual([[-1, 0, 1]]);
-    expect(map.rows.map((row) => nearestInRow(row, -0.5))).toEqual([0]);
-    expect(map.rows.map((row) => nearestInRow(row, 0.5))).toEqual([1]);
+    expect(map.rows.map((row) => nearestInRow(row, -0.5).lateral)).toEqual([
+      -1,
+    ]);
+    expect(map.rows.map((row) => nearestInRow(row, 0.5).lateral)).toEqual([0]);
   });
 
   it("orders the same however the Seats are labelled", () => {

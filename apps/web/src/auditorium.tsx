@@ -17,7 +17,7 @@ import {
 } from "./phrases.js";
 import { RowBar } from "./row-bar.js";
 import { holds, SeatMap } from "./seat-map.js";
-import { type Cursor, opened, type Place, rowAt, seatAt } from "./traversal.js";
+import { type Cursor, opened, type Place } from "./traversal.js";
 
 interface RoomProps {
   readonly result: SeatGroupResult;
@@ -105,7 +105,7 @@ export const Room = ({
   const [notice, setNotice] = useState<string | null>(null);
   const { theater, formats, amenities } = result.showtime.presentation;
   const { partySize, accessibleSeating } = result.terms;
-  const row = rowAt(auditorium.map, cursor.row);
+  const row = cursor.row;
   const alternates = auditorium.offered
     .filter((offered) => offered.key !== result.key)
     .slice(0, ALTERNATES_SHOWN);
@@ -130,7 +130,7 @@ export const Room = ({
   };
 
   const activate = (place: Place) => {
-    const seat = seatAt(auditorium.map, place);
+    const seat = place.seat;
     const group = auditorium.offered.find((offered) => holds(offered, seat));
     if (group === undefined)
       setNotice(refusalOf(seat, partySize, accessibleSeating));

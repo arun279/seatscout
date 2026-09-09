@@ -1,4 +1,4 @@
-import type { AuditoriumMap, PositionedSeat } from "@seatscout/client";
+import type { PositionedSeat } from "@seatscout/client";
 import { type PointerEvent, useEffect, useRef, useState } from "react";
 import {
   type Box,
@@ -12,7 +12,7 @@ import {
   type View,
   zoomed,
 } from "./gesture.js";
-import { type Cursor, seatAt } from "./traversal.js";
+import type { Cursor } from "./traversal.js";
 
 export interface Frame extends Box {
   readonly seatWidth: number;
@@ -49,11 +49,7 @@ const measured = (target: SVGGElement, frame: Frame, view: View) => {
   };
 };
 
-export const usePanZoom = (
-  map: AuditoriumMap,
-  frame: Frame,
-  cursor: Cursor,
-) => {
+export const usePanZoom = (frame: Frame, cursor: Cursor) => {
   const [group, setGroup] = useState<SVGGElement | null>(null);
   const view = useRef<View>(FITTED);
   const pointers = useRef(new Map<number, Tracked>());
@@ -65,13 +61,9 @@ export const usePanZoom = (
       '[role="gridcell"][tabindex="0"]',
     ))
       cell.focus({ preventScroll: true });
-    view.current = revealed(
-      view.current,
-      boxOf(seatAt(map, cursor), frame),
-      frame,
-    );
+    view.current = revealed(view.current, boxOf(cursor.seat, frame), frame);
     group.setAttribute("transform", transformOf(view.current));
-  }, [group, cursor, map, frame]);
+  }, [group, cursor, frame]);
 
   useEffect(() => {
     if (group === null) return;

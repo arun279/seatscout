@@ -44,12 +44,12 @@ const labelsAfter = (
   keys: readonly (Move | `Ctrl+${Move}`)[],
 ) => {
   const auditorium = auditoriumOf(wanted);
-  return labelAt(auditorium, walked(auditorium, opened(auditorium), keys));
+  return labelAt(walked(auditorium, opened(auditorium), keys));
 };
 
 const everyPlace = (auditorium: Auditorium) =>
-  auditorium.map.rows.flatMap((row, rowAt) =>
-    row.seats.map((_, seatAt) => ({ row: rowAt, seat: seatAt })),
+  auditorium.map.rows.flatMap((row) =>
+    row.seats.map((seat) => ({ row, seat })),
   );
 
 beforeAll(async () => {
@@ -61,7 +61,7 @@ describe("the keyboard model over the five captured rooms", () => {
     const auditorium = auditoriumOf(WEST_PLANO_28);
     const cursor = opened(auditorium);
 
-    expect(labelAt(auditorium, cursor)).toBe("H14");
+    expect(labelAt(cursor)).toBe("H14");
     expect(cursor.anchor).toBeCloseTo(-0.04, 3);
   });
 
@@ -159,13 +159,10 @@ describe("the keyboard model over the five captured rooms", () => {
   it("returns to the Seat it started from after Down then Up, for every Seat outside the back row: 990 of them", () => {
     const tried = rooms.flatMap(({ auditorium }) =>
       everyPlace(auditorium)
-        .filter((place) => place.row < auditorium.map.rows.length - 1)
+        .filter(({ row }) => row !== auditorium.map.rows.at(-1))
         .map((place) => ({
           from: place,
-          back: walked(auditorium, placed(auditorium.map, place), [
-            "ArrowDown",
-            "ArrowUp",
-          ]),
+          back: walked(auditorium, placed(place), ["ArrowDown", "ArrowUp"]),
         })),
     );
 
@@ -180,13 +177,10 @@ describe("the keyboard model over the five captured rooms", () => {
   it("returns to the Seat it started from after Up then Down, for every Seat outside the front row: 1,001 of them", () => {
     const tried = rooms.flatMap(({ auditorium }) =>
       everyPlace(auditorium)
-        .filter((place) => place.row > 0)
+        .filter(({ row }) => row !== auditorium.map.rows[0])
         .map((place) => ({
           from: place,
-          back: walked(auditorium, placed(auditorium.map, place), [
-            "ArrowUp",
-            "ArrowDown",
-          ]),
+          back: walked(auditorium, placed(place), ["ArrowUp", "ArrowDown"]),
         })),
     );
 
@@ -204,7 +198,7 @@ describe("the keyboard model over the five captured rooms", () => {
       let cursor = walked(auditorium, opened(auditorium), ["Ctrl+Home"]);
       for (let row = 0; row < auditorium.map.rows.length; row += 1) {
         for (;;) {
-          visited.push(`${cursor.row}:${cursor.seat}`);
+          visited.push(cursor.seat.id);
           const next = walked(auditorium, cursor, ["ArrowRight"]);
           if (next.seat === cursor.seat) break;
           cursor = next;
@@ -221,20 +215,13 @@ describe("the keyboard model over the five captured rooms", () => {
     }
   });
 
-  it("refuses a place the room does not hold", () => {
-    const auditorium = auditoriumOf(WEST_PLANO_28);
-
-    expect(() => placed(auditorium.map, { row: 14, seat: 0 })).toThrow(
-      "no row 14",
-    );
-    expect(() => placed(auditorium.map, { row: 0, seat: 18 })).toThrow(
-      "no Seat at row 0, seat 18",
-    );
-  });
-
   it("opens every one of the five rooms on its recommended Seat Group", () => {
-    expect(
-      rooms.map(({ auditorium }) => labelAt(auditorium, opened(auditorium))),
-    ).toEqual(["H14", "L11", "G14", "608", "D8"]);
+    expect(rooms.map(({ auditorium }) => labelAt(opened(auditorium)))).toEqual([
+      "H14",
+      "L11",
+      "G14",
+      "608",
+      "D8",
+    ]);
   });
 });

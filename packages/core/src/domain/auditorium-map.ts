@@ -18,8 +18,8 @@ export interface AuditoriumMap {
   readonly seatCount: number;
   readonly bookableCount: number;
   readonly recommended: {
-    readonly row: number;
-    readonly seats: readonly number[];
+    readonly row: SeatRow;
+    readonly seat: PositionedSeat;
   } | null;
 }
 
@@ -65,14 +65,10 @@ export const auditoriumMap = (
     seatCount: seats.length,
     bookableCount: bookableIn(seats),
     recommended:
-      rows
-        .map((row, index) => ({
-          row: index,
-          seats: row.seats.flatMap((seat, at) =>
-            wanted.has(seat.id) ? [at] : [],
-          ),
-        }))
-        .find((row) => row.seats.length > 0) ?? null,
+      rows.flatMap((row) => {
+        const [seat] = row.seats.filter((held) => wanted.has(held.id));
+        return seat === undefined ? [] : [{ row, seat }];
+      })[0] ?? null,
   };
 };
 
@@ -101,8 +97,9 @@ export const planOf = (seats: readonly Seat[]): AuditoriumPlan =>
     runs: runsAlong(row),
   }));
 
-export const nearestInRow = (row: SeatRow, lateral: number) =>
-  row.seats
-    .map((seat, index) => ({ index, away: Math.abs(seat.lateral - lateral) }))
-    .reduce((nearest, seat) => (seat.away < nearest.away ? seat : nearest))
-    .index;
+export const nearestInRow = (row: SeatRow, lateral: number): PositionedSeat =>
+  row.seats.reduce((nearest, seat) =>
+    Math.abs(seat.lateral - lateral) < Math.abs(nearest.lateral - lateral)
+      ? seat
+      : nearest,
+  );

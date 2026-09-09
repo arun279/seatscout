@@ -110,12 +110,14 @@ relabels every generated room with a generated function and holds the order unch
 
 The map answers with the Auditorium's Rows front to back, each holding its Seats left to
 right, its own number, its label, how many of its Seats are bookable and what sits in each gap
-along it. It also says where the recommended Seat Group is, as places in `rows` and in that
-Row's `seats`, both counted from zero rather than from one as the Row's own number is, and
-null where the Seat Group is not in this Auditorium at all. `nearestInRow` takes a Row rather
-than a place in `rows`, because taking a place would need either an unchecked index or a
-branch nothing can reach, and a branch nothing can reach is a mutant nothing kills; a view
-that is moving from one Row to the next holds the Row already.
+along it. It also says where the recommended Seat Group is: the Row that holds it and the first of its
+Seats along that Row, and null where the Seat Group is not in this Auditorium at all. It says
+so with the Row and the Seat themselves rather than with places in `rows` and `seats`, and
+`nearestInRow` likewise takes a Row and answers with a Seat, because a place would need either
+an unchecked index or a branch nothing can reach, and a branch nothing can reach is a mutant
+nothing kills; a view that is moving from one Row to the next holds the Row already. That is
+what lets the keyboard model carry the Row and the Seat it is on, so nothing it does looks
+anything up and nothing it does can fail.
 
 Asking a Row for the Seat nearest a Seat's own lateral answers with that Seat, which is what
 makes Down and then Up land where it started once the view holds the anchor still. A tie goes

@@ -160,7 +160,5 @@ export const openedRooms = async (
   });
 };
 
-export const labelAt = (
-  auditorium: Auditorium,
-  place: { readonly row: number; readonly seat: number },
-) => auditorium.map.rows[place.row]?.seats[place.seat]?.id;
+export const labelAt = (place: { readonly seat: { readonly id: string } }) =>
+  place.seat.id;

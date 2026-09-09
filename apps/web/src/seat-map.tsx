@@ -126,7 +126,7 @@ export const SeatMap = ({
       auditorium.offered.flatMap((group) => group.seats.map((seat) => seat.id)),
     ),
   }));
-  const { setGroup, handlers, dragged } = usePanZoom(map, frame, cursor);
+  const { setGroup, handlers, dragged } = usePanZoom(frame, cursor);
   const recommended = result.seats.map((seat) => seat.id);
 
   const keyed = (event: KeyboardEvent<SVGSVGElement>) => {
@@ -142,12 +142,12 @@ export const SeatMap = ({
 
   const focusedOn = (place: Place) => {
     if (cursor.row !== place.row || cursor.seat !== place.seat)
-      onCursor(placed(map, place));
+      onCursor(placed(place));
   };
 
   const tapped = (place: Place) => {
     if (dragged()) return;
-    onCursor(placed(map, place));
+    onCursor(placed(place));
     onActivate(place);
   };
 
@@ -170,12 +170,11 @@ export const SeatMap = ({
             width={frame.width}
             height={frame.height}
           />
-          {map.rows.map((row, rowAt) => (
+          {map.rows.map((row) => (
             <Row key={row.ordinalFromFront} row={row} frame={frame}>
-              {row.seats.map((seat, seatIndex) => {
-                const place = { row: rowAt, seat: seatIndex };
-                const roving =
-                  cursor.row === rowAt && cursor.seat === seatIndex;
+              {row.seats.map((seat) => {
+                const place = { row, seat };
+                const roving = cursor.row === row && cursor.seat === seat;
                 return (
                   <rect
                     key={seat.id}
