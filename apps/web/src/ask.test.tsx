@@ -212,6 +212,19 @@ describe("the Ask sheet", () => {
     expect(stage.chosen[0]).not.toHaveProperty("accessibleSeating");
   });
 
+  it("answers its own submit, so no submission is left for the browser to make against a form the search has taken away", async () => {
+    const stage = await asking();
+    const answered: boolean[] = [];
+    const watch = (event: SubmitEvent) => answered.push(event.defaultPrevented);
+    document.addEventListener("submit", watch);
+
+    find();
+    document.removeEventListener("submit", watch);
+
+    expect(answered).toEqual([true]);
+    expect(stage.chosen).toHaveLength(1);
+  });
+
   it("explains accessible seating in the board's own words, and keeps the film list out of the way of a one-handed thumb", async () => {
     await asking();
 
