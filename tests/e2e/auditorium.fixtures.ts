@@ -1,12 +1,7 @@
 import { expect, type Page } from "@playwright/test";
-import {
-  fakeUpstream,
-  routeOf,
-  seatMapCaptures,
-} from "@seatscout/core/testing";
+import { routeOf, seatMapCaptures } from "@seatscout/core/testing";
+import { answeredByTheCorpus, TONIGHT } from "./corpus.fixtures.js";
 
-const TONIGHT = "/?movie=245569&date=2026-08-28&area=75006&partySize=2";
-export const WCAG = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 export const NON_TEXT_CONTRAST = 3;
 
 export interface RoomOnTheList {
@@ -37,29 +32,15 @@ const capturedRoom = (capture: string) => {
   return { status: room.status, body: JSON.stringify(room.body) };
 };
 
-const answeredByTheCorpus = (page: Page) => {
-  const upstream = fakeUpstream({
-    seed: 4,
-    standInAuditoriums: true,
+export const roomOpened = async (page: Page, room: RoomOnTheList) => {
+  await answeredByTheCorpus(page, {
     routes: Object.fromEntries(
-      [LARGEST_ROOM, POD_ROOM].map((room) => [
-        `/napi/seatMap/${room.showtime}`,
-        capturedRoom(room.capture),
+      [LARGEST_ROOM, POD_ROOM].map((listed) => [
+        `/napi/seatMap/${listed.showtime}`,
+        capturedRoom(listed.capture),
       ]),
     ),
   });
-  return page.route("**/napi/**", async (route) => {
-    const answer = await upstream(new URL(route.request().url()).pathname);
-    await route.fulfill({
-      status: answer.status,
-      contentType: "application/json",
-      body: await answer.text(),
-    });
-  });
-};
-
-export const roomOpened = async (page: Page, room: RoomOnTheList) => {
-  await answeredByTheCorpus(page);
   await page.goto(TONIGHT);
   await expect(page.getByRole("status")).toHaveText(/172 checked$/);
   await page.getByRole("button", { name: room.opensWith }).click();

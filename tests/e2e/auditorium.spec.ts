@@ -1,6 +1,7 @@
 import { AxeBuilder } from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
-import { LARGEST_ROOM, roomOpened, WCAG } from "./auditorium.fixtures.js";
+import { LARGEST_ROOM, roomOpened } from "./auditorium.fixtures.js";
+import { WCAG } from "./corpus.fixtures.js";
 
 const PHONE = { width: 390, height: 844 };
 const CPU_SLOWDOWN = 4;
@@ -151,6 +152,7 @@ test(
     });
     expect(cadence.intervalsMs.length).toBeGreaterThan(0);
     expect(Math.round(p75 / cadence.idleMs)).toBe(1);
+    expect(dropped).toHaveLength(0);
     expect(new Set(cadence.mutations)).toEqual(
       new Set(["attributes:transform:g"]),
     );
