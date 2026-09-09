@@ -115,8 +115,9 @@ Each of these has one way through and no exemption to grant.
   or take the class off the element. `house.css` holds what two or more surfaces draw, and
   every other sheet is named for the one surface it draws.
 - **The test count.** `.footprint.json` holds a floor under the tests the two runners collect,
-  by their own listings rather than by a run. Put the tests back, or lower the ratchet in the
-  same diff.
+  by their own listings rather than by a run; the mutation-cache guard separately compares
+  Stryker's initial run to Vitest's JSON count from `vitest related` over the files
+  `stryker.config.json` mutates. Put the tests back, or lower the ratchet in the same diff.
 
 Take a ratchet's new value from the `footprint` comment on the pull request rather than from a
 local run: the job measures the merge of your branch with `main` rather than the branch alone,
@@ -169,6 +170,12 @@ pnpm footprint
 `pnpm test:mutation` inherits nothing and writes nothing to inherit from;
 `pnpm test:mutation:incremental` is what both jobs run, and is what writes and reuses
 `reports/stryker-incremental.json`.
+
+The workflows save that incremental file only after Stryker's initial run says it ran at
+least the unit-test floor implied by `.footprint.json`: the total test ratchet minus the
+Playwright tests collected by the footprint command. A short or missing count means the
+initial collection was partial, so the job fails and the partial seed is left out of the
+cache.
 
 ## Refreshing the corpus
 
