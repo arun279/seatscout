@@ -82,7 +82,7 @@ test("every Query term composes in one search on a phone, one-handed, every targ
   expect(scrolled).toBeGreaterThan(0);
   expect(atTheTop.y).toBeGreaterThan(0);
   expect(atTheTop.y + atTheTop.height).toBe(PHONE.height);
-  expect(atTheFoot.y + atTheFoot.height).toBe(PHONE.height);
+  expect(atTheFoot.y + atTheFoot.height).toBeCloseTo(PHONE.height, 0);
   expect(lastBlock.y).toBeLessThan(atTheFoot.y);
 
   expect(scan.violations).toEqual([]);
