@@ -60,7 +60,7 @@ export const hitAreasUnder = (page: Page, least: number) =>
     };
     return [
       ...document.querySelectorAll(
-        "button, a[href], input:not([type=checkbox]), label:has(> input[type=checkbox])",
+        "button, a[href], input:not([type=checkbox], [type=radio]), label:has(> input:is([type=checkbox], [type=radio]))",
       ),
     ]
       .filter((element) => element.closest("dialog:not([open])") === null)
