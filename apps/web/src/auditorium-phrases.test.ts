@@ -78,7 +78,7 @@ describe("what the room calls things", () => {
     ]);
   });
 
-  it("names a Seat as its label, its lateral, its availability, its kind and its place in the recommendation, in D45's pattern", () => {
+  it("names a Seat as its label, its lateral, its availability, its kind and its place in the recommendation, in that order", () => {
     expect(nameOf(openedRoom(ANGELIKA_5), "L11")).toBe(
       "Seat L11. On the centreline. Bookable. First of your two recommended seats.",
     );

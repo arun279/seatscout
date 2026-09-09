@@ -23,8 +23,8 @@ describe("the Auditorium a search opens for a result", () => {
     expect(auditorium.map.rows).toHaveLength(14);
     expect(auditorium.map.seatCount).toBe(304);
     expect(auditorium.map.bookableCount).toBe(25);
-    expect(auditorium.map.recommended?.row.ordinalFromFront).toBe(8);
-    expect(auditorium.map.recommended?.seat.id).toBe("H14");
+    expect(auditorium.recommended.row.ordinalFromFront).toBe(8);
+    expect(auditorium.recommended.seat.id).toBe("H14");
     expect(row?.ordinalFromFront).toBe(8);
     expect(row?.label).toBe("H");
     expect(row?.seats[9]?.id).toBe("H14");

@@ -136,10 +136,10 @@ Biome's `useSemanticElements` and `noNoninteractiveElementToInteractiveRole` are
 `seat-map.tsx` alone, in `biome.json` where a reviewer sees it, and this is why. Both rules ask
 for a table where an element takes `grid`, `row`, `rowheader` or `gridcell`. SVG has no table
 element: the drawing is `rect` and `text` in one coordinate space, and replacing them with table
-markup would be replacing the drawing. The roles are D45's, and what a screen reader is given
-beyond them is the row bar, a `status` region that says the row on every row change, and each
-Seat's own accessible name. So the rules are asking for markup this surface cannot have, not for
-semantics it is missing.
+markup would be replacing the drawing. The roles are the ones the keyboard model asks for, and
+what a screen reader is given beyond them is the row bar, a `status` region that says the row on
+every row change, and each Seat's own accessible name. So the rules are asking for markup this
+surface cannot have, not for semantics it is missing.
 
 ## Consequences
 

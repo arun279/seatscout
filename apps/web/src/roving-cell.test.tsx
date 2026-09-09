@@ -8,7 +8,7 @@ import {
   WEST_PLANO_28,
 } from "./rooms.fixtures.js";
 
-describe("the roving cell under D45's keys", () => {
+describe("the roving cell under the keys the room binds", () => {
   afterEach(cleanup);
 
   it.each([
@@ -34,7 +34,7 @@ describe("the roving cell under D45's keys", () => {
     },
   );
 
-  it("leaves a key D45 does not bind alone, and keeps what the bar says when the Seat the cursor already holds takes focus again", async () => {
+  it("leaves an unbound key alone, and keeps what the bar says when the Seat the cursor already holds takes focus again", async () => {
     const stage = await opened(WEST_PLANO_28);
 
     stage.press("a");
