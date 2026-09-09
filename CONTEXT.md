@@ -26,6 +26,12 @@ Naming a Chain and covering it are different things. A Theater with no Chain is 
 and handed off like any other; the one thing nobody can do is ask for it by Chain, and that is
 a Query that does not compile rather than one that quietly comes back empty.
 
+## Chosen
+
+The Seat Group a person has picked to hand off, first the card's group and then any
+alternative they choose. This is the word the hand-off uses so that `candidate` keeps its
+Coverage meaning.
+
 ## Source
 
 A system this application reads data from.
@@ -267,6 +273,10 @@ nothing at all, because a Re-verification that could not judge must not offer a 
 
 **Not a freshness check.** Every hand-off re-verifies, whatever the age of what it was
 shown, so no reading is ever recent enough to skip one and there is no threshold to pick.
+
+## CommitZone
+
+The part of the hand-off sheet that holds the Take control and its status line.
 
 ## Provenance
 

@@ -9,6 +9,7 @@ import {
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { HOOKY_TICKETING, opened } from "./hand-off.fixtures.js";
 import { cards, staged, TONIGHT } from "./search.fixtures.js";
+import { drawn } from "./stylesheet.fixtures.js";
 
 describe("the hand-off", () => {
   afterEach(() => {
@@ -68,6 +69,34 @@ describe("the hand-off", () => {
     expect(sheet.getByRole("status")).toHaveTextContent(
       "Still there. Opening the ticketing page for 9:00a at Hooky Entertainment Addison + SDX.",
     );
+  });
+
+  it("draws the disabled Take button like a disabled chip", async () => {
+    const ask = document.createElement("div");
+    ask.className = "ask";
+    const chip = document.createElement("button");
+    chip.className = "chip";
+    chip.disabled = true;
+    ask.append(chip);
+    document.body.append(ask);
+    const chipStyle = await drawn("apps/web/public/ask.css", () => {
+      const style = getComputedStyle(chip);
+      return { color: style.color, cursor: style.cursor };
+    });
+
+    const { stage, sheet } = await opened();
+    stage.holdSeatMaps();
+    fireEvent.click(sheet.getByRole("button", { name: "Take G6 and G7" }));
+    await act(() => Promise.resolve());
+
+    const buttonStyle = await drawn("apps/web/public/app.css", () => {
+      const style = getComputedStyle(
+        sheet.getByRole("button", { name: "Take G6 and G7" }),
+      );
+      return { color: style.color, cursor: style.cursor };
+    });
+
+    expect(buttonStyle).toEqual(chipStyle);
   });
 
   it("opens nothing when the sheet was closed before the Source answered", async () => {
@@ -155,6 +184,9 @@ describe("the hand-off", () => {
     });
 
     expect(sheet.queryByRole("button", { name: "Take G6 and G7" })).toBeNull();
+    expect(
+      sheet.queryByText(/^Tapping re-checks these seats/),
+    ).not.toBeInTheDocument();
     expect(sheet.getByRole("status")).toHaveTextContent(
       "Offline. Seats are never cached, so this hand-off can be checked when the connection returns.",
     );
@@ -165,5 +197,21 @@ describe("the hand-off", () => {
     });
 
     expect(sheet.getByRole("button", { name: "Take G6 and G7" })).toBeVisible();
+    expect(sheet.getByText(/^Tapping re-checks these seats/)).toBeVisible();
+  });
+
+  it("opens nothing when a verification answers after the sheet leaves the page", async () => {
+    const { stage, sheet } = await opened();
+    stage.holdSeatMaps();
+    fireEvent.click(sheet.getByRole("button", { name: "Take G6 and G7" }));
+    await act(() => Promise.resolve());
+
+    stage.unmount();
+    stage.releaseSeatMaps();
+    const verified = await stage.answered();
+
+    expect(verified.ok).toBe(true);
+    expect(stage.checkouts).toEqual([]);
+    expect(screen.queryByRole("dialog", { hidden: true })).toBeNull();
   });
 });

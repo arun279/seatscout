@@ -1,5 +1,4 @@
 import "@testing-library/jest-dom/vitest";
-import { readFile } from "node:fs/promises";
 import type { SeatGroupResult, Snapshot } from "@seatscout/client";
 import {
   act,
@@ -23,6 +22,7 @@ import {
 import type { HeldSnapshots } from "./held.js";
 import { clockOf, labelOf } from "./phrases.js";
 import { Results } from "./results.js";
+import { drawn } from "./stylesheet.fixtures.js";
 
 const nameOf = ({ showtime }: SeatGroupResult) =>
   [
@@ -64,15 +64,6 @@ const listing = (snapshot: Snapshot, online = true) => {
       onHandOff={() => {}}
     />,
   );
-};
-
-const drawn = async <T,>(read: () => T): Promise<T> => {
-  const sheet = document.createElement("style");
-  sheet.textContent = await readFile("apps/web/public/results.css", "utf8");
-  document.head.append(sheet);
-  const found = read();
-  sheet.remove();
-  return found;
 };
 
 const afterBoxOf = (element: Element) => {
@@ -211,13 +202,17 @@ describe("the list on the first screen", () => {
 
     listing(snapshot);
     const button = screen.getByRole("button", { name: labelOf(first) });
-    const buttonAfter = await drawn(() => afterBoxOf(button));
+    const buttonAfter = await drawn("apps/web/public/results.css", () =>
+      afterBoxOf(button),
+    );
 
     cleanup();
     listing(snapshot, false);
     const label = document.querySelector(".card span.seats");
     if (!(label instanceof HTMLElement)) throw new Error("no offline label");
-    const labelAfter = await drawn(() => afterBoxOf(label));
+    const labelAfter = await drawn("apps/web/public/results.css", () =>
+      afterBoxOf(label),
+    );
 
     expect(buttonAfter).toEqual({
       content: '""',

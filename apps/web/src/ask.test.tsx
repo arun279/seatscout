@@ -1,5 +1,4 @@
 import "@testing-library/jest-dom/vitest";
-import { readFile } from "node:fs/promises";
 import { REFERENCE } from "@seatscout/client";
 import {
   cleanup,
@@ -19,6 +18,7 @@ import {
 } from "./ask.fixtures.js";
 import { Ask } from "./ask.js";
 import { ask, EVERYTHING } from "./search.fixtures.js";
+import { drawn } from "./stylesheet.fixtures.js";
 
 const TERMS = {
   movie: "245569",
@@ -44,22 +44,13 @@ const rendered = () => {
   return within(screen.getByRole("dialog", { name: /what are we seeing/i }));
 };
 
-const drawn = async <T,>(read: () => T): Promise<T> => {
-  const sheet = document.createElement("style");
-  sheet.textContent = await readFile("apps/web/public/ask.css", "utf8");
-  document.head.append(sheet);
-  const found = read();
-  sheet.remove();
-  return found;
-};
-
 describe("the Ask sheet, as the stylesheet it is served with draws it", () => {
   afterEach(cleanup);
 
   it("puts every control's name and what it says on one line, the value at the end of it", async () => {
     const editor = rendered();
 
-    const rows = await drawn(() =>
+    const rows = await drawn("apps/web/public/ask.css", () =>
       editor.getAllByRole("slider").map((slider) => {
         const top = slider.parentElement?.querySelector(".top");
         if (top === null || top === undefined)
@@ -95,7 +86,7 @@ describe("the Ask sheet, as the stylesheet it is served with draws it", () => {
   it("spreads the words at both ends of every scale across one line, the weights' own included", async () => {
     rendered();
 
-    const ends = await drawn(() =>
+    const ends = await drawn("apps/web/public/ask.css", () =>
       [...document.querySelectorAll("dialog .ends")].map((row) => {
         const style = getComputedStyle(row);
         const words = [...row.children].map((word) => word.textContent);
@@ -114,6 +105,7 @@ describe("the Ask sheet, as the stylesheet it is served with draws it", () => {
     const editor = rendered();
 
     const said = await drawn(
+      "apps/web/public/ask.css",
       () =>
         getComputedStyle(
           editor.getByText(

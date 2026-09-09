@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { seatMapBodyWithStatuses } from "@seatscout/core/testing";
 import {
   accessible,
   answeredByTheCorpus,
@@ -12,44 +13,8 @@ const HOOKY = "Hooky Entertainment Addison + SDX";
 const HOOKY_TICKETING =
   "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-08-28%2B09%3A00&from=mov_det_showtimes&source=desktop&mid=245569&tid=aawza&dfam=webbrowser&showtimehashcode=v2-d2998da8682c402f6a3d3b08e2e04eebbebc86096e8467e63cc506ab808dec5a";
 
-interface SeatStatus {
-  readonly id: string;
-  readonly status: string;
-}
-
-interface SeatMapBody {
-  readonly seats: readonly SeatStatus[];
-}
-
-const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
-  value instanceof Object;
-
-const isSeatStatus = (value: unknown): value is SeatStatus =>
-  isRecord(value) &&
-  typeof value.id === "string" &&
-  typeof value.status === "string";
-
-const isSeatMapBody = (value: unknown): value is SeatMapBody =>
-  isRecord(value) &&
-  Array.isArray(value.seats) &&
-  value.seats.every(isSeatStatus);
-
-const seatMapBodyFrom = (body: string): SeatMapBody => {
-  const value = JSON.parse(body);
-  if (!isSeatMapBody(value))
-    throw new Error("seat map body cannot be rewritten");
-  return value;
-};
-
 const roomWith = (body: string, statuses: Readonly<Record<string, string>>) => {
-  const room = seatMapBodyFrom(body);
-  return JSON.stringify({
-    ...room,
-    seats: room.seats.map((seat) => ({
-      ...seat,
-      status: statuses[seat.id] ?? seat.status,
-    })),
-  });
+  return seatMapBodyWithStatuses(body, (seat) => statuses[seat.id]);
 };
 
 const addison = (page: Page) =>

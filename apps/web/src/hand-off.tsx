@@ -1,5 +1,5 @@
 import type { SeatGroupResult, SeatScout } from "@seatscout/client";
-import { useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useRef, useState, useSyncExternalStore } from "react";
 import type { Checkout, Clock } from "./app.js";
 import {
   type Answer,
@@ -77,7 +77,7 @@ const Ready = ({
       note="Not confirmed by a second Source"
     />
     <div className="cta">
-      {phase === "idle" && (
+      {phase === "idle" && online && (
         <p className="micro">
           Tapping re-checks these seats with the Source, then opens the
           ticketing page with this showtime selected. seatscout never holds
@@ -162,6 +162,14 @@ export const HandOff = ({
     closed.current = true;
     onClose();
   };
+  const bindDialog = useCallback((node: HTMLDialogElement | null) => {
+    if (node === null) return;
+    const cleanup = modal(node);
+    return () => {
+      closed.current = true;
+      cleanup();
+    };
+  }, []);
   const take = async () => {
     const { chosen } = sheet;
     setSheet((current) => ({ ...current, phase: "checking" }));
@@ -191,7 +199,7 @@ export const HandOff = ({
 
   return (
     <dialog
-      ref={modal}
+      ref={bindDialog}
       className="hand-off"
       aria-labelledby={HAND_OFF_TITLE_ID}
       onClose={close}

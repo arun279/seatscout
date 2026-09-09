@@ -1,3 +1,4 @@
+import { seatMapBodyWithStatuses } from "@seatscout/client/testing";
 import { fireEvent, screen, within } from "@testing-library/react";
 import { cards, staged } from "./search.fixtures.js";
 
@@ -12,45 +13,11 @@ export interface Room {
   readonly others?: string;
 }
 
-interface SeatStatus {
-  readonly id: string;
-  readonly status: string;
-}
-
-interface SeatMapBody {
-  readonly seats: readonly SeatStatus[];
-}
-
-const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
-  value instanceof Object;
-
-const isSeatStatus = (value: unknown): value is SeatStatus =>
-  isRecord(value) &&
-  typeof value.id === "string" &&
-  typeof value.status === "string";
-
-const isSeatMapBody = (value: unknown): value is SeatMapBody =>
-  isRecord(value) &&
-  Array.isArray(value.seats) &&
-  value.seats.every(isSeatStatus);
-
-const seatMapBodyFrom = (body: string): SeatMapBody => {
-  const value = JSON.parse(body);
-  if (!isSeatMapBody(value))
-    throw new Error("seat map body cannot be rewritten");
-  return value;
-};
-
-const roomAs = (body: string, room: Room) => {
-  const map = seatMapBodyFrom(body);
-  return JSON.stringify({
-    ...map,
-    seats: map.seats.map((seat) => ({
-      ...seat,
-      status: room.statuses?.[seat.id] ?? room.others ?? seat.status,
-    })),
-  });
-};
+const roomAs = (body: string, room: Room) =>
+  seatMapBodyWithStatuses(
+    body,
+    (seat) => room.statuses?.[seat.id] ?? room.others,
+  );
 
 const stagedHandOff = (options: Parameters<typeof staged>[0] = {}) => {
   const held: (() => void)[] = [];

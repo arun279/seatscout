@@ -78,16 +78,15 @@ export const lateralOf = (seatsOffCentre: number): string => {
   return `${seatsPhrase(Math.round(away * 2))} ${side} of centre`;
 };
 
-const seatLabelOf = (seats: readonly string[]): string => seats.join("·");
-
-const seatSpokenOf = (seats: readonly string[]): string =>
-  [seats.slice(0, -1).join(", "), seats.at(-1)].filter(Boolean).join(" and ");
-
 export const labelOf = (result: SeatGroupResult): string =>
-  seatLabelOf(seatsOf(result));
+  seatsOf(result).join("·");
 
-export const spokenOf = (result: SeatGroupResult): string =>
-  seatSpokenOf(seatsOf(result));
+export const spokenOf = (result: SeatGroupResult): string => {
+  const seats = seatsOf(result);
+  return [seats.slice(0, -1).join(", "), seats.at(-1)]
+    .filter(Boolean)
+    .join(" and ");
+};
 
 export const partyOf = (party: number): string =>
   party === 1 ? "One seat" : `${capitalised(wordOf(party))} seats together`;
