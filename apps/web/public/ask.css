@@ -202,13 +202,13 @@
   accent-color: var(--velvet);
 }
 
-.chips {
+.ask .chips {
   flex-direction: row;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.chips legend {
+.ask .chips legend {
   float: left;
   width: 100%;
 }

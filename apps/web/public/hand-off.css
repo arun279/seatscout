@@ -58,7 +58,7 @@
   border-radius: 50%;
 }
 
-.chips {
+.hand-off .chips {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
