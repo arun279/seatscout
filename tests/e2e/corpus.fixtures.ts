@@ -42,17 +42,19 @@ export const hitAreasUnder = (page: Page, least: number) =>
     };
     const reach = (element: Element) => {
       const own = element.getBoundingClientRect();
+      const drawn = { width: own.width, height: own.height };
       const after = getComputedStyle(element, "::after");
-      if (after.content === "none" || after.position !== "absolute") return own;
+      if (after.content === "none" || after.position !== "absolute")
+        return drawn;
       const edges = [after.top, after.right, after.bottom, after.left].map(
         Number.parseFloat,
       );
-      if (!edges.every(Number.isFinite)) return own;
+      if (!edges.every(Number.isFinite)) return drawn;
       const [top = 0, right = 0, bottom = 0, left = 0] = edges;
       const base = containing(element).getBoundingClientRect();
       return {
-        width: Math.max(own.width, base.width - left - right),
-        height: Math.max(own.height, base.height - top - bottom),
+        width: Math.max(drawn.width, base.width - left - right),
+        height: Math.max(drawn.height, base.height - top - bottom),
       };
     };
     return [

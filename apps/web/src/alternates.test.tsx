@@ -1,5 +1,11 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { Room } from "./auditorium.js";
 import { opened } from "./auditorium.fixtures.js";
@@ -129,5 +135,41 @@ describe("the Seat Groups a room offers, as one choice", () => {
     expect(
       settled.results.map((result) => search.auditorium(result).offered.length),
     ).not.toContain(0);
+  });
+
+  it("says the party's own word for a Seat Group of three, in the count line and in the refusal a Seat outside every offer gets", async () => {
+    const [room] = await openedRooms(
+      {
+        movie: "245569",
+        date: "2026-08-28",
+        area: "75006",
+        partySize: 3,
+        accessibleSeating: false,
+      },
+      [WEST_PLANO_28],
+    );
+    if (room === undefined) throw new Error("the room offered nothing");
+    render(
+      <Room
+        result={room.result}
+        search={room.search}
+        today="2026-08-28"
+        now={1000}
+        online={true}
+        onClose={() => {}}
+        onHandOff={() => {}}
+      />,
+    );
+    const dialog = screen.getByRole("dialog");
+    const refused = dialog.querySelector('[data-seat="G17"]');
+    if (refused === null) throw new Error("G17 is not drawn");
+    fireEvent.click(refused);
+
+    expect(dialog.querySelector(".alternates .micro")).toHaveTextContent(
+      "2 groups of three in this room. Choose a Seat on the map for any of them.",
+    );
+    expect(within(dialog).getByRole("status")).toHaveTextContent(
+      "No offered group of three includes seat G17.",
+    );
   });
 });

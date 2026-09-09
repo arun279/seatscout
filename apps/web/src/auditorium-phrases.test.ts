@@ -155,7 +155,7 @@ describe("what the room calls things", () => {
       "No offered pair includes seat J10.",
     );
     expect(refusalOf(seatNamed(village, "WC17"), 3, true)).toBe(
-      "No offered three includes seat WC17.",
+      "No offered group of three includes seat WC17.",
     );
   });
 
@@ -176,9 +176,9 @@ describe("what the room calls things", () => {
     );
     expect(groupsOf(1, 2)).toBe("The only pair in this room.");
     expect(groupsOf(85, 3)).toBe(
-      "85 threes in this room. Choose a Seat on the map for any of them.",
+      "85 groups of three in this room. Choose a Seat on the map for any of them.",
     );
-    expect(groupsOf(1, 3)).toBe("The only three in this room.");
+    expect(groupsOf(1, 3)).toBe("The only group of three in this room.");
     expect(groupsOf(12, 1)).toBe(
       "12 seats in this room. Choose a Seat on the map for any of them.",
     );

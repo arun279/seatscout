@@ -40,10 +40,16 @@ const KINDS: Readonly<Record<Accessible, string>> = {
   companion: "Companion seat",
 };
 
-const GROUP_WORDS: Readonly<Record<number, string>> = { 1: "seat", 2: "pair" };
+const GROUP_WORDS: Readonly<Record<number, readonly [string, string]>> = {
+  1: ["seat", "seats"],
+  2: ["pair", "pairs"],
+};
 
-const groupWordOf = (partySize: number) =>
-  GROUP_WORDS[partySize] ?? wordOf(partySize);
+const groupWordsOf = (partySize: number): readonly [string, string] =>
+  GROUP_WORDS[partySize] ?? [
+    `group of ${wordOf(partySize)}`,
+    `groups of ${wordOf(partySize)}`,
+  ];
 
 export const ordinalOf = (count: number) => {
   const suffix = TEENS.has(count % 100) ? "th" : (SUFFIXES[count % 10] ?? "th");
@@ -122,15 +128,15 @@ export const refusalOf = (
     return `Seat ${seat.id} is not bookable, so no seats together can include it.`;
   if (isAccessible(seat) && !accessibleSeating)
     return `Seat ${seat.id} is a ${KINDS[seat.designation].toLowerCase()}. Ask for accessible seating in the query to include it.`;
-  return `No offered ${groupWordOf(partySize)} includes seat ${seat.id}.`;
+  return `No offered ${groupWordsOf(partySize)[0]} includes seat ${seat.id}.`;
 };
 
 export const chosenOf = (result: SeatGroupResult) =>
   `${spokenOf(result.seats.map((seat) => seat.id))} chosen. ${result.seats.length === 1 ? "It is" : "They are"} re-checked when you continue.`;
 
 export const groupsOf = (count: number, partySize: number) => {
-  const word = groupWordOf(partySize);
+  const [one, many] = groupWordsOf(partySize);
   return count === 1
-    ? `The only ${word} in this room.`
-    : `${count} ${word}s in this room. Choose a Seat on the map for any of them.`;
+    ? `The only ${one} in this room.`
+    : `${count} ${many} in this room. Choose a Seat on the map for any of them.`;
 };

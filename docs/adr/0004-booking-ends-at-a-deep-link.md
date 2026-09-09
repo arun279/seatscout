@@ -134,7 +134,10 @@ room before committing to the seats.
 The sheet is a `handOff` variant on the overlay stack of
 [ADR 19](0019-the-list-is-painted-once.md), carrying the result it draws, so a query change
 unmounts it with the search it belonged to and one close request pops it. Adding it touched the
-variant, the one switch over variants, and the sheet's own files.
+variant, the one switch over variants, and the sheet's own files. The room is a `room` variant
+on the same stack, carrying the result and the Search that found it, so the screen draws the
+room that Search already read. Opening the seats from inside the room pushes the sheet on top of
+it, and each close request pops one, so the way back out is the way in reversed.
 
 One tap on the velvet button calls the verification above and nothing else until the Source
 answers. An ok answer hands the URL it returned to a `checkout` dependency, which in the browser

@@ -1,14 +1,12 @@
 import "@testing-library/jest-dom/vitest";
 import { act, cleanup, fireEvent } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { opened } from "./auditorium.fixtures.js";
+import { nameOf, opened } from "./auditorium.fixtures.js";
 import {
   STRIKE_AND_REEL_1,
   VILLAGE_1,
   WEST_PLANO_28,
 } from "./rooms.fixtures.js";
-
-const nameOf = (element: Element) => element.getAttribute("aria-label");
 
 const settledDom = () => act(() => Promise.resolve());
 

@@ -139,18 +139,7 @@ export const openedRooms = async (
   terms: SearchTerms = CORPUS_QUERY,
   rooms: readonly CapturedRoom[] = FIVE_ROOMS,
 ): Promise<readonly OpenedRoom[]> => {
-  const seatscout = createSeatScout({
-    fetch: fakeUpstream({
-      seed: 4,
-      standInAuditoriums: true,
-      routes: roomRoutes(),
-    }),
-    now: () => 1000,
-    wait: () => Promise.resolve(),
-    random: () => 0.5,
-  });
-  const search = seatscout.search(terms);
-  const settled = await search.done;
+  const { search, settled } = await searched(terms);
   return rooms.map((room) => {
     const result = settled.results.find(
       (found) => found.showtime.id === room.showtime,
@@ -159,6 +148,3 @@ export const openedRooms = async (
     return { room, result, auditorium: search.auditorium(result), search };
   });
 };
-
-export const labelAt = (place: { readonly seat: { readonly id: string } }) =>
-  place.seat.id;

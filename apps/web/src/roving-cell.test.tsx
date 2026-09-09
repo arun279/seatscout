@@ -1,14 +1,12 @@
 import "@testing-library/jest-dom/vitest";
 import { act, cleanup, createEvent, fireEvent } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { opened } from "./auditorium.fixtures.js";
+import { nameOf, opened } from "./auditorium.fixtures.js";
 import {
   LAKE_HIGHLANDS_1,
   VILLAGE_1,
   WEST_PLANO_28,
 } from "./rooms.fixtures.js";
-
-const nameOf = (element: Element) => element.getAttribute("aria-label");
 
 describe("the roving cell under D45's keys", () => {
   afterEach(cleanup);

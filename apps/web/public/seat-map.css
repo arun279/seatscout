@@ -1,3 +1,10 @@
+:root {
+  --seat-tick: oklch(0.62 0.035 265);
+  --ink: oklch(0.1 0.012 275);
+  --beam-cast: oklch(from var(--beam) l c h / 0.55);
+  --beam-halo: oklch(from var(--beam) l c h / 0.95);
+}
+
 .map-frame {
   position: relative;
   background: var(--house-deep);
@@ -29,7 +36,7 @@
     var(--beam-dim) 90%,
     transparent
   );
-  box-shadow: 0 2px 14px oklch(0.88 0.055 230 / 0.55);
+  box-shadow: 0 2px 14px var(--beam-cast);
 }
 
 .screen-edge .word {
@@ -106,7 +113,7 @@
 .seat.lit {
   fill: var(--beam);
   stroke: none;
-  filter: drop-shadow(0 0 5px oklch(0.88 0.055 230 / 0.95));
+  filter: drop-shadow(0 0 5px var(--beam-halo));
 }
 
 .seat.space.lit {

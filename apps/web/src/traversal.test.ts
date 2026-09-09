@@ -3,7 +3,6 @@ import { beforeAll, describe, expect, it } from "vitest";
 import {
   ANGELIKA_5,
   LAKE_HIGHLANDS_1,
-  labelAt,
   type OpenedRoom,
   openedRooms,
   STRIKE_AND_REEL_1,
@@ -44,7 +43,7 @@ const labelsAfter = (
   keys: readonly (Move | `Ctrl+${Move}`)[],
 ) => {
   const auditorium = auditoriumOf(wanted);
-  return labelAt(walked(auditorium, opened(auditorium), keys));
+  return walked(auditorium, opened(auditorium), keys).seat.id;
 };
 
 const everyPlace = (auditorium: Auditorium) =>
@@ -61,7 +60,7 @@ describe("the keyboard model over the five captured rooms", () => {
     const auditorium = auditoriumOf(WEST_PLANO_28);
     const cursor = opened(auditorium);
 
-    expect(labelAt(cursor)).toBe("H14");
+    expect(cursor.seat.id).toBe("H14");
     expect(cursor.anchor).toBeCloseTo(-0.04, 3);
   });
 
@@ -216,7 +215,7 @@ describe("the keyboard model over the five captured rooms", () => {
   });
 
   it("opens every one of the five rooms on its recommended Seat Group", () => {
-    expect(rooms.map(({ auditorium }) => labelAt(opened(auditorium)))).toEqual([
+    expect(rooms.map(({ auditorium }) => opened(auditorium).seat.id)).toEqual([
       "H14",
       "L11",
       "G14",

@@ -132,24 +132,7 @@
 
 .alternates .chip {
   position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  min-height: 44px;
   padding: 0 14px;
-  border-radius: 12px;
-  border: 1px solid var(--hairline);
-  background: var(--raised);
-  color: var(--silver);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.alternates .chip:has(:checked) {
-  border-color: var(--silver);
-  background: var(--silver);
-  color: var(--house-deep);
 }
 
 .alternates .chip:has(:focus-visible) {
@@ -168,16 +151,6 @@
 .alternates .ids {
   font-family: var(--mono);
   letter-spacing: 0.03em;
-}
-
-.alternates .sub {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--silver-faint);
-}
-
-.alternates .chip:has(:checked) .sub {
-  color: oklch(0.35 0.02 270);
 }
 
 .alternates .micro {

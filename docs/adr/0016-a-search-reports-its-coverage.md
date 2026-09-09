@@ -22,8 +22,16 @@ render them without re-rendering every consumer on every answer.
 `packages/client/src/search.ts` is the mechanism the rest of the workspace exists for, and the
 only place that composes all of it. `openSearch` takes the dependencies the catalogue phase
 takes and answers with a function from a Query to a `Search`: `snapshot()`, `subscribe()`, a
-terminal `done`, and `abort()`. A Search is hot, so the listing read starts when it is made
-rather than when something is awaited. `done` settles with the terminal snapshot for every
+terminal `done`, `abort()`, and `auditorium(result)`. A Search is hot, so the listing read starts
+when it is made rather than when something is awaited.
+
+The fifth member is there because the room a screen draws is the room this Search read. A Search
+keeps every seat map it read, by Showtime, for its own life: the Seats, the Showtime and the
+ranking, which is what `auditorium(result)` answers with. Keeping them costs the memory of the
+maps a search read and buys two things nothing else can: the room a result was ranked in is the
+room drawn, so a screen never re-reads a map to show one, and a result the Search did not produce
+is refused rather than answered from a fresh read. The reads are already paid for by the ranking,
+and the Search dies with the query, so nothing outlives the screen that opened it. `done` settles with the terminal snapshot for every
 answer a port can give; it is not wrapped in a catch, so a port that breaks its own contract
 and rejects surfaces rather than being swallowed.
 

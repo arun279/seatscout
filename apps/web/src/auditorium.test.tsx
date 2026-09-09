@@ -8,15 +8,13 @@ import {
   within,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { opened } from "./auditorium.fixtures.js";
+import { nameOf, opened } from "./auditorium.fixtures.js";
 import {
   ANGELIKA_5,
   STRIKE_AND_REEL_1,
   VILLAGE_1,
   WEST_PLANO_28,
 } from "./rooms.fixtures.js";
-
-const nameOf = (element: Element) => element.getAttribute("aria-label");
 
 const SPACES = "wheelchair or companion, kept out of ordinary results";
 

@@ -2,6 +2,8 @@ import { act, fireEvent, screen, within } from "@testing-library/react";
 import { staged } from "./search.fixtures.js";
 import { type CapturedRoom, roomRoutes } from "./rooms.fixtures.js";
 
+export const nameOf = (element: Element) => element.getAttribute("aria-label");
+
 const stopOf = (element: HTMLElement) => {
   if (element instanceof HTMLInputElement && element.type === "radio")
     return `radiogroup:${element.name}`;

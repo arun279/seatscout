@@ -76,22 +76,22 @@ const drawn = async <T,>(read: () => T): Promise<T> => {
   return found;
 };
 
-const afterBoxOf = (element: Element) => {
-  const boxes = [];
+const afterRuleFor = (element: Element) => {
+  const rules = [];
   for (const sheet of document.styleSheets) {
     for (const rule of sheet.cssRules) {
       if (!(rule instanceof CSSStyleRule)) continue;
       if (!rule.selectorText.endsWith("::after")) continue;
       const selector = rule.selectorText.slice(0, -"::after".length);
       if (!element.matches(selector)) continue;
-      boxes.push({
+      rules.push({
         content: rule.style.content,
         inset: rule.style.inset,
         position: rule.style.position,
       });
     }
   }
-  return boxes.at(-1) ?? null;
+  return rules.at(-1) ?? null;
 };
 
 describe("the list on the first screen", () => {
@@ -289,19 +289,19 @@ describe("the list on the first screen", () => {
     const button = screen.getByRole("button", {
       name: labelOf(seatsOf(first)),
     });
-    const buttonAfter = await drawn(() => afterBoxOf(button));
+    const reached = await drawn(() => afterRuleFor(button));
 
     cleanup();
     listing(snapshot, false);
     const label = document.querySelector(".card span.seats");
     if (!(label instanceof HTMLElement)) throw new Error("no offline label");
-    const labelAfter = await drawn(() => afterBoxOf(label));
+    const drawnLabel = await drawn(() => afterRuleFor(label));
 
-    expect(buttonAfter).toEqual({
+    expect(reached).toEqual({
       content: '""',
-      inset: "-16px -10px",
       position: "absolute",
+      inset: "-16px -10px",
     });
-    expect(labelAfter).toBeNull();
+    expect(drawnLabel).toBeNull();
   });
 });

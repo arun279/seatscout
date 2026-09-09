@@ -187,18 +187,10 @@ describe("the drawn room", () => {
     drawn(stretched, room.result);
     const label = document.querySelector('[role="rowheader"]');
 
-    expect(Number(label?.getAttribute("x"))).toBeCloseTo(
-      -1.6 * (corner.width + 6) + 1.2 * (corner.width + 6),
-      10,
-    );
-    expect(Number(label?.getAttribute("font-size"))).toBeCloseTo(
-      0.7 * (corner.width + 6),
-      10,
-    );
-    expect(Number(label?.getAttribute("y"))).toBeCloseTo(
-      corner.y - 4 + (corner.height + 10) / 2,
-      10,
-    );
+    expect([corner.width, corner.height, corner.y]).toEqual([82.6, 82.6, 0]);
+    expect(Number(label?.getAttribute("x"))).toBeCloseTo(-35.44, 10);
+    expect(Number(label?.getAttribute("font-size"))).toBeCloseTo(62.02, 10);
+    expect(Number(label?.getAttribute("y"))).toBeCloseTo(42.3, 10);
   });
 
   it("draws no console where a row claims a gap past its own last Seat", async () => {
