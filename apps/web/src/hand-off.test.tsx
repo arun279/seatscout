@@ -20,6 +20,7 @@ describe("the hand-off", () => {
     const { stage, sheet } = await opened();
 
     expect(sheet.getByText("Today 9:00a · SDX")).toBeVisible();
+    expect(sheet.getByRole("heading", { level: 2 })).not.toHaveFocus();
     expect(sheet.getByText("Row 7 of 10 · on the centreline")).toBeVisible();
     expect(sheet.getByText("G6·G7, yours")).toBeVisible();
     expect(

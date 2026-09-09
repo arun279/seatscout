@@ -1,5 +1,5 @@
 import type { SeatGroupResult, SeatScout } from "@seatscout/client";
-import { useState, useSyncExternalStore } from "react";
+import { useCallback, useState, useSyncExternalStore } from "react";
 import type { Checkout, Clock } from "./app.js";
 import {
   type Answer,
@@ -36,7 +36,7 @@ interface ScreenProps {
   readonly now: number;
   readonly online: boolean;
   readonly today: string;
-  readonly onTake: (dialog: HTMLDialogElement) => void;
+  readonly onTake: () => void;
   readonly onChoose: (alternative: SeatGroupResult) => void;
 }
 
@@ -157,9 +157,18 @@ export const HandOff = ({
     answer: null,
     phase: "idle",
   });
+  const [dialog, setDialog] = useState<HTMLDialogElement | null>(null);
+  const open = useCallback((node: HTMLDialogElement | null) => {
+    if (node === null) return;
+    setDialog(node);
+    const close = modal(node);
+    return () => {
+      setDialog(null);
+      close();
+    };
+  }, []);
   const take = async (dialog: HTMLDialogElement) => {
     const { chosen } = sheet;
-    if (!online || sheet.phase === "checking") return;
     setSheet((current) => ({ ...current, phase: "checking" }));
     const verified = await verify(chosen);
     if (!dialog.open) return;
@@ -187,7 +196,7 @@ export const HandOff = ({
 
   return (
     <dialog
-      ref={modal}
+      ref={open}
       className="hand-off"
       aria-labelledby={HAND_OFF_TITLE_ID}
       onClose={onClose}
@@ -197,20 +206,18 @@ export const HandOff = ({
           ‹ Back to the list
         </button>
       </form>
-      <Screen
-        sheet={sheet}
-        now={now}
-        online={online}
-        today={today}
-        onTake={take}
-        onChoose={(alternative) =>
-          setSheet((current) =>
-            current.phase === "checking"
-              ? current
-              : { ...current, chosen: alternative },
-          )
-        }
-      />
+      {dialog !== null && (
+        <Screen
+          sheet={sheet}
+          now={now}
+          online={online}
+          today={today}
+          onTake={() => take(dialog)}
+          onChoose={(alternative) =>
+            setSheet((current) => ({ ...current, chosen: alternative }))
+          }
+        />
+      )}
     </dialog>
   );
 };

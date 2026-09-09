@@ -29,7 +29,7 @@ interface AnswerProps {
   readonly phase: Phase;
   readonly now: number;
   readonly online: boolean;
-  readonly onTake: (dialog: HTMLDialogElement) => void;
+  readonly onTake: () => void;
 }
 
 const focusOnMount = (heading: HTMLHeadingElement | null) => heading?.focus();
@@ -110,14 +110,7 @@ export const CommitZone = ({
       );
     case "idle":
       return (
-        <button
-          type="button"
-          className="btn btn-velvet"
-          onClick={(event) => {
-            const dialog = event.currentTarget.closest("dialog");
-            if (dialog instanceof HTMLDialogElement) onTake(dialog);
-          }}
-        >
+        <button type="button" className="btn btn-velvet" onClick={onTake}>
           {label}
         </button>
       );

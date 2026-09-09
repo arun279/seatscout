@@ -35,6 +35,10 @@ describe("what the hand-off says when the answer is not ok", () => {
 
     expect(stage.checkouts).toEqual([]);
     expect(gone.getByRole("heading", { level: 2 })).toHaveFocus();
+    expect(gone.getByRole("heading", { level: 2 })).toHaveClass(
+      "display",
+      "went",
+    );
     expect(gone.getByRole("heading", { level: 2 })).toHaveAttribute(
       "tabindex",
       "-1",
