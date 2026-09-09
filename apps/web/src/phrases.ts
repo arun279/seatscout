@@ -3,6 +3,7 @@ import {
   type SeatGroupResult,
   type SeatProfile,
 } from "@seatscout/client";
+import { seatsOf } from "./derived.js";
 
 type RankReasons = SeatGroupResult["reasons"];
 
@@ -77,10 +78,16 @@ export const lateralOf = (seatsOffCentre: number): string => {
   return `${seatsPhrase(Math.round(away * 2))} ${side} of centre`;
 };
 
-export const labelOf = (seats: readonly string[]): string => seats.join("·");
+const seatLabelOf = (seats: readonly string[]): string => seats.join("·");
 
-export const spokenOf = (seats: readonly string[]): string =>
+const seatSpokenOf = (seats: readonly string[]): string =>
   [seats.slice(0, -1).join(", "), seats.at(-1)].filter(Boolean).join(" and ");
+
+export const labelOf = (result: SeatGroupResult): string =>
+  seatLabelOf(seatsOf(result));
+
+export const spokenOf = (result: SeatGroupResult): string =>
+  seatSpokenOf(seatsOf(result));
 
 export const partyOf = (party: number): string =>
   party === 1 ? "One seat" : `${capitalised(wordOf(party))} seats together`;

@@ -1,7 +1,6 @@
 import type { Search, SeatGroupResult } from "@seatscout/client";
 import { useState } from "react";
 import { chosenOf, groupsOf, refusalOf } from "./auditorium-phrases.js";
-import { seatsOf } from "./derived.js";
 import { modal } from "./modal.js";
 import {
   ageOf,
@@ -26,7 +25,7 @@ interface RoomProps {
   readonly now: number;
   readonly online: boolean;
   readonly onClose: () => void;
-  readonly onHandOff: (candidate: SeatGroupResult) => void;
+  readonly onHandOff: (chosen: SeatGroupResult) => void;
 }
 
 const ALTERNATES_SHOWN = 3;
@@ -66,7 +65,7 @@ const Legend = ({
   <ul className="legend">
     <li>
       <i className="lit" />
-      {labelOf(seatsOf(candidate))}, yours
+      {labelOf(candidate)}, yours
     </li>
     <li>
       <i className="for-sale" />
@@ -206,7 +205,7 @@ export const Room = ({
               checked={group.key === candidate.key}
               onChange={() => choose(group)}
             />
-            <span className="ids">{labelOf(seatsOf(group))}</span>{" "}
+            <span className="ids">{labelOf(group)}</span>{" "}
             <span className="sub">
               {whyOf(group.reasons, group.podDividers)}
             </span>
@@ -239,13 +238,13 @@ export const Room = ({
               className="btn btn-velvet"
               onClick={() => onHandOff(candidate)}
             >
-              {labelOf(seatsOf(candidate))}
+              {labelOf(candidate)}
             </button>
           </>
         ) : (
           <>
             <p className="held">
-              {spokenOf(seatsOf(candidate))} are here while you are offline.
+              {spokenOf(candidate)} are here while you are offline.
             </p>
             <p className="micro">
               Continuing re-checks them with the Source, so it waits for the

@@ -21,7 +21,7 @@ const NEXT_BEST = [
 ];
 
 const NOTHING_LEFT =
-  "The Source answered 0s ago and offered nothing else in this room for two seats together. This screening is no longer on offer to you: sold out, already begun, off sale, without a seat map, or simply short of two seats together, and the Source does not say which. seatscout never holds seats.";
+  "The Source answered 0s ago and offered nothing else in this room for two seats together. This screening is no longer on offer to you: sold out, no longer offered by the listing, already begun, off sale, without a seat map, or simply short of two seats together, and the Source does not say which. seatscout never holds seats.";
 
 describe("what the hand-off says when the answer is not ok", () => {
   afterEach(cleanup);
@@ -73,7 +73,7 @@ describe("what the hand-off says when the answer is not ok", () => {
     expect(gone.getByText("Re-checked at hand-off · 8s ago")).toBeVisible();
   });
 
-  it("takes a chosen alternative as the new candidate, lights it on the plan, keeps the screen while it is checked, and verifies it in turn before opening", async () => {
+  it("takes a chosen alternative as the new chosen group, lights it on the plan, keeps the screen while it is checked, and verifies it in turn before opening", async () => {
     const stage = await taken({ statuses: { G6: "X" } });
     const gone = dialog("G6 and G7 just went.");
     const before = marks().pair?.getAttribute("cx");
@@ -116,6 +116,38 @@ describe("what the hand-off says when the answer is not ok", () => {
     );
   });
 
+  it("ignores chip taps while a chosen alternative is being checked", async () => {
+    const stage = await taken({ statuses: { G6: "X" } });
+    const gone = dialog("G6 and G7 just went.");
+    const lit = marks().pair?.getAttribute("cx");
+
+    stage.holdSeatMaps();
+    fireEvent.click(gone.getByRole("button", { name: "Take F6 and F7" }));
+    await act(() => Promise.resolve());
+
+    const first = gone.getByRole("button", { name: /^F6·F7/ });
+    const second = gone.getByRole("button", { name: /^G3·G4/ });
+
+    expect(first).toBeDisabled();
+    expect(second).toBeDisabled();
+    fireEvent.click(second);
+
+    expect(first).toHaveAttribute("aria-pressed", "true");
+    expect(second).toHaveAttribute("aria-pressed", "false");
+    expect(marks().pair?.getAttribute("cx")).toBe(lit);
+    expect(gone.getByRole("button", { name: "Take F6 and F7" })).toBeDisabled();
+    expect(stage.verifications).toHaveLength(2);
+    expect(stage.checkouts).toEqual([]);
+
+    stage.releaseSeatMaps();
+    const verified = await stage.answered();
+
+    expect(verified.ok && verified.result.seats.map((seat) => seat.id)).toEqual(
+      ["F6", "F7"],
+    );
+    expect(stage.checkouts).toEqual([HOOKY_TICKETING]);
+  });
+
   it("answers an alternative that has gone too with what is left, the new loss named and focused", async () => {
     const stage = await taken({ statuses: { G6: "X" } });
     const gone = dialog("G6 and G7 just went.");
@@ -140,7 +172,7 @@ describe("what the hand-off says when the answer is not ok", () => {
     ["the Source refuses the room", { status: 410 }],
     [
       "no run of the party's size is left",
-      { statuses: { G7: "A" }, rest: "X" },
+      { statuses: { G7: "A" }, others: "X" },
     ],
   ])(
     "says the screening is no longer on offer, and offers only the way back, when %s",

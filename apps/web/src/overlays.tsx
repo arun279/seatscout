@@ -33,7 +33,7 @@ interface OverlaysProps {
   readonly onClose: () => void;
   readonly onTerms: (terms: Terms) => void;
   readonly onProfile: (profile: SeatProfile) => void;
-  readonly onHandOff: (candidate: SeatGroupResult) => void;
+  readonly onHandOff: (chosen: SeatGroupResult) => void;
 }
 
 const CurrentLedger = ({
@@ -62,7 +62,7 @@ const CurrentRoom = ({
   readonly clock: Clock;
   readonly online: boolean;
   readonly onClose: () => void;
-  readonly onHandOff: (candidate: SeatGroupResult) => void;
+  readonly onHandOff: (chosen: SeatGroupResult) => void;
 }) => (
   <Room
     result={overlay.result}
@@ -126,10 +126,11 @@ const Current = ({
     case "handOff":
       return (
         <HandOff
-          candidate={overlay.candidate}
+          chosen={overlay.chosen}
           verify={verify}
           checkout={checkout}
           clock={clock}
+          online={online}
           today={today}
           onClose={onClose}
         />

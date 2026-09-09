@@ -1,4 +1,5 @@
 import "@testing-library/jest-dom/vitest";
+import { readFile } from "node:fs/promises";
 import type { SeatGroupResult, Snapshot } from "@seatscout/client";
 import {
   act,
@@ -20,7 +21,7 @@ import {
   TONIGHT,
 } from "./search.fixtures.js";
 import type { HeldSnapshots } from "./held.js";
-import { clockOf } from "./phrases.js";
+import { clockOf, labelOf } from "./phrases.js";
 import { Results } from "./results.js";
 
 const nameOf = ({ showtime }: SeatGroupResult) =>
@@ -40,7 +41,7 @@ const minutesOf = (clock: string) => {
   return ((Number(hour) % 12) + (half === "p" ? 12 : 0)) * 60 + Number(minute);
 };
 
-const listing = (snapshot: Snapshot) => {
+const listing = (snapshot: Snapshot, online = true) => {
   const held: HeldSnapshots = {
     snapshot: () => snapshot,
     subscribe: () => () => {},
@@ -56,13 +57,40 @@ const listing = (snapshot: Snapshot) => {
       today={TODAY}
       now={0}
       held={held}
-      online={true}
+      online={online}
       onRetry={() => {}}
       onEdit={() => {}}
       onRoom={() => {}}
       onHandOff={() => {}}
     />,
   );
+};
+
+const drawn = async <T,>(read: () => T): Promise<T> => {
+  const sheet = document.createElement("style");
+  sheet.textContent = await readFile("apps/web/public/results.css", "utf8");
+  document.head.append(sheet);
+  const found = read();
+  sheet.remove();
+  return found;
+};
+
+const afterBoxOf = (element: Element) => {
+  const boxes = [];
+  for (const sheet of document.styleSheets) {
+    for (const rule of sheet.cssRules) {
+      if (!(rule instanceof CSSStyleRule)) continue;
+      if (!rule.selectorText.endsWith("::after")) continue;
+      const selector = rule.selectorText.slice(0, -"::after".length);
+      if (!element.matches(selector)) continue;
+      boxes.push({
+        content: rule.style.content,
+        inset: rule.style.inset,
+        position: rule.style.position,
+      });
+    }
+  }
+  return boxes.at(-1) ?? null;
 };
 
 describe("the list on the first screen", () => {
@@ -173,6 +201,30 @@ describe("the list on the first screen", () => {
     });
 
     expect(screen.getByRole("article")).not.toHaveTextContent("not bookable");
+  });
+
+  it("draws the expanded seat hit area only on the button, not on the offline label", async () => {
+    const settled = await settledAlone();
+    const [first] = settled.results;
+    if (first === undefined) throw new Error("no result to redraw");
+    const snapshot = { ...settled, results: [first] };
+
+    listing(snapshot);
+    const button = screen.getByRole("button", { name: labelOf(first) });
+    const buttonAfter = await drawn(() => afterBoxOf(button));
+
+    cleanup();
+    listing(snapshot, false);
+    const label = document.querySelector(".card span.seats");
+    if (!(label instanceof HTMLElement)) throw new Error("no offline label");
+    const labelAfter = await drawn(() => afterBoxOf(label));
+
+    expect(buttonAfter).toEqual({
+      content: '""',
+      inset: "-16px -10px",
+      position: "absolute",
+    });
+    expect(labelAfter).toBeNull();
   });
 
   it.each([1, 0])(

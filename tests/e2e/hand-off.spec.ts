@@ -12,6 +12,46 @@ const HOOKY = "Hooky Entertainment Addison + SDX";
 const HOOKY_TICKETING =
   "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-08-28%2B09%3A00&from=mov_det_showtimes&source=desktop&mid=245569&tid=aawza&dfam=webbrowser&showtimehashcode=v2-d2998da8682c402f6a3d3b08e2e04eebbebc86096e8467e63cc506ab808dec5a";
 
+interface SeatStatus {
+  readonly id: string;
+  readonly status: string;
+}
+
+interface SeatMapBody {
+  readonly seats: readonly SeatStatus[];
+}
+
+const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
+  value instanceof Object;
+
+const isSeatStatus = (value: unknown): value is SeatStatus =>
+  isRecord(value) &&
+  typeof value.id === "string" &&
+  typeof value.status === "string";
+
+const isSeatMapBody = (value: unknown): value is SeatMapBody =>
+  isRecord(value) &&
+  Array.isArray(value.seats) &&
+  value.seats.every(isSeatStatus);
+
+const seatMapBodyFrom = (body: string): SeatMapBody => {
+  const value = JSON.parse(body);
+  if (!isSeatMapBody(value))
+    throw new Error("seat map body cannot be rewritten");
+  return value;
+};
+
+const roomWith = (body: string, statuses: Readonly<Record<string, string>>) => {
+  const room = seatMapBodyFrom(body);
+  return JSON.stringify({
+    ...room,
+    seats: room.seats.map((seat) => ({
+      ...seat,
+      status: statuses[seat.id] ?? seat.status,
+    })),
+  });
+};
+
 const addison = (page: Page) =>
   page
     .getByRole("article", { name: `${HOOKY}, 9:00a, SDX` })
@@ -45,19 +85,10 @@ const opened = async (page: Page) => {
       page.route(`**${SEAT_MAP}**`, async (route) => {
         order.push("seat map");
         const answer = await upstream(new URL(route.request().url()).pathname);
-        const room = JSON.parse(await answer.text());
         await route.fulfill({
           status: answer.status,
           contentType: "application/json",
-          body: JSON.stringify({
-            ...room,
-            seats: room.seats.map(
-              (seat: { readonly id: string; readonly status: string }) => ({
-                ...seat,
-                status: statuses[seat.id] ?? seat.status,
-              }),
-            ),
-          }),
+          body: roomWith(await answer.text(), statuses),
         });
       }),
   };

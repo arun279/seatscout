@@ -7,11 +7,14 @@ import {
   within,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cards, staged, TONIGHT } from "./search.fixtures.js";
 import { HOOKY_TICKETING, opened } from "./hand-off.fixtures.js";
+import { cards, staged, TONIGHT } from "./search.fixtures.js";
 
 describe("the hand-off", () => {
-  afterEach(cleanup);
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
 
   it("opens from a card as a sheet naming the Theater, the time and the Seat Group, with one button that names the seats it takes", async () => {
     const { stage, sheet } = await opened();
@@ -137,5 +140,29 @@ describe("the hand-off", () => {
     });
 
     expect(card().getByRole("button", { name: /G6·G7$/ })).toBeVisible();
+  });
+
+  it("withdraws the take control from an open sheet while the phone is offline, then restores it when online returns", async () => {
+    const onLine = vi.spyOn(navigator, "onLine", "get");
+    const { sheet } = await opened();
+
+    expect(sheet.getByRole("button", { name: "Take G6 and G7" })).toBeVisible();
+
+    onLine.mockReturnValue(false);
+    act(() => {
+      window.dispatchEvent(new Event("offline"));
+    });
+
+    expect(sheet.queryByRole("button", { name: "Take G6 and G7" })).toBeNull();
+    expect(sheet.getByRole("status")).toHaveTextContent(
+      "Offline. Seats are never cached, so this hand-off can be checked when the connection returns.",
+    );
+
+    onLine.mockReturnValue(true);
+    act(() => {
+      window.dispatchEvent(new Event("online"));
+    });
+
+    expect(sheet.getByRole("button", { name: "Take G6 and G7" })).toBeVisible();
   });
 });

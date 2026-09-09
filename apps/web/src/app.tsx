@@ -11,9 +11,9 @@ import { useState, useSyncExternalStore } from "react";
 import { askedFrom } from "./asked.js";
 import { Strip } from "./coverage.js";
 import { type HeldSnapshots, heldSnapshots } from "./held.js";
+import { useOnline } from "./online.js";
 import { type Overlays as OverlayState, useOverlays } from "./overlay.js";
 import { Overlays } from "./overlays.js";
-import { useOnline } from "./online.js";
 import { partyOf, seatSetOf, whenOf } from "./phrases.js";
 import { Recent } from "./recent.js";
 import { type HeldProgramme, programmeNear } from "./programme.js";
@@ -54,7 +54,7 @@ interface SearchingProps {
   readonly clock: Clock;
   readonly online: boolean;
   readonly overlays: OverlayState;
-  readonly onHandOff: (candidate: SeatGroupResult) => void;
+  readonly onHandOff: (chosen: SeatGroupResult) => void;
 }
 
 interface Session {
@@ -165,8 +165,8 @@ const Screen = ({
   const overlays = useOverlays();
   const openAsk = (focus: Term) => overlays.open({ kind: "ask", focus });
   const programme = useSyncExternalStore(held.subscribe, held.snapshot);
-  const openHandOff = (candidate: SeatGroupResult) =>
-    overlays.open({ kind: "handOff", candidate });
+  const openHandOff = (chosen: SeatGroupResult) =>
+    overlays.open({ kind: "handOff", chosen });
 
   return (
     <>

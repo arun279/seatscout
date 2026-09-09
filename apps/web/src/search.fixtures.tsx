@@ -61,6 +61,9 @@ interface Staged {
     "seed" | "standInAuditoriums" | "standInTheaters"
   >;
   readonly holdRetries?: boolean;
+  readonly fetch?: (
+    fetch: Parameters<typeof createSeatScout>[0]["fetch"],
+  ) => Parameters<typeof createSeatScout>[0]["fetch"];
 }
 
 const Harness = ({
@@ -80,27 +83,6 @@ const Harness = ({
       today={TODAY}
     />
   );
-};
-
-export interface Room {
-  readonly status?: number;
-  readonly statuses?: Readonly<Record<string, string>>;
-  readonly rest?: string;
-}
-
-interface SeatMapBody {
-  readonly seats: readonly { readonly id: string; readonly status: string }[];
-}
-
-const roomAs = (body: string, room: Room) => {
-  const map: SeatMapBody = JSON.parse(body);
-  return JSON.stringify({
-    ...map,
-    seats: map.seats.map((seat) => ({
-      ...seat,
-      status: room.statuses?.[seat.id] ?? room.rest ?? seat.status,
-    })),
-  });
 };
 
 const ticking = () => {
@@ -130,25 +112,12 @@ export const staged = (options: Staged = {}) => {
   });
   const time = ticking();
   const retries: (() => void)[] = [];
-  const held: (() => void)[] = [];
-  let holding = false;
-  let room: Room | null = null;
   const fetch: Parameters<typeof createSeatScout>[0]["fetch"] = async (
     url,
     init,
-  ) => {
-    const answer = await upstream(url, init);
-    if (!url.startsWith(SEAT_MAP)) return answer;
-    if (holding) await new Promise<void>((resume) => held.push(resume));
-    if (room === null) return answer;
-    const text = roomAs(await answer.text(), room);
-    return {
-      status: room.status ?? answer.status,
-      text: () => Promise.resolve(text),
-    };
-  };
+  ) => upstream(url, init);
   const real = createSeatScout({
-    fetch,
+    fetch: options.fetch?.(fetch) ?? fetch,
     now: time.clock.now,
     wait: () =>
       options.holdRetries
@@ -220,17 +189,9 @@ export const staged = (options: Staged = {}) => {
     aborted,
     checkouts,
     commits,
+    clock: time.clock,
+    seatscout,
     advance: time.advance,
-    roomAtHandOff: (answer: Room) => {
-      room = answer;
-    },
-    holdSeatMaps: () => {
-      holding = true;
-    },
-    releaseSeatMaps: () => {
-      holding = false;
-      for (const resume of held.splice(0)) resume();
-    },
     answered: async () => {
       const verification = verifications.at(-1);
       if (verification === undefined) throw new Error("nothing was verified");
