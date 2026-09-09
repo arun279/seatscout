@@ -18,12 +18,13 @@ const theEditor = async (page: Page) => {
   await page.getByRole("button", { name: "Find seats" }).click();
   const ask = page.getByRole("dialog", { name: "What are we seeing?" });
   await expect(ask).toBeVisible();
-  await expect(page.getByLabel("Movie number")).toBeFocused();
+  await expect(ask.getByLabel("Near, by postal code")).toBeFocused();
   await accessible(page);
 
-  await page.getByLabel("Movie number").fill("245569");
-  await page.getByLabel("Date").fill("2026-08-28");
-  await page.getByLabel("Near, by postal code").fill("75006");
+  await ask.getByLabel("Near, by postal code").fill("75006");
+  await ask.getByLabel("Date").fill("2026-08-28");
+  await ask.getByLabel("Film").fill("dog");
+  await ask.getByRole("button", { name: "The Dog Stars (2026)" }).click();
   await ask.getByRole("button", { name: "Find seats" }).click();
   await expect(ask).toBeHidden();
 };

@@ -1,6 +1,7 @@
 import { AxeBuilder } from "@axe-core/playwright";
 import { expect, type Locator, type Page, test } from "@playwright/test";
 import {
+  accessible,
   answeredByTheCorpus,
   clippedFieldsIn,
   HIT_AREA,
@@ -99,7 +100,7 @@ test("every Query term composes in one search on a phone, one-handed, every targ
       () => document.documentElement.scrollWidth <= window.innerWidth,
     ),
   ).toBe(true);
-  expect(await hitAreasUnder(page, HIT_AREA)).toEqual([]);
+  await accessible(page);
   expect(complaints).toEqual([]);
   test.info().annotations.push({
     type: "title card height with every term active, px",

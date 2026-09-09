@@ -95,16 +95,15 @@ export const clippedFieldsIn = (page: Page) =>
 const tapsAnsweredElsewhere = (page: Page) =>
   page.evaluate(() => {
     const open = [...document.querySelectorAll("dialog[open]")];
+    const within = open.at(-1) ?? document.documentElement;
     const named = (element: Element) =>
       (element.getAttribute("aria-label") ?? element.textContent ?? "")
         .trim()
         .slice(0, 32);
-    return [
-      ...(open.at(-1) ?? document.body).querySelectorAll(
-        "button, a[href], input",
-      ),
-    ]
+    const resting = within.scrollTop;
+    const misses = [...within.querySelectorAll("button, a[href], input")]
       .map((element) => {
+        element.scrollIntoView({ block: "center" });
         const box = element.getBoundingClientRect();
         if (box.width === 0 || box.height === 0) return null;
         const answered = document.elementFromPoint(
@@ -116,6 +115,8 @@ const tapsAnsweredElsewhere = (page: Page) =>
           : { asked: named(element), answered: named(answered) };
       })
       .filter((miss) => miss !== null);
+    within.scrollTop = resting;
+    return misses;
   });
 
 export const accessible = async (page: Page) => {
