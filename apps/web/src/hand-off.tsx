@@ -1,5 +1,5 @@
 import type { SeatGroupResult, SeatScout } from "@seatscout/client";
-import { useCallback, useState, useSyncExternalStore } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import type { Checkout, Clock } from "./app.js";
 import {
   type Answer,
@@ -157,21 +157,16 @@ export const HandOff = ({
     answer: null,
     phase: "idle",
   });
-  const [dialog, setDialog] = useState<HTMLDialogElement | null>(null);
-  const open = useCallback((node: HTMLDialogElement | null) => {
-    if (node === null) return;
-    setDialog(node);
-    const close = modal(node);
-    return () => {
-      setDialog(null);
-      close();
-    };
-  }, []);
-  const take = async (dialog: HTMLDialogElement) => {
+  const closed = useRef(false);
+  const close = () => {
+    closed.current = true;
+    onClose();
+  };
+  const take = async () => {
     const { chosen } = sheet;
     setSheet((current) => ({ ...current, phase: "checking" }));
     const verified = await verify(chosen);
-    if (!dialog.open) return;
+    if (closed.current) return;
     if (verified.ok) {
       checkout(verified.ticketing);
       setSheet((current) => ({ ...current, phase: "opening" }));
@@ -196,28 +191,26 @@ export const HandOff = ({
 
   return (
     <dialog
-      ref={open}
+      ref={modal}
       className="hand-off"
       aria-labelledby={HAND_OFF_TITLE_ID}
-      onClose={onClose}
+      onClose={close}
     >
       <form method="dialog">
         <button type="submit" className="back">
           ‹ Back to the list
         </button>
       </form>
-      {dialog !== null && (
-        <Screen
-          sheet={sheet}
-          now={now}
-          online={online}
-          today={today}
-          onTake={() => take(dialog)}
-          onChoose={(alternative) =>
-            setSheet((current) => ({ ...current, chosen: alternative }))
-          }
-        />
-      )}
+      <Screen
+        sheet={sheet}
+        now={now}
+        online={online}
+        today={today}
+        onTake={take}
+        onChoose={(alternative) =>
+          setSheet((current) => ({ ...current, chosen: alternative }))
+        }
+      />
     </dialog>
   );
 };
