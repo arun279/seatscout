@@ -54,6 +54,7 @@
     "pastshowtime",
     "pathspec",
     "Perricone",
+    "pipefail",
     "precached",
     "rawfile",
     "Referer",

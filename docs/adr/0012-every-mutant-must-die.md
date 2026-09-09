@@ -50,8 +50,9 @@ in the middle of judging. The runner starts the save as soon as the step is canc
 terminates the mutation process afterwards, so the file saved is the one that was restored,
 and the work in flight is lost either way.
 
-Before either workflow saves that file, it compares the number of test files in Stryker's
-incremental report with the number Vitest lists for the same projects. A mismatch means the
+Before either workflow saves that file, it reads Stryker's own initial-run count and holds
+it to the unit-test floor implied by `.footprint.json`: the total test ratchet minus the
+Playwright tests collected by the footprint command. A short or missing count means the
 runner did not collect the whole suite, so the job fails and the partial report is not cached
 as a seed for later runs.
 

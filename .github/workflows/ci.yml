@@ -118,23 +118,27 @@ jobs:
             stryker-main-
       - name: Judge the suite by mutating the code it tests
         continue-on-error: true
-        run: pnpm test:mutation:incremental
+        run: |
+          set -o pipefail
+          pnpm test:mutation:incremental 2>&1 | tee "$RUNNER_TEMP/stryker-mutation.log"
       - name: Check that mutation saw every test file
         id: mutation_test_collection
         run: |
-          report_files="$(jq '.testFiles | length' reports/stryker-incremental.json)"
-          listed_files="$(pnpm exec vitest list --filesOnly | sed 's/^\[[^]]*\] //' | sort -u | wc -l | tr -d ' ')"
-          echo "Stryker report test files: $report_files"
-          echo "Listed test files: $listed_files"
-          if [ "$report_files" = "$listed_files" ]; then
+          ran_tests="$(sed -n 's/.*Initial test run succeeded\. Ran \([0-9][0-9]*\) tests.*/\1/p' "$RUNNER_TEMP/stryker-mutation.log" | tail -n 1)"
+          e2e_tests="$(pnpm exec playwright test --list --reporter=json 2>/dev/null | jq '[.. | objects | select(.specs? | type == "array") | .specs[] | .tests | length] | add // 0')"
+          test_floor="$(jq '.tests' .footprint.json)"
+          unit_floor=$((test_floor - e2e_tests))
+          echo "Stryker initial tests: ${ran_tests:-missing}"
+          echo "Unit test floor: $unit_floor"
+          if [ -n "$ran_tests" ] && [ "$ran_tests" -ge "$unit_floor" ]; then
             echo "complete=true" >> "$GITHUB_OUTPUT"
           else
             echo "complete=false" >> "$GITHUB_OUTPUT"
-            echo "::error::Stryker collected $report_files test files, but the test runner listed $listed_files."
+            echo "::error::Stryker ran ${ran_tests:-no} tests, but the unit test floor is $unit_floor."
             {
               echo "### Incomplete mutation test collection"
               echo
-              echo "Stryker collected $report_files test files, but the test runner listed $listed_files. The incremental mutation report was not saved."
+              echo "Stryker ran ${ran_tests:-no} tests, but the unit test floor is $unit_floor. The incremental mutation report was not saved."
             } >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
