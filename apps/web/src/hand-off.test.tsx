@@ -7,7 +7,11 @@ import {
   within,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { HOOKY_TICKETING, opened } from "./hand-off.fixtures.js";
+import {
+  HOOKY_TICKETING,
+  opened,
+  openedWithoutUnmount,
+} from "./hand-off.fixtures.js";
 import { cards, staged, TONIGHT } from "./search.fixtures.js";
 import { drawn } from "./stylesheet.fixtures.js";
 
@@ -113,6 +117,30 @@ describe("the hand-off", () => {
     expect(verified.ok).toBe(true);
     expect(stage.checkouts).toEqual([]);
     expect(screen.queryByRole("dialog", { hidden: true })).toBeNull();
+  });
+
+  it("opens nothing when a pending verification answers after the sheet is closed", async () => {
+    const { stage, sheet } = await openedWithoutUnmount();
+    stage.holdSeatMaps();
+    fireEvent.click(sheet.getByRole("button", { name: "Take G6 and G7" }));
+    await act(() => Promise.resolve());
+
+    expect(sheet.getByRole("status")).toHaveTextContent(
+      "Checking G6 and G7 with the Source",
+    );
+
+    await act(() => {
+      sheet.getByRole("button", { name: /back to the list/i }).click();
+      stage.releaseSeatMaps();
+      return Promise.resolve();
+    });
+    const verified = await stage.answered();
+    const closedSheet = screen.getByRole("dialog", { hidden: true });
+
+    expect(verified.ok).toBe(true);
+    expect(stage.checkouts).toEqual([]);
+    expect(closedSheet).not.toHaveAttribute("open");
+    expect(closedSheet).toHaveTextContent("Checking G6 and G7 with the Source");
   });
 
   it.each([

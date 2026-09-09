@@ -1,6 +1,7 @@
 import { seatMapBodyWithStatuses } from "@seatscout/client/testing";
-import { fireEvent, screen, within } from "@testing-library/react";
-import { cards, staged } from "./search.fixtures.js";
+import { fireEvent, render, screen, within } from "@testing-library/react";
+import { HandOff } from "./hand-off.js";
+import { cards, staged, TODAY } from "./search.fixtures.js";
 
 const HOOKY = "Hooky Entertainment Addison + SDX";
 const SEAT_MAP = "/napi/seatMap/";
@@ -60,6 +61,31 @@ export const opened = async (
   await stage.settled();
   fireEvent.click(
     within(cards()[0] ?? document.body).getByRole("button", { name: seats }),
+  );
+  return {
+    stage,
+    sheet: within(screen.getByRole("dialog", { name: HOOKY })),
+  };
+};
+
+export const openedWithoutUnmount = async () => {
+  const stage = stagedHandOff();
+  const snapshot = await stage.settled();
+  const chosen = snapshot.results.find(
+    (result) => result.showtime.presentation.theater.name === HOOKY,
+  );
+  if (chosen === undefined) throw new Error("no Seat Group was found");
+  stage.unmount();
+  render(
+    <HandOff
+      chosen={chosen}
+      verify={stage.seatscout.verify}
+      checkout={(ticketing) => stage.checkouts.push(ticketing)}
+      clock={stage.clock}
+      online
+      today={TODAY}
+      onClose={() => {}}
+    />,
   );
   return {
     stage,

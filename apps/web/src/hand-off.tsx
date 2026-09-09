@@ -162,8 +162,7 @@ export const HandOff = ({
     closed.current = true;
     onClose();
   };
-  const bindDialog = useRef((node: HTMLDialogElement | null) => {
-    if (node === null) return;
+  const bindDialog = useRef((node: HTMLDialogElement) => {
     const cleanup = modal(node);
     return () => {
       closed.current = true;
