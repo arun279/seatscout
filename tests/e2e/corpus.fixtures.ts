@@ -100,7 +100,12 @@ const tapsAnsweredElsewhere = (page: Page) =>
       (element.getAttribute("aria-label") ?? element.textContent ?? "")
         .trim()
         .slice(0, 32);
-    const resting = within.scrollTop;
+    const resting = {
+      top: within.scrollTop,
+      left: within.scrollLeft,
+      x: window.scrollX,
+      y: window.scrollY,
+    };
     const misses = [...within.querySelectorAll("button, a[href], input")]
       .map((element) => {
         element.scrollIntoView({ block: "center" });
@@ -115,7 +120,9 @@ const tapsAnsweredElsewhere = (page: Page) =>
           : { asked: named(element), answered: named(answered) };
       })
       .filter((miss) => miss !== null);
-    within.scrollTop = resting;
+    within.scrollTop = resting.top;
+    within.scrollLeft = resting.left;
+    window.scrollTo(resting.x, resting.y);
     return misses;
   });
 

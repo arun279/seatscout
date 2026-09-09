@@ -21,12 +21,12 @@ const MID_TIER_PHONE = {
   serviceWorkers: "block",
 } as const;
 
-const KBPS_IN_BYTES_A_SECOND = 1024 / 8;
+const bytesASecond = (kbps: number) => Math.round((kbps * 1024) / 8);
 const SLOW_4G = {
   offline: false,
   latency: 150,
-  downloadThroughput: 1.6 * 1024 * KBPS_IN_BYTES_A_SECOND,
-  uploadThroughput: 750 * KBPS_IN_BYTES_A_SECOND,
+  downloadThroughput: bytesASecond(1.6 * 1024),
+  uploadThroughput: bytesASecond(750),
 };
 
 const CONDITIONS = [
@@ -155,8 +155,6 @@ const journey = async (context: BrowserContext): Promise<Journey> => {
   };
 };
 
-test.use({ serviceWorkers: "block" });
-
 test("a first search on a mid-tier phone over a slow connection puts Seat Groups on screen, measured on every axis the gate holds", {
   tag: "@performance",
 }, async ({ browser }) => {
@@ -169,7 +167,16 @@ test("a first search on a mid-tier phone over a slow connection puts Seat Groups
   mkdirSync("reports/journey", { recursive: true });
   writeFileSync(SAMPLES, JSON.stringify(journeys, null, 2));
 
-  expect(journeys).toHaveLength(JOURNEYS);
+  expect(JSON.parse(readFileSync(SAMPLES, "utf8"))).toEqual(
+    Array.from({ length: JOURNEYS }, () => ({
+      firstSeatGroupsMs: expect.any(Number),
+      lcp: expect.any(Number),
+      inp: expect.any(Number),
+      cls: expect.any(Number),
+      heapBytes: expect.any(Number),
+      conditions: CONDITIONS,
+    })),
+  );
 });
 
 test("the results screen and its ledger carry no WCAG 2.2 AA violation axe can detect, and every control reaches 44 px", {

@@ -45,13 +45,8 @@ export const readingsOf = (
   samples: readonly Sample[],
   axis: (sample: Sample) => number | null,
 ): readonly number[] | null => {
-  const readings: number[] = [];
-  for (const sample of samples) {
-    const reading = axis(sample);
-    if (reading === null) return null;
-    readings.push(reading);
-  }
-  return readings;
+  const readings = samples.map(axis);
+  return readings.every((reading) => reading !== null) ? readings : null;
 };
 
 export const conditionsOf = (samples: readonly Sample[]): string | null => {

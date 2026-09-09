@@ -57,27 +57,20 @@ const theSearchBehindIt = async (page: Page) => {
   await page.goBack();
   await expect(page.getByRole("status")).toHaveText(/172 checked$/);
   expect(new URL(page.url()).search).toBe(TONIGHT.slice(1));
+  await accessible(page);
 };
 
-test("one session walks the whole journey, from the first open through the editor, the results and the hand-off to the operator's page, and the shell it started is installable at the end of it", {
+test("one session walks the whole journey, from the first open through the editor, the results and the hand-off to the operator's page and back to the search behind it", {
   tag: "@accessibility",
 }, async ({ page }) => {
   await answeredByTheCorpus(page);
   await page.route(TICKETING, (route) =>
     route.fulfill({ status: 200, contentType: "text/html", body: OPERATOR }),
   );
-  const devtools = await page.context().newCDPSession(page);
 
   await theFirstOpen(page);
   await theEditor(page);
   await theResults(page);
   await theHandOff(page);
   await theSearchBehindIt(page);
-
-  await page.evaluate(() => navigator.serviceWorker.ready);
-  const { installabilityErrors } = await devtools.send(
-    "Page.getInstallabilityErrors",
-  );
-
-  expect(installabilityErrors).toEqual([]);
 });

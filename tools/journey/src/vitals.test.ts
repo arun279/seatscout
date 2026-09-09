@@ -72,28 +72,34 @@ describe("holding the journey's Core Web Vitals to the thresholds Google publish
     });
   });
 
-  it("goes red on a journey exactly at the LCP threshold, because good is under it", () => {
-    const verdict = vitalsJudged(journeysOf([2500], [10], [0.01]));
-
-    expect(verdict.passed).toBe(false);
-    expect(verdict.report).toBe(
-      "p75 LCP 2500 ms against 2500, INP 10 ms against 200, CLS 0.010 against 0.1, over 1 journeys; LCP over the threshold Google publishes as good",
-    );
-  });
-
-  it("goes red on a journey exactly at the INP threshold", () => {
-    expect(vitalsJudged(journeysOf([100], [200], [0.01]))).toEqual({
+  it("stays green on a journey exactly at the LCP threshold, and goes red a millisecond over it", () => {
+    expect(vitalsJudged(journeysOf([2500], [10], [0.01]))).toEqual({
+      passed: true,
+      report:
+        "p75 LCP 2500 ms against 2500, INP 10 ms against 200, CLS 0.010 against 0.1, over 1 journeys",
+    });
+    expect(vitalsJudged(journeysOf([2501], [10], [0.01]))).toEqual({
       passed: false,
       report:
-        "p75 LCP 100 ms against 2500, INP 200 ms against 200, CLS 0.010 against 0.1, over 1 journeys; INP over the threshold Google publishes as good",
+        "p75 LCP 2501 ms against 2500, INP 10 ms against 200, CLS 0.010 against 0.1, over 1 journeys; LCP over the threshold Google publishes as good",
     });
   });
 
-  it("goes red on a journey exactly at the CLS threshold", () => {
-    expect(vitalsJudged(journeysOf([100], [10], [0.1]))).toEqual({
+  it("stays green on a journey exactly at the INP threshold, and goes red a millisecond over it", () => {
+    expect(vitalsJudged(journeysOf([100], [200], [0.01])).passed).toBe(true);
+    expect(vitalsJudged(journeysOf([100], [201], [0.01]))).toEqual({
       passed: false,
       report:
-        "p75 LCP 100 ms against 2500, INP 10 ms against 200, CLS 0.100 against 0.1, over 1 journeys; CLS over the threshold Google publishes as good",
+        "p75 LCP 100 ms against 2500, INP 201 ms against 200, CLS 0.010 against 0.1, over 1 journeys; INP over the threshold Google publishes as good",
+    });
+  });
+
+  it("stays green on a journey exactly at the CLS threshold, and goes red a hundredth over it", () => {
+    expect(vitalsJudged(journeysOf([100], [10], [0.1])).passed).toBe(true);
+    expect(vitalsJudged(journeysOf([100], [10], [0.11]))).toEqual({
+      passed: false,
+      report:
+        "p75 LCP 100 ms against 2500, INP 10 ms against 200, CLS 0.110 against 0.1, over 1 journeys; CLS over the threshold Google publishes as good",
     });
   });
 
@@ -103,11 +109,16 @@ describe("holding the journey's Core Web Vitals to the thresholds Google publish
     );
   });
 
-  it("stays green a millisecond under the threshold, and rounds what it prints", () => {
+  it("rounds what it prints without rounding what it judges", () => {
     expect(vitalsJudged(journeysOf([2499.6], [199.4], [0.0994]))).toEqual({
       passed: true,
       report:
         "p75 LCP 2500 ms against 2500, INP 199 ms against 200, CLS 0.099 against 0.1, over 1 journeys",
+    });
+    expect(vitalsJudged(journeysOf([2500.4], [199.4], [0.0994]))).toEqual({
+      passed: false,
+      report:
+        "p75 LCP 2500 ms against 2500, INP 199 ms against 200, CLS 0.099 against 0.1, over 1 journeys; LCP over the threshold Google publishes as good",
     });
   });
 

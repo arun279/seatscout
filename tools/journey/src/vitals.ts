@@ -26,9 +26,9 @@ export const vitalsJudged = (head: readonly Sample[]): Verdict => {
 
   const measured = `p75 LCP ${Math.round(lcp)} ms against ${GOOD.lcp}, INP ${Math.round(inp)} ms against ${GOOD.inp}, CLS ${cls.toFixed(3)} against ${GOOD.cls}, over ${head.length} journeys`;
   const over = [
-    lcp < GOOD.lcp ? null : "LCP",
-    inp < GOOD.inp ? null : "INP",
-    cls < GOOD.cls ? null : "CLS",
+    lcp <= GOOD.lcp ? null : "LCP",
+    inp <= GOOD.inp ? null : "INP",
+    cls <= GOOD.cls ? null : "CLS",
   ].filter((axis) => axis !== null);
   return over.length === 0
     ? { passed: true, report: measured }

@@ -13,7 +13,13 @@ const ms = (value: number) => `${Math.round(value)} ms`;
 
 const kib = (value: number) => `${Math.round(value / 1024)} KiB`;
 
-const named = (conditions: string | null) => conditions ?? "none recorded";
+const named = (samples: readonly Sample[]) => {
+  const conditions = conditionsOf(samples);
+  if (conditions !== null) return conditions;
+  return samples.every((sample) => sample.conditions === null)
+    ? "none recorded"
+    : "disagreeing runs";
+};
 
 const momentsOf = (samples: readonly Sample[]) =>
   samples.map((sample) => sample.firstSeatGroupsMs);
@@ -34,11 +40,15 @@ export const judged = (
   if (base.length === 0)
     return { passed: false, report: "the merge base measured no journey" };
   const conditions = conditionsOf(head);
-  const theirs = conditionsOf(base);
-  if (conditions === null || conditions !== theirs)
+  if (conditions === null)
+    return {
+      passed: false,
+      report: `${measured} under ${named(head)}; the head did not write down one set of conditions, so there is nothing to hold to the merge base`,
+    };
+  if (conditions !== conditionsOf(base))
     return {
       passed: true,
-      report: `${measured} under ${named(conditions)}; the merge base ran its journeys under ${named(theirs)}, which is not the same measurement to hold it to`,
+      report: `${measured} under ${conditions}; the merge base ran its journeys under ${named(base)}, which is not the same measurement to hold it to`,
     };
   const slowest = Math.max(...momentsOf(base));
   const against = `the merge base's slowest of ${base.length} journeys took ${ms(slowest)}`;

@@ -444,23 +444,22 @@ checked rather than trusted: every journey writes down the emulation it ran unde
 from the settings it applied rather than named by hand, and the ratchet holds one side to
 the other only where the two agree. A branch that changes the stand-in is reported and not
 held to a base measured another way, which is what this change itself needed. The absolute
-is reported either way, a merge base with no journey is reported rather than passed over,
-and a journey that renders no result fails, because a pass has to entail a measurement. The page's JS heap
-is read through CDP after a forced collection at that same instant and reported beside the
-moment with the same statistic, gated by neither threshold nor ratchet, because no publisher
-offers a byte budget and the projects that gate memory gate a leak invariant rather than a
-magnitude.
+is reported either way, a merge base with no journey is reported rather than passed over, a
+head that wrote down no conditions or whose journeys disagree fails rather than passing on a
+comparison it never made, and a journey that renders no result fails, because a pass has to
+entail a measurement. The page's JS heap is read through CDP after a forced collection at
+that same instant and reported beside the moment with the same statistic, gated by neither
+threshold nor ratchet, because no publisher offers a byte budget and the projects that gate
+memory gate a leak invariant rather than a magnitude.
 
 **Lighthouse's fourth stand-in, the 4x CPU multiplier, is measured and deliberately not
 applied.** Lighthouse documents that default as calibrated for a high-end desktop host and
 tells a weaker machine to lower it, so the multiplier scales the host rather than the branch
-and a fixed one decides the verdict by whose machine ran it. Measured here over ten journeys
-a side on the stand-in above, the p75 largest paint reads about 1.6 s with the multiplier
-off and between 2.2 and 2.7 s with it at 4, against a threshold of 2.5 s, and the runner has
-measured about twice this machine on the same journey. A constant 4 would therefore fail the
-gate on the runner's speed. Lowering it instead would mean choosing a number no one
-publishes, which is what this record refuses everywhere else, so it is left off and the
-multiplier is what the gate is deliberately thrown by rather than what it runs under.
+and a fixed one decides the verdict by whose machine ran it. Lowering it instead would mean
+choosing a number no one publishes, which is what this record refuses everywhere else, so it
+is left off and the multiplier is what the gate is deliberately thrown by rather than what
+it runs under: the shipped journey, run with the multiplier at 6, a figure inside
+Lighthouse's own published calibration range, trips the gate.
 
 **Accessibility has a published standard, so it is gated against that one.**
 `@axe-core/playwright` scans the shell and the results screen against WCAG 2.2 at levels A

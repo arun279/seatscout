@@ -99,24 +99,44 @@ describe("holding the head's journey to the merge base's", () => {
     });
   });
 
-  it("holds nothing when neither side wrote down what it measured, because two blanks are not a match", () => {
-    expect(judged(under(null, 900), under(null, 100))).toEqual({
+  it("holds nothing to a merge base whose own journeys disagree about what they measured", () => {
+    const mixed = [
+      ...under("a slow connection", 100),
+      ...under("no throttle", 110),
+    ];
+
+    expect(judged(under("a slow connection", 900), mixed)).toEqual({
       passed: true,
       report:
-        "the head's first Seat Groups took 900 ms in the median of 1 journeys under none recorded; the merge base ran its journeys under none recorded, which is not the same measurement to hold it to",
+        "the head's first Seat Groups took 900 ms in the median of 1 journeys under a slow connection; the merge base ran its journeys under disagreeing runs, which is not the same measurement to hold it to",
     });
   });
 
-  it("holds nothing when the head's own journeys disagree about what they measured", () => {
+  it("refuses a head that wrote down no conditions, rather than passing on a comparison it never made", () => {
+    expect(judged(under(null, 900), under("a slow connection", 100))).toEqual({
+      passed: false,
+      report:
+        "the head's first Seat Groups took 900 ms in the median of 1 journeys under none recorded; the head did not write down one set of conditions, so there is nothing to hold to the merge base",
+    });
+  });
+
+  it("refuses a head whose own journeys disagree about what they measured", () => {
     const mixed = [
       ...under("a slow connection", 900),
       ...under("no throttle", 910),
     ];
 
-    expect(judged(mixed, under("a slow connection", 100)).passed).toBe(true);
-    expect(judged(mixed, under("a slow connection", 100)).report).toContain(
-      "under none recorded",
-    );
+    expect(judged(mixed, under("a slow connection", 100))).toEqual({
+      passed: false,
+      report:
+        "the head's first Seat Groups took 905 ms in the median of 2 journeys under disagreeing runs; the head did not write down one set of conditions, so there is nothing to hold to the merge base",
+    });
+    expect(
+      judged(
+        [...under("a slow connection", 900), ...under(null, 910)],
+        under("a slow connection", 100),
+      ).report,
+    ).toContain("under disagreeing runs");
   });
 
   it("takes the median of an even number of journeys between the two middle ones", () => {
