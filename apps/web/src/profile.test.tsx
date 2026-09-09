@@ -40,7 +40,7 @@ const slide = (control: HTMLElement, value: number) =>
   fireEvent.change(control, { target: { value: `${value}` } });
 
 const room = () => {
-  const drawn = document.querySelector("dialog svg.room");
+  const drawn = document.querySelector("dialog svg.seat-picker");
   if (drawn === null) throw new Error("the sheet draws no room");
   return drawn;
 };

@@ -60,7 +60,7 @@ describe("the Seat Groups a room offers, as one choice", () => {
 
     expect(legend()).toEqual([
       "G14·G13, yours",
-      "bookable",
+      "for sale",
       "not bookable",
       "wheelchair or companion, kept out of ordinary results",
       "console",
@@ -80,7 +80,7 @@ describe("the Seat Groups a room offers, as one choice", () => {
 
     expect(legend()).toEqual([
       "H14·H13, yours",
-      "bookable",
+      "for sale",
       "not bookable",
       "wheelchair or companion, kept out of ordinary results",
     ]);

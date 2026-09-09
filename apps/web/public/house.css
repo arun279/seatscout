@@ -14,6 +14,8 @@
   --beam-dim: oklch(0.76 0.07 230);
   --seat-free: oklch(0.68 0.03 250);
   --seat-gone: oklch(0.55 0.035 270);
+  --seat-tick: oklch(0.62 0.035 265);
+  --ink: oklch(0.1 0.012 275);
   --display: "Big Shoulders Display", "Arial Narrow", sans-serif;
   --body: "Schibsted Grotesk", "Helvetica Neue", sans-serif;
   --mono: "Spline Sans Mono", "Courier New", monospace;
@@ -151,4 +153,71 @@ a:hover {
   line-height: 1.5;
   text-transform: uppercase;
   color: var(--silver-dim);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 0 15px;
+  border-radius: 12px;
+  border: 1px solid var(--hairline);
+  background: var(--raised);
+  color: var(--silver);
+  font-family: var(--body);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+.chip .sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--silver-faint);
+}
+
+.chip:has(:checked),
+.chip[aria-pressed="true"] {
+  border-color: var(--silver);
+  background: var(--silver);
+  color: var(--house-deep);
+}
+
+.chip:has(:checked) .sub,
+.chip[aria-pressed="true"] .sub {
+  color: oklch(0.35 0.02 270);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--silver-dim);
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend i {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex: none;
+}
+
+.legend .lit {
+  background: var(--beam);
+  box-shadow: 0 0 6px var(--beam);
 }

@@ -91,7 +91,7 @@ const Room = ({ profile, onChange }: ProfileProps) => {
   const marks = marksOf(ROOM, sitting, profile);
   return (
     <svg
-      className="room"
+      className="seat-picker"
       viewBox="0 0 64 46"
       aria-hidden="true"
       onPointerDown={place}

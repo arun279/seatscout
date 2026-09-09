@@ -5,6 +5,7 @@ const HREF = /href="([^"]*)"/;
 const COMMENT = /\/\*[\s\S]*?\*\//g;
 const PRELUDE = /[^{}]*\{/g;
 const CLASS = /\.[\w-]+/g;
+const BARE = /^\.[\w-]+$/;
 
 export const STYLESHEET = 'rel="stylesheet"';
 
@@ -27,4 +28,15 @@ export const ruledIn = (css: string): readonly string[] =>
   [...css.replace(COMMENT, " ").matchAll(PRELUDE)].flatMap(([prelude]) => {
     if (prelude.trimStart().startsWith("@")) return [];
     return [...prelude.matchAll(CLASS)].map(([named]) => named.slice(1));
+  });
+
+export const bareIn = (css: string): readonly string[] =>
+  [...css.replace(COMMENT, " ").matchAll(PRELUDE)].flatMap(([prelude]) => {
+    const head = prelude.slice(0, -1).trim();
+    if (head.startsWith("@")) return [];
+    return head
+      .split(",")
+      .map((one) => one.trim())
+      .filter((one) => BARE.test(one))
+      .map((one) => one.slice(1));
   });

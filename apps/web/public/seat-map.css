@@ -1,8 +1,3 @@
-:root {
-  --seat-tick: oklch(0.62 0.035 265);
-  --ink: oklch(0.1 0.012 275);
-}
-
 .map-frame {
   position: relative;
   background: var(--house-deep);

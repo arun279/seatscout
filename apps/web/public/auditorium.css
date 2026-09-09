@@ -59,43 +59,15 @@
   cursor: pointer;
 }
 
-.legend {
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px 14px;
-  margin: 0;
+.room .legend {
   padding: 9px 2px 0;
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.04em;
-  color: var(--silver-dim);
 }
 
-.legend li {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.legend .sw {
-  display: inline-block;
-  width: 9px;
-  height: 9px;
-  border-radius: 2px;
-  flex: none;
-}
-
-.legend .lit {
-  background: var(--beam);
-  box-shadow: 0 0 6px var(--beam);
-}
-
-.legend .bookable {
+.legend .for-sale {
   background: var(--seat-free);
 }
 
-.legend .unbookable {
+.legend .not-bookable {
   border: 1px solid var(--seat-gone);
 }
 

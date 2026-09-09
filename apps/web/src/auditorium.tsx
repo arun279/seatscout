@@ -64,25 +64,25 @@ const Legend = ({
 }) => (
   <ul className="legend">
     <li>
-      <i className="sw lit" />
+      <i className="lit" />
       {labelOf(seatsOf(candidate))}, yours
     </li>
     <li>
-      <i className="sw bookable" />
-      bookable
+      <i className="for-sale" />
+      for sale
     </li>
     <li>
-      <i className="sw unbookable" />
+      <i className="not-bookable" />
       not bookable
     </li>
     <li>
-      <i className="sw space" />
+      <i className="space" />
       wheelchair or companion
       {accessibleSeating ? "" : ", kept out of ordinary results"}
     </li>
     {consoles && (
       <li>
-        <i className="sw tick" />
+        <i className="tick" />
         console
       </li>
     )}

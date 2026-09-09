@@ -213,7 +213,7 @@ describe("the room a result opens into", () => {
       pods.room.getAllByRole("listitem").map((entry) => entry.textContent),
     ).toEqual([
       "G14·G13, yours",
-      "bookable",
+      "for sale",
       "not bookable",
       SPACES,
       "console",
@@ -240,7 +240,7 @@ describe("the room a result opens into", () => {
 
     expect(
       plain.room.getAllByRole("listitem").map((entry) => entry.textContent),
-    ).toEqual(["H14·H13, yours", "bookable", "not bookable", SPACES]);
+    ).toEqual(["H14·H13, yours", "for sale", "not bookable", SPACES]);
   });
 
   it("opens offline and puts the reason where the action would have been, because continuing re-checks the seats", async () => {
