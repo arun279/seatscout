@@ -29,7 +29,27 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Judge main with no incremental file to inherit from
         run: pnpm test:mutation:incremental
+      - name: Check that mutation saw every test file
+        id: mutation_test_collection
+        run: |
+          report_files="$(jq '.testFiles | length' reports/stryker-incremental.json)"
+          listed_files="$(pnpm exec vitest list --filesOnly | sed 's/^\[[^]]*\] //' | sort -u | wc -l | tr -d ' ')"
+          echo "Stryker report test files: $report_files"
+          echo "Listed test files: $listed_files"
+          if [ "$report_files" = "$listed_files" ]; then
+            echo "complete=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "complete=false" >> "$GITHUB_OUTPUT"
+            echo "::error::Stryker collected $report_files test files, but the test runner listed $listed_files."
+            {
+              echo "### Incomplete mutation test collection"
+              echo
+              echo "Stryker collected $report_files test files, but the test runner listed $listed_files. The incremental mutation report was not saved."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
       - name: Leave what it judged for every branch to start from
+        if: steps.mutation_test_collection.outputs.complete == 'true'
         continue-on-error: true
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:

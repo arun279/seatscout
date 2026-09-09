@@ -50,6 +50,11 @@ in the middle of judging. The runner starts the save as soon as the step is canc
 terminates the mutation process afterwards, so the file saved is the one that was restored,
 and the work in flight is lost either way.
 
+Before either workflow saves that file, it compares the number of test files in Stryker's
+incremental report with the number Vitest lists for the same projects. A mismatch means the
+runner did not collect the whole suite, so the job fails and the partial report is not cached
+as a seed for later runs.
+
 The incremental mode is Stryker's own, and it is a reuse of earlier results rather than a
 second opinion about them: it matches a mutant by the content of the file it sits in and of
 the tests that covered it, and re-runs anything that does not match. That is why the whole
