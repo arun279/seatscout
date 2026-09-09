@@ -62,7 +62,7 @@ describe("the room a result opens into", () => {
       "button:Back to D8 D7",
       "gridcell",
       "radiogroup:candidate",
-      "button:Continue at AMC",
+      "button:D8·D7",
     ]);
     expect(large.tabStops()).toHaveLength(6);
     expect(large.dialog.querySelectorAll('[role="gridcell"]')).toHaveLength(
@@ -145,9 +145,7 @@ describe("the room a result opens into", () => {
   it("carries a different Seat Group from the alternates into the hand-off the dock stacks over the room, and that candidate verifies", async () => {
     const stage = await opened(WEST_PLANO_28);
     fireEvent.click(stage.room.getByRole("radio", { name: /^G14·G13/ }));
-    fireEvent.click(
-      stage.room.getByRole("button", { name: "Continue at Cinemark Theatres" }),
-    );
+    fireEvent.click(stage.room.getByRole("button", { name: "G14·G13" }));
     await settledDom();
     const [, sheet] = screen.getAllByRole("dialog");
     if (sheet === undefined) throw new Error("the dock opened no sheet");
@@ -187,9 +185,7 @@ describe("the room a result opens into", () => {
       "Seat M11",
       "Seat M10",
     ]);
-    expect(
-      stage.room.getByRole("button", { name: "Continue at Cinemark Theatres" }),
-    ).toBeVisible();
+    expect(stage.room.getByRole("button", { name: "M11·M10" })).toBeVisible();
   });
 
   it("closes on the back button and leaves nothing open", async () => {
@@ -247,12 +243,10 @@ describe("the room a result opens into", () => {
     vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
     const stage = await opened(WEST_PLANO_28);
 
-    expect(
-      stage.room.queryByRole("button", { name: /^Continue at/ }),
-    ).toBeNull();
+    expect(stage.room.queryByRole("button", { name: "H14·H13" })).toBeNull();
     expect(
       stage.room.getByText(
-        "Offline. Continuing re-checks these seats at Cinemark Theatres, so it waits for the connection.",
+        "Continuing re-checks them with the Source, so it waits for the connection.",
       ),
     ).toBeVisible();
     expect(stage.grid()).toBeVisible();

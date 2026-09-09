@@ -7,6 +7,7 @@ import {
   HOOKY_ADDISON,
   LAKE_HIGHLANDS_1,
   openedRooms,
+  searched,
   WEST_PLANO_28,
 } from "./rooms.fixtures.js";
 
@@ -115,5 +116,14 @@ describe("the Seat Groups a room offers, as one choice", () => {
     );
 
     expect(legend()[3]).toBe("wheelchair or companion");
+  });
+
+  it("opens no room that holds no Seat Group: every room the search read offered one, and only a room that offered one draws the card that opens it", async () => {
+    const { search, settled } = await searched();
+
+    expect(settled.results).toHaveLength(settled.coverage.checked);
+    expect(
+      settled.results.map((result) => search.auditorium(result).offered.length),
+    ).not.toContain(0);
   });
 });

@@ -113,6 +113,21 @@ export interface OpenedRoom {
   readonly search: Search;
 }
 
+export const searched = async (terms: SearchTerms = CORPUS_QUERY) => {
+  const seatscout = createSeatScout({
+    fetch: fakeUpstream({
+      seed: 4,
+      standInAuditoriums: true,
+      routes: roomRoutes(),
+    }),
+    now: () => 1000,
+    wait: () => Promise.resolve(),
+    random: () => 0.5,
+  });
+  const search = seatscout.search(terms);
+  return { search, settled: await search.done };
+};
+
 export const openedRooms = async (
   terms: SearchTerms = CORPUS_QUERY,
   rooms: readonly CapturedRoom[] = FIVE_ROOMS,

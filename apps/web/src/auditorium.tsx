@@ -12,6 +12,7 @@ import {
   lateralOf,
   partyOf,
   penaltiesOf,
+  spokenOf,
   whyOf,
 } from "./phrases.js";
 import { RowBar } from "./row-bar.js";
@@ -239,14 +240,19 @@ export const Auditorium = ({
               className="btn btn-velvet"
               onClick={() => onHandOff(candidate)}
             >
-              Continue at {theater.chain ?? theater.name}
+              {labelOf(seatsOf(candidate))}
             </button>
           </>
         ) : (
-          <p className="micro">
-            Offline. Continuing re-checks these seats at{" "}
-            {theater.chain ?? theater.name}, so it waits for the connection.
-          </p>
+          <>
+            <p className="held">
+              {spokenOf(seatsOf(candidate))} are here while you are offline.
+            </p>
+            <p className="micro">
+              Continuing re-checks them with the Source, so it waits for the
+              connection.
+            </p>
+          </>
         )}
       </div>
     </dialog>

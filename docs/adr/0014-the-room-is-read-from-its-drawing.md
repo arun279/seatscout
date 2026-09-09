@@ -128,6 +128,17 @@ that it agrees with the order a Row is taken in whatever the Seats' widths. Over
 that is 5,766 contiguous gaps, 462 consoles and 167 aisles: one per adjacent pair, so a Row of
 *n* Seats carries *n* − 1 of them and the last Seat has no gap after it.
 
+## The drawing carries no table semantics of its own
+
+Biome's `useSemanticElements` and `noNoninteractiveElementToInteractiveRole` are off for
+`seat-map.tsx` alone, in `biome.json` where a reviewer sees it, and this is why. Both rules ask
+for a table where an element takes `grid`, `row`, `rowheader` or `gridcell`. SVG has no table
+element: the drawing is `rect` and `text` in one coordinate space, and replacing them with table
+markup would be replacing the drawing. The roles are D45's, and what a screen reader is given
+beyond them is the row bar, a `status` region that says the row on every row change, and each
+Seat's own accessible name. So the rules are asking for markup this surface cannot have, not for
+semantics it is missing.
+
 ## Consequences
 
 The generated rooms the property tests draw are adversarial rather than tidy: uneven row gaps,
