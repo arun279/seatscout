@@ -2,6 +2,7 @@ import type {
   RecentSearch,
   Search,
   SearchTerms,
+  SeatGroupResult,
   SeatProfile,
   SeatScout,
   TicketingUrl,
@@ -53,6 +54,7 @@ interface SearchingProps {
   readonly clock: Clock;
   readonly online: boolean;
   readonly overlays: OverlayState;
+  readonly onHandOff: (candidate: SeatGroupResult) => void;
 }
 
 interface Session {
@@ -73,6 +75,7 @@ const Searching = ({
   clock,
   online,
   overlays,
+  onHandOff,
 }: SearchingProps) => {
   const [session] = useState(() => opened(seatscout, asked));
   const snapshot = useSyncExternalStore(
@@ -106,7 +109,7 @@ const Searching = ({
         onRoom={(result) =>
           overlays.open({ kind: "room", result, search: session.search })
         }
-        onHandOff={(candidate) => overlays.open({ kind: "handOff", candidate })}
+        onHandOff={onHandOff}
       />
     </>
   );
@@ -162,6 +165,8 @@ const Screen = ({
   const overlays = useOverlays();
   const openAsk = (focus: Term) => overlays.open({ kind: "ask", focus });
   const programme = useSyncExternalStore(held.subscribe, held.snapshot);
+  const openHandOff = (candidate: SeatGroupResult) =>
+    overlays.open({ kind: "handOff", candidate });
 
   return (
     <>
@@ -191,6 +196,7 @@ const Screen = ({
           clock={clock}
           online={online}
           overlays={overlays}
+          onHandOff={openHandOff}
         />
       )}
       <Overlays
@@ -208,7 +214,7 @@ const Screen = ({
         onClose={overlays.close}
         onTerms={onTerms}
         onProfile={onProfile}
-        onHandOff={(candidate) => overlays.open({ kind: "handOff", candidate })}
+        onHandOff={openHandOff}
       />
     </>
   );

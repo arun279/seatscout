@@ -171,11 +171,17 @@ describe("what the room calls things", () => {
   });
 
   it("counts the Seat Groups a room holds in the party's own word", () => {
-    expect(groupsOf(131, 2)).toBe("131 pairs in this room.");
+    expect(groupsOf(131, 2)).toBe(
+      "131 pairs in this room. Choose a Seat on the map for any of them.",
+    );
     expect(groupsOf(1, 2)).toBe("The only pair in this room.");
-    expect(groupsOf(85, 3)).toBe("85 threes in this room.");
+    expect(groupsOf(85, 3)).toBe(
+      "85 threes in this room. Choose a Seat on the map for any of them.",
+    );
     expect(groupsOf(1, 3)).toBe("The only three in this room.");
-    expect(groupsOf(12, 1)).toBe("12 seats in this room.");
+    expect(groupsOf(12, 1)).toBe(
+      "12 seats in this room. Choose a Seat on the map for any of them.",
+    );
     expect(groupsOf(1, 1)).toBe("The only seat in this room.");
   });
 

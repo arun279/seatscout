@@ -1,6 +1,6 @@
 import type { SeatGroupResult } from "@seatscout/client";
 import { seatsOf } from "./derived.js";
-import { ageOf, clockOf, labelOf, whyOf } from "./phrases.js";
+import { ageOf, clockOf, labelOf, spokenOf, whyOf } from "./phrases.js";
 import { RoomPlan } from "./room-plan.js";
 
 interface CardProps {
@@ -25,7 +25,7 @@ export const Card = ({ result, now, online, onRoom, onHandOff }: CardProps) => {
           <button
             type="button"
             className="open place"
-            aria-label={`See ${labelOf(seatsOf(result))} in the room at ${theater.name}, ${clock}`}
+            aria-label={`See ${spokenOf(seatsOf(result))} in the room at ${theater.name}, ${clock}`}
             onClick={() => onRoom(result)}
           >
             {theater.name}

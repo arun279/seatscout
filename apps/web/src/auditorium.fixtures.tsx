@@ -45,7 +45,7 @@ export const opened = async (room: CapturedRoom) => {
   await stage.settled();
   fireEvent.click(
     screen.getByRole("button", {
-      name: `See ${room.seats} in the room at ${room.card}`,
+      name: `See ${room.spoken} in the room at ${room.card}`,
     }),
   );
   await act(() => Promise.resolve());

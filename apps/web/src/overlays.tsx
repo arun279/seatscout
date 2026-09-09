@@ -7,7 +7,7 @@ import type {
 import { useSyncExternalStore } from "react";
 import type { Checkout, Clock } from "./app.js";
 import { Ask } from "./ask.js";
-import { Auditorium } from "./auditorium.js";
+import { Room } from "./auditorium.js";
 import { Ledger } from "./coverage.js";
 import { HandOff } from "./hand-off.js";
 import type { HeldSnapshots } from "./held.js";
@@ -64,7 +64,7 @@ const CurrentRoom = ({
   readonly onClose: () => void;
   readonly onHandOff: (candidate: SeatGroupResult) => void;
 }) => (
-  <Auditorium
+  <Room
     result={overlay.result}
     search={overlay.search}
     today={today}

@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { Auditorium } from "./auditorium.js";
+import { Room } from "./auditorium.js";
 import { opened } from "./auditorium.fixtures.js";
 import {
   HOOKY_ADDISON,
@@ -35,7 +35,11 @@ describe("the Seat Groups a room offers, as one choice", () => {
       "F12·F11 Row 6 of 10 · on the centreline",
       "J14·J13 Row 9 of 10 · on the centreline",
     ]);
-    expect(stage.room.getByText("30 pairs in this room.")).toBeVisible();
+    expect(
+      stage.room.getByText(
+        "30 pairs in this room. Choose a Seat on the map for any of them.",
+      ),
+    ).toBeVisible();
     expect(stage.dialog.querySelector(".facts")).toHaveTextContent(
       "2 of 250 not bookableRecliners",
     );
@@ -104,7 +108,7 @@ describe("the Seat Groups a room offers, as one choice", () => {
     );
     if (asked === undefined) throw new Error("the Alamo room offered nothing");
     render(
-      <Auditorium
+      <Room
         result={asked.result}
         search={asked.search}
         today="2026-08-28"

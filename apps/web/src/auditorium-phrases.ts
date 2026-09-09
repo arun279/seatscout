@@ -132,5 +132,5 @@ export const groupsOf = (count: number, partySize: number) => {
   const word = groupWordOf(partySize);
   return count === 1
     ? `The only ${word} in this room.`
-    : `${count} ${word}s in this room.`;
+    : `${count} ${word}s in this room. Choose a Seat on the map for any of them.`;
 };

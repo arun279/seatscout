@@ -18,13 +18,15 @@ export interface RoomOnTheList {
 export const LARGEST_ROOM: RoomOnTheList = {
   showtime: 557962494,
   capture: "561865199",
-  opensWith: "See H14·H13 in the room at Cinemark Frisco Square and XD, 10:10p",
+  opensWith:
+    "See H14 and H13 in the room at Cinemark Frisco Square and XD, 10:10p",
 };
 
 export const POD_ROOM: RoomOnTheList = {
   showtime: 557962491,
   capture: "561462741",
-  opensWith: "See G14·G13 in the room at Cinemark Frisco Square and XD, 1:25p",
+  opensWith:
+    "See G14 and G13 in the room at Cinemark Frisco Square and XD, 1:25p",
 };
 
 const capturedRoom = (capture: string) => {

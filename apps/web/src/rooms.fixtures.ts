@@ -17,6 +17,7 @@ export interface CapturedRoom {
   readonly showtime: number;
   readonly capture: string;
   readonly seats: string;
+  readonly spoken: string;
   readonly card: string;
 }
 
@@ -25,6 +26,7 @@ export const WEST_PLANO_28: CapturedRoom = {
   showtime: 557962494,
   capture: "561865199",
   seats: "H14·H13",
+  spoken: "H14 and H13",
   card: "Cinemark Frisco Square and XD, 10:10p",
 };
 
@@ -33,6 +35,7 @@ export const ANGELIKA_5: CapturedRoom = {
   showtime: 558016663,
   capture: "561230736",
   seats: "L11·L10",
+  spoken: "L11 and L10",
   card: "Cinemark West Plano and XD, 6:40p",
 };
 
@@ -41,6 +44,7 @@ export const VILLAGE_1: CapturedRoom = {
   showtime: 557962491,
   capture: "561462741",
   seats: "G14·G13",
+  spoken: "G14 and G13",
   card: "Cinemark Frisco Square and XD, 1:25p",
 };
 
@@ -49,6 +53,7 @@ export const LAKE_HIGHLANDS_1: CapturedRoom = {
   showtime: 557805659,
   capture: "561505814",
   seats: "608·609",
+  spoken: "608 and 609",
   card: "AMC Highland Village 12, 8:00p",
 };
 
@@ -57,6 +62,7 @@ export const STRIKE_AND_REEL_1: CapturedRoom = {
   showtime: 557843159,
   capture: "561443587",
   seats: "D8·D7",
+  spoken: "D8 and D7",
   card: "AMC Grapevine Mills 24, 9:00p",
 };
 
@@ -65,6 +71,7 @@ export const HOOKY_ADDISON: CapturedRoom = {
   showtime: 558016664,
   capture: "561644741",
   seats: "G14·G13",
+  spoken: "G14 and G13",
   card: "Cinemark West Plano and XD, 9:45p",
 };
 

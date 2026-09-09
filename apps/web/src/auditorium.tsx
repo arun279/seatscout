@@ -19,7 +19,7 @@ import { RowBar } from "./row-bar.js";
 import { holds, SeatMap } from "./seat-map.js";
 import { type Cursor, opened, type Place, rowAt, seatAt } from "./traversal.js";
 
-interface AuditoriumProps {
+interface RoomProps {
   readonly result: SeatGroupResult;
   readonly search: Search;
   readonly today: string;
@@ -90,7 +90,7 @@ const Legend = ({
   </ul>
 );
 
-export const Auditorium = ({
+export const Room = ({
   result,
   search,
   today,
@@ -98,7 +98,7 @@ export const Auditorium = ({
   online,
   onClose,
   onHandOff,
-}: AuditoriumProps) => {
+}: RoomProps) => {
   const [auditorium] = useState(() => search.auditorium(result));
   const [cursor, holdCursor] = useState<Cursor>(() => opened(auditorium));
   const [candidate, setCandidate] = useState(result);
@@ -109,11 +109,10 @@ export const Auditorium = ({
   const alternates = auditorium.offered
     .filter((offered) => offered.key !== result.key)
     .slice(0, ALTERNATES_SHOWN);
-  const listed = [result, ...alternates].some(
-    (offered) => offered.key === candidate.key,
-  )
-    ? [result, ...alternates]
-    : [result, ...alternates, candidate];
+  const shown = [result, ...alternates];
+  const listed = shown.some((offered) => offered.key === candidate.key)
+    ? shown
+    : [...shown, candidate];
   const consoles = auditorium.map.rows.some((drawn) =>
     drawn.gapAfter.includes("pod"),
   );

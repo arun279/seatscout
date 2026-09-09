@@ -133,7 +133,11 @@ describe("the room a result opens into", () => {
 
     expect(chosen).toBeChecked();
     expect(other).not.toBeChecked();
-    expect(stage.room.getByText("2 pairs in this room.")).toBeVisible();
+    expect(
+      stage.room.getByText(
+        "2 pairs in this room. Choose a Seat on the map for any of them.",
+      ),
+    ).toBeVisible();
     expect(nameOf(stage.focused())).toMatch(/^Seat A14\. /);
 
     fireEvent.click(
