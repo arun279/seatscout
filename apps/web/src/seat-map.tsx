@@ -141,8 +141,7 @@ export const SeatMap = ({
   };
 
   const focusedOn = (place: Place) => {
-    if (cursor.row !== place.row || cursor.seat !== place.seat)
-      onCursor(placed(place));
+    if (cursor.seat !== place.seat) onCursor(placed(place));
   };
 
   const tapped = (place: Place) => {
@@ -174,7 +173,7 @@ export const SeatMap = ({
             <Row key={row.ordinalFromFront} row={row} frame={frame}>
               {row.seats.map((seat) => {
                 const place = { row, seat };
-                const roving = cursor.row === row && cursor.seat === seat;
+                const roving = cursor.seat === seat;
                 return (
                   <rect
                     key={seat.id}

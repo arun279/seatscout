@@ -40,21 +40,14 @@ export const placed = (place: Place): Cursor => ({
 
 const onto = (
   cursor: Cursor,
-  row: SeatRow | undefined,
   along: (row: SeatRow) => PositionedSeat | undefined,
 ): Cursor => {
-  const seat = row === undefined ? undefined : along(row);
-  return row === undefined || seat === undefined
-    ? cursor
-    : placed({ row, seat });
+  const seat = along(cursor.row);
+  return seat === undefined ? cursor : placed({ row: cursor.row, seat });
 };
 
 const alongRow = (cursor: Cursor, step: number) =>
-  onto(
-    cursor,
-    cursor.row,
-    (row) => row.seats[row.seats.indexOf(cursor.seat) + step],
-  );
+  onto(cursor, (row) => row.seats[row.seats.indexOf(cursor.seat) + step]);
 
 const acrossRows = (map: AuditoriumMap, cursor: Cursor, to: number): Cursor => {
   const row = map.rows[to];
@@ -75,9 +68,9 @@ const STEPS: Readonly<Record<Move, Step>> = {
   ArrowDown: (map, cursor) => acrossRows(map, cursor, rowOf(map, cursor) + 1),
   ArrowUp: (map, cursor) => acrossRows(map, cursor, rowOf(map, cursor) - 1),
   Home: (map, cursor, ctrl) =>
-    onto(cursor, ctrl ? map.rows[0] : cursor.row, first),
+    onto(ctrl ? acrossRows(map, cursor, 0) : cursor, first),
   End: (map, cursor, ctrl) =>
-    onto(cursor, ctrl ? map.rows[map.rows.length - 1] : cursor.row, last),
+    onto(ctrl ? acrossRows(map, cursor, map.rows.length - 1) : cursor, last),
   PageUp: (map, cursor) => acrossRows(map, cursor, 0),
   PageDown: (map, cursor) => acrossRows(map, cursor, map.rows.length - 1),
 };
