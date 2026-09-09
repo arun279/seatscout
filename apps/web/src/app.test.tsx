@@ -12,21 +12,18 @@ import {
   ask,
   AT_ONE_THEATER,
   cards,
+  EVERYTHING,
   NEARBY,
+  NO_MOVIE,
+  NOTHING,
   staged,
   TODAY,
   TONIGHT,
 } from "./search.fixtures.js";
 import { modal } from "./modal.js";
-import { type Terms, termsFrom } from "./terms.js";
+import type { Terms } from "./terms.js";
 
-const NOTHING: Terms = { date: TODAY, partySize: 2 };
-const NO_MOVIE: Terms = { date: TODAY, area: "75006", partySize: 2 };
 const NO_AREA: Terms = { movie: "245569", date: TODAY, partySize: 2 };
-const EVERYTHING = termsFrom(
-  "?movie=245569&date=2026-08-28&area=75006&partySize=2&chain=AMC&chain=Landmark&theater=aacbt&theater=aaxju&format=Dolby+Cinema&format=IMAX&amenity=Recliners&from=19:00&until=21:00&accessibleSeating=true",
-  TODAY,
-);
 
 const windowListeners = (calls: readonly unknown[][]) =>
   calls

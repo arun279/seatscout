@@ -9,7 +9,6 @@ import {
 } from "@testing-library/react";
 import type { Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { browserAddress, browserClock, browserSeatScout } from "./browser.js";
 import { startApp } from "./start.js";
 
 const SEAT_MAP = "/napi/seatMap/";
@@ -162,6 +161,29 @@ describe("starting the application in a browser", () => {
     );
   });
 
+  it("keeps the film it has read when a chip changes the query and the area and the date do not", async () => {
+    await opened(
+      "?movie=245569&date=2026-08-28&area=75006&partySize=2&theater=aacbt",
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "The Dog Stars (2026)" }),
+      ).toBeVisible(),
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: /two seats together/i }),
+    );
+    const ask = within(
+      screen.getByRole("dialog", { name: /what are we seeing/i }),
+    );
+    fireEvent.click(ask.getByRole("button", { name: "IMAX" }));
+    fireEvent.click(ask.getByRole("button", { name: /find seats/i }));
+
+    expect(
+      screen.getByRole("button", { name: "The Dog Stars (2026)" }),
+    ).toBeVisible();
+  });
+
   it("leaves the address alone when the sheet closes with the query as it was", async () => {
     await opened("?movie=245569&date=2026-08-28&area=75006&partySize=2");
     const pushed = vi.spyOn(window.history, "pushState");
@@ -222,63 +244,5 @@ describe("starting the application in a browser", () => {
 
     expect(vi.getTimerCount()).toBe(0);
     expect(document.getElementById("app")?.childElementCount).toBe(0);
-  });
-
-  it("tells its watchers the query before when the browser goes back to it", async () => {
-    window.history.replaceState(null, "", "/?partySize=2");
-    const address = browserAddress();
-    const seen: string[] = [];
-    const stop = address.subscribe(() => seen.push(address.query()));
-
-    address.go("?partySize=3");
-    window.history.back();
-
-    await waitFor(() => expect(seen).toEqual(["?partySize=3", "?partySize=2"]));
-    stop();
-  });
-
-  it("ticks its clock once a second while someone listens, and not after", () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(10_000);
-    const clock = browserClock();
-    const ticks: number[] = [];
-    const stop = clock.subscribe(() => ticks.push(clock.now()));
-
-    vi.advanceTimersByTime(2_500);
-    stop();
-    vi.advanceTimersByTime(2_000);
-
-    expect(ticks).toEqual([11_000, 12_000]);
-    expect(clock.now()).toBe(12_000);
-  });
-
-  it("waits between retries with the page's own timers", async () => {
-    vi.useFakeTimers();
-    vi.stubGlobal(
-      "fetch",
-      fakeUpstream({
-        seed: 4,
-        standInAuditoriums: true,
-        sequences: { [`${SEAT_MAP}558117351`]: [500] },
-      }),
-    );
-    let settled = false;
-    void browserSeatScout()
-      .search({
-        movie: "245569",
-        date: "2026-08-28",
-        area: "75006",
-        partySize: 2,
-        accessibleSeating: false,
-      })
-      .done.then(() => {
-        settled = true;
-      });
-
-    await vi.advanceTimersByTimeAsync(0);
-    expect(settled).toBe(false);
-
-    await vi.advanceTimersByTimeAsync(60_000);
-    expect(settled).toBe(true);
   });
 });

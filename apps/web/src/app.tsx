@@ -41,6 +41,11 @@ export interface AppProps {
   readonly checkout: Checkout;
 }
 
+interface ScreenProps extends AppProps {
+  readonly online: boolean;
+  readonly held: HeldProgramme;
+}
+
 interface SearchingProps {
   readonly seatscout: SeatScout;
   readonly asked: SearchTerms;
@@ -143,6 +148,7 @@ const Prompt = ({
 const Screen = ({
   seatscout,
   terms,
+  held,
   onTerms,
   profile,
   onProfile,
@@ -151,13 +157,10 @@ const Screen = ({
   clock,
   checkout,
   online,
-}: AppProps & { readonly online: boolean }) => {
+}: ScreenProps) => {
   const asked = askedFrom(terms, profile);
   const overlays = useOverlays();
   const openAsk = (focus: Term) => overlays.open({ kind: "ask", focus });
-  const [held] = useState<HeldProgramme>(() =>
-    programmeNear(seatscout, terms.area, terms.date),
-  );
   const programme = useSyncExternalStore(held.subscribe, held.snapshot);
 
   return (
@@ -209,6 +212,26 @@ const Screen = ({
   );
 };
 
+const Playing = ({
+  seatscout,
+  terms,
+  ...rest
+}: AppProps & { readonly online: boolean }) => {
+  const [held] = useState<HeldProgramme>(() =>
+    programmeNear(seatscout, terms.area, terms.date),
+  );
+
+  return (
+    <Screen
+      key={queryOf(terms)}
+      seatscout={seatscout}
+      terms={terms}
+      held={held}
+      {...rest}
+    />
+  );
+};
+
 export const App = ({ terms, ...rest }: AppProps) => {
   const online = useOnline();
 
@@ -225,7 +248,12 @@ export const App = ({ terms, ...rest }: AppProps) => {
         <span className="fall" />
         <span className="word">SEATSCOUT</span>
       </div>
-      <Screen key={queryOf(terms)} terms={terms} online={online} {...rest} />
+      <Playing
+        key={`${terms.area}|${terms.date}`}
+        terms={terms}
+        online={online}
+        {...rest}
+      />
     </main>
   );
 };
