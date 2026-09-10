@@ -1,6 +1,7 @@
 import "./house.css";
 import "./hand-off.css";
 import type { SeatGroupResult, SeatScout } from "@seatscout/client";
+import type { ReactElement } from "react";
 import { useRef, useState, useSyncExternalStore } from "react";
 import type { Checkout, Clock } from "./app.js";
 import {
@@ -152,7 +153,7 @@ export const HandOff = ({
   online,
   today,
   onClose,
-}: HandOffProps) => {
+}: HandOffProps): ReactElement => {
   const now = useSyncExternalStore(clock.subscribe, clock.now);
   const [sheet, setSheet] = useState<Sheet>({
     chosen: opened,

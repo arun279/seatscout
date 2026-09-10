@@ -3,7 +3,7 @@ import { isRecord, type KeyValueStore } from "./store.js";
 
 const KEY = "seatscout.profile.v1";
 
-export const FIELDS = [
+export const FIELDS: readonly (keyof SeatProfile)[] = [
   "targetDepth",
   "targetLateral",
   "depthWeight",
@@ -22,7 +22,12 @@ const isProfile = (value: unknown): value is SeatProfile =>
 export const isReference = (profile: SeatProfile): boolean =>
   FIELDS.every((field) => profile[field] === REFERENCE[field]);
 
-export const openProfile = (store: KeyValueStore) => ({
+export const openProfile = (
+  store: KeyValueStore,
+): {
+  readonly remembered: () => Promise<SeatProfile>;
+  readonly remember: (profile: SeatProfile) => Promise<void>;
+} => ({
   remembered: async (): Promise<SeatProfile> => {
     const held = await store.read(KEY);
     return isProfile(held) ? held : REFERENCE;

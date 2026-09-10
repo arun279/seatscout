@@ -5,6 +5,7 @@ import type {
   SeatGroupResult,
   SeatRow,
 } from "@seatscout/client";
+import type { ReactElement } from "react";
 import { type KeyboardEvent, type ReactNode, useState } from "react";
 import { gridLabelOf, seatNameOf } from "./auditorium-phrases.js";
 import { type Frame, usePanZoom } from "./pan-zoom.js";
@@ -46,7 +47,7 @@ const frameOf = (auditorium: Auditorium): Frame => {
   };
 };
 
-export const holds = (group: SeatGroupResult, seat: PositionedSeat) =>
+export const holds = (group: SeatGroupResult, seat: PositionedSeat): boolean =>
   group.seats.some((held) => held.id === seat.id);
 
 const stateOf = (seat: PositionedSeat, lit: boolean) => {
@@ -120,7 +121,7 @@ export const SeatMap = ({
   accessibleSeating,
   onCursor,
   onActivate,
-}: SeatMapProps) => {
+}: SeatMapProps): ReactElement => {
   const { map } = auditorium;
   const [{ frame, offered }] = useState(() => ({
     frame: frameOf(auditorium),

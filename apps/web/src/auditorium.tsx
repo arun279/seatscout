@@ -2,6 +2,7 @@ import "./house.css";
 import "./auditorium.css";
 import "./seat-map.css";
 import type { Search, SeatGroupResult } from "@seatscout/client";
+import type { ReactElement } from "react";
 import { useState } from "react";
 import { chosenOf, groupsOf, refusalOf } from "./auditorium-phrases.js";
 import { modal } from "./modal.js";
@@ -100,7 +101,7 @@ export const Room = ({
   online,
   onClose,
   onHandOff,
-}: RoomProps) => {
+}: RoomProps): ReactElement => {
   const [auditorium] = useState(() => search.auditorium(result));
   const [cursor, holdCursor] = useState<Cursor>(() => opened(auditorium));
   const [chosen, setChosen] = useState(result);

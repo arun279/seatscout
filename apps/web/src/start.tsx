@@ -1,4 +1,5 @@
 import { createRoot } from "react-dom/client";
+import type { Root as ReactRoot } from "react-dom/client";
 import {
   browserAddress,
   browserCheckout,
@@ -7,7 +8,7 @@ import {
 } from "./browser.js";
 import { rememberedBy, Root } from "./root.js";
 
-export const startApp = async () => {
+export const startApp = async (): Promise<ReactRoot> => {
   const mount = document.getElementById("app");
   if (mount === null) throw new Error("the page has nothing to mount into");
   const seatscout = browserSeatScout();

@@ -1,5 +1,6 @@
 import "./results.css";
 import type { SeatGroupResult } from "@seatscout/client";
+import type { ReactElement } from "react";
 import { ageOf, clockOf, labelOf, spokenOf, whyOf } from "./phrases.js";
 import { RoomPlan } from "./room-plan.js";
 
@@ -11,7 +12,13 @@ interface CardProps {
   readonly onHandOff: (result: SeatGroupResult) => void;
 }
 
-export const Card = ({ result, now, online, onRoom, onHandOff }: CardProps) => {
+export const Card = ({
+  result,
+  now,
+  online,
+  onRoom,
+  onHandOff,
+}: CardProps): ReactElement => {
   const { theater, formats } = result.showtime.presentation;
   const clock = clockOf(result.showtime.startsAt);
   return (

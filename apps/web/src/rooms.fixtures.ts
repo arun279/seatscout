@@ -1,9 +1,10 @@
-import {
-  type Auditorium,
-  createSeatScout,
-  type Search,
-  type SearchTerms,
-  type SeatGroupResult,
+import { createSeatScout } from "@seatscout/client";
+import type {
+  Auditorium,
+  Search,
+  SearchTerms,
+  SeatGroupResult,
+  Snapshot,
 } from "@seatscout/client";
 import {
   fakeUpstream,
@@ -120,7 +121,9 @@ export interface OpenedRoom {
   readonly search: Search;
 }
 
-export const searched = async (terms: SearchTerms = CORPUS_QUERY) => {
+export const searched = async (
+  terms: SearchTerms = CORPUS_QUERY,
+): Promise<{ readonly search: Search; readonly settled: Snapshot }> => {
   const seatscout = createSeatScout({
     fetch: fakeUpstream({
       seed: 4,

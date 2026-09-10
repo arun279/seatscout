@@ -1,4 +1,7 @@
-export const signal = () => {
+export const signal = (): {
+  readonly subscribe: (onChange: () => void) => () => boolean;
+  readonly notify: () => void;
+} => {
   const listeners = new Set<() => void>();
   return {
     subscribe: (onChange: () => void) => {

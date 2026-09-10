@@ -1,5 +1,6 @@
 import "./query.css";
 import type { SeatProfile } from "@seatscout/client";
+import type { ReactElement } from "react";
 import { Fragment } from "react";
 import type { ProgrammeState } from "./programme.js";
 import type { Terms } from "./terms.js";
@@ -46,7 +47,7 @@ export const TitleCard = ({
   profile,
   today,
   onEdit,
-}: TitleCardProps) => {
+}: TitleCardProps): ReactElement => {
   const [party, movie, details] = termLinesOf(terms, programme, today, profile);
   return (
     <header className="title-card">

@@ -25,7 +25,13 @@ export const everyShowtime = (
   ...catalogue.unidentified,
 ];
 
-export const counted = (catalogue: Catalogue) => ({
+export const counted = (
+  catalogue: Catalogue,
+): {
+  readonly bookable: number;
+  readonly unbookable: number;
+  readonly unidentified: number;
+} => ({
   bookable: catalogue.bookable.length,
   unbookable: catalogue.unbookable.length,
   unidentified: catalogue.unidentified.length,

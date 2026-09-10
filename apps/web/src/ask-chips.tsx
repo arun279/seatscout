@@ -1,6 +1,7 @@
 import "./house.css";
 import "./ask.css";
 import type { Theater, TheaterId } from "@seatscout/client";
+import type { ReactElement } from "react";
 import type { Term } from "./title-card-terms.js";
 
 interface ChipsProps<Named extends string> {
@@ -76,7 +77,7 @@ const ChipGroup = <Named extends string>({
 export const Chips = <Named extends string>({
   every,
   ...group
-}: ChipsProps<Named>) => (
+}: ChipsProps<Named>): ReactElement => (
   <ChipGroup
     {...group}
     chips={every.map((value) => ({ value, text: value }))}
@@ -87,7 +88,7 @@ export const TheaterChips = ({
   theaters,
   chosen,
   onChosen,
-}: TheaterChipsProps) => (
+}: TheaterChipsProps): ReactElement => (
   <ChipGroup
     term="theaters"
     legend="Theater"

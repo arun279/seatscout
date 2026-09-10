@@ -1,4 +1,6 @@
-import { expect, type Page } from "@playwright/test";
+import { expect } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
+import type { UpstreamScript } from "@seatscout/core/testing";
 import { routeOf, seatMapCaptures } from "@seatscout/core/testing";
 import { answeredByTheCorpus, TONIGHT } from "./corpus.fixtures.js";
 
@@ -32,7 +34,7 @@ const capturedRoom = (capture: string) => {
   return { status: room.status, body: JSON.stringify(room.body) };
 };
 
-export const capturedRooms = () =>
+export const capturedRooms = (): NonNullable<UpstreamScript["routes"]> =>
   Object.fromEntries(
     [LARGEST_ROOM, POD_ROOM].map((listed) => [
       `/napi/seatMap/${listed.showtime}`,
@@ -43,13 +45,16 @@ export const capturedRooms = () =>
 export const roomOpenedFromTheList = async (
   page: Page,
   room: RoomOnTheList,
-) => {
+): Promise<Locator> => {
   await page.getByRole("button", { name: room.opensWith }).click();
   await expect(page.getByRole("dialog")).toBeVisible();
   return page.getByRole("dialog");
 };
 
-export const roomOpened = async (page: Page, room: RoomOnTheList) => {
+export const roomOpened = async (
+  page: Page,
+  room: RoomOnTheList,
+): Promise<Locator> => {
   await answeredByTheCorpus(page, { routes: capturedRooms() });
   await page.goto(TONIGHT);
   await expect(page.getByRole("status")).toHaveText(/172 checked$/);
@@ -76,7 +81,7 @@ export interface Colours {
 
 type Rgb = readonly [number, number, number];
 
-export const luminanceOf = ([r, g, b]: Rgb) => {
+export const luminanceOf = ([r, g, b]: Rgb): number => {
   const channel = (value: number) => {
     const c = value / 255;
     return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
@@ -84,7 +89,7 @@ export const luminanceOf = ([r, g, b]: Rgb) => {
   return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
 };
 
-export const contrastOf = (first: Rgb, second: Rgb) => {
+export const contrastOf = (first: Rgb, second: Rgb): number => {
   const one = luminanceOf(first);
   const other = luminanceOf(second);
   return (Math.max(one, other) + 0.05) / (Math.min(one, other) + 0.05);
@@ -113,7 +118,14 @@ export const channelsOf = (colours: Colours): Record<keyof Colours, Rgb> => {
   };
 };
 
-export const paintedOn = () => {
+export const paintedOn = (): {
+  readonly ground: Painted;
+  readonly free: Painted;
+  readonly gone: Painted;
+  readonly lit: Painted;
+  readonly tick: Painted;
+  readonly focused: Painted;
+} => {
   const styleOf = (selector: string): Painted => {
     const element = document.querySelector(selector);
     if (element === null) throw new Error(`${selector} is not drawn`);
@@ -140,7 +152,9 @@ export const paintedOn = () => {
   };
 };
 
-export const pixelsOf = async (png: string) => {
+export const pixelsOf = async (
+  png: string,
+): Promise<{ readonly centre: Rgb; readonly edge: Rgb }> => {
   const blob = await (await fetch(`data:image/png;base64,${png}`)).blob();
   const bitmap = await createImageBitmap(blob);
   const canvas = document.createElement("canvas");

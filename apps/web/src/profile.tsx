@@ -1,6 +1,7 @@
 import "./house.css";
 import "./ask.css";
 import { isReference, REFERENCE, type SeatProfile } from "@seatscout/client";
+import type { ReactElement } from "react";
 import { type PointerEvent, useId } from "react";
 import { marksOf, targetAt } from "./plan.js";
 import type { Term } from "./title-card-terms.js";
@@ -173,7 +174,7 @@ const Range = ({
   );
 };
 
-export const Profile = ({ profile, onChange }: ProfileProps) => (
+export const Profile = ({ profile, onChange }: ProfileProps): ReactElement => (
   <>
     <fieldset className="field">
       <legend className="eyebrow">Where you sit</legend>

@@ -19,7 +19,12 @@ const same = (one: RecentSearch, other: RecentSearch) =>
   one.area === other.area &&
   one.partySize === other.partySize;
 
-export const openRecentSearches = (store: KeyValueStore) => {
+export const openRecentSearches = (
+  store: KeyValueStore,
+): {
+  readonly remembered: () => Promise<readonly RecentSearch[]>;
+  readonly remember: (search: RecentSearch) => Promise<RecentSearch[]>;
+} => {
   const remembered = async (): Promise<readonly RecentSearch[]> => {
     const held = await store.read(KEY);
     return isHistory(held) ? held : [];

@@ -44,14 +44,14 @@ export type Format =
   | "XD"
   | "XL";
 
-export const EVERY_AMENITY = [
+export const EVERY_AMENITY: readonly Amenity[] = [
   "Accessibility Devices",
   "Closed Captioning",
   "Dine-In",
   "Recliners",
 ] as const satisfies readonly Amenity[];
 
-export const EVERY_CHAIN = [
+export const EVERY_CHAIN: readonly Chain[] = [
   "AMC",
   "Alamo Drafthouse Cinemas",
   "Angelika Film Center",
@@ -63,7 +63,7 @@ export const EVERY_CHAIN = [
   "Studio Movie Grill",
 ] as const satisfies readonly Chain[];
 
-export const EVERY_FORMAT = [
+export const EVERY_FORMAT: readonly Format[] = [
   "3D",
   "D-BOX",
   "DFX",

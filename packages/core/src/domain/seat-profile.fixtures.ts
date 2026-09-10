@@ -67,7 +67,7 @@ export const drawn = (rows: readonly RowSpec[]): Auditorium =>
 export const rowOf = (
   seats: number,
   shift = 0,
-  width = SEAT_WIDTH,
+  width: number = SEAT_WIDTH,
 ): RowSpec => ({
   gap: ROW_GAP,
   pitch: SEAT_WIDTH,
@@ -85,7 +85,7 @@ export const scoreOf = (
   auditorium: Auditorium,
   profile: SeatProfile,
   group: SeatGroup<Positioned>,
-) => scoringIn(auditorium, profile)(group).score;
+): number => scoringIn(auditorium, profile)(group).score;
 
 interface Ranked extends Scored {
   readonly seat: Positioned;
@@ -99,12 +99,12 @@ export const rankedIn = (
   return auditorium.map((seat) => ({ seat, ...score(alone(seat)) }));
 };
 
-export const bestOf = (ranked: readonly Ranked[]) =>
+export const bestOf = (ranked: readonly Ranked[]): Ranked =>
   ranked.reduce((best, candidate) =>
     candidate.score > best.score ? candidate : best,
   );
 
-export const rowsIn = (auditorium: Auditorium) =>
+export const rowsIn = (auditorium: Auditorium): Positioned[][] =>
   [...new Set(auditorium.map((seat) => seat.depth))]
     .sort((nearer, further) => nearer - further)
     .map((depth) => auditorium.filter((seat) => seat.depth === depth));
@@ -126,7 +126,14 @@ const outwardRuns = (ranked: readonly Ranked[]) =>
     ];
   });
 
-export const judged = (auditorium: Auditorium, profile: SeatProfile) => {
+export const judged = (
+  auditorium: Auditorium,
+  profile: SeatProfile,
+): {
+  readonly onTheCentreline: boolean;
+  readonly withinOneRowOfTarget: boolean;
+  readonly fallingOutward: boolean;
+} => {
   const ranked = rankedIn(auditorium, profile);
   const top = bestOf(ranked);
   return {
@@ -174,7 +181,7 @@ const equalOffsetPenalty = (
 export const punishesTheFrontRowHarder = (
   auditorium: Auditorium,
   profile: SeatProfile,
-) => {
+): boolean | null => {
   const rows = rowsIn(auditorium);
   const front = rows.at(0);
   const back = rows.at(-1);
@@ -189,7 +196,14 @@ export const punishesTheFrontRowHarder = (
 
 export const SEPARABLE: SeatProfile = { ...REFERENCE, rowPitch: 0 };
 
-export const sweptWeightings = () =>
+export const sweptWeightings = (): readonly {
+  readonly depthWeight: number;
+  readonly offAxisWeight: number;
+  readonly frontBandWeight: number;
+  readonly wallBandWeight: number;
+  readonly screenGap: number;
+  readonly rowPitch: number;
+}[] =>
   [0.25, 1, 2].flatMap((depthWeight) =>
     [0.25, 1, 2].flatMap((offAxisWeight) =>
       [0, 0.25].flatMap((frontBandWeight) =>
@@ -236,9 +250,11 @@ const layouts = fc.oneof(
   { weight: 3, arbitrary: fc.array(rowSpecs, { minLength: 2, maxLength: 9 }) },
 );
 
-export const auditoriums = layouts.map(drawn).chain((seats) =>
-  fc.shuffledSubarray([...seats], {
-    minLength: seats.length,
-    maxLength: seats.length,
-  }),
-);
+export const auditoriums: fc.Arbitrary<Positioned[]> = layouts
+  .map(drawn)
+  .chain((seats) =>
+    fc.shuffledSubarray([...seats], {
+      minLength: seats.length,
+      maxLength: seats.length,
+    }),
+  );

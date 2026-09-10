@@ -7,6 +7,7 @@ import {
   type RecentSearch,
   type SeatProfile,
 } from "@seatscout/client";
+import type { ReactElement } from "react";
 import { useState, useSyncExternalStore } from "react";
 import { Chips, TheaterChips } from "./ask-chips.js";
 import { Film } from "./ask-film.js";
@@ -131,7 +132,7 @@ export const Ask = ({
   focus,
   onClose,
   onFind,
-}: AskProps) => {
+}: AskProps): ReactElement => {
   const [draft, setDraft] = useState(terms);
   const [profile, setProfile] = useState(chosen);
   const [held, setHeld] = useState(programme);

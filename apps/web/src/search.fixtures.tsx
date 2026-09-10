@@ -11,8 +11,10 @@ import {
 } from "@seatscout/client";
 import { fakeUpstream, type UpstreamScript } from "@seatscout/client/testing";
 import { act, cleanup, render, screen, within } from "@testing-library/react";
+import type { BoundFunctions, queries } from "@testing-library/react";
 import { Profiler, useState } from "react";
-import { App, type AppProps } from "./app.js";
+import { App } from "./app.js";
+import type { AppProps, Clock } from "./app.js";
 import type { ProgrammeState } from "./programme.js";
 import type { Terms } from "./terms.js";
 import { TODAY, TONIGHT } from "./terms.fixtures.js";
@@ -66,6 +68,30 @@ interface Staged {
   ) => Parameters<typeof createSeatScout>[0]["fetch"];
 }
 
+export interface Stage {
+  readonly unmount: () => void;
+  readonly asked: SearchTerms[];
+  readonly chosen: Terms[];
+  readonly profiles: SeatProfile[];
+  readonly aborted: Search[];
+  readonly checkouts: string[];
+  readonly commits: string[];
+  readonly clock: Clock;
+  readonly seatscout: SeatScout;
+  readonly advance: (ms: number) => void;
+  readonly answered: () => Promise<Verified>;
+  readonly verifications: Promise<Verified>[];
+  readonly requested: (prefix: string) => number;
+  readonly heldRetries: () => number;
+  readonly programmesRead: () => number;
+  readonly resumeRetries: () => Promise<void>;
+  readonly programmed: () => Promise<void>;
+  readonly settled: () => Promise<Snapshot>;
+  readonly searches: Search[];
+}
+
+export type QueryScreen = BoundFunctions<typeof queries>;
+
 const Harness = ({
   profile: initial,
   onProfile,
@@ -103,7 +129,7 @@ const ticking = () => {
   };
 };
 
-export const staged = (options: Staged = {}) => {
+export const staged = (options: Staged = {}): Stage => {
   const upstream = fakeUpstream({
     seed: 4,
     standInAuditoriums: true,
@@ -235,21 +261,23 @@ export const programmeRead = async (): Promise<ProgrammeState> => {
   return { phase: "read", ...reading.payload };
 };
 
-export const settledAlone = async (options: Staged = {}) => {
+export const settledAlone = async (options: Staged = {}): Promise<Snapshot> => {
   const stage = staged(options);
   const settled = await stage.settled();
   cleanup();
   return settled;
 };
 
-export const failing = (statuses: readonly number[]) =>
+export const failing = (
+  statuses: readonly number[],
+): NonNullable<UpstreamScript["sequences"]> =>
   Object.fromEntries(FAILING.map((id) => [`${SEAT_MAP}${id}`, statuses]));
 
-export const cards = () => screen.queryAllByRole("article");
+export const cards = (): HTMLElement[] => screen.queryAllByRole("article");
 
-export const before = (first: Element, second: Element) =>
+export const before = (first: Element, second: Element): boolean =>
   (first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING) !==
   0;
 
-export const ask = () =>
+export const ask = (): QueryScreen =>
   within(screen.getByRole("dialog", { name: /what are we seeing/i }));

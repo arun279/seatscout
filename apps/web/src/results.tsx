@@ -1,5 +1,6 @@
 import "./results.css";
 import type { SeatGroupResult, Snapshot } from "@seatscout/client";
+import type { ReactElement } from "react";
 import { Fragment } from "react";
 import { Card } from "./card.js";
 import {
@@ -78,7 +79,7 @@ export const Results = ({
   onEdit,
   onRoom,
   onHandOff,
-}: ResultsProps) => {
+}: ResultsProps): ReactElement => {
   const when = whenOf(terms.date, today);
   const settled = snapshot.phase === "settled";
   const results = painted === null ? [] : listed(painted.results);

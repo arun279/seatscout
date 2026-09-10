@@ -14,7 +14,7 @@ const isSeatStatus = (value: unknown): value is SeatStatus =>
 export const seatMapBodyWithStatuses = (
   body: string,
   statusOf: (seat: SeatStatus) => string | undefined,
-) => {
+): string => {
   const value: unknown = JSON.parse(body);
   if (!isRecord(value) || !Array.isArray(value["seats"])) return body;
   return JSON.stringify({

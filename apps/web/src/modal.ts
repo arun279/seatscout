@@ -1,4 +1,4 @@
-export const modal = (dialog: HTMLDialogElement) => {
+export const modal = (dialog: HTMLDialogElement): (() => void) => {
   dialog.showModal();
   dialog
     .querySelector<HTMLElement>(`[data-term="${dialog.dataset["focus"]}"]`)

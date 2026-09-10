@@ -1,6 +1,7 @@
 import "./house.css";
 import "./ask.css";
 import type { Movie } from "@seatscout/client";
+import type { ReactElement } from "react";
 import { type ProgrammeState, suggestedFor } from "./programme.js";
 
 interface FilmProps {
@@ -48,7 +49,12 @@ const Highlighted = ({
   );
 };
 
-export const Film = ({ area, programme, typed, onTyped }: FilmProps) => {
+export const Film = ({
+  area,
+  programme,
+  typed,
+  onTyped,
+}: FilmProps): ReactElement => {
   const status = statusOf(area, programme);
   const suggested = suggestedFor(typed, programme.movies);
   return (

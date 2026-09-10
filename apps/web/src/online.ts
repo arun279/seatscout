@@ -11,5 +11,5 @@ const connectionChanges = (tick: () => void) => {
 
 const isOnline = () => navigator.onLine;
 
-export const useOnline = () =>
+export const useOnline = (): boolean =>
   useSyncExternalStore(connectionChanges, isOnline);

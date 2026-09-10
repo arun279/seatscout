@@ -1,17 +1,16 @@
 import type { PositionedSeat } from "@seatscout/client";
-import { type PointerEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { Dispatch, PointerEvent, SetStateAction } from "react";
 import {
-  type Box,
   FITTED,
   mostZoomFor,
   panned,
   pinched,
-  type Point,
   revealed,
   transformOf,
-  type View,
   zoomed,
 } from "./gesture.js";
+import type { Box, Point, View } from "./gesture.js";
 import type { Cursor } from "./traversal.js";
 
 export interface Frame extends Box {
@@ -49,7 +48,19 @@ const measured = (target: SVGGElement, frame: Frame, view: View) => {
   };
 };
 
-export const usePanZoom = (frame: Frame, cursor: Cursor) => {
+export const usePanZoom = (
+  frame: Frame,
+  cursor: Cursor,
+): {
+  readonly setGroup: Dispatch<SetStateAction<SVGGElement | null>>;
+  readonly handlers: {
+    readonly onPointerDown: (event: PointerEvent<SVGGElement>) => void;
+    readonly onPointerMove: (event: PointerEvent<SVGGElement>) => void;
+    readonly onPointerUp: (event: PointerEvent<SVGGElement>) => void;
+    readonly onPointerCancel: (event: PointerEvent<SVGGElement>) => void;
+  };
+  readonly dragged: () => boolean;
+} => {
   const [group, setGroup] = useState<SVGGElement | null>(null);
   const view = useRef<View>(FITTED);
   const pointers = useRef(new Map<number, Tracked>());
