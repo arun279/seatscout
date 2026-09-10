@@ -11,6 +11,7 @@ import {
 } from "./src/structures.ts";
 
 const BIOME = "biome.json";
+const ENTRY = "apps/web/src/index.ts";
 const LEFTHOOK = "lefthook.yml";
 const PACKAGES = "packages";
 const ADAPTER = "packages/core/src/source/catalogue.ts";
@@ -33,6 +34,9 @@ const hookCommands = (read: Read, hook: string) => {
   );
   return under.filter((line) => /^ {4}[a-z][\w:-]*:$/.test(line));
 };
+
+const sheetsImported = (read: Read) =>
+  [...read(ENTRY).matchAll(/^import "\.\/[\w-]+\.css";$/gm)].length;
 
 const outcomes = (read: Read) =>
   fieldsOf(read, SEARCH, "Coverage").filter((field) => field !== "candidates");
@@ -85,6 +89,12 @@ export const CLAIMS: readonly Claim[] = [
     says: /The pre-push hook runs (\w+) over the whole workspace/,
     about: `the commands under pre-push, in ${LEFTHOOK}`,
     count: (read) => hookCommands(read, "pre-push").length,
+  },
+  {
+    document: CONTRIBUTING,
+    says: /`apps\/web\/src\/index\.ts` imports all (\w+) in the order/,
+    about: `the stylesheets imported by ${ENTRY}`,
+    count: sheetsImported,
   },
   {
     document: CONTEXT,

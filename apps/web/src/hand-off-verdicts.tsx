@@ -1,3 +1,5 @@
+import "./house.css";
+import "./hand-off.css";
 import type { SeatGroupResult } from "@seatscout/client";
 import {
   ageOf,

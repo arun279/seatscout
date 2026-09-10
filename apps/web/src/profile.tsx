@@ -1,3 +1,5 @@
+import "./house.css";
+import "./ask.css";
 import { isReference, REFERENCE, type SeatProfile } from "@seatscout/client";
 import { type PointerEvent, useId } from "react";
 import { marksOf, targetAt } from "./plan.js";

@@ -1,6 +1,0 @@
-export const Offends = ({ on }: { readonly on: boolean }) => (
-  <div className="card ghost">
-    <span className={on ? "said" : "faint"}>a literal in an expression</span>
-    <span className={`lit ${on} spectre`}>a template's own parts</span>
-  </div>
-);

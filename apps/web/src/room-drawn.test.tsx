@@ -5,8 +5,8 @@ import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { opened } from "./auditorium.fixtures.js";
 import { WEST_PLANO_28 } from "./rooms.fixtures.js";
 
-const PUBLIC = "apps/web/public";
-const SHEET = /<link rel="stylesheet" href="([^"]*)"/g;
+const SOURCE = "apps/web/src";
+const SHEET = /^import "\.\/([\w-]+\.css)";$/gm;
 
 let sheets: readonly string[] = [];
 
@@ -25,10 +25,10 @@ const served = () => {
 const drawn = (element: Element) => getComputedStyle(element);
 
 beforeAll(async () => {
-  const html = await readFile(`${PUBLIC}/index.html`, "utf8");
+  const entry = await readFile(`${SOURCE}/index.ts`, "utf8");
   sheets = await Promise.all(
-    [...html.matchAll(SHEET)].map(([, href]) =>
-      readFile(`${PUBLIC}${href}`, "utf8"),
+    [...entry.matchAll(SHEET)].map(([, name]) =>
+      readFile(`${SOURCE}/${name}`, "utf8"),
     ),
   );
 });

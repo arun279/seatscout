@@ -9,6 +9,7 @@ import {
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   HOOKY_TICKETING,
+  marks,
   opened,
   openedWithoutUnmount,
 } from "./hand-off.fixtures.js";
@@ -20,6 +21,14 @@ import {
 import { drawn } from "./stylesheet.fixtures.js";
 
 const SMALL_FIRST = "Cinemark Lewisville and XD";
+
+const sizeOf = (plan: Element | null) => {
+  if (plan === null) throw new Error("no room plan was drawn");
+  return {
+    width: Number(plan.getAttribute("width")),
+    height: Number(plan.getAttribute("height")),
+  };
+};
 
 describe("the hand-off", () => {
   afterEach(() => {
@@ -81,12 +90,24 @@ describe("the hand-off", () => {
     );
   });
 
+  it("draws the room plan three times the size a card draws it, with nothing marked lost", async () => {
+    await opened();
+    const { plan, lost } = marks();
+    const onCard = sizeOf(cards()[0]?.querySelector("svg.plan") ?? null);
+
+    expect(sizeOf(plan)).toEqual({
+      width: onCard.width * 3,
+      height: onCard.height * 3,
+    });
+    expect(lost).toBeNull();
+  });
+
   it("draws the disabled Take button like a disabled chip", async () => {
     const chip = document.createElement("button");
     chip.className = "chip";
     chip.disabled = true;
     document.body.append(chip);
-    const chipStyle = await drawn("apps/web/public/house.css", () => {
+    const chipStyle = await drawn("apps/web/src/house.css", () => {
       const style = getComputedStyle(chip);
       return { color: style.color, cursor: style.cursor };
     });
@@ -96,7 +117,7 @@ describe("the hand-off", () => {
     fireEvent.click(sheet.getByRole("button", { name: "Take G6 and G7" }));
     await act(() => Promise.resolve());
 
-    const buttonStyle = await drawn("apps/web/public/house.css", () => {
+    const buttonStyle = await drawn("apps/web/src/house.css", () => {
       const style = getComputedStyle(
         sheet.getByRole("button", { name: "Take G6 and G7" }),
       );

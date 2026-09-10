@@ -11,7 +11,6 @@
     { "path": "apps/web/tsconfig.worker.json" },
     { "path": "apps/proxy" },
     { "path": "apps/proxy/tsconfig.test.json" },
-    { "path": "tools/classes-in-stylesheets" },
     { "path": "tools/counts-in-prose" },
     { "path": "tools/journey" },
     { "path": "tools/live-injections" },

@@ -1,30 +1,12 @@
+declare const SHELL_FILES: string[];
+
 const CACHE = "shell";
 
-const SHELL = [
-  "/",
-  "/index.js",
-  "/manifest.webmanifest",
-  "/foundation.css",
-  "/house.css",
-  "/app.css",
-  "/query.css",
-  "/ask.css",
-  "/results.css",
-  "/coverage.css",
-  "/auditorium.css",
-  "/seat-map.css",
-  "/hand-off.css",
-  "/icon.svg",
-  "/fonts/big-shoulders-display.woff2",
-  "/fonts/schibsted-grotesk.woff2",
-  "/fonts/spline-sans-mono.woff2",
-];
-
-export const isShellPath = (path: string) => SHELL.includes(path);
+export const isShellPath = (path: string) => SHELL_FILES.includes(path);
 
 export const precacheShell = async () => {
   const cache = await caches.open(CACHE);
-  await cache.addAll(SHELL);
+  await cache.addAll(SHELL_FILES);
 };
 
 export const cachedShell = (path: string) => caches.match(path);

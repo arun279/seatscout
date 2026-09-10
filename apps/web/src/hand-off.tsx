@@ -1,3 +1,5 @@
+import "./house.css";
+import "./hand-off.css";
 import type { SeatGroupResult, SeatScout } from "@seatscout/client";
 import { useRef, useState, useSyncExternalStore } from "react";
 import type { Checkout, Clock } from "./app.js";

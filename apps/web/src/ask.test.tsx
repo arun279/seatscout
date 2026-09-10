@@ -50,7 +50,7 @@ describe("the Ask sheet, as the stylesheet it is served with draws it", () => {
   it("puts every control's name and what it says on one line, the value at the end of it", async () => {
     const editor = rendered();
 
-    const rows = await drawn("apps/web/public/ask.css", () =>
+    const rows = await drawn("apps/web/src/ask.css", () =>
       editor.getAllByRole("slider").map((slider) => {
         const top = slider.parentElement?.querySelector(".top");
         if (top === null || top === undefined)
@@ -89,7 +89,7 @@ describe("the Ask sheet, as the stylesheet it is served with draws it", () => {
   it("spreads the words at both ends of every scale across one line, the weights' own included", async () => {
     rendered();
 
-    const ends = await drawn("apps/web/public/ask.css", () =>
+    const ends = await drawn("apps/web/src/ask.css", () =>
       [...document.querySelectorAll("dialog .ends")].map((row) => {
         const style = getComputedStyle(row);
         const words = [...row.children].map((word) => word.textContent);
@@ -108,7 +108,7 @@ describe("the Ask sheet, as the stylesheet it is served with draws it", () => {
     const editor = rendered();
 
     const said = await drawn(
-      "apps/web/public/ask.css",
+      "apps/web/src/ask.css",
       () =>
         getComputedStyle(
           editor.getByText(
@@ -123,7 +123,7 @@ describe("the Ask sheet, as the stylesheet it is served with draws it", () => {
   it("takes the faces it shares with the rest of the app from house.css", async () => {
     const editor = rendered();
 
-    const faces = await drawn("apps/web/public/house.css", () => {
+    const faces = await drawn("apps/web/src/house.css", () => {
       const heading = getComputedStyle(
         editor.getByRole("heading", { name: "What are we seeing?" }),
       );

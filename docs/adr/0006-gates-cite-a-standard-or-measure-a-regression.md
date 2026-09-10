@@ -356,9 +356,10 @@ Both halves of what the built directory serves are weighed, each against a ratch
 own: the scripts the bundler emits, and the stylesheets beside them. A page costs a reader
 its scripts and its stylesheets together, so gating one and leaving the other unbounded
 would let bytes move from the weighed half to the free one, which is the deferred chunk
-under another name. The stylesheets arrive in `apps/web/dist` copied from
-`apps/web/public` unchanged, and `apps/web/dist/**/*.css` is pointed at the copy rather
-than the source because the copy is what the deployment serves.
+under another name. The stylesheets are imports of the modules that draw with them, so the
+bundler emits them as it emits the scripts, and `apps/web/dist/**/*.css` weighs what the
+deployment serves rather than the sources it was built from. They arrived as unweighed
+copies of `apps/web/public` until the class gate below made them imports.
 
 Their difference is not printed as a third. The ratchet is not a budget derived from a
 device, a network or a page, so the room left under it is distance to a number this
@@ -495,6 +496,34 @@ recommended preset reports `useNodejsImportProtocol` as information, and `noOcta
 `noUnusedVariables` as warnings; all three are errors here. `biome.json` names them beside
 the rules from outside the preset that this workspace asks for, so one file says everything
 the linter gates on.
+
+**A class no stylesheet rules is refused by Biome's `noUndeclaredClasses`**, which the pinned
+2.5.10 carries in its nursery group, and which replaced a check of this workspace's own:
+twenty-two files that read the `<link>` elements of the page and parsed both the markup and
+the stylesheets it linked with regular expressions.
+Two of the rule's limits were measured rather than assumed, and both shape the tree around
+it. It reads only a module that itself imports a stylesheet, and passes one that imports none
+in silence: the sheets are therefore imports of the modules that draw with them, and
+`apps/web/src/index.ts` imports every one of them in the order the page loaded them as links,
+which is the cascade the bundler emits. And it reads a class spelled as a literal, or held in
+a variable bound to one, but not a class built from a template or picked by a conditional.
+That limit is a rule for the code rather than a hole in the gate: a class here is always a
+literal, and the state that would otherwise be joined to it is a `data-` attribute the
+stylesheet selects on. A seat is `class="seat"` with `data-state`, `data-designation` and
+`data-recommended`; the ground of the pattern a wheelchair or companion space is filled with
+is `class="space-ground"` with `data-state`; a ledger row is `class="ledger-row"` with
+`data-unreached`. Every class in the tree is therefore a literal this rule reads, and a class
+a spelling hides from it is a class that has to be rewritten rather than excused.
+
+**What no rule reads from one module is a bare class two surface sheets both rule**, where
+whichever loads last draws both. `apps/web/src/stylesheets.test.tsx` holds every surface sheet
+to one ruling of a bare class, reading each as the browser parses it and descending into a
+grouping rule, so a class ruled inside `@media`, `@supports` or `@layer` is seen too. The red
+it is watched against is planted in `apps/web/tests/planted/`: two surface sheets that rule
+the same two classes, one of those rulings inside a media query, beside a third class that
+`house.css` and one surface both rule bare and the other names only under a descendant
+selector, which is counted for neither. A rule two or more surfaces share has to move to
+`house.css`, which is what that sheet is for.
 
 The mutation gate has the same shape one tool along, and takes the same answer. Stryker
 computes its score as mutants detected over mutants valid, scores `NaN` when none was valid,

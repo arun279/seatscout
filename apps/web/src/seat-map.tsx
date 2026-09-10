@@ -1,3 +1,4 @@
+import "./seat-map.css";
 import type {
   Auditorium,
   PositionedSeat,
@@ -48,14 +49,10 @@ const frameOf = (auditorium: Auditorium): Frame => {
 export const holds = (group: SeatGroupResult, seat: PositionedSeat) =>
   group.seats.some((held) => held.id === seat.id);
 
-const classOf = (seat: PositionedSeat, recommended: boolean, lit: boolean) =>
-  [
-    "seat",
-    seat.bookable ? "bookable" : "unbookable",
-    ...(seat.designation === "standard" ? [] : ["space"]),
-    ...(recommended ? ["recommended"] : []),
-    ...(lit ? ["lit"] : []),
-  ].join(" ");
+const stateOf = (seat: PositionedSeat, lit: boolean) => {
+  if (lit) return "lit";
+  return seat.bookable ? "bookable" : "unbookable";
+};
 
 const Spaces = () => (
   <defs>
@@ -68,7 +65,12 @@ const Spaces = () => (
         width="1"
         height="1"
       >
-        <rect className={`space-ground ${state}`} width="1" height="1" />
+        <rect
+          className="space-ground"
+          data-state={state}
+          width="1"
+          height="1"
+        />
         <circle className="space-dot" cx="0.5" cy="0.5" r="0.16" />
       </pattern>
     ))}
@@ -174,22 +176,22 @@ export const SeatMap = ({
               {row.seats.map((seat) => {
                 const place = { row, seat };
                 const roving = cursor.seat === seat;
+                const lit = holds(chosen, seat);
                 return (
                   <rect
                     key={seat.id}
                     role="gridcell"
-                    className={classOf(
-                      seat,
-                      holds(result, seat),
-                      holds(chosen, seat),
-                    )}
+                    className="seat"
+                    data-state={stateOf(seat, lit)}
+                    data-designation={seat.designation}
+                    data-recommended={holds(result, seat)}
                     tabIndex={roving ? 0 : -1}
                     aria-label={seatNameOf(
                       seat,
                       recommended,
                       accessibleSeating,
                     )}
-                    aria-selected={holds(chosen, seat)}
+                    aria-selected={lit}
                     aria-disabled={offered.has(seat.id) ? undefined : true}
                     data-seat={seat.id}
                     x={seat.x}

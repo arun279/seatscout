@@ -1,3 +1,5 @@
+import "./house.css";
+import "./app.css";
 import type {
   RecentSearch,
   Search,

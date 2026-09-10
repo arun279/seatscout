@@ -100,15 +100,42 @@ describe("the drawn room", () => {
     expect(Number(first?.getAttribute("y2"))).toBeCloseTo(11.4128, 3);
   });
 
-  it("gives every Seat the classes its vocabulary is drawn from, and rounds a Seat by its own width", async () => {
+  it("gives every Seat the class its stylesheet rules and the attributes its vocabulary is drawn from, and rounds a Seat by its own width", async () => {
     const pods = await opened(VILLAGE_1);
-    const classOf = (id: string) =>
-      pods.dialog.querySelector(`[data-seat="${id}"]`)?.getAttribute("class");
+    const drawnAs = (id: string) => {
+      const seat = pods.dialog.querySelector(`[data-seat="${id}"]`);
+      return {
+        class: seat?.getAttribute("class"),
+        state: seat?.getAttribute("data-state"),
+        designation: seat?.getAttribute("data-designation"),
+        recommended: seat?.getAttribute("data-recommended"),
+      };
+    };
     const lit = pods.dialog.querySelector('[data-seat="G14"]');
-    expect(classOf("G14")).toBe("seat bookable recommended lit");
-    expect(classOf("E23")).toBe("seat unbookable");
-    expect(classOf("WC17")).toBe("seat bookable space");
-    expect(classOf("A30")).toBe("seat bookable");
+    expect(drawnAs("G14")).toEqual({
+      class: "seat",
+      state: "lit",
+      designation: "standard",
+      recommended: "true",
+    });
+    expect(drawnAs("E23")).toEqual({
+      class: "seat",
+      state: "unbookable",
+      designation: "standard",
+      recommended: "false",
+    });
+    expect(drawnAs("WC17")).toEqual({
+      class: "seat",
+      state: "bookable",
+      designation: "wheelchair",
+      recommended: "false",
+    });
+    expect(drawnAs("A30")).toEqual({
+      class: "seat",
+      state: "bookable",
+      designation: "standard",
+      recommended: "false",
+    });
     expect(Number(lit?.getAttribute("rx"))).toBeCloseTo(
       0.18 * Number(lit?.getAttribute("width")),
       10,
@@ -125,19 +152,16 @@ describe("the drawn room", () => {
       ...stage.dialog.querySelectorAll("svg.seat-map > defs > pattern"),
     ];
 
-    expect(patterns.map((pattern) => pattern.getAttribute("id"))).toEqual([
-      "space-bookable",
-      "space-unbookable",
-      "space-lit",
-    ]);
     expect(
-      patterns.map((pattern) =>
-        pattern.firstElementChild?.getAttribute("class"),
-      ),
+      patterns.map((pattern) => ({
+        id: pattern.getAttribute("id"),
+        ground: pattern.firstElementChild?.getAttribute("class"),
+        state: pattern.firstElementChild?.getAttribute("data-state"),
+      })),
     ).toEqual([
-      "space-ground bookable",
-      "space-ground unbookable",
-      "space-ground lit",
+      { id: "space-bookable", ground: "space-ground", state: "bookable" },
+      { id: "space-unbookable", ground: "space-ground", state: "unbookable" },
+      { id: "space-lit", ground: "space-ground", state: "lit" },
     ]);
     expect(patterns[0]?.lastElementChild?.getAttribute("class")).toBe(
       "space-dot",

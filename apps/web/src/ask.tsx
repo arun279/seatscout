@@ -1,3 +1,5 @@
+import "./house.css";
+import "./ask.css";
 import {
   EVERY_AMENITY,
   EVERY_CHAIN,

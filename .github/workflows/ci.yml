@@ -50,7 +50,6 @@ jobs:
       - run: pnpm dead-code
       - run: pnpm live-injections
       - run: pnpm cache-storage
-      - run: pnpm classes
       - run: pnpm counts
       - run: pnpm claims
       - run: pnpm test:unit

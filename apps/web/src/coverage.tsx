@@ -1,3 +1,5 @@
+import "./house.css";
+import "./coverage.css";
 import type { Coverage, Snapshot } from "@seatscout/client";
 import { accountOf } from "./derived.js";
 import { modal } from "./modal.js";
@@ -142,7 +144,8 @@ const NamedRows = ({ row }: { readonly row: Row }) => (
 const LedgerRow = ({ row }: { readonly row: Row }) => (
   <li
     aria-label={row.label}
-    className={row.unreached ? "ledger-row unr" : "ledger-row"}
+    className="ledger-row"
+    data-unreached={row.unreached ?? false}
   >
     <span className="num">{row.count}</span>
     <div className="col">

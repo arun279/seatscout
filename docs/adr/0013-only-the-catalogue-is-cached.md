@@ -137,13 +137,14 @@ because a native client has no worker.
 
 **The service worker caches the shell and can cache nothing else, structurally.**
 `apps/web/src/worker/cache.ts` exports one writer, `precacheShell`, which takes no argument:
-what it caches is that module's own constant list of the files the build publishes, so no
-caller can choose, and nothing outside that list can be written. The worker's request path
-reaches Cache Storage only through `cachedShell`, which reads, and it reads through
-`CacheStorage.match` rather than through the cache's own, so no writable handle exists outside
-the writer. Nothing the fetch handler sees can therefore be cached, and a request outside the
-shell is not answered by the worker at all: it never calls `respondWith`, so the response
-never enters the worker.
+what it caches is the list the build defined into that module, read out of what the page pass
+left in `dist` by `apps/web/shell-files.ts`, the one statement of that rule the build and the
+end-to-end test both read. No caller can choose, and nothing outside that list can be written.
+The worker's request path reaches Cache Storage only through `cachedShell`, which reads, and it
+reads through `CacheStorage.match` rather than through the cache's own, so no writable handle
+exists outside the writer. Nothing the fetch handler sees can therefore be cached, and a
+request outside the shell is not answered by the worker at all: it never calls `respondWith`,
+so the response never enters the worker.
 
 A shell request is one the worker can answer correctly and nothing else: same origin, a `GET`,
 and a path on the list. Everything else is left to the network untouched, because a path alone

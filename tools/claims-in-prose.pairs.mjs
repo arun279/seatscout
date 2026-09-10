@@ -129,7 +129,7 @@ export const CLAIMS = [
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /`apps\/web\/dist\/\*\*\/\*\.css` is pointed at the copy rather than the source/,
+    says: /`apps\/web\/dist\/\*\*\/\*\.css` weighs what the/,
     holds: "the glob the stylesheet ratchet weighs",
     pattern: "dist/**/*.css",
     paths: [RATCHET],

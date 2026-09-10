@@ -8,7 +8,7 @@ import { settledAlone } from "./search.fixtures.js";
 
 const drawn = async <T,>(read: () => T): Promise<T> => {
   const sheet = document.createElement("style");
-  sheet.textContent = await readFile("apps/web/public/results.css", "utf8");
+  sheet.textContent = await readFile("apps/web/src/results.css", "utf8");
   document.head.append(sheet);
   const found = read();
   sheet.remove();

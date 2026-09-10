@@ -1,3 +1,4 @@
+import "./house.css";
 import type { RecentSearch } from "@seatscout/client";
 import { dayOf } from "./phrases.js";
 import { type Terms, termsOf } from "./terms.js";

@@ -1,3 +1,4 @@
+import "./results.css";
 import type { SeatGroupResult } from "@seatscout/client";
 import { ageOf, clockOf, labelOf, spokenOf, whyOf } from "./phrases.js";
 import { RoomPlan } from "./room-plan.js";

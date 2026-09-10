@@ -190,14 +190,14 @@ describe("the account the first screen keeps", () => {
       ).toHaveLength(links);
     }
     expect(ledger.getAllByRole("list")).toHaveLength(7);
-    expect(
-      ledger.getByRole("listitem", { name: "Could not be reached" }),
-    ).toHaveClass("ledger-row", "unr");
-    expect(ledger.getByRole("listitem", { name: "Sold out" })).toHaveClass(
-      "ledger-row",
-    );
-    expect(ledger.getByRole("listitem", { name: "Sold out" })).not.toHaveClass(
-      "unr",
+    const unreached = ledger.getByRole("listitem", {
+      name: "Could not be reached",
+    });
+    expect(unreached).toHaveClass("ledger-row");
+    expect(unreached).toHaveAttribute("data-unreached", "true");
+    expect(ledger.getByRole("listitem", { name: "Sold out" })).toHaveAttribute(
+      "data-unreached",
+      "false",
     );
     expect(
       ledger.getByText(

@@ -108,6 +108,7 @@ export const dialog = (name: string) =>
 export const marks = () => {
   const sheet = screen.getByRole("dialog");
   return {
+    plan: sheet.querySelector("svg.plan"),
     lost: sheet.querySelector("circle.mp-lost"),
     pair: sheet.querySelector("circle.mp-pair"),
   };

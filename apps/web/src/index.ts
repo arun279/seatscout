@@ -1,3 +1,13 @@
+import "./foundation.css";
+import "./house.css";
+import "./app.css";
+import "./query.css";
+import "./ask.css";
+import "./results.css";
+import "./coverage.css";
+import "./auditorium.css";
+import "./seat-map.css";
+import "./hand-off.css";
 export { startShell } from "./shell.js";
 export { startApp } from "./start.js";
 export { browserStore } from "./store.js";

@@ -1,3 +1,4 @@
+import "./results.css";
 import type { SeatGroupResult, Snapshot } from "@seatscout/client";
 import { Fragment } from "react";
 import { Card } from "./card.js";

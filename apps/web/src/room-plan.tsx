@@ -1,3 +1,6 @@
+import "./house.css";
+import "./results.css";
+import "./hand-off.css";
 import { REFERENCE, type SeatGroupResult } from "@seatscout/client";
 import { marksOf } from "./plan.js";
 

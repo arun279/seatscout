@@ -2,6 +2,10 @@
   color: green;
 }
 
-.two .lit {
+.lit {
   color: teal;
+}
+
+.two .card {
+  color: black;
 }
