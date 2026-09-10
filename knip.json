@@ -1,5 +1,12 @@
 {
   "$schema": "https://unpkg.com/knip@6.32.3/schema.json",
   "includeEntryExports": true,
-  "ignoreDependencies": ["web-vitals"]
+  "ignoreDependencies": ["web-vitals"],
+  "vitest": {
+    "config": [
+      "vitest.config.ts",
+      "vitest.live.config.ts",
+      "vitest.stryker.config.ts"
+    ]
+  }
 }
