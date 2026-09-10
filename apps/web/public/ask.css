@@ -69,18 +69,6 @@
   text-align: center;
 }
 
-.micro {
-  margin: 0;
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--silver-faint);
-  text-wrap: pretty;
-}
-
-.centred {
-  text-align: center;
-}
-
 .seat-picker {
   display: block;
   width: 100%;
@@ -262,4 +250,8 @@
   margin: 0 -22px;
   padding: 12px 22px 32px;
   background: linear-gradient(180deg, transparent, var(--house) 30%);
+}
+
+.ask .privacy-note {
+  text-align: center;
 }

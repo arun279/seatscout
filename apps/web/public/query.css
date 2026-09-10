@@ -44,7 +44,7 @@
   cursor: pointer;
 }
 
-.display .term {
+.title-card .display .term {
   border-bottom-color: var(--hairline);
 }
 

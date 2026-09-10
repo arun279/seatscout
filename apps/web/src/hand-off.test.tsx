@@ -90,7 +90,7 @@ describe("the hand-off", () => {
     fireEvent.click(sheet.getByRole("button", { name: "Take G6 and G7" }));
     await act(() => Promise.resolve());
 
-    const buttonStyle = await drawn("apps/web/public/app.css", () => {
+    const buttonStyle = await drawn("apps/web/public/house.css", () => {
       const style = getComputedStyle(
         sheet.getByRole("button", { name: "Take G6 and G7" }),
       );

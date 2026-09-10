@@ -1,75 +1,206 @@
-:root {
-  --house-deep: oklch(0.13 0.018 275);
-  --house: oklch(0.17 0.022 275);
-  --raised: oklch(0.215 0.026 275);
-  --high: oklch(0.26 0.03 275);
-  --hairline: oklch(0.34 0.03 272);
-  --silver: oklch(0.94 0.01 250);
-  --silver-dim: oklch(0.76 0.018 255);
-  --silver-faint: oklch(0.73 0.02 260);
-  --velvet: oklch(0.52 0.2 15);
-  --velvet-deep: oklch(0.44 0.18 15);
-  --velvet-lit: oklch(0.78 0.115 12);
-  --beam: oklch(0.88 0.055 230);
-  --beam-dim: oklch(0.76 0.07 230);
-  --seat-free: oklch(0.68 0.03 250);
-  --seat-gone: oklch(0.55 0.035 270);
-  --display: "Big Shoulders Display", "Arial Narrow", sans-serif;
-  --body: "Schibsted Grotesk", "Helvetica Neue", sans-serif;
-  --mono: "Spline Sans Mono", "Courier New", monospace;
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--silver-faint);
 }
 
-@font-face {
-  font-family: "Big Shoulders Display";
-  font-weight: 500 700;
-  font-display: swap;
-  src: url("/fonts/big-shoulders-display.woff2") format("woff2");
+.display {
+  font-family: var(--display);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  line-height: 0.98;
+  margin: 0;
+  text-wrap: balance;
 }
 
-@font-face {
-  font-family: "Schibsted Grotesk";
-  font-weight: 400 700;
-  font-display: swap;
-  src: url("/fonts/schibsted-grotesk.woff2") format("woff2");
+.micro {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--silver-faint);
+  text-wrap: pretty;
 }
 
-@font-face {
-  font-family: "Spline Sans Mono";
-  font-weight: 400 500;
-  font-display: swap;
-  src: url("/fonts/spline-sans-mono.woff2") format("woff2");
+.lede {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--silver-dim);
+  text-wrap: pretty;
 }
 
-html,
-body {
+.verdict {
+  padding: 8px 22px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.verdict h2 {
+  font-size: 36px;
+}
+
+.named {
+  list-style: none;
   margin: 0;
   padding: 0;
-  background: oklch(0.1 0.012 275);
-  color-scheme: dark;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--silver);
 }
 
-body {
+.named li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.named a {
+  position: relative;
+  white-space: nowrap;
+}
+
+.named a::after {
+  content: "";
+  position: absolute;
+  inset: -15px -8px;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  border-radius: 14px;
   font-family: var(--body);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+}
+
+.btn-velvet {
+  background: linear-gradient(
+    180deg,
+    oklch(0.56 0.205 15),
+    var(--velvet) 55%,
+    var(--velvet-deep)
+  );
   color: var(--silver);
-  -webkit-font-smoothing: antialiased;
+  box-shadow: 0 8px 26px oklch(0.44 0.18 15 / 0.45);
+  border: 1px solid oklch(0.62 0.2 12);
 }
 
-a {
-  color: var(--beam);
-  text-decoration-color: var(--hairline);
+.btn-velvet:disabled {
+  color: var(--silver-faint);
+  cursor: default;
 }
 
-a:hover {
+.btn-ghost {
+  border: 1px solid var(--hairline);
+  color: var(--silver-dim);
+  background: transparent;
+  font-size: 15px;
+  font-weight: 500;
+  min-height: 48px;
+}
+
+.back {
+  align-self: flex-start;
+  position: relative;
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin-bottom: 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--silver-dim);
+  cursor: pointer;
+}
+
+.back::after {
+  content: "";
+  position: absolute;
+  inset: -15px -6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 0 15px;
+  border-radius: 12px;
+  border: 1px solid var(--hairline);
+  background: var(--raised);
   color: var(--silver);
+  font-family: var(--body);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
 }
 
-* {
-  box-sizing: border-box;
+.chip .sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--silver-faint);
 }
 
-:focus-visible {
-  outline: 2px solid var(--beam);
-  outline-offset: 2px;
+.chip:disabled {
+  color: var(--silver-faint);
+  cursor: default;
+}
+
+.chip:has(:checked),
+.chip[aria-pressed="true"] {
+  border-color: var(--silver);
+  background: var(--silver);
+  color: var(--house-deep);
+}
+
+.chip:has(:checked) .sub,
+.chip[aria-pressed="true"] .sub {
+  color: oklch(from var(--house-deep) 0.35 c h);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--silver-dim);
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend i {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex: none;
+}
+
+.legend .lit {
+  background: var(--beam);
+  box-shadow: 0 0 6px var(--beam);
 }
 
 .mp-screen {
@@ -151,76 +282,4 @@ a:hover {
   line-height: 1.5;
   text-transform: uppercase;
   color: var(--silver-dim);
-}
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  min-height: 44px;
-  padding: 0 15px;
-  border-radius: 12px;
-  border: 1px solid var(--hairline);
-  background: var(--raised);
-  color: var(--silver);
-  font-family: var(--body);
-  font-size: 14px;
-  font-weight: 500;
-  text-align: left;
-  cursor: pointer;
-}
-
-.chip .sub {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--silver-faint);
-}
-
-.chip:disabled {
-  color: var(--silver-faint);
-  cursor: default;
-}
-
-.chip:has(:checked),
-.chip[aria-pressed="true"] {
-  border-color: var(--silver);
-  background: var(--silver);
-  color: var(--house-deep);
-}
-
-.chip:has(:checked) .sub,
-.chip[aria-pressed="true"] .sub {
-  color: oklch(from var(--house-deep) 0.35 c h);
-}
-
-.legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px 14px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.04em;
-  color: var(--silver-dim);
-}
-
-.legend li {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.legend i {
-  display: inline-block;
-  width: 9px;
-  height: 9px;
-  border-radius: 2px;
-  flex: none;
-}
-
-.legend .lit {
-  background: var(--beam);
-  box-shadow: 0 0 6px var(--beam);
 }
