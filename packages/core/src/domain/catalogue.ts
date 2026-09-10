@@ -44,14 +44,14 @@ export type Format =
   | "XD"
   | "XL";
 
-export const EVERY_AMENITY: readonly Amenity[] = [
+export const EVERY_AMENITY = [
   "Accessibility Devices",
   "Closed Captioning",
   "Dine-In",
   "Recliners",
-] as const satisfies readonly Amenity[];
+] as const;
 
-export const EVERY_CHAIN: readonly Chain[] = [
+export const EVERY_CHAIN = [
   "AMC",
   "Alamo Drafthouse Cinemas",
   "Angelika Film Center",
@@ -61,9 +61,9 @@ export const EVERY_CHAIN: readonly Chain[] = [
   "Hooky Entertainment",
   "Landmark",
   "Studio Movie Grill",
-] as const satisfies readonly Chain[];
+] as const;
 
-export const EVERY_FORMAT: readonly Format[] = [
+export const EVERY_FORMAT = [
   "3D",
   "D-BOX",
   "DFX",
@@ -79,7 +79,7 @@ export const EVERY_FORMAT: readonly Format[] = [
   "The Big Show",
   "XD",
   "XL",
-] as const satisfies readonly Format[];
+] as const;
 
 export interface Theater {
   readonly id: TheaterId;

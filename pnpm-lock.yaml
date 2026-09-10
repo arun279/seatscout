@@ -174,13 +174,13 @@ importers:
         specifier: 26.4.0
         version: 26.4.0
 
-  tools/no-empty-duplication-run:
+  tools/no-empty-run:
     devDependencies:
       '@types/node':
         specifier: 26.4.0
         version: 26.4.0
 
-  tools/no-empty-mutation-run:
+  tools/planted-red:
     devDependencies:
       '@types/node':
         specifier: 26.4.0

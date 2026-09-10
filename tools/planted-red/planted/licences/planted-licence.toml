@@ -1,0 +1,6 @@
+[[PackageOverrides]]
+name = "typescript"
+version = "7.0.2"
+ecosystem = "npm"
+license.override = ["UNKNOWN"]
+reason = "Planted red: the allowlist must refuse a licence osv-scanner cannot determine."

@@ -1,5 +1,5 @@
 {
-  "name": "@seatscout/no-empty-duplication-run",
+  "name": "@seatscout/no-empty-run",
   "version": "0.0.0",
   "private": true,
   "type": "module",

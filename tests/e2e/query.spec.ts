@@ -1,4 +1,3 @@
-import { AxeBuilder } from "@axe-core/playwright";
 import { expect, type Locator, type Page, test } from "@playwright/test";
 import {
   accessible,
@@ -9,7 +8,7 @@ import {
   requestsTo,
   SEAT_MAP,
   TONIGHT,
-  WCAG,
+  scanned,
 } from "./corpus.fixtures.js";
 
 const PHONE = { width: 390, height: 844 };
@@ -65,7 +64,7 @@ test("every Query term composes in one search on a phone, one-handed, every targ
   await sheet(page).getByLabel("From").fill("19:00");
   await sheet(page).getByLabel("Until").fill("21:00");
   await sheet(page).getByLabel("Accessible seating").check();
-  const scan = await new AxeBuilder({ page }).withTags(WCAG).analyze();
+  const scan = await scanned(page);
   const onTheSheet = await hitAreasUnder(page, HIT_AREA);
   const clipped = await clippedFieldsIn(page);
   const bar = sheet(page).locator(".cta");

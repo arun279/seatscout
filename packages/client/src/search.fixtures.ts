@@ -147,7 +147,7 @@ export const searching = async (options: Options = {}): Promise<SearchRun> => {
     area: AREA,
     partySize: options.partySize ?? 2,
     accessibleSeating: options.accessibleSeating ?? false,
-    profile: options.profile,
+    ...(options.profile === undefined ? {} : { profile: options.profile }),
     ...(options.at === undefined
       ? {}
       : { theaters: options.at.map((name) => theaterIn(listed, name)) }),

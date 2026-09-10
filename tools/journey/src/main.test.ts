@@ -62,7 +62,7 @@ describe("the journey ratchet's command line", () => {
       "p75 LCP 900 ms against 2500, INP 40 ms against 200, CLS 0.010 against 0.1, over 1 journeys\n" +
         "the head's first Seat Groups took 200 ms in the median of 1 journeys; the merge base's slowest of 2 journeys took 400 ms\n" +
         "the head's long tasks blocked the main thread for 30 ms in the median of 1 journeys; the merge base's worst of 2 journeys blocked for 70 ms\n" +
-        "the head's gesture dropped 0.5 frame(s) in the median of 2 gestures; the merge base's worst of 1 gestures dropped 1 frame(s)\n" +
+        "the head's gesture dropped 1 frame(s) in the median of 2 gestures; the merge base's worst of 1 gestures dropped 1 frame(s)\n" +
         "the head ran 1 long tasks at their worst, each over the 50 ms the W3C Long Tasks API defines one at, blocking for 30 ms in the median of 1 journeys against the 200 ms web.dev publishes as good on average mobile hardware; nothing here gates on that threshold, because this runner applies no CPU multiplier\n" +
         "the head's JS heap held 8 KiB in the median of 1 journeys; the merge base measured no JS heap\n",
     );

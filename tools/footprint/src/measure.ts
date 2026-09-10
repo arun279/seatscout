@@ -55,7 +55,9 @@ export const measureWith = (run: Run, read: (path: string) => string) => {
     if (
       !Array.isArray(weighed) ||
       weighed.length === 0 ||
-      weighed.some((bundle) => typeof bundle.sizeLimit !== "number")
+      weighed.some(
+        (bundle) => typeof bundle.sizeLimit !== "number" || !(bundle.size > 0),
+      )
     )
       throw new Error(
         `size-limit weighed no bundle against a ratchet:\n${JSON.stringify(weighed)}`,

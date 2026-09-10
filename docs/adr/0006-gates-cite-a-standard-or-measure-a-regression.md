@@ -364,8 +364,11 @@ when it is switched on, which is no gate at all by the rule below, so `biome.jso
 It belongs to Biome's `project` domain, so switching it on switches on Biome's scanner, and what that
 costs was measured rather than assumed before it joined the hook: over this tree `pnpm lint` runs in
 416 to 568 ms with the rule and 237 to 383 ms without it. The tree holds no cycle, so nothing had to be
-broken to turn it on, and a planted pair of modules importing each other is refused twice over, each
-import named with the path that closes the loop. `ignoreTypes` stays at the default the rule documents
+broken to turn it on. A planted pair of modules importing each other is committed under
+`tools/planted-red/planted`, and a test copies it into a git-ignored directory inside the project root
+and runs Biome over it, because the rule reads the module graph and only resolves an import inside the
+root it scanned. The pair is refused twice over, each import named with the path that closes the loop,
+and a planted pair that imports one way passes. `ignoreTypes` stays at the default the rule documents
 as enabled, which cuts a cycle only where the import is written `import type`; `verbatimModuleSyntax`
 is on here, so an inline
 `import { type X }` is not cut and is not ignored.
@@ -380,14 +383,19 @@ against new code and this gate holds it against all of it, which is the stricter
 and the only one a checkout can reach alone, since nothing measures `main` on a pre-push hook.
 
 The subject is `{apps,packages,tools}/*/src` less the test suffixes, which makes `.jscpd.json` the
-fifth place the definition of test code is written down. The tree reads 0.00 percent over 95 sources
-and 8,769 lines today, so nothing is exempted and nothing had to be removed to turn it on.
+fifth place the definition of test code is written down. The tree reads 0.00 percent over 94 sources
+and 8,767 lines today, so nothing is exempted, and the one pair of files that shared a shape was made
+one file rather than exempted: two guard tools differing in a report path and a verdict are now one
+tool parameterised by both. Neither copy was long enough to reach `minLines` 10 in the same window, so
+the gate never saw them; a reviewer did.
 
 jscpd's exit status cannot say which of two things happened. It exits zero for duplication inside the
 threshold, and it exits zero for a run whose paths matched no file at all, a mistyped path included.
 `pnpm duplication` therefore runs the gate and then a guard over the JSON report it wrote, which fails
-when that report records no source read. That is the mutation guard's shape one tool along, and it is
-here for the reason this decision opens with.
+when that report records no source read. It is the same guard the mutation run is judged by, told which
+run to read: `tools/no-empty-run` holds the report path, the count that decides whether the run
+measured anything, and the refusal for each of the two, and it is here for the reason this decision
+opens with.
 
 **Watched failing, watched silent.** A planted pair of modules sharing a sixteen-line block is refused
 by name and by percentage against the threshold; a planted pair that shares nothing passes in silence;
@@ -435,6 +443,14 @@ directory holds rather than the three raster sizes alone, for the same reason th
 covers every sheet: an icon that is not weighed is somewhere bytes can go. Each of the two new
 ratchets was watched failing: lowered by a single byte, `size-limit` names the kind, the ratchet and
 the byte it went over, and exits 1.
+
+A ratchet a glob no longer reaches is worse than no ratchet, because it reads 0 B and passes. Two
+fixture `size-limit` configurations are committed beside a planted file: over the planted file the
+ratchet is refused by name, by ratchet and by the byte it went over, and over globs that reach nothing
+`size-limit` reports 0 B for the font kind and 0 B for the icon kind, holds neither to a ratchet, and
+passes each. The report refuses that reading rather than printing it: every entry must have weighed at
+least one file and must have been held to a number, and a list where any entry fails either test
+throws instead of becoming a verdict.
 
 Their difference is not printed as a third. The ratchet is not a budget derived from a
 device, a network or a page, so the room left under it is distance to a number this
@@ -605,14 +621,20 @@ the worker puts in the shell cache and `index.html` names what the page fetches 
 until now those were three copies of one list, in the worker, in its unit test and in the end-to-end
 spec, with nothing holding any of them to the page. The end-to-end spec reads
 `apps/web/public/index.html` now instead of restating it: the page itself, the module its inline
-script imports, and every `<link>` whose `rel` is `stylesheet`, `preload`, `manifest` or `icon`. That
-set is held equal to what the running service worker actually put in the cache, in a real browser
-against the built tree, so a stylesheet the page links and the worker does not hold fails, and so
-does a path the worker holds that the page never loads. The unit test beside it keeps its own written
-list, because that one is a golden assertion the mutation gate judges and this one is a comparison
-between two live things. The reader throws rather than returning a short list when one of those four
-kinds of link matched nothing, because a regular expression that had stopped matching would otherwise
-make the comparison vacuous, which is the failure this decision opens with arriving inside a test.
+script imports, and every `<link>` it carries, whatever the `rel`. That set is held equal to what the
+running service worker actually put in the cache, in a real browser against the built tree, so a
+stylesheet the page links and the worker does not hold fails, and so does a path the worker holds that
+the page never loads. Naming the kinds of link to take in was the earlier shape and it read four of
+them, which passed over the `apple-touch-icon` the page links and the worker does not hold. Every link
+counts now, and the one exclusion is written down as an exclusion: the touch icon is fetched by the
+platform when the page is installed rather than by the page to draw itself, which is what the
+comparison is about. A test plants a linked stylesheet the worker cannot hold and reads it back out of
+the derived set, so the derivation is shown to take in a new link rather than assumed to. The unit
+test beside it keeps its own written list, because that one is a golden assertion the mutation gate
+judges and this one is a comparison between two live things. The reader throws rather than returning a
+short list when the page links nothing at all or when a link carries no path it can read, because a
+regular expression that had stopped matching would otherwise make the comparison vacuous, which is the
+failure this decision opens with arriving inside a test.
 
 **One question gets one gate.** The `dependencies` job scans the lockfile against the OSV
 database and fails on any advisory. It once also ran `pnpm audit`, which since 2021 has been
@@ -632,9 +654,12 @@ rather than passing, which is the whole reason the list is an allowlist and not 
 
 **Watched failing, watched silent.** The shipped list passes over the lockfile. Narrowed to the ten
 permissive identifiers alone, the same scan exits 1 and names all thirty-one violators by package and
-version. With `typescript` 7.0.2's licence overridden to `UNKNOWN` in an `osv-scanner.toml`, the
-shipped list exits 1 and prints `UNKNOWN` in the violations table, which is the case the list exists
-for and the one nothing in the tree exercises today.
+version. The `UNKNOWN` case is the one nothing in the tree exercises, so it is planted and run in the
+job rather than watched by hand: `tools/planted-red/planted/licences` holds an osv-scanner
+configuration overriding `typescript` 7.0.2's licence to `UNKNOWN`, and the `dependencies` job scans
+the lockfile a second time with that configuration and the same allowlist, expecting the scan to fail.
+A step after it fails the job when that scan passed. The file is not named `osv-scanner.toml`, so the
+shipped scan cannot pick it up as a configuration of its own.
 
 **A rule reported at a severity the linter exits zero on is no gate at all.** Biome's
 recommended preset reports `useNodejsImportProtocol` as information, and `noOctalEscape` and

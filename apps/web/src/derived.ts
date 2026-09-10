@@ -1,12 +1,12 @@
 import type { Coverage, SeatGroupResult, Snapshot } from "@seatscout/client";
 
-export const accountOf = (
-  coverage: Coverage,
-): {
+export interface Account {
   readonly candidates: number;
   readonly checked: number;
   readonly remaining: number;
-} => {
+}
+
+export const accountOf = (coverage: Coverage): Account => {
   const named =
     coverage.started.length +
     coverage.noSeatMap.length +

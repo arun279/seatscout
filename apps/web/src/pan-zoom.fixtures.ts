@@ -1,11 +1,13 @@
 import { fireEvent } from "@testing-library/react";
 import type { Point, View } from "./gesture.js";
 
-export const MAP_ON_SCREEN: {
+interface OnScreen {
   readonly left: number;
   readonly top: number;
   readonly width: number;
-} = { left: 20, top: 100, width: 340 };
+}
+
+export const MAP_ON_SCREEN: OnScreen = { left: 20, top: 100, width: 340 };
 
 export const wrapper = (dialog: HTMLElement): SVGGElement => {
   const group = dialog.querySelector<SVGGElement>("svg > g");

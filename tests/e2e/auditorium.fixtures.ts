@@ -61,7 +61,7 @@ export const roomOpened = async (
   return roomOpenedFromTheList(page, room);
 };
 
-export interface Painted {
+interface Painted {
   readonly fill: string;
   readonly stroke: string;
   readonly outlineColor: string;
@@ -118,14 +118,16 @@ export const channelsOf = (colours: Colours): Record<keyof Colours, Rgb> => {
   };
 };
 
-export const paintedOn = (): {
+interface Surfaces {
   readonly ground: Painted;
   readonly free: Painted;
   readonly gone: Painted;
   readonly lit: Painted;
   readonly tick: Painted;
   readonly focused: Painted;
-} => {
+}
+
+export const paintedOn = (): Surfaces => {
   const styleOf = (selector: string): Painted => {
     const element = document.querySelector(selector);
     if (element === null) throw new Error(`${selector} is not drawn`);
@@ -152,9 +154,12 @@ export const paintedOn = (): {
   };
 };
 
-export const pixelsOf = async (
-  png: string,
-): Promise<{ readonly centre: Rgb; readonly edge: Rgb }> => {
+interface Sampled {
+  readonly centre: Rgb;
+  readonly edge: Rgb;
+}
+
+export const pixelsOf = async (png: string): Promise<Sampled> => {
   const blob = await (await fetch(`data:image/png;base64,${png}`)).blob();
   const bitmap = await createImageBitmap(blob);
   const canvas = document.createElement("canvas");

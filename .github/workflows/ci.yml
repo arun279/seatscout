@@ -217,6 +217,9 @@ jobs:
   dependencies:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    env:
+      ALLOWED: 0BSD,Apache-2.0,BlueOak-1.0.0,BSD-2-Clause,BSD-3-Clause,CC-BY-4.0,CC-BY-SA-4.0,CC0-1.0,ISC,LGPL-3.0-or-later,MIT,MIT-0,MPL-2.0,Python-2.0,Unlicense
+      PLANTED: tools/planted-red/planted/licences/planted-licence.toml
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -226,6 +229,21 @@ jobs:
         uses: google/osv-scanner-action/osv-scanner-action@6e4298ebc4db23e847df9b2e2de2939d6f066c67 # v2.5.1
         with:
           scan-args: |-
-            --licenses=0BSD,Apache-2.0,BlueOak-1.0.0,BSD-2-Clause,BSD-3-Clause,CC-BY-4.0,CC-BY-SA-4.0,CC0-1.0,ISC,LGPL-3.0-or-later,MIT,MIT-0,MPL-2.0,Python-2.0,Unlicense
+            --licenses=${{ env.ALLOWED }}
             --recursive
             ./
+      - name: Read the same allowlist over a planted undetermined licence
+        id: planted
+        continue-on-error: true
+        uses: google/osv-scanner-action/osv-scanner-action@6e4298ebc4db23e847df9b2e2de2939d6f066c67 # v2.5.1
+        with:
+          scan-args: |-
+            --config=${{ env.PLANTED }}
+            --licenses=${{ env.ALLOWED }}
+            --recursive
+            ./
+      - name: Refuse an allowlist that took the planted licence
+        if: steps.planted.outcome == 'success'
+        run: |
+          echo "The allowlist accepted UNKNOWN, so it gates no licence at all." >&2
+          exit 1

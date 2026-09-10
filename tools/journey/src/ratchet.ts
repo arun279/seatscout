@@ -28,7 +28,7 @@ const ms = (value: number) => `${Math.round(value)} ms`;
 
 const kib = (value: number) => `${Math.round(value / 1024)} KiB`;
 
-const frames = (value: number) => `${value} frame(s)`;
+const frames = (value: number) => `${Math.round(value)} frame(s)`;
 
 const named = (samples: readonly Measured[]) => {
   const conditions = conditionsOf(samples);

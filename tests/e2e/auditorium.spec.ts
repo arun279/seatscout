@@ -1,12 +1,11 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { AxeBuilder } from "@axe-core/playwright";
 import { expect, type Locator, type Page, test } from "@playwright/test";
 import {
   LARGEST_ROOM,
   roomOpened,
   roomOpenedFromTheList,
 } from "./auditorium.fixtures.js";
-import { WCAG } from "./corpus.fixtures.js";
+import { scanned } from "./corpus.fixtures.js";
 
 const PHONE = { width: 390, height: 844 };
 const CPU_SLOWDOWN = 4;
@@ -154,8 +153,8 @@ const gestured = async (page: Page, dialog: Locator) => {
   return measured(page);
 };
 
-const each = <Reading>(reading: (at: number) => Reading) =>
-  Array.from({ length: GESTURES }, (_, at) => reading(at));
+const each = <Reading>(reading: () => Reading) =>
+  Array.from({ length: GESTURES }, reading);
 
 test.use({ serviceWorkers: "block" });
 
@@ -226,7 +225,7 @@ test("the room is six tab stops, carries no WCAG 2.2 AA violation axe can detect
   tag: "@accessibility",
 }, async ({ page }) => {
   const dialog = await roomOpened(page, LARGEST_ROOM);
-  const scan = await new AxeBuilder({ page }).withTags(WCAG).analyze();
+  const scan = await scanned(page);
   const stops: string[] = [];
   for (let pressed = 0; pressed < 10; pressed += 1) {
     stops.push(await focusedNow(page));

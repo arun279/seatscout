@@ -6,7 +6,7 @@ import type { FakeUpstream, UpstreamScript } from "@seatscout/core/testing";
 
 export const TONIGHT = "/?movie=245569&date=2026-08-28&area=75006&partySize=2";
 export const HIT_AREA = 44;
-export const WCAG: string[] = [
+const WCAG: readonly string[] = [
   "wcag2a",
   "wcag2aa",
   "wcag21a",
@@ -145,8 +145,11 @@ const tapsAnsweredElsewhere = (page: Page) =>
     return misses;
   });
 
+export const scanned = (page: Page): ReturnType<AxeBuilder["analyze"]> =>
+  new AxeBuilder({ page }).withTags([...WCAG]).analyze();
+
 export const accessible = async (page: Page): Promise<void> => {
-  const scan = await new AxeBuilder({ page }).withTags(WCAG).analyze();
+  const scan = await scanned(page);
   expect(scan.violations).toEqual([]);
   expect(await hitAreasUnder(page, HIT_AREA)).toEqual([]);
   expect(await tapsAnsweredElsewhere(page)).toEqual([]);
