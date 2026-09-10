@@ -16,7 +16,7 @@ const carries = (file: string) =>
   file !== WORKER &&
   (CARRIED.includes(file) || file.endsWith(".js") || file.endsWith(".css"));
 
-export const shellFilesIn = async (dist: string) => {
+export const shellFilesIn = async (dist: string): Promise<string[]> => {
   const built = await readdir(dist, { recursive: true });
   const absent = CARRIED.filter((file) => !built.includes(file));
   if (absent.length > 0)

@@ -33,6 +33,7 @@ export const SMALLEST_LISTING_ASKED = {
 
 export interface OpenedApp {
   readonly seatMapsRead: () => number;
+  readonly areasRead: () => number;
   readonly cached: () => string[];
 }
 

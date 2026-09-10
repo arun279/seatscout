@@ -120,6 +120,7 @@ export const dialog = (name: string): QueryScreen =>
   within(screen.getByRole("dialog", { name }));
 
 export const marks = (): {
+  readonly plan: Element | null;
   readonly lost: Element | null;
   readonly pair: Element | null;
 } => {
