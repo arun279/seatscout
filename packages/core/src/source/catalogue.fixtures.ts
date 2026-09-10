@@ -38,7 +38,6 @@ export const rig = (
   const fetch = fakeUpstream({
     seed: 4,
     ...script,
-    routes: script.routes,
   });
   return {
     fetch,

@@ -59,8 +59,8 @@ const recorded = (): Recorded => {
 };
 
 const seatMapIn = (value: unknown): SeatMap | null =>
-  isRecord(value) && Array.isArray(value.seats)
-    ? { keys: Object.keys(value), seats: value.seats }
+  isRecord(value) && Array.isArray(value["seats"])
+    ? { keys: Object.keys(value), seats: value["seats"] }
     : null;
 
 const diverging = (

@@ -135,30 +135,30 @@ const isAmenity = (value: unknown): value is UpstreamAmenity =>
   carries(value, AMENITY_FIELDS);
 
 const namesAChainOrNone = (value: Readonly<Record<string, unknown>>) =>
-  value.chainCode === undefined || typeof value.chainCode === "string";
+  value["chainCode"] === undefined || typeof value["chainCode"] === "string";
 
 const isShowtime = (value: unknown): value is UpstreamShowtime =>
   carries(value, SHOWTIME_FIELDS) &&
-  (value.id === undefined || typeof value.id === "number") &&
-  (value.type === undefined || typeof value.type === "string");
+  (value["id"] === undefined || typeof value["id"] === "number") &&
+  (value["type"] === undefined || typeof value["type"] === "string");
 
 const isAmenityGroup = (value: unknown): value is UpstreamAmenityGroup =>
   carries(value, GROUP_FIELDS) &&
-  Array.isArray(value.amenities) &&
-  value.amenities.every(isAmenity) &&
-  Array.isArray(value.showtimes) &&
-  value.showtimes.every(isShowtime);
+  Array.isArray(value["amenities"]) &&
+  value["amenities"].every(isAmenity) &&
+  Array.isArray(value["showtimes"]) &&
+  value["showtimes"].every(isShowtime);
 
 const isVariant = (value: unknown): value is UpstreamVariant =>
   isRecord(value) &&
-  Array.isArray(value.amenityGroups) &&
-  value.amenityGroups.every(isAmenityGroup);
+  Array.isArray(value["amenityGroups"]) &&
+  value["amenityGroups"].every(isAmenityGroup);
 
 const isTheater = (value: unknown): value is UpstreamTheater =>
   carries(value, THEATER_FIELDS) &&
   namesAChainOrNone(value) &&
-  Array.isArray(value.variants) &&
-  value.variants.every(isVariant);
+  Array.isArray(value["variants"]) &&
+  value["variants"].every(isVariant);
 
 const carriesShowtimes = (
   value: unknown,
@@ -166,16 +166,16 @@ const carriesShowtimes = (
   readonly theaterShowtimes: { readonly theaters: readonly UpstreamTheater[] };
 } =>
   isRecord(value) &&
-  isRecord(value.theaterShowtimes) &&
-  Array.isArray(value.theaterShowtimes.theaters) &&
-  value.theaterShowtimes.theaters.every(isTheater);
+  isRecord(value["theaterShowtimes"]) &&
+  Array.isArray(value["theaterShowtimes"]["theaters"]) &&
+  value["theaterShowtimes"]["theaters"].every(isTheater);
 
 const carriesTheaters = (
   value: unknown,
 ): value is { readonly theaters: readonly UpstreamNamedTheater[] } =>
   isRecord(value) &&
-  Array.isArray(value.theaters) &&
-  value.theaters.every(
+  Array.isArray(value["theaters"]) &&
+  value["theaters"].every(
     (theater) => carries(theater, THEATER_FIELDS) && namesAChainOrNone(theater),
   );
 

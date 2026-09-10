@@ -30,7 +30,9 @@ const sampleOf = (journey: unknown): Sample | null => {
         cls: numberAt(journey, "cls"),
         heapBytes: numberAt(journey, "heapBytes"),
         conditions:
-          typeof journey.conditions === "string" ? journey.conditions : null,
+          typeof journey["conditions"] === "string"
+            ? journey["conditions"]
+            : null,
       };
 };
 

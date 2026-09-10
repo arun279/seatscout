@@ -22,16 +22,16 @@ export interface CatalogueDependencies {
   readonly source: Source;
   readonly store: KeyValueStore;
   readonly now: () => number;
-  readonly cacheForMs?: number;
+  readonly cacheForMs?: number | undefined;
 }
 
 const isCached = (value: unknown): value is CachedCatalogue =>
   isRecord(value) &&
-  typeof value.fetchedAt === "number" &&
-  isRecord(value.catalogue) &&
-  Array.isArray(value.catalogue.bookable) &&
-  Array.isArray(value.catalogue.unbookable) &&
-  Array.isArray(value.catalogue.unidentified);
+  typeof value["fetchedAt"] === "number" &&
+  isRecord(value["catalogue"]) &&
+  Array.isArray(value["catalogue"]["bookable"]) &&
+  Array.isArray(value["catalogue"]["unbookable"]) &&
+  Array.isArray(value["catalogue"]["unidentified"]);
 
 const keyOf = (terms: ListingTerms) =>
   `seatscout.catalogue.v${ENTRY_SHAPE}.${JSON.stringify([terms.movie, terms.date, terms.area])}`;

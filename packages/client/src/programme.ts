@@ -17,11 +17,11 @@ const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
 
 const isCached = (value: unknown): value is CachedProgramme =>
   isRecord(value) &&
-  typeof value.fetchedAt === "number" &&
-  isRecord(value.programme) &&
-  Array.isArray(value.programme.theaters) &&
-  Array.isArray(value.programme.movies) &&
-  Array.isArray(value.programme.unreached);
+  typeof value["fetchedAt"] === "number" &&
+  isRecord(value["programme"]) &&
+  Array.isArray(value["programme"]["theaters"]) &&
+  Array.isArray(value["programme"]["movies"]) &&
+  Array.isArray(value["programme"]["unreached"]);
 
 const keyOf = (area: string, date: string) =>
   `seatscout.programme.v${ENTRY_SHAPE}.${JSON.stringify([date, area])}`;

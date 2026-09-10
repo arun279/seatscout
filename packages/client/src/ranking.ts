@@ -18,7 +18,7 @@ import {
 import type { ListingTerms } from "./catalogue.js";
 
 export interface ResultTerms extends ListingTerms, SeatGroupTerms {
-  readonly profile?: SeatProfile;
+  readonly profile?: SeatProfile | undefined;
 }
 
 interface RemovedSeats {

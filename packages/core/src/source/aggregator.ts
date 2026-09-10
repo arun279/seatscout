@@ -32,7 +32,7 @@ export interface SourceDependencies {
   readonly now: () => number;
   readonly wait: (ms: number) => Promise<void>;
   readonly random: () => number;
-  readonly policy?: SourcePolicy;
+  readonly policy?: SourcePolicy | undefined;
 }
 
 interface Answer {

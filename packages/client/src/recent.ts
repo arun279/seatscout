@@ -5,10 +5,10 @@ const KEPT = 5;
 
 const isSearch = (value: unknown): value is RecentSearch =>
   isRecord(value) &&
-  typeof value.movie === "string" &&
-  typeof value.date === "string" &&
-  typeof value.area === "string" &&
-  typeof value.partySize === "number";
+  typeof value["movie"] === "string" &&
+  typeof value["date"] === "string" &&
+  typeof value["area"] === "string" &&
+  typeof value["partySize"] === "number";
 
 const isHistory = (value: unknown): value is readonly RecentSearch[] =>
   Array.isArray(value) && value.every(isSearch);

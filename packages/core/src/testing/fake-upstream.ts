@@ -24,7 +24,7 @@ export interface UpstreamScript {
     readonly status: number;
     readonly percent: number;
   }[];
-  readonly routes?: Readonly<Record<string, ScriptedRoute>>;
+  readonly routes?: Readonly<Record<string, ScriptedRoute>> | undefined;
   readonly sequences?: Readonly<Record<string, readonly number[]>>;
   readonly standInAuditoriums?: boolean;
   readonly standInTheaters?: boolean;

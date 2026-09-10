@@ -168,7 +168,7 @@ export const Ask = ({
           event.preventDefault();
           onFind(
             termsOf(
-              { ...draft, movie: movieOf(film, playing.movies) },
+              { ...draft, movie: movieOf(film, playing.movies) ?? null },
               terms.date,
             ),
             profile,

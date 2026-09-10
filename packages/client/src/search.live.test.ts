@@ -38,10 +38,8 @@ const reaching =
     },
   ) =>
     fetch(`${origin}${path}`, {
-      cache: init?.cache,
-      method: init?.method,
+      ...init,
       headers: { ...headers, ...init?.headers },
-      body: init?.body,
     });
 
 const sourceOn = (reach: ReturnType<typeof reaching>) =>

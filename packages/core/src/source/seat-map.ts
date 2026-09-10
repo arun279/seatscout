@@ -64,8 +64,8 @@ const carriesSeats = (
   value: unknown,
 ): value is { readonly seats: readonly UpstreamSeat[] } =>
   isRecord(value) &&
-  Array.isArray(value.seats) &&
-  value.seats.every(isUpstreamSeat);
+  Array.isArray(value["seats"]) &&
+  value["seats"].every(isUpstreamSeat);
 
 const linked = (neighbour: string) => (neighbour === "" ? null : neighbour);
 
