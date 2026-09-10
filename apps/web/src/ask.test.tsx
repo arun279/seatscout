@@ -55,12 +55,16 @@ describe("the Ask sheet, as the stylesheet it is served with draws it", () => {
         const top = slider.parentElement?.querySelector(".top");
         if (top === null || top === undefined)
           throw new Error("a control draws no name");
-        const style = getComputedStyle(top);
+        const [name, said] = [...top.children];
+        if (name === undefined || said === undefined)
+          throw new Error("a control draws no name beside what it says");
+        const row = getComputedStyle(top);
+        const named = getComputedStyle(name);
+        const valued = getComputedStyle(said);
         return {
-          display: style.display,
-          justifyContent: style.justifyContent,
-          name: top.firstElementChild?.textContent,
-          said: top.lastElementChild?.textContent,
+          name: `${name.textContent} ${named.fontSize} ${named.fontWeight}`,
+          row: `${row.display} ${row.alignItems} ${row.justifyContent} ${row.gap}`,
+          said: `${said.textContent} ${valued.fontFamily} ${valued.fontSize}`,
         };
       }),
     );
@@ -75,10 +79,9 @@ describe("the Ask sheet, as the stylesheet it is served with draws it", () => {
         ["A wall, or the back row", "A little"],
         ["A console between seats", "A little"],
       ].map(([name, said]) => ({
-        display: "flex",
-        justifyContent: "space-between",
-        name,
-        said,
+        name: `${name} 14px 600`,
+        row: "flex baseline space-between 10px",
+        said: `${said} var(--mono) 11px`,
       })),
     );
   });
@@ -115,6 +118,41 @@ describe("the Ask sheet, as the stylesheet it is served with draws it", () => {
     );
 
     expect(said).toBe("center");
+  });
+
+  it("takes the faces it shares with the rest of the app from house.css", async () => {
+    const editor = rendered();
+
+    const faces = await drawn("apps/web/public/house.css", () => {
+      const heading = getComputedStyle(
+        editor.getByRole("heading", { name: "What are we seeing?" }),
+      );
+      const find = getComputedStyle(
+        editor.getByRole("button", { name: "Find seats" }),
+      );
+      return {
+        back: getComputedStyle(
+          editor.getByRole("button", { name: "\u2039 Keep as it was" }),
+        ).fontFamily,
+        eyebrow: getComputedStyle(editor.getByText("Near, by postal code"))
+          .textTransform,
+        find: `${find.display} ${find.minHeight} ${find.boxShadow}`,
+        heading: `${heading.fontFamily} ${heading.textTransform}`,
+        micro: getComputedStyle(
+          editor.getByText(
+            "Every control holds what it already had, so closing this is a search too.",
+          ),
+        ).fontSize,
+      };
+    });
+
+    expect(faces).toStrictEqual({
+      back: "var(--mono)",
+      eyebrow: "uppercase",
+      find: "flex 52px 0 8px 26px oklch(0.44 0.18 15 / 0.45)",
+      heading: "var(--display) uppercase",
+      micro: "12px",
+    });
   });
 });
 

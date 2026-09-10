@@ -243,7 +243,7 @@ export const Ask = ({
           <button type="submit" className="btn btn-velvet">
             Find seats
           </button>
-          <p className="micro centred">
+          <p className="micro privacy-note">
             Preferences and history stay on this phone. No account exists.
           </p>
         </div>
