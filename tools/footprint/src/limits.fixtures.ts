@@ -1,4 +1,4 @@
-import { type Gates, limitsFrom } from "./limits.js";
+import { type Gates, type Limits, limitsFrom } from "./limits.js";
 
 export const GATES: Gates = { cyclomatic: 10, cognitive: 15, lines: 300 };
 
@@ -38,15 +38,15 @@ export const reported = (
 export const SOME_FILES: readonly [string, number][] = [["a.ts", 12]];
 
 export const observed = (
-  oxlint = branching(["read", 41, 9]),
-  biome = reported([14], SOME_FILES),
-) => limitsFrom(oxlint, biome, GATES);
+  oxlint: string = branching(["read", 41, 9]),
+  biome: string = reported([14], SOME_FILES),
+): Limits => limitsFrom(oxlint, biome, GATES);
 
-export const OXLINT_CONFIG = JSON.stringify({
+export const OXLINT_CONFIG: string = JSON.stringify({
   rules: { complexity: ["error", { max: 12, variant: "classic" }] },
 });
 
-export const BIOME_CONFIG = JSON.stringify({
+export const BIOME_CONFIG: string = JSON.stringify({
   linter: {
     rules: {
       complexity: {

@@ -7,7 +7,7 @@ const UNITS = `zero one two three four five six seven eight nine
 
 const TENS = "twenty thirty forty fifty sixty seventy eighty ninety".split(" ");
 
-export const NUMBERS = [
+export const NUMBERS: readonly string[] = [
   ...UNITS,
   ...TENS.flatMap((ten) => [
     ten,

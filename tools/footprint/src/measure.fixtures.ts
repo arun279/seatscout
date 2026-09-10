@@ -1,4 +1,5 @@
 import { BIOME, OXLINT } from "./limits.js";
+import type { Measure } from "./main.js";
 import { measureWith, RATCHET, STRYKER } from "./measure.js";
 import type { Completed, Run } from "./shell.js";
 
@@ -127,7 +128,7 @@ const canned = ({ command, args }: Command): string =>
 
 export const recorder = (
   over: (command: Command) => Completed | undefined = () => undefined,
-) => {
+): { readonly run: Run; readonly commands: readonly Command[] } => {
   const commands: Command[] = [];
 
   const run: Run = (command, args) => {
@@ -139,7 +140,12 @@ export const recorder = (
   return { run, commands };
 };
 
-export const reading = (over: Record<string, string> = {}) => {
+export const reading = (
+  over: Record<string, string> = {},
+): {
+  readonly read: (path: string) => string;
+  readonly asked: readonly string[];
+} => {
   const asked: string[] = [];
   const read = (path: string) => {
     asked.push(path);
@@ -148,8 +154,10 @@ export const reading = (over: Record<string, string> = {}) => {
   return { read, asked };
 };
 
-export const measuring = (run: Run, over: Record<string, string> = {}) =>
-  measureWith(run, reading(over).read);
+export const measuring = (
+  run: Run,
+  over: Record<string, string> = {},
+): Measure => measureWith(run, reading(over).read);
 
 export const lines = (commands: readonly Command[]): readonly string[] =>
   commands.map(({ command, args }) => [command, ...args].join(" "));

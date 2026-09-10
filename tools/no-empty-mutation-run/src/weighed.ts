@@ -10,7 +10,12 @@ export interface Report {
   readonly files: Readonly<Record<string, Judged>>;
 }
 
-export const WEIGHED = ["Killed", "Survived", "NoCoverage", "Timeout"];
+export const WEIGHED: readonly string[] = [
+  "Killed",
+  "Survived",
+  "NoCoverage",
+  "Timeout",
+];
 
 export const weighed = (report: Report): number =>
   Object.values(report.files)

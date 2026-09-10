@@ -1,6 +1,6 @@
 import type { Gates, Limits } from "./limits.js";
 import type { Mutation } from "./mutation.js";
-import { type Measurement, render } from "./report.js";
+import { type Measurement, render, type Report } from "./report.js";
 import type { Suites } from "./suites.js";
 import type { Counts, Side, Tree } from "./volume.js";
 
@@ -55,10 +55,10 @@ export const measurement = (over: Partial<Measurement> = {}): Measurement => ({
   ...over,
 });
 
-export const reportOn = (over: Partial<Measurement> = {}) =>
+export const reportOn = (over: Partial<Measurement> = {}): Report =>
   render(measurement(over));
 
-export const between = (base: Tree, head: Tree, comments = 0) =>
+export const between = (base: Tree, head: Tree, comments = 0): Report =>
   reportOn({
     base: side("b", { tree: base }),
     head: side("h", { tree: head }),
