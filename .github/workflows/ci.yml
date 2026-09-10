@@ -108,14 +108,22 @@ jobs:
           install: false
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - name: Restore what an earlier run already judged
+      - name: Name this tree and main's, since a merged branch's tree is main's next tree
+        id: trees
+        run: |
+          git fetch --no-tags --depth=1 origin main
+          echo "head=$(git rev-parse 'HEAD^{tree}')" >> "$GITHUB_OUTPUT"
+          echo "base=$(git rev-parse 'origin/main^{tree}')" >> "$GITHUB_OUTPUT"
+      - name: Restore what an earlier run already judged, the merged tree's report first
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: reports/stryker-incremental.json
-          key: stryker-${{ github.head_ref }}-${{ github.sha }}
+          key: stryker-tree-${{ steps.trees.outputs.head }}
           restore-keys: |
+            stryker-tree-${{ steps.trees.outputs.base }}
             stryker-${{ github.head_ref }}-
             stryker-main-
+            stryker-
       - name: Judge the suite by mutating the code it tests
         continue-on-error: true
         run: |
@@ -152,6 +160,13 @@ jobs:
         with:
           path: reports/stryker-incremental.json
           key: stryker-${{ github.head_ref }}-${{ github.sha }}
+      - name: Leave it under this tree's name too, for main once this branch merges
+        if: always() && steps.mutation_test_collection.outputs.complete == 'true'
+        continue-on-error: true
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: reports/stryker-incremental.json
+          key: stryker-tree-${{ steps.trees.outputs.head }}
       - name: Install the counter
         run: |
           curl -fsSL -o "$RUNNER_TEMP/cloc" https://github.com/AlDanial/cloc/releases/download/v2.10/cloc-2.10.pl

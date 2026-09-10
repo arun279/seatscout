@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: "23 3 * * *"
   workflow_dispatch:
 
 permissions:
@@ -27,7 +29,18 @@ jobs:
           cache: true
           install: false
       - run: pnpm install --frozen-lockfile
-      - name: Judge main with no incremental file to inherit from
+      - name: Name main's tree, which the branch that merged already judged
+        id: tree
+        run: echo "main=$(git rev-parse 'HEAD^{tree}')" >> "$GITHUB_OUTPUT"
+      - name: On a push, inherit the merged branch's report; the schedule starts from nothing
+        if: github.event_name == 'push'
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: reports/stryker-incremental.json
+          key: stryker-tree-${{ steps.tree.outputs.main }}
+          restore-keys: |
+            stryker-
+      - name: Judge main
         run: |
           set -o pipefail
           pnpm test:mutation:incremental 2>&1 | tee "$RUNNER_TEMP/stryker-mutation.log"
@@ -62,3 +75,10 @@ jobs:
         with:
           path: reports/stryker-incremental.json
           key: stryker-main-${{ github.sha }}
+      - name: Leave it under the tree's name, which the next branch restores by
+        if: steps.mutation_test_collection.outputs.complete == 'true'
+        continue-on-error: true
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: reports/stryker-incremental.json
+          key: stryker-tree-${{ steps.tree.outputs.main }}

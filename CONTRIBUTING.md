@@ -177,6 +177,11 @@ Playwright tests collected by the footprint command. A short or missing count me
 initial collection was partial, so the job fails and the partial seed is left out of the
 cache.
 
+Each report is saved under two names, the branch's and the tree's. A pull request merged up to
+date has exactly the tree main gets, so the next branch restores the merged branch's report by
+main's tree hash and judges only what it changed; the baseline job inherits that same report on
+a push, and its nightly schedule judges main from nothing, which is the one full run.
+
 ## Refreshing the corpus
 
 `pnpm corpus:refresh --zip <postal code>` replaces every capture under
