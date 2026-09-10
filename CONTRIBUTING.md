@@ -184,8 +184,11 @@ cache.
 
 Each report is saved under two names, the branch's and the tree's. A pull request merged up to
 date has exactly the tree main gets, so the next branch restores the merged branch's report by
-main's tree hash and judges only what it changed; the baseline job inherits that same report on
-a push, and its nightly schedule judges main from nothing, which is the one full run.
+main's tree hash and judges only what it changed. A cache saved on a branch is invisible to main,
+so a passing run also publishes its report as an artifact named by the tree; the baseline job on a
+push downloads that artifact for main's tree, judges the nothing that changed, and saves the seed
+under main, where every branch can restore it. Its nightly schedule judges main from nothing, which
+is the one full run.
 
 ## Refreshing the corpus
 

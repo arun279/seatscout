@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -32,14 +33,20 @@ jobs:
       - name: Name main's tree, which the branch that merged already judged
         id: tree
         run: echo "main=$(git rev-parse 'HEAD^{tree}')" >> "$GITHUB_OUTPUT"
-      - name: On a push, inherit the merged branch's report; the schedule starts from nothing
+      - name: On a push, inherit the merged branch's report from the artifact its own run published; the schedule starts from nothing
         if: github.event_name == 'push'
-        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: reports/stryker-incremental.json
-          key: stryker-tree-${{ steps.tree.outputs.main }}
-          restore-keys: |
-            stryker-
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          id="$(gh api "repos/${{ github.repository }}/actions/artifacts?name=stryker-tree-${{ steps.tree.outputs.main }}&per_page=1" --jq '.artifacts[0].id // empty')"
+          if [ -n "$id" ]; then
+            mkdir -p reports
+            gh api "repos/${{ github.repository }}/actions/artifacts/$id/zip" > "$RUNNER_TEMP/seed.zip"
+            unzip -o "$RUNNER_TEMP/seed.zip" -d reports
+            echo "Inherited the report of tree ${{ steps.tree.outputs.main }} from artifact $id."
+          else
+            echo "No branch published a report for tree ${{ steps.tree.outputs.main }}; judging main from nothing."
+          fi
       - name: Judge main
         run: |
           set -o pipefail
