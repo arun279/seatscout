@@ -1,25 +1,25 @@
 [
   {
     "firstSeatGroupsMs": 200,
-    "lcp": 60,
-    "inp": 32,
-    "cls": 0,
+    "lcp": 2612,
+    "inp": 152,
+    "cls": 0.02,
     "heapBytes": 7080960,
     "conditions": "412 by 823 at 1.75x, 150 ms round trip, 209715 B/s down, 96000 B/s up"
   },
   {
     "firstSeatGroupsMs": 210,
-    "lcp": 60,
-    "inp": 32,
-    "cls": 0,
+    "lcp": 3128,
+    "inp": 168,
+    "cls": 0.02,
     "heapBytes": 7081984,
     "conditions": "412 by 823 at 1.75x, 150 ms round trip, 209715 B/s down, 96000 B/s up"
   },
   {
-    "firstSeatGroupsMs": 290,
-    "lcp": 60,
-    "inp": 32,
-    "cls": 0,
+    "firstSeatGroupsMs": 220,
+    "lcp": 3432,
+    "inp": 184,
+    "cls": 0.02,
     "heapBytes": 7083008,
     "conditions": "412 by 823 at 1.75x, 150 ms round trip, 209715 B/s down, 96000 B/s up"
   }

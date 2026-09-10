@@ -1,5 +1,26 @@
 [
-  { "firstSeatGroupsMs": 240, "lcp": 60, "inp": 32, "cls": 0 },
-  { "firstSeatGroupsMs": 260, "lcp": 60, "inp": 32, "cls": 0 },
-  { "firstSeatGroupsMs": 300, "lcp": 60, "inp": 32, "cls": 0 }
+  {
+    "firstSeatGroupsMs": 240,
+    "lcp": 60,
+    "inp": 32,
+    "cls": 0,
+    "heapBytes": 7090176,
+    "conditions": "412 by 823 at 1.75x, 150 ms round trip, 209715 B/s down, 96000 B/s up"
+  },
+  {
+    "firstSeatGroupsMs": 260,
+    "lcp": 60,
+    "inp": 32,
+    "cls": 0,
+    "heapBytes": 7091200,
+    "conditions": "412 by 823 at 1.75x, 150 ms round trip, 209715 B/s down, 96000 B/s up"
+  },
+  {
+    "firstSeatGroupsMs": 300,
+    "lcp": 60,
+    "inp": 32,
+    "cls": 0,
+    "heapBytes": 7092224,
+    "conditions": "412 by 823 at 1.75x, 150 ms round trip, 209715 B/s down, 96000 B/s up"
+  }
 ]

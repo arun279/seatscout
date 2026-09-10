@@ -1,13 +1,10 @@
-import { AxeBuilder } from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
 import {
+  accessible,
   answeredByTheCorpus,
-  HIT_AREA,
-  hitAreasUnder,
   requestsTo,
   SEAT_MAP,
   TONIGHT,
-  WCAG,
 } from "./corpus.fixtures.js";
 
 const TICKETING = "**/transaction/ticketing/**";
@@ -64,12 +61,6 @@ const opened = async (page: Page) => {
         });
       }),
   };
-};
-
-const accessible = async (page: Page) => {
-  const scan = await new AxeBuilder({ page }).withTags(WCAG).analyze();
-  expect(scan.violations).toEqual([]);
-  expect(await hitAreasUnder(page, HIT_AREA)).toEqual([]);
 };
 
 test("taking a Seat Group re-reads its room first and then navigates to the ticketing URL the Source supplied for that Showtime", {

@@ -32,20 +32,28 @@ const capturedRoom = (capture: string) => {
   return { status: room.status, body: JSON.stringify(room.body) };
 };
 
-export const roomOpened = async (page: Page, room: RoomOnTheList) => {
-  await answeredByTheCorpus(page, {
-    routes: Object.fromEntries(
-      [LARGEST_ROOM, POD_ROOM].map((listed) => [
-        `/napi/seatMap/${listed.showtime}`,
-        capturedRoom(listed.capture),
-      ]),
-    ),
-  });
-  await page.goto(TONIGHT);
-  await expect(page.getByRole("status")).toHaveText(/172 checked$/);
+export const capturedRooms = () =>
+  Object.fromEntries(
+    [LARGEST_ROOM, POD_ROOM].map((listed) => [
+      `/napi/seatMap/${listed.showtime}`,
+      capturedRoom(listed.capture),
+    ]),
+  );
+
+export const roomOpenedFromTheList = async (
+  page: Page,
+  room: RoomOnTheList,
+) => {
   await page.getByRole("button", { name: room.opensWith }).click();
   await expect(page.getByRole("dialog")).toBeVisible();
   return page.getByRole("dialog");
+};
+
+export const roomOpened = async (page: Page, room: RoomOnTheList) => {
+  await answeredByTheCorpus(page, { routes: capturedRooms() });
+  await page.goto(TONIGHT);
+  await expect(page.getByRole("status")).toHaveText(/172 checked$/);
+  return roomOpenedFromTheList(page, room);
 };
 
 export interface Painted {

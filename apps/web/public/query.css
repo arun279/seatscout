@@ -51,9 +51,9 @@
 .term::after {
   content: "";
   position: absolute;
-  top: -15px;
-  bottom: -15px;
+  top: 50%;
   left: 50%;
-  translate: -50%;
+  translate: -50% -50%;
   width: max(100% + 12px, 44px);
+  height: max(100% + 20px, 44px);
 }
