@@ -138,10 +138,9 @@ test("Escape leaves the hand-off with the list and the query as they were", asyn
   expect(new URL(page.url()).search).toBe(TONIGHT.slice(1));
 });
 
-test("offline the card offers no hand-off, and the reason stands over the list rather than under it", async ({
-  page,
-  context,
-}) => {
+test("offline the card offers no hand-off, the reason stands over the list rather than under it, and the screen carries no WCAG 2.2 AA violation axe can detect", {
+  tag: "@accessibility",
+}, async ({ page, context }) => {
   await answeredByTheCorpus(page);
   await page.goto(TONIGHT);
   await expect(page.getByRole("status")).toHaveText(/172 checked$/);
@@ -168,4 +167,5 @@ test("offline the card offers no hand-off, and the reason stands over the list r
       );
     }),
   ).toEqual(Array.from({ length: 15 }, () => true));
+  await accessible(page);
 });

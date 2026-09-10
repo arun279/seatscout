@@ -49,6 +49,7 @@ Pull requests run the `quality` job, which is this list in the order it runs it:
 pnpm format:check
 pnpm lint
 pnpm complexity
+pnpm duplication
 actionlint
 shellcheck deploy/*.sh
 pnpm spell
@@ -63,7 +64,8 @@ pnpm build
 pnpm --filter @seatscout/proxy exec wrangler deploy --dry-run
 pnpm test:e2e
 pnpm test:journey
-pnpm journey --head reports/journey/samples.json --no-baseline
+pnpm journey --head reports/journey/samples.json \
+  --head-gesture reports/journey/gesture.json --no-baseline
 ```
 
 The list is the job, not a selection from it. Running a shorter one and finding it green is
@@ -73,10 +75,12 @@ base in a worktree, runs its journey, and holds this one to it.
 
 Three further jobs run beside it. `footprint` runs the mutation gate and reports what the
 change weighs. `secrets` scans the pull request's commits with gitleaks. `dependencies`
-scans the lockfile against the OSV database and fails on any advisory.
+scans the lockfile against the OSV database and fails on any advisory, then reads every
+dependency's licence and fails on any SPDX identifier outside the allowlist that job
+carries, a licence it could not determine included.
 
 Two hooks run some of that earlier, and `lefthook.yml` declares both. The pre-commit hook
-runs six checks over staged files. The pre-push hook runs nine over the whole workspace, the
+runs six checks over staged files. The pre-push hook runs ten over the whole workspace, the
 unit suite among them, which is why a push takes longer than a commit. Neither is a
 substitute for the list above: both are subsets of it, chosen for what is cheap enough to run
 that often.
@@ -119,6 +123,21 @@ Each of these has one way through and no exemption to grant.
   as a literal or held in a variable bound to one, and passes a class built from a template or
   picked by a conditional, so a class here is always a literal and the state that would join it
   goes in a `data-` attribute the sheet selects on; ADR 6 says why.
+- **Duplicated code.** `pnpm duplication` fails when jscpd finds more than 3 percent of the
+  lines under `{apps,packages,tools}/*/src` duplicated, which is the figure SonarSource
+  publish in the Sonar way quality gate. The failure names both files and the lines they
+  share. Take the duplication out; there is no list to add a file to.
+- **A dependency's licence.** The `dependencies` job holds every licence in the lockfile to
+  the SPDX allowlist written into `.github/workflows/ci.yml`. A licence osv-scanner cannot
+  determine reads as `UNKNOWN` and fails like any other identifier that is not on the list.
+  Add the identifier to that list in the same diff, where a reviewer sees which dependency
+  brought it.
+- **An import cycle.** Biome's `noImportCycles` names the import that closes the loop. Move
+  what both modules need into a third, or make the import `import type`, which the compiler
+  erases and which the rule ignores.
+- **An export with no written type.** `isolatedDeclarations` asks every export to carry a
+  type a declaration emitter can write down without inferring it. Annotate the export. A
+  React component that returns markup returns `ReactElement`.
 - **The test count.** `.footprint.json` holds a floor under the tests the two runners collect,
   by their own listings rather than by a run; the mutation-cache guard separately compares
   Stryker's initial run to Vitest's JSON count from `vitest related` over the files
@@ -128,8 +147,9 @@ Take a ratchet's new value from the `footprint` comment on the pull request rath
 local run: the job measures the merge of your branch with `main` rather than the branch alone,
 so the bundle's bytes and the sum of the unit and end-to-end counts are what that merge weighs,
 and a floor derived locally read 25 too high the moment `main` had dropped a package's tests.
-`.size-limit.json` holds one ratchet over the scripts the build emits and another over the
-stylesheets it serves, and the comment prints each measured figure beside its own ratchet.
+`.size-limit.json` holds four ratchets over what the build emits: the scripts, the
+stylesheets, the woff2 faces the page preloads and the icons it names. The comment prints
+each measured figure beside its own ratchet.
 
 A pull request that changes what a person sees or does carries its headed pass as images or
 video: drive the built tree in a real browser at a phone's size, screenshot each state the

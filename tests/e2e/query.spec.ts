@@ -158,9 +158,9 @@ test("an accessible-seating Query returns wheelchair Seats", async ({
   ).toEqual([]);
 });
 
-test("the retry re-checks only the failed Showtimes, and Coverage updates accordingly", async ({
-  page,
-}) => {
+test("the retry re-checks only the failed Showtimes, Coverage updates accordingly, and the screen holding what the Source never answered for carries no WCAG 2.2 AA violation axe can detect", {
+  tag: "@accessibility",
+}, async ({ page }) => {
   const upstream = await answeredByTheCorpus(page, {
     sequences: Object.fromEntries(
       STONEBRIAR.map((id) => [`${SEAT_MAP}${id}`, [500, 500, 500]]),
@@ -169,6 +169,7 @@ test("the retry re-checks only the failed Showtimes, and Coverage updates accord
   await page.goto(TONIGHT);
   await expect(page.getByRole("status").first()).toHaveText(/170 checked$/);
   await expect(page.getByText("Not everywhere yet.")).toBeVisible();
+  await accessible(page);
   const seatMaps = requestsTo(upstream, SEAT_MAP);
   const listings = requestsTo(upstream, LISTINGS);
 

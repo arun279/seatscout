@@ -13,6 +13,8 @@ const journeysOf = (
     inp: inp[at] ?? null,
     cls: cls[at] ?? null,
     heapBytes: 1024,
+    blockingMs: 40,
+    longTasks: 2,
     conditions: "a slow connection",
   }));
 

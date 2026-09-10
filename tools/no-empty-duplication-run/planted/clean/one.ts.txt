@@ -1,0 +1,12 @@
+export const timeOf = (minutes) => {
+  const hour = Math.floor(minutes / 60) % 12 || 12;
+  const minute = String(minutes % 60).padStart(2, "0");
+  return `${hour}:${minute}${minutes % 1440 < 720 ? "a" : "p"}`;
+};
+
+export const spanOf = (from, until) => {
+  const width = until - from;
+  return width < 0 ? width + 1440 : width;
+};
+
+export const withinTheEvening = (minutes) => minutes >= 1020 && minutes <= 1380;

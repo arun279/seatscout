@@ -5,7 +5,9 @@
     "inp": 32,
     "cls": 0,
     "heapBytes": 7090176,
-    "conditions": "412 by 823 at 1.75x, 150 ms round trip, 209715 B/s down, 96000 B/s up"
+    "conditions": "412 by 823 at 1.75x, 150 ms round trip, 209715 B/s down, 96000 B/s up",
+    "blockingMs": 60,
+    "longTasks": 2
   },
   {
     "firstSeatGroupsMs": 260,
@@ -13,7 +15,9 @@
     "inp": 32,
     "cls": 0,
     "heapBytes": 7091200,
-    "conditions": "412 by 823 at 1.75x, 150 ms round trip, 209715 B/s down, 96000 B/s up"
+    "conditions": "412 by 823 at 1.75x, 150 ms round trip, 209715 B/s down, 96000 B/s up",
+    "blockingMs": 65,
+    "longTasks": 2
   },
   {
     "firstSeatGroupsMs": 300,
@@ -21,6 +25,8 @@
     "inp": 32,
     "cls": 0,
     "heapBytes": 7092224,
-    "conditions": "412 by 823 at 1.75x, 150 ms round trip, 209715 B/s down, 96000 B/s up"
+    "conditions": "412 by 823 at 1.75x, 150 ms round trip, 209715 B/s down, 96000 B/s up",
+    "blockingMs": 70,
+    "longTasks": 2
   }
 ]

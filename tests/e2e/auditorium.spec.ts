@@ -1,12 +1,20 @@
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { AxeBuilder } from "@axe-core/playwright";
-import { expect, type Page, test } from "@playwright/test";
-import { LARGEST_ROOM, roomOpened } from "./auditorium.fixtures.js";
+import { expect, type Locator, type Page, test } from "@playwright/test";
+import {
+  LARGEST_ROOM,
+  roomOpened,
+  roomOpenedFromTheList,
+} from "./auditorium.fixtures.js";
 import { WCAG } from "./corpus.fixtures.js";
 
 const PHONE = { width: 390, height: 844 };
 const CPU_SLOWDOWN = 4;
 const IDLE_FRAMES = 30;
 const PERCENTILE = 0.75;
+const GESTURES = 10;
+const SAMPLES = "reports/journey/gesture.json";
+const CONDITIONS = `${PHONE.width} by ${PHONE.height}, CPU at ${CPU_SLOWDOWN}x`;
 
 interface Cadence {
   readonly idleMs: number;
@@ -121,44 +129,95 @@ const focusedNow = (page: Page) =>
     return `${active.tagName}:${active.getAttribute("role") ?? ""}:${name}`;
   });
 
+const droppedIn = (cadence: Cadence) =>
+  cadence.intervalsMs.filter(
+    (interval) => Math.round(interval / cadence.idleMs) > 1,
+  ).length;
+
+const p75Of = (cadence: Cadence) => {
+  const sorted = cadence.intervalsMs.toSorted((a, b) => a - b);
+  return sorted[Math.ceil(sorted.length * PERCENTILE) - 1] ?? 0;
+};
+
+const centreOf = async (dialog: Locator) => {
+  const box = await dialog.locator("svg.seat-map").boundingBox();
+  if (box === null) throw new Error("the map has no box");
+  return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+};
+
+const gestured = async (page: Page, dialog: Locator) => {
+  const centre = await centreOf(dialog);
+  await watching(page, IDLE_FRAMES);
+  await pinched(page, centre);
+  await page.mouse.wheel(0, -240);
+  await dragged(page, centre);
+  return measured(page);
+};
+
+const each = <Reading>(reading: (at: number) => Reading) =>
+  Array.from({ length: GESTURES }, (_, at) => reading(at));
+
 test.use({ serviceWorkers: "block" });
 
 test(
-  "the largest captured room pans and zooms at the display's own cadence on a four-times-slower CPU, and only the wrapping group's transform changes while it does",
+  "the largest captured room pans and zooms at the display's own cadence on a four-times-slower CPU over ten gestures, and only the wrapping group's transform changes while it does",
   { tag: "@performance" },
   async ({ page }, info) => {
     await page.setViewportSize(PHONE);
-    const dialog = await roomOpened(page, LARGEST_ROOM);
-    const box = await dialog.locator("svg.seat-map").boundingBox();
-    if (box === null) throw new Error("the map has no box");
-    const centre = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    let dialog = await roomOpened(page, LARGEST_ROOM);
     await throttled(page, CPU_SLOWDOWN);
-
-    await watching(page, IDLE_FRAMES);
-    await pinched(page, centre);
-    await page.mouse.wheel(0, -240);
-    await dragged(page, centre);
-    const cadence = await measured(page);
+    const passes: Cadence[] = [];
+    for (let pass = 0; pass < GESTURES; pass += 1) {
+      if (pass > 0) {
+        await page.keyboard.press("Escape");
+        await expect(dialog).toBeHidden();
+        dialog = await roomOpenedFromTheList(page, LARGEST_ROOM);
+      }
+      passes.push(await gestured(page, dialog));
+    }
     await throttled(page, 1);
-    const sorted = cadence.intervalsMs.toSorted((a, b) => a - b);
-    const p75 = sorted[Math.ceil(sorted.length * PERCENTILE) - 1] ?? 0;
-    const dropped = cadence.intervalsMs.filter(
-      (interval) => Math.round(interval / cadence.idleMs) > 1,
+
+    const dropped = passes.map(droppedIn);
+    mkdirSync("reports/journey", { recursive: true });
+    writeFileSync(
+      SAMPLES,
+      JSON.stringify(
+        dropped.map((droppedFrames) => ({
+          droppedFrames,
+          conditions: CONDITIONS,
+        })),
+        null,
+        2,
+      ),
     );
+    const mutations = passes.flatMap((cadence) => cadence.mutations);
 
     info.annotations.push({
-      type: "frames during the gesture, idle cadence ms, 75th percentile ms, worst ms, frames dropped",
-      description: `${cadence.intervalsMs.length}, ${cadence.idleMs.toFixed(1)}, ${p75.toFixed(1)}, ${Math.max(...cadence.intervalsMs).toFixed(1)}, ${dropped.length}`,
+      type: "per gesture: frames, idle cadence ms, 75th percentile ms, worst ms, frames dropped",
+      description: passes
+        .map(
+          (cadence, at) =>
+            `${cadence.intervalsMs.length}, ${cadence.idleMs.toFixed(1)}, ${p75Of(cadence).toFixed(1)}, ${Math.max(...cadence.intervalsMs).toFixed(1)}, ${dropped[at]}`,
+        )
+        .join(" | "),
     });
-    expect(cadence.intervalsMs.length).toBeGreaterThan(0);
-    expect(Math.round(p75 / cadence.idleMs)).toBe(1);
-    expect(new Set(cadence.mutations)).toEqual(
-      new Set(["attributes:transform:g"]),
+    expect(passes.map((cadence) => cadence.intervalsMs.length > 0)).toEqual(
+      each(() => true),
     );
-    expect(cadence.mutations.length).toBeGreaterThan(0);
+    expect(
+      passes.map((cadence) => Math.round(p75Of(cadence) / cadence.idleMs)),
+    ).toEqual(each(() => 1));
+    expect(new Set(mutations)).toEqual(new Set(["attributes:transform:g"]));
+    expect(mutations.length).toBeGreaterThan(0);
     await expect(dialog.locator("svg > g").first()).not.toHaveAttribute(
       "transform",
       "translate(0 0) scale(1)",
+    );
+    expect(JSON.parse(readFileSync(SAMPLES, "utf8"))).toEqual(
+      each(() => ({
+        droppedFrames: expect.any(Number),
+        conditions: CONDITIONS,
+      })),
     );
   },
 );

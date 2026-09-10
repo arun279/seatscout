@@ -1,0 +1,18 @@
+export const otherRoom = () => {
+const ROWS = [
+  { row: "A", seats: 18, bookable: 12, pitch: 1.05, aisle: false },
+  { row: "B", seats: 20, bookable: 14, pitch: 1.05, aisle: false },
+  { row: "C", seats: 20, bookable: 9, pitch: 1.05, aisle: true },
+  { row: "D", seats: 22, bookable: 16, pitch: 1.1, aisle: false },
+  { row: "E", seats: 22, bookable: 3, pitch: 1.1, aisle: false },
+  { row: "F", seats: 24, bookable: 21, pitch: 1.15, aisle: true },
+  { row: "G", seats: 24, bookable: 18, pitch: 1.15, aisle: false },
+  { row: "H", seats: 20, bookable: 11, pitch: 1.2, aisle: false },
+];
+
+const widest = (rows) => rows.reduce((most, row) => Math.max(most, row.pitch), 0);
+const seated = (rows) => rows.reduce((total, row) => total + row.bookable, 0);
+const aisles = (rows) => rows.filter((row) => row.aisle).length;
+const busiest = (rows) => rows.toSorted((a, b) => b.bookable - a.bookable)[0];
+  return { seated: seated(ROWS), aisles: aisles(ROWS) };
+};

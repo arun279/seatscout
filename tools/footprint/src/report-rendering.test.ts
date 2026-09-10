@@ -47,11 +47,11 @@ held still holds a file. Holds.
 
 ### Bundle size
 
-Brotli, summed per file, over every script an application's own bundler
-emits, with the workspace packages it reaches inlined, and over every
-stylesheet the built directory serves. Every emitted chunk counts,
-including one no page has loaded, so this is what a build publishes
-rather than what a page weighs.
+Brotli, summed per file, over what the built directory serves: every script
+an application's own bundler emits, with the workspace packages it reaches
+inlined, the stylesheets beside them, the faces the page preloads and the
+icons it names. Every emitted chunk counts, including one no page has
+loaded, so this is what a build publishes rather than what a page weighs.
 
 | Bundle | Brotli | Ratchet |
 | --- | ---: | ---: |

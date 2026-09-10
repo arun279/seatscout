@@ -1,0 +1,32 @@
+[
+  {
+    "firstSeatGroupsMs": 200,
+    "lcp": 60,
+    "inp": 32,
+    "cls": 0,
+    "heapBytes": 7080960,
+    "blockingMs": 130,
+    "longTasks": 3,
+    "conditions": "412 by 823 at 1.75x, 150 ms round trip, 209715 B/s down, 96000 B/s up"
+  },
+  {
+    "firstSeatGroupsMs": 210,
+    "lcp": 60,
+    "inp": 32,
+    "cls": 0,
+    "heapBytes": 7081984,
+    "blockingMs": 140,
+    "longTasks": 3,
+    "conditions": "412 by 823 at 1.75x, 150 ms round trip, 209715 B/s down, 96000 B/s up"
+  },
+  {
+    "firstSeatGroupsMs": 220,
+    "lcp": 60,
+    "inp": 32,
+    "cls": 0,
+    "heapBytes": 7083008,
+    "blockingMs": 150,
+    "longTasks": 3,
+    "conditions": "412 by 823 at 1.75x, 150 ms round trip, 209715 B/s down, 96000 B/s up"
+  }
+]

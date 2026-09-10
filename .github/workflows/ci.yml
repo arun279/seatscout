@@ -43,6 +43,7 @@ jobs:
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm complexity
+      - run: pnpm duplication
       - run: actionlint
       - run: shellcheck deploy/*.sh
       - run: pnpm spell
@@ -71,6 +72,9 @@ jobs:
             pnpm build
             pnpm exec playwright test --grep @performance
             cp reports/journey/samples.json "$GITHUB_WORKSPACE/reports/journey/base.json"
+            if [ -f reports/journey/gesture.json ]; then
+              cp reports/journey/gesture.json "$GITHUB_WORKSPACE/reports/journey/base-gesture.json"
+            fi
           elif printf '%s' "$listed" | grep -q "No tests found"; then
             echo "The merge base has no journey to hold this one to."
           else
@@ -79,11 +83,15 @@ jobs:
           fi
       - name: Hold the journey to the merge base
         run: |
+          held=(--no-baseline)
           if [ -f reports/journey/base.json ]; then
-            pnpm journey --head reports/journey/samples.json --base reports/journey/base.json
-          else
-            pnpm journey --head reports/journey/samples.json --no-baseline
+            held=(--base reports/journey/base.json)
+            if [ -f reports/journey/base-gesture.json ]; then
+              held+=(--base-gesture reports/journey/base-gesture.json)
+            fi
           fi
+          pnpm journey --head reports/journey/samples.json \
+            --head-gesture reports/journey/gesture.json "${held[@]}"
 
   footprint:
     runs-on: ubuntu-24.04
@@ -214,3 +222,10 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Scan dependencies against OSV
         uses: google/osv-scanner-action/osv-scanner-action@6e4298ebc4db23e847df9b2e2de2939d6f066c67 # v2.5.1
+      - name: Hold every dependency's licence to the allowlist
+        uses: google/osv-scanner-action/osv-scanner-action@6e4298ebc4db23e847df9b2e2de2939d6f066c67 # v2.5.1
+        with:
+          scan-args: |-
+            --licenses=0BSD,Apache-2.0,BlueOak-1.0.0,BSD-2-Clause,BSD-3-Clause,CC-BY-4.0,CC-BY-SA-4.0,CC0-1.0,ISC,LGPL-3.0-or-later,MIT,MIT-0,MPL-2.0,Python-2.0,Unlicense
+            --recursive
+            ./
