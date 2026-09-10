@@ -171,11 +171,21 @@ pnpm footprint
 `pnpm test:mutation:incremental` is what both jobs run, and is what writes and reuses
 `reports/stryker-incremental.json`.
 
+Both scripts run Vitest on one worker under Stryker (`VITEST_MAX_WORKERS=1`): with more, Stryker
+activates a mutant in one worker while its tests run in another, and the run reports survivors
+that a hand-planted mutant refutes. A scoped run by hand needs the same prefix:
+`VITEST_MAX_WORKERS=1 pnpm exec stryker run --incremental --force --mutate <files>`.
+
 The workflows save that incremental file only after Stryker's initial run says it ran at
 least the unit-test floor implied by `.footprint.json`: the total test ratchet minus the
 Playwright tests collected by the footprint command. A short or missing count means the
 initial collection was partial, so the job fails and the partial seed is left out of the
 cache.
+
+Each report is saved under two names, the branch's and the tree's. A pull request merged up to
+date has exactly the tree main gets, so the next branch restores the merged branch's report by
+main's tree hash and judges only what it changed; the baseline job inherits that same report on
+a push, and its nightly schedule judges main from nothing, which is the one full run.
 
 ## Refreshing the corpus
 

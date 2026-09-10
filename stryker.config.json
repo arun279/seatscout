@@ -11,8 +11,13 @@
   ],
   "cleanTempDir": "always",
   "reporters": ["clear-text", "json"],
-  "jsonReporter": { "fileName": "reports/mutation/mutation.json" },
+  "jsonReporter": {
+    "fileName": "reports/mutation/mutation.json"
+  },
   "thresholds": {
     "break": 100
+  },
+  "vitest": {
+    "configFile": "vitest.stryker.config.ts"
   }
 }
