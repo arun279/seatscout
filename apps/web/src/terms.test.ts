@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { queryOf, termsFrom, windowIn } from "./terms.js";
+import { queryOf, termsFrom, termsOf, windowIn } from "./terms.js";
 import { EVERY_TERM, TODAY } from "./terms.fixtures.js";
 
 describe("the query terms a URL carries", () => {
@@ -134,5 +134,28 @@ describe("the query terms a URL carries", () => {
     expect(queryOf(termsFrom("?chain=AMC&chain=Regal&from=07:05", TODAY))).toBe(
       "?date=2026-08-28&partySize=2&chain=AMC&from=07%3A05",
     );
+  });
+});
+
+describe("the query terms a recent search carries", () => {
+  it("takes the party size and the accessible seating it holds as a number and a flag, not as text", () => {
+    expect(
+      termsOf(
+        {
+          movie: "245569",
+          date: "2026-08-29",
+          area: "75006",
+          partySize: 4,
+          accessibleSeating: true,
+        },
+        TODAY,
+      ),
+    ).toEqual({
+      movie: "245569",
+      date: "2026-08-29",
+      area: "75006",
+      partySize: 4,
+      accessibleSeating: true,
+    });
   });
 });

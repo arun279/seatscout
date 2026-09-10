@@ -10,9 +10,9 @@ import {
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   ask,
-  AT_ONE_THEATER,
+  atOneTheater,
   cards,
-  EVERYTHING,
+  everything,
   NEARBY,
   NO_AREA,
   NO_MOVIE,
@@ -102,7 +102,7 @@ describe("the first screen", () => {
   });
 
   it("states every term on the card, each a line that opens the sheet at that term", async () => {
-    const stage = staged({ terms: EVERYTHING });
+    const stage = staged({ terms: everything() });
     await stage.programmed();
 
     expect(document.querySelector("header")).toHaveTextContent(
@@ -143,7 +143,7 @@ describe("the first screen", () => {
   ])(
     "opens the query for editing from the title card's %s line, with that term ready to change",
     async (line, control) => {
-      const stage = staged({ terms: AT_ONE_THEATER });
+      const stage = staged({ terms: atOneTheater() });
       await stage.programmed();
       fireEvent.click(screen.getByRole("button", { name: line }));
 
@@ -180,7 +180,7 @@ describe("the first screen", () => {
   });
 
   it("runs the query as edited, with the party stepped and the film's number and the area retyped, and closes", async () => {
-    const stage = staged({ terms: AT_ONE_THEATER });
+    const stage = staged({ terms: atOneTheater() });
     await stage.programmed();
     fireEvent.click(screen.getByRole("button", { name: /the dog stars/i }));
 

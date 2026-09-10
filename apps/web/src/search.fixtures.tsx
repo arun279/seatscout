@@ -18,9 +18,9 @@ import type { Terms } from "./terms.js";
 import { TODAY, TONIGHT } from "./terms.fixtures.js";
 
 export {
-  AT_NO_THEATER,
-  AT_ONE_THEATER,
-  EVERYTHING,
+  atNoTheater,
+  atOneTheater,
+  everything,
   NO_AREA,
   NO_MOVIE,
   NOTHING,
