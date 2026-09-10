@@ -125,6 +125,7 @@ jobs:
             stryker-main-
             stryker-
       - name: Judge the suite by mutating the code it tests
+        id: mutation
         continue-on-error: true
         run: |
           set -o pipefail
@@ -160,8 +161,8 @@ jobs:
         with:
           path: reports/stryker-incremental.json
           key: stryker-${{ github.head_ref }}-${{ github.sha }}
-      - name: Leave it under this tree's name too, for main once this branch merges
-        if: always() && steps.mutation_test_collection.outputs.complete == 'true'
+      - name: Leave it under this tree's name too, for main once this branch merges, only from a run the gate passed
+        if: always() && steps.mutation_test_collection.outputs.complete == 'true' && steps.mutation.outcome == 'success'
         continue-on-error: true
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
