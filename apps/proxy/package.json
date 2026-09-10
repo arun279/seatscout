@@ -8,9 +8,9 @@
     "dev": "wrangler dev"
   },
   "dependencies": {
-    "jose": "6.2.10"
+    "jose": "6.2.12"
   },
   "devDependencies": {
-    "wrangler": "4.127.0"
+    "wrangler": "4.129.0"
   }
 }
