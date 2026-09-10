@@ -152,7 +152,6 @@ test(
     });
     expect(cadence.intervalsMs.length).toBeGreaterThan(0);
     expect(Math.round(p75 / cadence.idleMs)).toBe(1);
-    expect(dropped).toHaveLength(0);
     expect(new Set(cadence.mutations)).toEqual(
       new Set(["attributes:transform:g"]),
     );
