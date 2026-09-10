@@ -138,12 +138,6 @@ importers:
         specifier: 8.4.2
         version: 8.4.2
 
-  tools/classes-in-stylesheets:
-    devDependencies:
-      '@types/node':
-        specifier: 26.4.0
-        version: 26.4.0
-
   tools/counts-in-prose:
     devDependencies:
       '@types/node':

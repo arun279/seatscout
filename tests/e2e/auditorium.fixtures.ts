@@ -128,9 +128,13 @@ export const paintedOn = () => {
   };
   return {
     ground: styleOf("svg.seat-map .ground"),
-    free: styleOf("svg.seat-map .seat.bookable:not(.space):not(.lit)"),
-    gone: styleOf("svg.seat-map .seat.unbookable:not(.space)"),
-    lit: styleOf("svg.seat-map .seat.lit"),
+    free: styleOf(
+      'svg.seat-map .seat[data-state="bookable"][data-designation="standard"]',
+    ),
+    gone: styleOf(
+      'svg.seat-map .seat[data-state="unbookable"][data-designation="standard"]',
+    ),
+    lit: styleOf('svg.seat-map .seat[data-state="lit"]'),
     tick: styleOf("svg.seat-map .tick"),
     focused: styleOf("svg.seat-map .seat:focus"),
   };

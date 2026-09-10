@@ -1,5 +1,0 @@
-export const Clean = () => (
-  <p className="said">
-    <b className="lit">one</b>
-  </p>
-);

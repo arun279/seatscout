@@ -139,7 +139,7 @@ describe("the footprint report", () => {
     const { markdown } = reportOn({
       diff: {
         added: {
-          "apps/web/public/app.css": counts(30, 0),
+          "apps/web/src/app.css": counts(30, 0),
           "apps/web/public/icon.svg": counts(20, 0),
         },
         removed: {},

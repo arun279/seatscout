@@ -56,7 +56,6 @@ pnpm typecheck
 pnpm dead-code
 pnpm live-injections
 pnpm cache-storage
-pnpm classes
 pnpm counts
 pnpm claims
 pnpm test:unit
@@ -77,7 +76,7 @@ change weighs. `secrets` scans the pull request's commits with gitleaks. `depend
 scans the lockfile against the OSV database and fails on any advisory.
 
 Two hooks run some of that earlier, and `lefthook.yml` declares both. The pre-commit hook
-runs six checks over staged files. The pre-push hook runs ten over the whole workspace, the
+runs six checks over staged files. The pre-push hook runs nine over the whole workspace, the
 unit suite among them, which is why a push takes longer than a commit. Neither is a
 substitute for the list above: both are subsets of it, chosen for what is cheap enough to run
 that often.
@@ -109,11 +108,17 @@ Each of these has one way through and no exemption to grant.
   callback that fetches without reading the body it gets back, and one that reads a body it
   was handed rather than one it fetched. Read each body inside the callback that fetched it;
   [ADR 2](docs/adr/0002-computation-on-the-client.md) says why a fan-out must.
-- **A class no stylesheet rules.** `pnpm classes` reads every class a module under
-  `apps/web/src` puts in a `className` and holds it to the stylesheets
-  `apps/web/public/index.html` links. Add the rule to the stylesheet that owns the surface,
-  or take the class off the element. `house.css` holds what two or more surfaces draw, and
-  every other sheet is named for the one surface it draws.
+- **A class no stylesheet rules.** `pnpm lint` runs Biome's `noUndeclaredClasses`, which holds
+  every class a module puts in a `className` to the stylesheets that module imports. Add the
+  rule to the sheet that owns the surface, import the sheet that already carries it, or take
+  the class off the element. `foundation.css` holds the tokens and the reset every surface
+  starts from, `house.css` holds what two or more surfaces draw, and every other sheet is named
+  for the one surface it draws. The rule reads only a module that imports a stylesheet, so a
+  screen imports the sheets it draws with; `apps/web/src/index.ts` imports all ten in the order
+  the page loaded them as links, which is the cascade the build emits. It reads a class spelled
+  as a literal or held in a variable bound to one, and passes a class built from a template or
+  picked by a conditional, so a class here is always a literal and the state that would join it
+  goes in a `data-` attribute the sheet selects on; ADR 6 says why.
 - **The test count.** `.footprint.json` holds a floor under the tests the two runners collect,
   by their own listings rather than by a run; the mutation-cache guard separately compares
   Stryker's initial run to Vitest's JSON count from `vitest related` over the files

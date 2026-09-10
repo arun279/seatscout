@@ -4,7 +4,8 @@
     "jsx": "react-jsx",
     "noEmit": true,
     "rootDir": "src",
-    "tsBuildInfoFile": "tsconfig.tsbuildinfo"
+    "tsBuildInfoFile": "tsconfig.tsbuildinfo",
+    "types": ["vite/client"]
   },
   "include": ["src"],
   "exclude": [

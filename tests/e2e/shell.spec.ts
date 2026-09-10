@@ -1,29 +1,12 @@
 import { AxeBuilder } from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
+import { shellFilesIn } from "../../apps/web/shell-files.js";
 
 const SEAT_MAP = "/napi/seatMap/561478479";
 
 const WCAG = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
-const SHELL = [
-  "/",
-  "/app.css",
-  "/ask.css",
-  "/auditorium.css",
-  "/coverage.css",
-  "/fonts/big-shoulders-display.woff2",
-  "/fonts/schibsted-grotesk.woff2",
-  "/fonts/spline-sans-mono.woff2",
-  "/foundation.css",
-  "/hand-off.css",
-  "/house.css",
-  "/icon.svg",
-  "/index.js",
-  "/manifest.webmanifest",
-  "/query.css",
-  "/results.css",
-  "/seat-map.css",
-];
+const DIST = "apps/web/dist";
 
 const cachedPaths = (page: Page) =>
   page.evaluate(async () => {
@@ -72,12 +55,15 @@ test("the shell carries no violation of WCAG 2.2 at level AA that axe can detect
   expect(scan.violations).toEqual([]);
 });
 
-test("the service worker holds the shell and nothing besides", async ({
+test("the service worker holds every script and stylesheet the build emitted, the page and what it carries, and nothing besides", async ({
   page,
 }) => {
+  const shell = await shellFilesIn(DIST);
   await controlled(page);
 
-  expect(await cachedPaths(page)).toEqual(SHELL);
+  expect(shell.filter((path) => path.endsWith(".js"))).not.toEqual([]);
+  expect(shell.filter((path) => path.endsWith(".css"))).not.toEqual([]);
+  expect(await cachedPaths(page)).toEqual(shell);
 });
 
 test("a seat map passes through the service worker to the proxy without being cached", async ({
@@ -92,7 +78,7 @@ test("a seat map passes through the service worker to the proxy without being ca
   }, SEAT_MAP);
 
   expect(answers).toEqual([500, "The proxy is not configured", 200]);
-  expect(await cachedPaths(page)).toEqual(SHELL);
+  expect(await cachedPaths(page)).toEqual(await shellFilesIn(DIST));
 });
 
 test("the shell loads with the network disabled", async ({ context, page }) => {
@@ -101,8 +87,9 @@ test("the shell loads with the network disabled", async ({ context, page }) => {
 
   await page.reload();
 
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    "Two seats together",
+  await expect(page.getByRole("heading", { level: 1 })).toHaveCSS(
+    "text-transform",
+    "uppercase",
   );
   expect(
     await page.evaluate(() => navigator.serviceWorker.controller !== null),

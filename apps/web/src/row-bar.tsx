@@ -1,3 +1,4 @@
+import "./auditorium.css";
 import type { AuditoriumMap, SeatRow } from "@seatscout/client";
 import { rowTextOf } from "./auditorium-phrases.js";
 

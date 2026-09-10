@@ -1,3 +1,5 @@
+import "./house.css";
+import "./results.css";
 import type { Snapshot } from "@seatscout/client";
 import { nameOf } from "./coverage.js";
 import { accountOf, unreachedIn } from "./derived.js";

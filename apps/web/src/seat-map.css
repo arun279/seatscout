@@ -84,51 +84,51 @@
   outline: none;
 }
 
-.seat.bookable {
+.seat[data-state="bookable"] {
   fill: var(--seat-free);
 }
 
-.seat.unbookable {
+.seat[data-state="unbookable"] {
   fill: none;
   stroke: var(--seat-gone);
   stroke-width: 1.2px;
   vector-effect: non-scaling-stroke;
 }
 
-.seat.space.bookable {
+.seat:not([data-designation="standard"])[data-state="bookable"] {
   fill: url("#space-bookable");
 }
 
-.seat.space.unbookable {
+.seat:not([data-designation="standard"])[data-state="unbookable"] {
   fill: url("#space-unbookable");
   stroke: var(--seat-gone);
 }
 
-.seat.recommended {
+.seat[data-recommended="true"] {
   stroke: var(--beam-dim);
   stroke-width: 1.4px;
   vector-effect: non-scaling-stroke;
 }
 
-.seat.lit {
+.seat[data-state="lit"] {
   fill: var(--beam);
   stroke: none;
   filter: drop-shadow(0 0 5px var(--beam-halo));
 }
 
-.seat.space.lit {
+.seat:not([data-designation="standard"])[data-state="lit"] {
   fill: url("#space-lit");
 }
 
-.space-ground.bookable {
+.space-ground[data-state="bookable"] {
   fill: var(--seat-free);
 }
 
-.space-ground.unbookable {
+.space-ground[data-state="unbookable"] {
   fill: none;
 }
 
-.space-ground.lit {
+.space-ground[data-state="lit"] {
   fill: var(--beam);
 }
 

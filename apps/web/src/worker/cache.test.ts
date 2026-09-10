@@ -1,6 +1,7 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cachedShell, isShellPath, precacheShell } from "./cache.js";
 
+const SHELL = ["/", "/index.js", "/index.css", "/icon.svg"];
 const SEAT_MAP = "/napi/seatMap/561478479";
 
 const cacheStorage = () => {
@@ -21,34 +22,20 @@ const cacheStorage = () => {
 };
 
 describe("the shell cache", () => {
+  beforeEach(() => {
+    vi.stubGlobal("SHELL_FILES", SHELL);
+  });
+
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
-  it("holds the page, its module, its manifest, its nine stylesheets, its icon and its three faces, and nothing else", async () => {
+  it("holds the files the build named the shell, and nothing besides", async () => {
     const storage = cacheStorage();
     await precacheShell();
 
     expect(storage.opened).toEqual(["shell"]);
-    expect([...storage.held.keys()]).toEqual([
-      "/",
-      "/index.js",
-      "/manifest.webmanifest",
-      "/foundation.css",
-      "/house.css",
-      "/app.css",
-      "/query.css",
-      "/ask.css",
-      "/results.css",
-      "/coverage.css",
-      "/auditorium.css",
-      "/seat-map.css",
-      "/hand-off.css",
-      "/icon.svg",
-      "/fonts/big-shoulders-display.woff2",
-      "/fonts/schibsted-grotesk.woff2",
-      "/fonts/spline-sans-mono.woff2",
-    ]);
+    expect([...storage.held.keys()]).toEqual(SHELL);
   });
 
   it("answers a path the shell cache holds with what was put there", async () => {
@@ -65,28 +52,8 @@ describe("the shell cache", () => {
     expect(await cachedShell(SEAT_MAP)).toBeUndefined();
   });
 
-  it("counts what the page loads as the shell, and a seat map not", () => {
-    expect(
-      [
-        "/",
-        "/index.js",
-        "/manifest.webmanifest",
-        "/foundation.css",
-        "/house.css",
-        "/app.css",
-        "/query.css",
-        "/ask.css",
-        "/results.css",
-        "/coverage.css",
-        "/auditorium.css",
-        "/seat-map.css",
-        "/hand-off.css",
-        "/icon.svg",
-        "/fonts/big-shoulders-display.woff2",
-        "/fonts/schibsted-grotesk.woff2",
-        "/fonts/spline-sans-mono.woff2",
-      ].map(isShellPath),
-    ).toEqual(Array.from({ length: 17 }, () => true));
+  it("counts what the build emitted as the shell, and a seat map not", () => {
+    expect(isShellPath("/index.js")).toBe(true);
     expect(isShellPath(SEAT_MAP)).toBe(false);
     expect(isShellPath("/icon-192.png")).toBe(false);
   });

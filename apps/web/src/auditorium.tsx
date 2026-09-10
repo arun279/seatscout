@@ -1,3 +1,6 @@
+import "./house.css";
+import "./auditorium.css";
+import "./seat-map.css";
 import type { Search, SeatGroupResult } from "@seatscout/client";
 import { useState } from "react";
 import { chosenOf, groupsOf, refusalOf } from "./auditorium-phrases.js";

@@ -1,3 +1,4 @@
+import "./query.css";
 import type { SeatProfile } from "@seatscout/client";
 import { Fragment } from "react";
 import type { ProgrammeState } from "./programme.js";

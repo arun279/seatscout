@@ -202,7 +202,7 @@ describe("the list on the first screen", () => {
 
     listing(snapshot);
     const button = screen.getByRole("button", { name: labelOf(first) });
-    const buttonAfter = await drawn("apps/web/public/results.css", () =>
+    const buttonAfter = await drawn("apps/web/src/results.css", () =>
       afterBoxOf(button),
     );
 
@@ -210,7 +210,7 @@ describe("the list on the first screen", () => {
     listing(snapshot, false);
     const label = document.querySelector(".card span.seats");
     if (!(label instanceof HTMLElement)) throw new Error("no offline label");
-    const labelAfter = await drawn("apps/web/public/results.css", () =>
+    const labelAfter = await drawn("apps/web/src/results.css", () =>
       afterBoxOf(label),
     );
 

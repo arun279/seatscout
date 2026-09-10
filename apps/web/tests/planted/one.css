@@ -1,0 +1,13 @@
+.card {
+  gap: 8px;
+}
+
+.said {
+  color: red;
+}
+
+@media (min-width: 40em) {
+  .lit {
+    color: blue;
+  }
+}

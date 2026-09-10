@@ -23,6 +23,7 @@
         }
       },
       "nursery": {
+        "noUndeclaredClasses": "error",
         "noUnsafeTypeAssertion": "error"
       },
       "style": {

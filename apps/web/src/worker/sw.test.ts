@@ -4,31 +4,14 @@ const ORIGIN = "https://seatscout.test";
 
 const SEAT_MAP = `${ORIGIN}/napi/seatMap/561478479`;
 
-const SHELL = [
-  "/",
-  "/index.js",
-  "/manifest.webmanifest",
-  "/foundation.css",
-  "/house.css",
-  "/app.css",
-  "/query.css",
-  "/ask.css",
-  "/results.css",
-  "/coverage.css",
-  "/auditorium.css",
-  "/seat-map.css",
-  "/hand-off.css",
-  "/icon.svg",
-  "/fonts/big-shoulders-display.woff2",
-  "/fonts/schibsted-grotesk.woff2",
-  "/fonts/spline-sans-mono.woff2",
-];
+const SHELL = ["/", "/index.js", "/index.css", "/icon.svg"];
 
 const worker = async () => {
   const listeners = new Map<string, (event: unknown) => void>();
   const held = new Map<string, Response>();
   const waited: Promise<unknown>[] = [];
 
+  vi.stubGlobal("SHELL_FILES", SHELL);
   vi.stubGlobal("self", {
     location: { origin: ORIGIN },
     addEventListener: (type: string, listener: (event: unknown) => void) => {

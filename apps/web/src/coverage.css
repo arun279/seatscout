@@ -100,8 +100,8 @@
   color: var(--silver-faint);
 }
 
-.ledger-row.unr .num,
-.ledger-row.unr .lab {
+.ledger-row[data-unreached="true"] .num,
+.ledger-row[data-unreached="true"] .lab {
   color: var(--velvet-lit);
 }
 
