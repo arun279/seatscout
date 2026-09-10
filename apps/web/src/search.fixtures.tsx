@@ -18,11 +18,14 @@ import type { Terms } from "./terms.js";
 import { TODAY, TONIGHT } from "./terms.fixtures.js";
 
 export {
-  AT_NO_THEATER,
-  AT_ONE_THEATER,
-  EVERYTHING,
+  atNoTheater,
+  atOneTheater,
+  everything,
+  NO_AREA,
   NO_MOVIE,
   NOTHING,
+  SMALLEST_LISTING,
+  SMALLEST_LISTING_WITH_RESULTS,
   TODAY,
   TONIGHT,
 } from "./terms.fixtures.js";
@@ -42,10 +45,7 @@ export const NOTHING_READ: ProgrammeState = {
 };
 
 export const ASKED: SearchTerms = {
-  movie: "245569",
-  date: TODAY,
-  area: "75006",
-  partySize: 2,
+  ...TONIGHT,
   accessibleSeating: false,
   profile: REFERENCE,
 };

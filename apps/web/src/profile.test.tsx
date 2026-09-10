@@ -4,7 +4,7 @@ import { cleanup, fireEvent, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   ask,
-  AT_ONE_THEATER,
+  atOneTheater,
   cards,
   FRONT_ROW,
   NO_MOVIE,
@@ -76,7 +76,7 @@ describe("where you sit, on the Ask sheet", () => {
   });
 
   it("re-ranks the results under the adjusted target once found, moves the ring on every card to it, and says the seat is custom", async () => {
-    const { stage, editor } = await opened({ terms: AT_ONE_THEATER });
+    const { stage, editor } = await opened({ terms: atOneTheater() });
     const [first] = cards();
     if (first === undefined) throw new Error("no card to compare against");
     const before = { row: rowOf(first), ring: ringOf(first) };
@@ -290,7 +290,7 @@ describe("where you sit, on the Ask sheet", () => {
   });
 
   it("does not run the search again when the sheet closes with nothing changed", async () => {
-    const { stage, editor } = await opened({ terms: AT_ONE_THEATER });
+    const { stage, editor } = await opened({ terms: atOneTheater() });
 
     fireEvent.click(editor.getByRole("button", { name: /find seats/i }));
 

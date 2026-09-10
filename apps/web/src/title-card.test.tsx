@@ -4,7 +4,7 @@ import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { REFERENCE } from "@seatscout/client";
 import type { ProgrammeState } from "./programme.js";
 import {
-  EVERYTHING,
+  everything,
   NOTHING_READ,
   programmeRead,
   TODAY,
@@ -84,7 +84,7 @@ describe("the title card", () => {
   });
 
   it("states every term the query carries, in the order the board draws them", () => {
-    const { container } = card(EVERYTHING, PLAYING);
+    const { container } = card(everything(), PLAYING);
 
     expect(lines(container)[3]).toBe(
       "Today · 7:00p to 9:00p · Near 75006 · Dolby Cinema or IMAX · Recliners · AMC or Landmark · Cinemark Dallas XD and IMAX or AMC Village on the Parkway 9 · Accessible seating · Reference seat",
@@ -105,7 +105,7 @@ describe("the title card", () => {
   });
 
   it("gives each value of a term its own control, so a line breaks between two Theaters rather than around both", () => {
-    card(EVERYTHING, PLAYING);
+    card(everything(), PLAYING);
 
     expect(
       screen.getAllByRole("button").map((term) => term.textContent),

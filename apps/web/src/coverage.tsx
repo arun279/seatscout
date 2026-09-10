@@ -127,7 +127,7 @@ const sumOf = (snapshot: Snapshot) => {
 const NamedRows = ({ row }: { readonly row: Row }) => (
   <ul className="named">
     {row.named.map((showtime) => (
-      <li key={`${showtime.presentation.theater.id}${showtime.startsAt}`}>
+      <li key={showtime.ticketing}>
         <span>{nameOf(showtime)}</span>
         {row.page && (
           <a href={showtime.ticketing} target="_blank" rel="noopener">

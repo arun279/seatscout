@@ -17,7 +17,7 @@ import {
   opened,
 } from "./ask.fixtures.js";
 import { Ask } from "./ask.js";
-import { ask, EVERYTHING } from "./search.fixtures.js";
+import { ask, everything } from "./search.fixtures.js";
 import { drawn } from "./stylesheet.fixtures.js";
 
 const TERMS = {
@@ -205,11 +205,11 @@ describe("the Ask sheet", () => {
 
     find();
 
-    expect(stage.chosen).toEqual([EVERYTHING]);
+    expect(stage.chosen).toEqual([everything()]);
   });
 
   it("shows every term it already holds when it opens, and lets one go", async () => {
-    const stage = await opened({ terms: EVERYTHING });
+    const stage = await opened({ terms: everything() });
 
     for (const name of [
       "IMAX",
@@ -232,7 +232,7 @@ describe("the Ask sheet", () => {
 
     expect(stage.chosen).toEqual([
       {
-        ...EVERYTHING,
+        ...everything(),
         formats: ["Dolby Cinema"],
         theaters: ["aacbt"],
         accessibleSeating: undefined,

@@ -2,24 +2,14 @@ import "@testing-library/jest-dom/vitest";
 import type { RecentSearch } from "@seatscout/client";
 import { cleanup, fireEvent, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { FRONT_ROW, staged, TODAY } from "./search.fixtures.js";
-import type { Terms } from "./terms.js";
-
-const NOTHING_ASKED: Terms = { date: TODAY, partySize: 2 };
-
-const SMALLEST_LISTING: Terms = {
-  movie: "245569",
-  date: "2026-08-27",
-  area: "75006",
-  partySize: 2,
-};
-
-const TONIGHT: RecentSearch = {
-  movie: "245569",
-  date: TODAY,
-  area: "75006",
-  partySize: 2,
-};
+import {
+  FRONT_ROW,
+  SMALLEST_LISTING,
+  staged,
+  TODAY,
+  TONIGHT,
+  NOTHING,
+} from "./search.fixtures.js";
 
 const TOMORROW: RecentSearch = {
   movie: "243819",
@@ -45,7 +35,7 @@ describe("recent searches, on the first screen", () => {
 
   it("offers the searches this device ran, newest first, each as one press", () => {
     const stage = staged({
-      terms: NOTHING_ASKED,
+      terms: NOTHING,
       recent: [TOMORROW, TONIGHT],
     });
 
@@ -63,7 +53,7 @@ describe("recent searches, on the first screen", () => {
 
   it("counts one seat as one, not as one seats", () => {
     staged({
-      terms: NOTHING_ASKED,
+      terms: NOTHING,
       recent: [{ ...TONIGHT, partySize: 1 }],
     });
 
@@ -73,7 +63,7 @@ describe("recent searches, on the first screen", () => {
   });
 
   it("names each one to assistive technology by what it asked for", () => {
-    staged({ terms: NOTHING_ASKED, recent: [TONIGHT] });
+    staged({ terms: NOTHING, recent: [TONIGHT] });
 
     expect(
       screen.getByRole("button", {
@@ -83,13 +73,16 @@ describe("recent searches, on the first screen", () => {
   });
 
   it("leaves out a search for a day that has passed, and says so plainly when none is left", () => {
-    staged({ terms: NOTHING_ASKED, recent: [YESTERDAY, TONIGHT] });
+    staged({
+      terms: NOTHING,
+      recent: [YESTERDAY, TONIGHT],
+    });
     expect(again().map((button) => button.textContent)).toEqual([
       "2455692 seats · today · 75006",
     ]);
     cleanup();
 
-    staged({ terms: NOTHING_ASKED, recent: [YESTERDAY] });
+    staged({ terms: NOTHING, recent: [YESTERDAY] });
     expect(
       within(screen.getByRole("region", { name: "Run again" })).getByText(
         /Nothing yet/,
@@ -125,7 +118,7 @@ describe("recent searches, on the first screen", () => {
   });
 
   it("says which seat is already set beside the party and the day", () => {
-    staged({ terms: NOTHING_ASKED, profile: FRONT_ROW });
+    staged({ terms: NOTHING, profile: FRONT_ROW });
 
     expect(
       screen.getByText(

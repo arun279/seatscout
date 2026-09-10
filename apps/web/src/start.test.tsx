@@ -7,60 +7,21 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
-import type { Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { startApp } from "./start.js";
-
-const SEAT_MAP = "/napi/seatMap/";
-const NEARBY = "/napi/nearbyTheaters";
-
-const running: Root[] = [];
-
-const closed = () =>
-  act(() => {
-    for (const root of running.splice(0)) root.unmount();
-  });
-
-const opened = async (query: string) => {
-  const upstream = fakeUpstream({
-    seed: 4,
-    standInAuditoriums: true,
-    standInTheaters: true,
-  });
-  vi.stubGlobal("fetch", upstream);
-  window.history.replaceState(null, "", `/${query}`);
-  document.body.replaceChildren(
-    Object.assign(document.createElement("div"), { id: "app" }),
-  );
-  act(() => {
-    void startApp().then((root) => running.push(root));
-  });
-  await waitFor(() =>
-    expect(screen.getByRole("heading", { level: 1 })).toBeVisible(),
-  );
-  return {
-    seatMapsRead: () =>
-      upstream.requests.filter((request) => request.path.startsWith(SEAT_MAP))
-        .length,
-    areasRead: () =>
-      upstream.requests.filter((request) => request.path.startsWith(NEARBY))
-        .length,
-    cached: () =>
-      Object.keys(localStorage).filter((key) =>
-        key.startsWith("seatscout.catalogue."),
-      ),
-  };
-};
+import {
+  NO_MOVIE_QUERY,
+  opened,
+  reset,
+  SMALLEST_LISTING_NO_AREA_QUERY,
+  TONIGHT_QUERY,
+} from "./start.fixtures.js";
 
 describe("starting the application in a browser", () => {
   beforeEach(() => {
     localStorage.clear();
   });
-  afterEach(() => {
-    closed();
-    vi.unstubAllGlobals();
-    vi.useRealTimers();
-  });
+  afterEach(reset);
 
   it("reads the query from the address, searches through the page's own fetch, and keeps the listing in Web Storage", async () => {
     const page = await opened(
@@ -85,7 +46,7 @@ describe("starting the application in a browser", () => {
   });
 
   it("opens a verified Seat Group's ticketing URL as a navigation of the page itself", async () => {
-    const query = "?movie=245569&date=2026-08-28&area=75006&partySize=2";
+    const query = TONIGHT_QUERY;
     const assign = vi.fn();
     vi.stubGlobal("location", { ...window.location, search: query, assign });
     await opened(query);
@@ -131,21 +92,33 @@ describe("starting the application in a browser", () => {
   });
 
   it("writes an edited query to the address and searches it, and goes back to the one before", async () => {
-    const page = await opened(
-      "?movie=245569&date=2026-08-28&area=75006&partySize=2&theater=aacbt",
-    );
-    await waitFor(() => expect(page.seatMapsRead()).toBeGreaterThan(0));
+    const page = await opened(SMALLEST_LISTING_NO_AREA_QUERY);
     fireEvent.click(
       screen.getByRole("button", { name: /two seats together/i }),
     );
     const ask = within(
       screen.getByRole("dialog", { name: /what are we seeing/i }),
     );
+    fireEvent.change(ask.getByLabelText("Near, by postal code"), {
+      target: { value: "75006" },
+    });
     fireEvent.click(ask.getByRole("button", { name: /more/i }));
     fireEvent.click(ask.getByRole("button", { name: /find seats/i }));
+    await waitFor(() =>
+      expect(
+        screen.getByRole("heading", {
+          level: 2,
+          name: "No three seats together, anywhere on Thu 27 Aug.",
+        }),
+      ).toBeVisible(),
+    );
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "80 candidates · 0 checked",
+    );
+    expect(page.seatMapsRead()).toBe(0);
 
     expect(window.location.search).toBe(
-      "?movie=245569&date=2026-08-28&area=75006&partySize=3&theater=aacbt",
+      "?movie=245569&date=2026-08-27&area=75006&partySize=3",
     );
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
       "Three seats together",
@@ -154,9 +127,7 @@ describe("starting the application in a browser", () => {
     window.history.back();
 
     await waitFor(() =>
-      expect(window.location.search).toBe(
-        "?movie=245569&date=2026-08-28&area=75006&partySize=2&theater=aacbt",
-      ),
+      expect(window.location.search).toBe(SMALLEST_LISTING_NO_AREA_QUERY),
     );
     await waitFor(() =>
       expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
@@ -209,7 +180,7 @@ describe("starting the application in a browser", () => {
   });
 
   it("leaves the address alone when the sheet closes with the query as it was", async () => {
-    await opened("?movie=245569&date=2026-08-28&area=75006&partySize=2");
+    await opened(NO_MOVIE_QUERY);
     const pushed = vi.spyOn(window.history, "pushState");
     fireEvent.click(screen.getByRole("button", { name: /reference seat/i }));
     fireEvent.click(
@@ -222,27 +193,39 @@ describe("starting the application in a browser", () => {
   });
 
   it("takes the sheet a search opened off the screen when Back returns to the query before it", async () => {
-    const page = await opened(
-      "?movie=245569&date=2026-08-28&area=75006&partySize=2&theater=aacbt",
-    );
-    await waitFor(() => expect(page.seatMapsRead()).toBeGreaterThan(0));
+    const page = await opened(SMALLEST_LISTING_NO_AREA_QUERY);
     fireEvent.click(
       screen.getByRole("button", { name: /two seats together/i }),
     );
     const ask = within(
       screen.getByRole("dialog", { name: /what are we seeing/i }),
     );
-    fireEvent.click(ask.getByRole("button", { name: /more/i }));
+    fireEvent.change(ask.getByLabelText("Near, by postal code"), {
+      target: { value: "75006" },
+    });
     fireEvent.click(ask.getByRole("button", { name: /find seats/i }));
     await waitFor(() =>
-      expect(screen.getByRole("button", { name: /ledger/i })).toBeVisible(),
+      expect(
+        screen.getByRole("heading", {
+          level: 2,
+          name: "No two seats together, anywhere on Thu 27 Aug.",
+        }),
+      ).toBeVisible(),
     );
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "80 candidates · 0 checked",
+    );
+    expect(page.seatMapsRead()).toBe(0);
+    expect(screen.getByRole("button", { name: /ledger/i })).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: /ledger/i }));
 
     expect(screen.getByRole("dialog", { name: /accounted/i })).toBeVisible();
 
     window.history.back();
 
+    await waitFor(() =>
+      expect(window.location.search).toBe(SMALLEST_LISTING_NO_AREA_QUERY),
+    );
     await waitFor(() =>
       expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
         "Two seats together",
@@ -258,13 +241,11 @@ describe("starting the application in a browser", () => {
     document.body.replaceChildren(
       Object.assign(document.createElement("div"), { id: "app" }),
     );
-    await act(async () => {
-      running.push(await startApp());
-    });
+    const root = await act(startApp);
 
     expect(vi.getTimerCount()).toBe(1);
 
-    closed();
+    act(() => root.unmount());
 
     expect(vi.getTimerCount()).toBe(0);
     expect(document.getElementById("app")?.childElementCount).toBe(0);

@@ -12,8 +12,14 @@ import {
   opened,
   openedWithoutUnmount,
 } from "./hand-off.fixtures.js";
-import { cards, staged, TONIGHT } from "./search.fixtures.js";
+import {
+  cards,
+  SMALLEST_LISTING_WITH_RESULTS,
+  staged,
+} from "./search.fixtures.js";
 import { drawn } from "./stylesheet.fixtures.js";
+
+const SMALL_FIRST = "Cinemark Lewisville and XD";
 
 describe("the hand-off", () => {
   afterEach(() => {
@@ -141,14 +147,15 @@ describe("the hand-off", () => {
   });
 
   it.each([
-    [1, /^G7$/, "Take G7"],
-    [3, /G6·G7·G8$/, "Take G6, G7 and G8"],
+    [1, /^F8$/, "Take F8"],
+    [3, /F7·F8·F9$/, "Take F7, F8 and F9"],
   ])(
     "names the seats of a party of %i as they are spoken",
     async (partySize, seats, spoken) => {
       const { sheet } = await opened(
-        { terms: { ...TONIGHT, partySize } },
+        { terms: { ...SMALLEST_LISTING_WITH_RESULTS, partySize } },
         seats,
+        SMALL_FIRST,
       );
 
       expect(sheet.getByRole("button", { name: spoken })).toBeVisible();
@@ -175,26 +182,26 @@ describe("the hand-off", () => {
 
   it("does not offer the sheet while the phone is offline, so the hand-off is unreachable rather than reachable and refusing", async () => {
     const onLine = vi.spyOn(navigator, "onLine", "get");
-    const stage = staged();
+    const stage = staged({ terms: SMALLEST_LISTING_WITH_RESULTS });
     await stage.settled();
     const card = () => within(cards()[0] ?? document.body);
 
-    expect(card().getByRole("button", { name: /G6·G7$/ })).toBeVisible();
+    expect(card().getByRole("button", { name: /E6·E5$/ })).toBeVisible();
 
     onLine.mockReturnValue(false);
     act(() => {
       window.dispatchEvent(new Event("offline"));
     });
 
-    expect(card().queryByRole("button", { name: /G6·G7$/ })).toBeNull();
-    expect(card().getByText("G6·G7")).toBeVisible();
+    expect(card().queryByRole("button", { name: /E6·E5$/ })).toBeNull();
+    expect(card().getByText("E6·E5")).toBeVisible();
 
     onLine.mockReturnValue(true);
     act(() => {
       window.dispatchEvent(new Event("online"));
     });
 
-    expect(card().getByRole("button", { name: /G6·G7$/ })).toBeVisible();
+    expect(card().getByRole("button", { name: /E6·E5$/ })).toBeVisible();
   });
 
   it("withdraws the take control from an open sheet while the phone is offline, then restores it when online returns", async () => {
