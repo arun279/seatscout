@@ -116,7 +116,7 @@ export const gridLabelOf = (
 ) => {
   const { map } = auditorium;
   const { theater } = result.showtime.presentation;
-  return `Seat map of ${theater.name} at ${clockOf(result.showtime.startsAt)}. ${map.seatCount} seats in ${map.rows.length} rows, ${map.bookableCount} bookable. Recommended: ${spokenOf(result.seats.map((seat) => seat.id))}, ${ordinalOf(result.reasons.rowFromFront)} row of ${result.reasons.rowCount}, ${lateralOf(result.reasons.seatsOffCentre)}. Arrow keys move one seat.`;
+  return `Seat map of ${theater.name} at ${clockOf(result.showtime.startsAt)}. ${map.seatCount} seats in ${map.rows.length} rows, ${map.bookableCount} bookable. Recommended: ${spokenOf(result)}, ${ordinalOf(result.reasons.rowFromFront)} row of ${result.reasons.rowCount}, ${lateralOf(result.reasons.seatsOffCentre)}. Arrow keys move one seat.`;
 };
 
 export const refusalOf = (
@@ -132,7 +132,7 @@ export const refusalOf = (
 };
 
 export const chosenOf = (result: SeatGroupResult) =>
-  `${spokenOf(result.seats.map((seat) => seat.id))} chosen. ${result.seats.length === 1 ? "It is" : "They are"} re-checked when you continue.`;
+  `${spokenOf(result)} chosen. ${result.seats.length === 1 ? "It is" : "They are"} re-checked when you continue.`;
 
 export const groupsOf = (count: number, partySize: number) => {
   const [one, many] = groupWordsOf(partySize);

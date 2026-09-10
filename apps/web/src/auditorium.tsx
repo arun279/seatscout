@@ -1,7 +1,6 @@
 import type { Search, SeatGroupResult } from "@seatscout/client";
 import { useState } from "react";
 import { chosenOf, groupsOf, refusalOf } from "./auditorium-phrases.js";
-import { seatsOf } from "./derived.js";
 import { modal } from "./modal.js";
 import {
   ageOf,
@@ -26,7 +25,7 @@ interface RoomProps {
   readonly now: number;
   readonly online: boolean;
   readonly onClose: () => void;
-  readonly onHandOff: (candidate: SeatGroupResult) => void;
+  readonly onHandOff: (chosen: SeatGroupResult) => void;
 }
 
 const ALTERNATES_SHOWN = 3;
@@ -55,18 +54,18 @@ const Billing = ({ result }: { readonly result: SeatGroupResult }) => {
 };
 
 const Legend = ({
-  candidate,
+  chosen,
   accessibleSeating,
   consoles,
 }: {
-  readonly candidate: SeatGroupResult;
+  readonly chosen: SeatGroupResult;
   readonly accessibleSeating: boolean;
   readonly consoles: boolean;
 }) => (
   <ul className="legend">
     <li>
       <i className="lit" />
-      {labelOf(seatsOf(candidate))}, yours
+      {labelOf(chosen)}, yours
     </li>
     <li>
       <i className="for-sale" />
@@ -101,7 +100,7 @@ export const Room = ({
 }: RoomProps) => {
   const [auditorium] = useState(() => search.auditorium(result));
   const [cursor, holdCursor] = useState<Cursor>(() => opened(auditorium));
-  const [candidate, setCandidate] = useState(result);
+  const [chosen, setChosen] = useState(result);
   const [notice, setNotice] = useState<string | null>(null);
   const { theater, formats, amenities } = result.showtime.presentation;
   const { partySize, accessibleSeating } = result.terms;
@@ -110,9 +109,9 @@ export const Room = ({
     .filter((offered) => offered.key !== result.key)
     .slice(0, ALTERNATES_SHOWN);
   const shown = [result, ...alternates];
-  const listed = shown.some((offered) => offered.key === candidate.key)
+  const listed = shown.some((offered) => offered.key === chosen.key)
     ? shown
-    : [...shown, candidate];
+    : [...shown, chosen];
   const consoles = auditorium.map.rows.some((drawn) =>
     drawn.gapAfter.includes("pod"),
   );
@@ -125,7 +124,7 @@ export const Room = ({
   const refocus = () => setCursor({ ...cursor });
 
   const choose = (group: SeatGroupResult) => {
-    setCandidate(group);
+    setChosen(group);
     setNotice(chosenOf(group));
   };
 
@@ -182,7 +181,7 @@ export const Room = ({
         <SeatMap
           auditorium={auditorium}
           result={result}
-          candidate={candidate}
+          chosen={chosen}
           cursor={cursor}
           accessibleSeating={accessibleSeating}
           onCursor={setCursor}
@@ -190,23 +189,23 @@ export const Room = ({
         />
       </div>
       <Legend
-        candidate={candidate}
+        chosen={chosen}
         accessibleSeating={accessibleSeating}
         consoles={consoles}
       />
-      <Billing result={candidate} />
+      <Billing result={chosen} />
       <fieldset className="alternates">
         <legend className="eyebrow">Your seats in this room</legend>
         {listed.map((group) => (
           <label key={group.key} className="chip">
             <input
               type="radio"
-              name="candidate"
+              name="chosen"
               value={group.key}
-              checked={group.key === candidate.key}
+              checked={group.key === chosen.key}
               onChange={() => choose(group)}
             />
-            <span className="ids">{labelOf(seatsOf(group))}</span>{" "}
+            <span className="ids">{labelOf(group)}</span>{" "}
             <span className="sub">
               {whyOf(group.reasons, group.podDividers)}
             </span>
@@ -237,15 +236,15 @@ export const Room = ({
             <button
               type="button"
               className="btn btn-velvet"
-              onClick={() => onHandOff(candidate)}
+              onClick={() => onHandOff(chosen)}
             >
-              {labelOf(seatsOf(candidate))}
+              {labelOf(chosen)}
             </button>
           </>
         ) : (
           <>
             <p className="held">
-              {spokenOf(seatsOf(candidate))} are here while you are offline.
+              {spokenOf(chosen)} are here while you are offline.
             </p>
             <p className="micro">
               Continuing re-checks them with the Source, so it waits for the

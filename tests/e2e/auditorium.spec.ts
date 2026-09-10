@@ -181,7 +181,7 @@ test("the room is six tab stops, carries no WCAG 2.2 AA violation axe can detect
   expect(scan.violations).toEqual([]);
   expect(onTheScreen.slice(0, 7)).toEqual([
     "rect:gridcell:Seat H14. On the centreline. Bookable. First of your two recommended seats.",
-    "INPUT::candidate",
+    "INPUT::chosen",
     "BUTTON::H14·H13",
     "BUTTON::‹ Back to the list",
     "BUTTON::ROW H8th row of 14 from the front. 20 seats, 12 bookable.",

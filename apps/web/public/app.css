@@ -172,6 +172,11 @@
   border: 1px solid oklch(0.62 0.2 12);
 }
 
+.btn-velvet:disabled {
+  color: var(--silver-faint);
+  cursor: default;
+}
+
 .btn-ghost {
   border: 1px solid var(--hairline);
   color: var(--silver-dim);

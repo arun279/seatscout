@@ -84,7 +84,9 @@ has gone. The editor names the term that was tapped on the dialog as `data-focus
 carries its term as `data-term`, and `modal` focuses the control named once the dialog is shown,
 because React never writes the `autofocus` attribute the dialog focusing steps read, and a focus
 call made before `showModal` lands on nothing, the element not yet being rendered. The
-end-to-end suite asserts that focus in Chromium, where the jsdom shim below has no say.
+end-to-end suite asserts that focus in Chromium, where the jsdom shim below has no say. A sheet
+that must learn of its own unmount attaches through a callback built once with `useRef`, so React's
+ref cleanup is the unmount notice and no dependency array is part of the contract.
 
 The typefaces are published beside the page as the latin subsets of their variable files under
 the Open Font License, whose notices sit beside them. Every stylesheet an application ships

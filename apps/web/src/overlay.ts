@@ -6,7 +6,7 @@ import type { Term } from "./title-card-terms.js";
 export type Overlay =
   | { readonly kind: "ask"; readonly focus: Term }
   | { readonly kind: "ledger"; readonly held: HeldSnapshots }
-  | { readonly kind: "handOff"; readonly candidate: SeatGroupResult }
+  | { readonly kind: "handOff"; readonly chosen: SeatGroupResult }
   | {
       readonly kind: "room";
       readonly result: SeatGroupResult;

@@ -3,7 +3,6 @@ import { readFile } from "node:fs/promises";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { Card } from "./card.js";
-import { seatsOf } from "./derived.js";
 import { labelOf } from "./phrases.js";
 import { settledAlone } from "./search.fixtures.js";
 
@@ -55,7 +54,7 @@ describe("the card, as the list's own stylesheet draws it", () => {
 
     render(card(true));
     const button = screen.getByRole("button", {
-      name: labelOf(seatsOf(first)),
+      name: labelOf(first),
     });
     const reached = await drawn(() => afterRuleFor(button));
 

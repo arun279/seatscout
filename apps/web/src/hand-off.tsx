@@ -1,11 +1,12 @@
 import type { SeatGroupResult, SeatScout } from "@seatscout/client";
 import { useRef, useState, useSyncExternalStore } from "react";
 import type { Checkout, Clock } from "./app.js";
-import { seatsOf } from "./derived.js";
 import {
   type Answer,
-  Commit,
+  CommitZone,
   Gone,
+  HAND_OFF_TITLE_ID,
+  Heading,
   type Phase,
   Provenance,
   Unreached,
@@ -15,23 +16,25 @@ import { ageOf, clockOf, dayOf, labelOf, spokenOf, whyOf } from "./phrases.js";
 import { RoomPlan } from "./room-plan.js";
 
 interface HandOffProps {
-  readonly candidate: SeatGroupResult;
+  readonly chosen: SeatGroupResult;
   readonly verify: SeatScout["verify"];
   readonly checkout: Checkout;
   readonly clock: Clock;
+  readonly online: boolean;
   readonly today: string;
   readonly onClose: () => void;
 }
 
-interface Stage {
-  readonly candidate: SeatGroupResult;
+interface Sheet {
+  readonly chosen: SeatGroupResult;
   readonly answer: Answer | null;
   readonly phase: Phase;
 }
 
 interface ScreenProps {
-  readonly stage: Stage;
+  readonly sheet: Sheet;
   readonly now: number;
+  readonly online: boolean;
   readonly today: string;
   readonly onTake: () => void;
   readonly onChoose: (alternative: SeatGroupResult) => void;
@@ -44,60 +47,70 @@ const showingOf = (result: SeatGroupResult, today: string) =>
   ].join(" · ");
 
 const Ready = ({
-  candidate,
+  chosen,
   phase,
   now,
+  online,
   today,
   onTake,
-}: Omit<ScreenProps, "stage" | "onChoose"> & {
-  readonly candidate: SeatGroupResult;
+}: Omit<ScreenProps, "sheet" | "onChoose"> & {
+  readonly chosen: SeatGroupResult;
   readonly phase: Phase;
 }) => (
   <>
-    <p className="eyebrow">{showingOf(candidate, today)}</p>
-    <h2 id="hand-off-title" className="display name">
-      {candidate.showtime.presentation.theater.name}
-    </h2>
+    <p className="eyebrow">{showingOf(chosen, today)}</p>
+    <Heading className="display name" focus={false}>
+      {chosen.showtime.presentation.theater.name}
+    </Heading>
     <div className="big-plan">
-      <RoomPlan result={candidate} scale={3} />
+      <RoomPlan result={chosen} scale={3} />
     </div>
     <ul className="legend">
       <li>
         <i className="lit" />
-        {labelOf(seatsOf(candidate))}, yours
+        {labelOf(chosen)}, yours
       </li>
     </ul>
-    <p className="why">{whyOf(candidate.reasons, candidate.podDividers)}</p>
+    <p className="why">{whyOf(chosen.reasons, chosen.podDividers)}</p>
     <Provenance
-      line={`1 source · ${ageOf(candidate.fetchedAt, now)} ago · judged bookable`}
+      line={`1 source · ${ageOf(chosen.fetchedAt, now)} ago · judged bookable`}
       note="Not confirmed by a second Source"
     />
     <div className="cta">
-      {phase === "idle" && (
+      {phase === "idle" && online && (
         <p className="micro">
           Tapping re-checks these seats with the Source, then opens the
           ticketing page with this showtime selected. seatscout never holds
           seats.
         </p>
       )}
-      <Commit
-        candidate={candidate}
+      <CommitZone
+        chosen={chosen}
         phase={phase}
-        label={`Take ${spokenOf(seatsOf(candidate))}`}
+        online={online}
+        label={`Take ${spokenOf(chosen)}`}
         onTake={onTake}
       />
     </div>
   </>
 );
 
-const Screen = ({ stage, now, today, onTake, onChoose }: ScreenProps) => {
-  const { candidate, answer, phase } = stage;
+const Screen = ({
+  sheet,
+  now,
+  online,
+  today,
+  onTake,
+  onChoose,
+}: ScreenProps) => {
+  const { chosen, answer, phase } = sheet;
   if (answer === null)
     return (
       <Ready
-        candidate={candidate}
+        chosen={chosen}
         phase={phase}
         now={now}
+        online={online}
         today={today}
         onTake={onTake}
       />
@@ -106,10 +119,11 @@ const Screen = ({ stage, now, today, onTake, onChoose }: ScreenProps) => {
     case "taken":
       return (
         <Gone
-          candidate={candidate}
+          chosen={chosen}
           answer={answer}
           phase={phase}
           now={now}
+          online={online}
           onTake={onTake}
           onChoose={onChoose}
         />
@@ -117,10 +131,11 @@ const Screen = ({ stage, now, today, onTake, onChoose }: ScreenProps) => {
     case "unreachable":
       return (
         <Unreached
-          candidate={candidate}
+          chosen={chosen}
           at={answer.at}
           phase={phase}
           now={now}
+          online={online}
           onTake={onTake}
         />
       );
@@ -128,46 +143,50 @@ const Screen = ({ stage, now, today, onTake, onChoose }: ScreenProps) => {
 };
 
 export const HandOff = ({
-  candidate: opened,
+  chosen: opened,
   verify,
   checkout,
   clock,
+  online,
   today,
   onClose,
 }: HandOffProps) => {
   const now = useSyncExternalStore(clock.subscribe, clock.now);
-  const [stage, setStage] = useState<Stage>({
-    candidate: opened,
+  const [sheet, setSheet] = useState<Sheet>({
+    chosen: opened,
     answer: null,
     phase: "idle",
   });
   const closed = useRef(false);
-  const attach = useRef((dialog: HTMLDialogElement) => {
-    const close = modal(dialog);
+  const close = () => {
+    closed.current = true;
+    onClose();
+  };
+  const bindDialog = useRef((node: HTMLDialogElement) => {
+    const cleanup = modal(node);
     return () => {
       closed.current = true;
-      close();
+      cleanup();
     };
   }).current;
-
   const take = async () => {
-    const { candidate } = stage;
-    setStage((current) => ({ ...current, phase: "checking" }));
-    const verified = await verify(candidate);
+    const { chosen } = sheet;
+    setSheet((current) => ({ ...current, phase: "checking" }));
+    const verified = await verify(chosen);
     if (closed.current) return;
     if (verified.ok) {
       checkout(verified.ticketing);
-      setStage((current) => ({ ...current, phase: "opening" }));
+      setSheet((current) => ({ ...current, phase: "opening" }));
       return;
     }
     const at = clock.now();
-    setStage((current) =>
+    setSheet((current) =>
       verified.reason === "taken"
         ? {
-            candidate: verified.alternatives[0] ?? candidate,
+            chosen: verified.alternatives[0] ?? chosen,
             answer: {
               kind: "taken",
-              lost: candidate,
+              lost: chosen,
               alternatives: verified.alternatives,
               at,
             },
@@ -179,10 +198,10 @@ export const HandOff = ({
 
   return (
     <dialog
-      ref={attach}
+      ref={bindDialog}
       className="hand-off"
-      aria-labelledby="hand-off-title"
-      onClose={onClose}
+      aria-labelledby={HAND_OFF_TITLE_ID}
+      onClose={close}
     >
       <form method="dialog">
         <button type="submit" className="back">
@@ -190,12 +209,13 @@ export const HandOff = ({
         </button>
       </form>
       <Screen
-        stage={stage}
+        sheet={sheet}
         now={now}
+        online={online}
         today={today}
         onTake={take}
         onChoose={(alternative) =>
-          setStage((current) => ({ ...current, candidate: alternative }))
+          setSheet((current) => ({ ...current, chosen: alternative }))
         }
       />
     </dialog>

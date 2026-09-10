@@ -59,7 +59,7 @@ describe("the room a result opens into", () => {
       "button:ROW D4th row of 5 from the front. 10 seats, 4 bookable.",
       "button:Back to D8 D7",
       "gridcell",
-      "radiogroup:candidate",
+      "radiogroup:chosen",
       "button:D8·D7",
     ]);
     expect(large.tabStops()).toHaveLength(6);
@@ -144,7 +144,7 @@ describe("the room a result opens into", () => {
     expect(nameOf(stage.focused())).toMatch(/^Seat H14\. /);
   });
 
-  it("carries a different Seat Group from the alternates into the hand-off the dock stacks over the room, and that candidate verifies", async () => {
+  it("carries a different Seat Group from the alternates into the hand-off the dock stacks over the room, and that chosen group verifies", async () => {
     const stage = await opened(WEST_PLANO_28);
     fireEvent.click(stage.room.getByRole("radio", { name: /^G14·G13/ }));
     fireEvent.click(stage.room.getByRole("button", { name: "G14·G13" }));
@@ -171,7 +171,7 @@ describe("the room a result opens into", () => {
     expect(stage.checkouts).toEqual([verified.ok && verified.ticketing]);
   });
 
-  it("makes the best Seat Group containing the focused Seat the candidate on Enter, says so in the row bar, and marks it selected on the map", async () => {
+  it("makes the best Seat Group containing the focused Seat the chosen one on Enter, says so in the row bar, and marks it selected on the map", async () => {
     const stage = await opened(ANGELIKA_5);
     stage.press("ArrowDown");
     stage.press("Enter");

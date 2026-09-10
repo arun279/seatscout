@@ -7,16 +7,25 @@ import {
   within,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  HOOKY_TICKETING,
+  opened,
+  openedWithoutUnmount,
+} from "./hand-off.fixtures.js";
 import { cards, staged, TONIGHT } from "./search.fixtures.js";
-import { HOOKY_TICKETING, opened } from "./hand-off.fixtures.js";
+import { drawn } from "./stylesheet.fixtures.js";
 
 describe("the hand-off", () => {
-  afterEach(cleanup);
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
 
   it("opens from a card as a sheet naming the Theater, the time and the Seat Group, with one button that names the seats it takes", async () => {
     const { stage, sheet } = await opened();
 
     expect(sheet.getByText("Today 9:00a · SDX")).toBeVisible();
+    expect(sheet.getByRole("heading", { level: 2 })).not.toHaveFocus();
     expect(sheet.getByText("Row 7 of 10 · on the centreline")).toBeVisible();
     expect(sheet.getByText("G6·G7, yours")).toBeVisible();
     expect(
@@ -66,6 +75,31 @@ describe("the hand-off", () => {
     );
   });
 
+  it("draws the disabled Take button like a disabled chip", async () => {
+    const chip = document.createElement("button");
+    chip.className = "chip";
+    chip.disabled = true;
+    document.body.append(chip);
+    const chipStyle = await drawn("apps/web/public/house.css", () => {
+      const style = getComputedStyle(chip);
+      return { color: style.color, cursor: style.cursor };
+    });
+
+    const { stage, sheet } = await opened();
+    stage.holdSeatMaps();
+    fireEvent.click(sheet.getByRole("button", { name: "Take G6 and G7" }));
+    await act(() => Promise.resolve());
+
+    const buttonStyle = await drawn("apps/web/public/app.css", () => {
+      const style = getComputedStyle(
+        sheet.getByRole("button", { name: "Take G6 and G7" }),
+      );
+      return { color: style.color, cursor: style.cursor };
+    });
+
+    expect(buttonStyle).toEqual(chipStyle);
+  });
+
   it("opens nothing when the sheet was closed before the Source answered", async () => {
     const { stage, sheet } = await opened();
     stage.holdSeatMaps();
@@ -80,6 +114,30 @@ describe("the hand-off", () => {
     expect(verified.ok).toBe(true);
     expect(stage.checkouts).toEqual([]);
     expect(screen.queryByRole("dialog", { hidden: true })).toBeNull();
+  });
+
+  it("opens nothing when a pending verification answers after the sheet is closed", async () => {
+    const { stage, sheet } = await openedWithoutUnmount();
+    stage.holdSeatMaps();
+    fireEvent.click(sheet.getByRole("button", { name: "Take G6 and G7" }));
+    await act(() => Promise.resolve());
+
+    expect(sheet.getByRole("status")).toHaveTextContent(
+      "Checking G6 and G7 with the Source",
+    );
+
+    await act(() => {
+      sheet.getByRole("button", { name: /back to the list/i }).click();
+      stage.releaseSeatMaps();
+      return Promise.resolve();
+    });
+    const verified = await stage.answered();
+    const closedSheet = screen.getByRole("dialog", { hidden: true });
+
+    expect(verified.ok).toBe(true);
+    expect(stage.checkouts).toEqual([]);
+    expect(closedSheet).not.toHaveAttribute("open");
+    expect(closedSheet).toHaveTextContent("Checking G6 and G7 with the Source");
   });
 
   it.each([
@@ -137,5 +195,48 @@ describe("the hand-off", () => {
     });
 
     expect(card().getByRole("button", { name: /G6·G7$/ })).toBeVisible();
+  });
+
+  it("withdraws the take control from an open sheet while the phone is offline, then restores it when online returns", async () => {
+    const onLine = vi.spyOn(navigator, "onLine", "get");
+    const { sheet } = await opened();
+
+    expect(sheet.getByRole("button", { name: "Take G6 and G7" })).toBeVisible();
+
+    onLine.mockReturnValue(false);
+    act(() => {
+      window.dispatchEvent(new Event("offline"));
+    });
+
+    expect(sheet.queryByRole("button", { name: "Take G6 and G7" })).toBeNull();
+    expect(
+      sheet.queryByText(/^Tapping re-checks these seats/),
+    ).not.toBeInTheDocument();
+    expect(sheet.getByRole("status")).toHaveTextContent(
+      "Offline. Seats are never cached, so this hand-off can be checked when the connection returns.",
+    );
+
+    onLine.mockReturnValue(true);
+    act(() => {
+      window.dispatchEvent(new Event("online"));
+    });
+
+    expect(sheet.getByRole("button", { name: "Take G6 and G7" })).toBeVisible();
+    expect(sheet.getByText(/^Tapping re-checks these seats/)).toBeVisible();
+  });
+
+  it("opens nothing when a verification answers after the sheet leaves the page", async () => {
+    const { stage, sheet } = await opened();
+    stage.holdSeatMaps();
+    fireEvent.click(sheet.getByRole("button", { name: "Take G6 and G7" }));
+    await act(() => Promise.resolve());
+
+    stage.unmount();
+    stage.releaseSeatMaps();
+    const verified = await stage.answered();
+
+    expect(verified.ok).toBe(true);
+    expect(stage.checkouts).toEqual([]);
+    expect(screen.queryByRole("dialog", { hidden: true })).toBeNull();
   });
 });

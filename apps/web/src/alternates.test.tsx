@@ -51,7 +51,7 @@ describe("the Seat Groups a room offers, as one choice", () => {
     );
   });
 
-  it("appends a Seat Group chosen from outside the three, so the radios always tell the truth about the candidate", async () => {
+  it("appends a Seat Group chosen from outside the three, so the radios always tell the truth about what is chosen", async () => {
     const stage = await opened(HOOKY_ADDISON);
     stage.press("PageUp");
     stage.press("Enter");
