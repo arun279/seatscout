@@ -1,4 +1,3 @@
-import { AxeBuilder } from "@axe-core/playwright";
 import { expect, type Locator, type Page, test } from "@playwright/test";
 import {
   accessible,
@@ -9,7 +8,7 @@ import {
   requestsTo,
   SEAT_MAP,
   TONIGHT,
-  WCAG,
+  scanned,
 } from "./corpus.fixtures.js";
 
 const PHONE = { width: 390, height: 844 };
@@ -65,7 +64,7 @@ test("every Query term composes in one search on a phone, one-handed, every targ
   await sheet(page).getByLabel("From").fill("19:00");
   await sheet(page).getByLabel("Until").fill("21:00");
   await sheet(page).getByLabel("Accessible seating").check();
-  const scan = await new AxeBuilder({ page }).withTags(WCAG).analyze();
+  const scan = await scanned(page);
   const onTheSheet = await hitAreasUnder(page, HIT_AREA);
   const clipped = await clippedFieldsIn(page);
   const bar = sheet(page).locator(".cta");
@@ -158,9 +157,9 @@ test("an accessible-seating Query returns wheelchair Seats", async ({
   ).toEqual([]);
 });
 
-test("the retry re-checks only the failed Showtimes, and Coverage updates accordingly", async ({
-  page,
-}) => {
+test("the retry re-checks only the failed Showtimes, Coverage updates accordingly, and the screen holding what the Source never answered for carries no WCAG 2.2 AA violation axe can detect", {
+  tag: "@accessibility",
+}, async ({ page }) => {
   const upstream = await answeredByTheCorpus(page, {
     sequences: Object.fromEntries(
       STONEBRIAR.map((id) => [`${SEAT_MAP}${id}`, [500, 500, 500]]),
@@ -169,6 +168,7 @@ test("the retry re-checks only the failed Showtimes, and Coverage updates accord
   await page.goto(TONIGHT);
   await expect(page.getByRole("status").first()).toHaveText(/170 checked$/);
   await expect(page.getByText("Not everywhere yet.")).toBeVisible();
+  await accessible(page);
   const seatMaps = requestsTo(upstream, SEAT_MAP);
   const listings = requestsTo(upstream, LISTINGS);
 

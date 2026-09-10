@@ -42,6 +42,8 @@ interface Journey {
   readonly inp: number;
   readonly cls: number;
   readonly heapBytes: number;
+  readonly blockingMs: number;
+  readonly longTasks: number;
   readonly conditions: string;
 }
 
@@ -58,17 +60,22 @@ declare global {
       lcp: number | null;
       inp: number | null;
       cls: number;
+      blockingMs: number;
+      longTasks: number;
     };
   }
 }
 
 const collector = () => {
+  const LONG_TASK_MS = 50;
   window.journey = {
     ready: false,
     firstSeatGroupsMs: null,
     lcp: null,
     inp: null,
     cls: 0,
+    blockingMs: 0,
+    longTasks: 0,
   };
   const all = { reportAllChanges: true };
   webVitals.onLCP((metric) => {
@@ -82,6 +89,12 @@ const collector = () => {
       if (!("hadRecentInput" in shift && shift.hadRecentInput))
         window.journey.cls += "value" in shift ? Number(shift.value) : 0;
   }).observe({ type: "layout-shift", buffered: true });
+  new PerformanceObserver((tasks) => {
+    for (const task of tasks.getEntries()) {
+      window.journey.longTasks += 1;
+      window.journey.blockingMs += task.duration - LONG_TASK_MS;
+    }
+  }).observe({ type: "longtask", buffered: true });
   new MutationObserver((_, observer) => {
     if (document.querySelector("article") === null) return;
     observer.disconnect();
@@ -151,6 +164,8 @@ const journey = async (context: BrowserContext): Promise<Journey> => {
     inp: measured.inp,
     cls: measured.cls,
     heapBytes: heap.value,
+    blockingMs: measured.blockingMs,
+    longTasks: measured.longTasks,
     conditions: CONDITIONS,
   };
 };
@@ -174,6 +189,8 @@ test("a first search on a mid-tier phone over a slow connection puts Seat Groups
       inp: expect.any(Number),
       cls: expect.any(Number),
       heapBytes: expect.any(Number),
+      blockingMs: expect.any(Number),
+      longTasks: expect.any(Number),
       conditions: CONDITIONS,
     })),
   );

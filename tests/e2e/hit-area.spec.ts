@@ -17,7 +17,7 @@ const planted = (page: Page, name: string, size: number, after: boolean) =>
         rule.textContent = `[data-planted="${label}"]::after{content:"";position:absolute;inset:-22px}`;
         document.head.append(rule);
       }
-      button.dataset.planted = String(label);
+      button.dataset["planted"] = String(label);
       document.body.append(button);
     },
     [name, size, after] as const,

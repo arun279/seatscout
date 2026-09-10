@@ -1,0 +1,9 @@
+{
+  "name": "@seatscout/planted-red",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "26.4.0"
+  }
+}

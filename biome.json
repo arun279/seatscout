@@ -19,8 +19,11 @@
       "complexity": {
         "noExcessiveCognitiveComplexity": {
           "level": "error",
-          "options": { "maxAllowedComplexity": 15 }
-        }
+          "options": {
+            "maxAllowedComplexity": 15
+          }
+        },
+        "useLiteralKeys": "off"
       },
       "nursery": {
         "noUndeclaredClasses": "error",
@@ -29,11 +32,14 @@
       "style": {
         "noExcessiveLinesPerFile": {
           "level": "error",
-          "options": { "maxLines": 300 }
+          "options": {
+            "maxLines": 300
+          }
         },
         "useNodejsImportProtocol": "error"
       },
       "suspicious": {
+        "noImportCycles": "error",
         "noOctalEscape": "error",
         "noTsIgnore": "error"
       },

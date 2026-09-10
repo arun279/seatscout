@@ -20,9 +20,9 @@ const carriesMovies = (
   readonly viewModel: { readonly movies: readonly UpstreamMovie[] };
 } =>
   isRecord(value) &&
-  isRecord(value.viewModel) &&
-  Array.isArray(value.viewModel.movies) &&
-  value.viewModel.movies.every(isMovie);
+  isRecord(value["viewModel"]) &&
+  Array.isArray(value["viewModel"]["movies"]) &&
+  value["viewModel"]["movies"].every(isMovie);
 
 const movieOf = (upstream: UpstreamMovie): Movie => ({
   id: `${upstream.id}`,

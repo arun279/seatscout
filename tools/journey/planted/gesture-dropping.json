@@ -1,0 +1,14 @@
+[
+  {
+    "droppedFrames": 2,
+    "conditions": "390 by 844, CPU at 4x"
+  },
+  {
+    "droppedFrames": 3,
+    "conditions": "390 by 844, CPU at 4x"
+  },
+  {
+    "droppedFrames": 4,
+    "conditions": "390 by 844, CPU at 4x"
+  }
+]

@@ -123,7 +123,7 @@ export const refusalOf = (
   seat: PositionedSeat,
   partySize: number,
   accessibleSeating: boolean,
-) => {
+): string => {
   if (!seat.bookable)
     return `Seat ${seat.id} is not bookable, so no seats together can include it.`;
   if (isAccessible(seat) && !accessibleSeating)
@@ -131,10 +131,10 @@ export const refusalOf = (
   return `No offered ${groupWordsOf(partySize)[0]} includes seat ${seat.id}.`;
 };
 
-export const chosenOf = (result: SeatGroupResult) =>
+export const chosenOf = (result: SeatGroupResult): string =>
   `${spokenOf(result)} chosen. ${result.seats.length === 1 ? "It is" : "They are"} re-checked when you continue.`;
 
-export const groupsOf = (count: number, partySize: number) => {
+export const groupsOf = (count: number, partySize: number): string => {
   const [one, many] = groupWordsOf(partySize);
   return count === 1
     ? `The only ${one} in this room.`

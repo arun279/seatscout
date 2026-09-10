@@ -1,5 +1,6 @@
 import "./house.css";
 import type { RecentSearch } from "@seatscout/client";
+import type { ReactElement } from "react";
 import { dayOf } from "./phrases.js";
 import { type Terms, termsOf } from "./terms.js";
 
@@ -17,7 +18,12 @@ const saidOf = (search: RecentSearch, today: string) =>
     search.area,
   ].join(" · ");
 
-export const Recent = ({ recent, today, heading, onRun }: RecentProps) => {
+export const Recent = ({
+  recent,
+  today,
+  heading,
+  onRun,
+}: RecentProps): ReactElement => {
   const offered = recent.filter((search) => search.date >= today);
   return (
     <section className="recent" aria-labelledby="recent-title">

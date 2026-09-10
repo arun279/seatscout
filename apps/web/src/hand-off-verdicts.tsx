@@ -1,6 +1,7 @@
 import "./house.css";
 import "./hand-off.css";
 import type { SeatGroupResult } from "@seatscout/client";
+import type { ReactElement } from "react";
 import {
   ageOf,
   clockOf,
@@ -44,7 +45,7 @@ export const Heading = ({
   readonly children: string;
   readonly className?: string;
   readonly focus?: boolean;
-}) => (
+}): ReactElement => (
   <h2
     id={HAND_OFF_TITLE_ID}
     className={className}
@@ -61,7 +62,7 @@ export const Provenance = ({
 }: {
   readonly line: string;
   readonly note: string;
-}) => (
+}): ReactElement => (
   <div className="prov">
     <span>{line}</span>
     <span className="p2">{note}</span>
@@ -82,7 +83,7 @@ export const CommitZone = ({
   online,
   label,
   onTake,
-}: Omit<AnswerProps, "now"> & { readonly label: string }) => {
+}: Omit<AnswerProps, "now"> & { readonly label: string }): ReactElement => {
   if (!online)
     return (
       <p className="micro" role="status">
@@ -162,7 +163,7 @@ export const Gone = ({
 }: AnswerProps & {
   readonly answer: Taken;
   readonly onChoose: (alternative: SeatGroupResult) => void;
-}) => {
+}): ReactElement => {
   const age = ageOf(answer.at, now);
   const lost = spokenOf(answer.lost);
   const provenance = (
@@ -244,7 +245,7 @@ export const Unreached = ({
   now,
   online,
   onTake,
-}: AnswerProps & { readonly at: number }) => (
+}: AnswerProps & { readonly at: number }): ReactElement => (
   <>
     <Heading key={at}>The Source could not be reached.</Heading>
     <p className="body">

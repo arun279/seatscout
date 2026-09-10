@@ -1,5 +1,6 @@
 import "./auditorium.css";
 import type { AuditoriumMap, SeatRow } from "@seatscout/client";
+import type { ReactElement } from "react";
 import { rowTextOf } from "./auditorium-phrases.js";
 
 interface RowBarProps {
@@ -9,7 +10,12 @@ interface RowBarProps {
   readonly onPress: () => void;
 }
 
-export const RowBar = ({ row, map, notice, onPress }: RowBarProps) => (
+export const RowBar = ({
+  row,
+  map,
+  notice,
+  onPress,
+}: RowBarProps): ReactElement => (
   <button type="button" className="row-bar" onClick={onPress}>
     <span role="status">
       {notice ?? (

@@ -1,11 +1,11 @@
-import { AxeBuilder } from "@axe-core/playwright";
 import { type BrowserContext, expect, type Page, test } from "@playwright/test";
 import {
+  accessible,
   answeredByTheCorpus,
   HIT_AREA,
   hitAreasUnder,
+  scanned,
   TONIGHT,
-  WCAG,
 } from "./corpus.fixtures.js";
 
 const ANOTHER_NIGHT = "/?movie=243819&date=2026-08-28&area=75234&partySize=3";
@@ -111,6 +111,7 @@ test("an adjusted Profile re-ranks the results and moves the target on every car
   expect(before.ring).toBe("30.44");
 
   await first.page.getByRole("button", { name: "Reference seat" }).click();
+  await accessible(first.page);
   for (const [control, value] of Object.entries(CHOSEN))
     await editor(first.page).getByLabel(control).fill(value);
   await editor(first.page).getByRole("button", { name: "Find seats" }).click();
@@ -239,7 +240,7 @@ test("the Ask sheet with its seat controls carries no WCAG 2.2 AA violation axe 
   await page.getByRole("button", { name: "Reference seat" }).click();
   await expect(editor(page).getByLabel("How far back")).toBeFocused();
 
-  const scan = await new AxeBuilder({ page }).withTags(WCAG).analyze();
+  const scan = await scanned(page);
   const onTheSheet = await hitAreasUnder(page, HIT_AREA);
 
   expect(scan.violations).toEqual([]);
@@ -255,7 +256,7 @@ test("the first screen's recent searches carry no WCAG 2.2 AA violation axe can 
   const { page } = await opened(context, "/");
   await expect(page.getByRole("region", { name: "Run again" })).toBeVisible();
 
-  const scan = await new AxeBuilder({ page }).withTags(WCAG).analyze();
+  const scan = await scanned(page);
   const onTheScreen = await hitAreasUnder(page, HIT_AREA);
 
   expect(scan.violations).toEqual([]);

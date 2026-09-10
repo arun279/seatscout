@@ -32,6 +32,8 @@ pre-push:
       run: pnpm typecheck
     complexity:
       run: pnpm complexity
+    duplication:
+      run: pnpm duplication
     unit:
       run: pnpm test:unit
       env:

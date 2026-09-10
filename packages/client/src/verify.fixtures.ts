@@ -30,7 +30,7 @@ export const ACCESSIBLE_ROOM = "561898261";
 export const POD_ROOM = "561748075";
 export const SEARCHED_AT = 1000;
 export const VERIFIED_AT = 61000;
-export const AN_HOUR = 60 * 60 * 1000;
+export const AN_HOUR: number = 60 * 60 * 1000;
 const SEED = 4;
 
 interface Answer {
@@ -51,6 +51,14 @@ interface Options {
   readonly script?: (bookable: readonly Showtime[]) => Script;
   readonly at?: number;
   readonly store?: (listed: Catalogue) => KeyValueStore;
+}
+
+export interface Verification {
+  readonly listed: Catalogue;
+  readonly result: SeatGroupResult;
+  readonly verify: () => Promise<Verified>;
+  readonly requested: () => string[];
+  readonly auditoriumsRead: () => FakeUpstream["requests"];
 }
 
 const payloadOf = <Found>(reading: Reading<Found>): Found => {
@@ -129,7 +137,7 @@ export const holding = (entry: unknown): KeyValueStore => ({
   write: () => Promise.resolve(),
 });
 
-export const seatsIn = (result: SeatGroupResult) =>
+export const seatsIn = (result: SeatGroupResult): string[] =>
   result.seats.map((seat) => seat.id);
 
 const firstSeatOf = (result: SeatGroupResult) => {
@@ -138,11 +146,14 @@ const firstSeatOf = (result: SeatGroupResult) => {
   return seat;
 };
 
-export const withoutTheFirstSeat = (result: SeatGroupResult, room: string) =>
-  roomWhere(room, { [firstSeatOf(result)]: "X" });
+export const withoutTheFirstSeat = (
+  result: SeatGroupResult,
+  room: string,
+): Answer => roomWhere(room, { [firstSeatOf(result)]: "X" });
 
-export const alternativesIn = (verified: Verified) =>
-  verified.ok ? [] : verified.alternatives;
+export const alternativesIn = (
+  verified: Verified,
+): readonly SeatGroupResult[] => (verified.ok ? [] : verified.alternatives);
 
 const searching = async (options: Options) => {
   const listed = await listing();
@@ -154,7 +165,7 @@ const searching = async (options: Options) => {
     accessibleSeating: options.accessibleSeating ?? false,
     profile: options.profile,
     theaters: [theaterIn(listed, STONEBRIAR)],
-    formats: options.formats,
+    ...(options.formats === undefined ? {} : { formats: options.formats }),
   };
   const candidates = narrowed(listed, terms);
   const room = options.room ?? ROOM;
@@ -180,7 +191,9 @@ const searching = async (options: Options) => {
   return { listed, candidates, room, warm, result };
 };
 
-export const verifying = async (options: Options = {}) => {
+export const verifying = async (
+  options: Options = {},
+): Promise<Verification> => {
   const { listed, candidates, room, warm, result } = await searching(options);
   const upstream = fakeUpstream({
     seed: SEED,

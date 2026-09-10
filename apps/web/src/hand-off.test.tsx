@@ -43,6 +43,10 @@ describe("the hand-off", () => {
     expect(sheet.getByRole("heading", { level: 2 })).not.toHaveFocus();
     expect(sheet.getByText("Row 7 of 10 · on the centreline")).toBeVisible();
     expect(sheet.getByText("G6·G7, yours")).toBeVisible();
+    const plan = screen.getByRole("dialog").querySelector("svg.plan");
+    expect(plan?.getAttribute("width")).toBe("192");
+    expect(plan?.getAttribute("height")).toBe("138");
+    expect(marks().lost).toBeNull();
     expect(
       sheet.getByText("1 source · 0s ago · judged bookable"),
     ).toBeVisible();

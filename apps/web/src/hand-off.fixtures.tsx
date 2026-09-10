@@ -2,6 +2,7 @@ import { seatMapBodyWithStatuses } from "@seatscout/client/testing";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { HandOff } from "./hand-off.js";
 import { cards, staged, TODAY } from "./search.fixtures.js";
+import type { QueryScreen, Stage } from "./search.fixtures.js";
 
 const HOOKY = "Hooky Entertainment Addison + SDX";
 const SEAT_MAP = "/napi/seatMap/";
@@ -14,13 +15,26 @@ export interface Room {
   readonly others?: string;
 }
 
+export interface HandOffStage extends Stage {
+  readonly roomAtHandOff: (answer: Room) => void;
+  readonly holdSeatMaps: () => void;
+  readonly releaseSeatMaps: () => void;
+}
+
+export interface OpenedHandOff {
+  readonly stage: HandOffStage;
+  readonly sheet: QueryScreen;
+}
+
 const roomAs = (body: string, room: Room) =>
   seatMapBodyWithStatuses(
     body,
     (seat) => room.statuses?.[seat.id] ?? room.others,
   );
 
-const stagedHandOff = (options: Parameters<typeof staged>[0] = {}) => {
+const stagedHandOff = (
+  options: Parameters<typeof staged>[0] = {},
+): HandOffStage => {
   const held: (() => void)[] = [];
   let holding = false;
   let room: Room | null = null;
@@ -55,9 +69,9 @@ const stagedHandOff = (options: Parameters<typeof staged>[0] = {}) => {
 
 export const opened = async (
   options: Parameters<typeof staged>[0] = {},
-  seats = /G6·G7$/,
-  name = HOOKY,
-) => {
+  seats: RegExp = /G6·G7$/,
+  name: string = HOOKY,
+): Promise<OpenedHandOff> => {
   const stage = stagedHandOff(options);
   await stage.settled();
   fireEvent.click(
@@ -69,7 +83,7 @@ export const opened = async (
   };
 };
 
-export const openedWithoutUnmount = async () => {
+export const openedWithoutUnmount = async (): Promise<OpenedHandOff> => {
   const stage = stagedHandOff();
   const snapshot = await stage.settled();
   const chosen = snapshot.results.find(
@@ -94,7 +108,7 @@ export const openedWithoutUnmount = async () => {
   };
 };
 
-export const taken = async (room: Room) => {
+export const taken = async (room: Room): Promise<HandOffStage> => {
   const { stage, sheet } = await opened();
   stage.roomAtHandOff(room);
   fireEvent.click(sheet.getByRole("button", { name: "Take G6 and G7" }));
@@ -102,10 +116,14 @@ export const taken = async (room: Room) => {
   return stage;
 };
 
-export const dialog = (name: string) =>
+export const dialog = (name: string): QueryScreen =>
   within(screen.getByRole("dialog", { name }));
 
-export const marks = () => {
+export const marks = (): {
+  readonly plan: Element | null;
+  readonly lost: Element | null;
+  readonly pair: Element | null;
+} => {
   const sheet = screen.getByRole("dialog");
   return {
     plan: sheet.querySelector("svg.plan"),

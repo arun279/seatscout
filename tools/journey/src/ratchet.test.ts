@@ -1,41 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { heapReported, judged } from "./ratchet.ts";
-import type { Sample } from "./samples.ts";
-
-const ON = "412 by 823 at 1.75x, 150 ms, 209715 B/s down";
-
-const moments = (...values: readonly number[]): readonly Sample[] =>
-  values.map((value) => ({
-    firstSeatGroupsMs: value,
-    lcp: 60,
-    inp: 32,
-    cls: 0,
-    heapBytes: 1024,
-    conditions: ON,
-  }));
-
-const under = (
-  conditions: string | null,
-  ...values: readonly number[]
-): readonly Sample[] =>
-  values.map((value) => ({
-    firstSeatGroupsMs: value,
-    lcp: 60,
-    inp: 32,
-    cls: 0,
-    heapBytes: 1024,
-    conditions,
-  }));
-
-const heaps = (...values: readonly (number | null)[]): readonly Sample[] =>
-  values.map((value, at) => ({
-    firstSeatGroupsMs: 100 + at,
-    lcp: 60,
-    inp: 32,
-    cls: 0,
-    heapBytes: value,
-    conditions: ON,
-  }));
+import { heaps, moments, under } from "./ratchet.fixtures.ts";
 
 describe("holding the head's journey to the merge base's", () => {
   it("refuses a head that measured no journey, whatever the base did", () => {

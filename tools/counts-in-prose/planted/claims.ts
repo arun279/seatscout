@@ -4,8 +4,8 @@ import { alternativesOf, fieldsOf } from "../src/structures.ts";
 const PROSE = "tools/counts-in-prose/planted/prose.md";
 const STRUCTURE = "tools/counts-in-prose/planted/structure.ts.txt";
 
-export const AGREES = `the fields of PlantedSeat, in ${STRUCTURE}`;
-export const DISAGREES = `the alternatives of PlantedGap, in ${STRUCTURE}`;
+export const AGREES: string = `the fields of PlantedSeat, in ${STRUCTURE}`;
+export const DISAGREES: string = `the alternatives of PlantedGap, in ${STRUCTURE}`;
 
 export const PLANTED: readonly Claim[] = [
   {

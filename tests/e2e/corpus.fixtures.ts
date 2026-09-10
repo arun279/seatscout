@@ -1,16 +1,24 @@
 import { AxeBuilder } from "@axe-core/playwright";
-import { expect, type Page } from "@playwright/test";
-import { fakeUpstream, type UpstreamScript } from "@seatscout/core/testing";
+import { expect } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { fakeUpstream } from "@seatscout/core/testing";
+import type { FakeUpstream, UpstreamScript } from "@seatscout/core/testing";
 
 export const TONIGHT = "/?movie=245569&date=2026-08-28&area=75006&partySize=2";
 export const HIT_AREA = 44;
-export const WCAG = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
+const WCAG: readonly string[] = [
+  "wcag2a",
+  "wcag2aa",
+  "wcag21a",
+  "wcag21aa",
+  "wcag22aa",
+];
 export const SEAT_MAP = "/napi/seatMap/";
 
 export const answeredByTheCorpus = async (
   page: Page,
   script: Omit<UpstreamScript, "seed"> = {},
-) => {
+): Promise<FakeUpstream> => {
   const upstream = fakeUpstream({
     seed: 4,
     standInAuditoriums: true,
@@ -31,10 +39,13 @@ export const answeredByTheCorpus = async (
 export const requestsTo = (
   upstream: ReturnType<typeof fakeUpstream>,
   prefix: string,
-) =>
+): number =>
   upstream.requests.filter((request) => request.path.startsWith(prefix)).length;
 
-export const hitAreasUnder = (page: Page, least: number) =>
+export const hitAreasUnder = (
+  page: Page,
+  least: number,
+): Promise<readonly { width: number; height: number; name: string }[]> =>
   page.evaluate((floor) => {
     const containing = (element: Element): Element => {
       for (let at: Element | null = element; at !== null; at = at.parentElement)
@@ -73,7 +84,15 @@ export const hitAreasUnder = (page: Page, least: number) =>
       .filter((area) => area.width < floor || area.height < floor);
   }, least);
 
-export const clippedFieldsIn = (page: Page) =>
+export const clippedFieldsIn = (
+  page: Page,
+): Promise<
+  readonly {
+    name: string | null;
+    drawn: number;
+    needed: number;
+  }[]
+> =>
   page.evaluate(() =>
     [...document.querySelectorAll("dialog[open] input, main input")]
       .map((field) => {
@@ -126,8 +145,11 @@ const tapsAnsweredElsewhere = (page: Page) =>
     return misses;
   });
 
-export const accessible = async (page: Page) => {
-  const scan = await new AxeBuilder({ page }).withTags(WCAG).analyze();
+export const scanned = (page: Page): ReturnType<AxeBuilder["analyze"]> =>
+  new AxeBuilder({ page }).withTags([...WCAG]).analyze();
+
+export const accessible = async (page: Page): Promise<void> => {
+  const scan = await scanned(page);
   expect(scan.violations).toEqual([]);
   expect(await hitAreasUnder(page, HIT_AREA)).toEqual([]);
   expect(await tapsAnsweredElsewhere(page)).toEqual([]);

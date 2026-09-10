@@ -9,6 +9,7 @@ import type {
   SeatScout,
   TicketingUrl,
 } from "@seatscout/client";
+import type { ReactElement } from "react";
 import { useState, useSyncExternalStore } from "react";
 import { askedFrom } from "./asked.js";
 import { Strip } from "./coverage.js";
@@ -242,7 +243,7 @@ const Playing = ({
   );
 };
 
-export const App = ({ terms, ...rest }: AppProps) => {
+export const App = ({ terms, ...rest }: AppProps): ReactElement => {
   const online = useOnline();
 
   return (

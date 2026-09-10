@@ -42,7 +42,8 @@ export const cellOf = (
   designation: Designation = "standard",
 ): Cell => ({ gapBefore, designation, bookable });
 
-export const free = (gapBefore: Band = "contiguous") => cellOf(gapBefore, true);
+export const free = (gapBefore: Band = "contiguous"): Cell =>
+  cellOf(gapBefore, true);
 const taken = (gapBefore: Band = "contiguous") => cellOf(gapBefore, false);
 
 const seatAt = (id: string, x: number, y: number, cell: Cell): Seat => ({
@@ -102,7 +103,7 @@ export const pairAt = (
   higher: seatAt("0.1", spacing, 0, cellOf("contiguous", true, right)),
 });
 
-export const accessibleIn = (seats: readonly Seat[]) =>
+export const accessibleIn = (seats: readonly Seat[]): number =>
   seats.filter((seat) => seat.designation !== "standard").length;
 
 const designation = fc.oneof(
@@ -146,11 +147,11 @@ const rows = fc.oneof(
   }),
 );
 
-export const rooms = fc
+export const rooms: fc.Arbitrary<Room> = fc
   .array(rows, { minLength: 1, maxLength: 6 })
   .map(roomFrom);
 
-export const partySize = fc.integer({ min: 1, max: 6 });
+export const partySize: fc.Arbitrary<number> = fc.integer({ min: 1, max: 6 });
 
 export const terms: fc.Arbitrary<SeatGroupTerms> = fc.record({
   partySize,

@@ -2,6 +2,7 @@ import "./house.css";
 import "./results.css";
 import "./hand-off.css";
 import { REFERENCE, type SeatGroupResult } from "@seatscout/client";
+import type { ReactElement } from "react";
 import { marksOf } from "./plan.js";
 
 interface RoomPlanProps {
@@ -10,7 +11,11 @@ interface RoomPlanProps {
   readonly scale: number;
 }
 
-export const RoomPlan = ({ result, lost, scale }: RoomPlanProps) => {
+export const RoomPlan = ({
+  result,
+  lost,
+  scale,
+}: RoomPlanProps): ReactElement => {
   const profile = result.terms.profile ?? REFERENCE;
   const marks = marksOf(result.plan, result.position, profile);
   const gone = lost && marksOf(result.plan, lost.position, profile).pair;

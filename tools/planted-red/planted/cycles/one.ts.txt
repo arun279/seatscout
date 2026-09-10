@@ -1,0 +1,3 @@
+import { two } from "./two.js";
+
+export const one = (at: number): number => (at > 0 ? two(at - 1) : 0);

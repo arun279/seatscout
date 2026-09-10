@@ -1,6 +1,7 @@
 import "./house.css";
 import "./coverage.css";
 import type { Coverage, Snapshot } from "@seatscout/client";
+import type { ReactElement } from "react";
 import { accountOf } from "./derived.js";
 import { modal } from "./modal.js";
 import { clockOf } from "./phrases.js";
@@ -39,7 +40,7 @@ const stripText = (snapshot: Snapshot) => {
     : counts;
 };
 
-export const Strip = ({ snapshot, onLedger }: StripProps) => (
+export const Strip = ({ snapshot, onLedger }: StripProps): ReactElement => (
   <div className="coverage-strip">
     <p role="status">{stripText(snapshot)}</p>
     {snapshot.phase !== "resolving" && snapshot.phase !== "unreachable" && (
@@ -156,7 +157,7 @@ const LedgerRow = ({ row }: { readonly row: Row }) => (
   </li>
 );
 
-export const Ledger = ({ snapshot, onClose }: LedgerProps) => (
+export const Ledger = ({ snapshot, onClose }: LedgerProps): ReactElement => (
   <dialog
     ref={modal}
     className="ledger"

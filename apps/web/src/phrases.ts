@@ -38,12 +38,12 @@ const MONTHS = [
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-export const wordOf = (count: number) => WORDS[count - 1] ?? `${count}`;
+export const wordOf = (count: number): string => WORDS[count - 1] ?? `${count}`;
 
-export const capitalised = (phrase: string) =>
+export const capitalised = (phrase: string): string =>
   phrase.charAt(0).toUpperCase() + phrase.slice(1);
 
-export const twoDigits = (value: number) => `${value}`.padStart(2, "0");
+export const twoDigits = (value: number): string => `${value}`.padStart(2, "0");
 
 export const timeOf = (clock: string): string => {
   const hours = Number(clock.slice(0, 2));

@@ -1,4 +1,5 @@
-import { type Catalogue, type Reading, openSource } from "@seatscout/core";
+import { openSource } from "@seatscout/core";
+import type { Catalogue, Reading, Source } from "@seatscout/core";
 import { type UpstreamScript, fakeUpstream } from "@seatscout/core/testing";
 import { type CatalogueTerms, openCatalogue } from "./catalogue.js";
 import { type KeyValueStore, inMemoryStore } from "./store.js";
@@ -21,7 +22,14 @@ interface Options {
   readonly store?: KeyValueStore;
 }
 
-export const opened = (options: Options = {}) => {
+export interface OpenedCatalogue {
+  readonly clock: { at: number };
+  readonly source: Source;
+  readonly resolve: (terms: CatalogueTerms) => Promise<Reading<Catalogue>>;
+  readonly listings: () => number;
+}
+
+export const opened = (options: Options = {}): OpenedCatalogue => {
   const clock = { at: FETCHED_AT };
   const upstream = fakeUpstream({ seed: 4, ...options.script });
   const source = openSource({
@@ -55,7 +63,13 @@ export const payloadOf = <Found>(reading: Reading<Found>): Found => {
   return reading.payload;
 };
 
-export const counted = (reading: Reading<Catalogue>) => {
+export const counted = (
+  reading: Reading<Catalogue>,
+): {
+  readonly bookable: number;
+  readonly unbookable: number;
+  readonly unidentified: number;
+} => {
   const catalogue = payloadOf(reading);
   return {
     bookable: catalogue.bookable.length,

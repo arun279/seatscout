@@ -8,7 +8,13 @@ const RECORDS = "docs/adr";
 const NARRATIVE = ["CONTEXT.md", "README.md"];
 const PAIRED_IN = "tools/claims-in-prose.pairs.mjs";
 const UNPAIRED_IN = "tools/claims-in-prose.unchecked.mjs";
-const DECLARING = ["tools/claims-in-prose.mjs", PAIRED_IN, UNPAIRED_IN];
+const PAIRED_IN_GATES = "tools/claims-in-prose.pairs.gates.mjs";
+const DECLARING = [
+  "tools/claims-in-prose.mjs",
+  PAIRED_IN,
+  PAIRED_IN_GATES,
+  UNPAIRED_IN,
+];
 
 const git = (...args) =>
   execFileSync("git", args, { encoding: "utf8", maxBuffer: Infinity });

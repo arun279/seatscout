@@ -2,6 +2,7 @@ import { fakeUpstream } from "@seatscout/client/testing";
 import { act, screen, waitFor, within } from "@testing-library/react";
 import type { Root } from "react-dom/client";
 import { expect, vi } from "vitest";
+import type { QueryScreen } from "./search.fixtures.js";
 import { startApp } from "./start.js";
 
 const SEAT_MAP = "/napi/seatMap/";
@@ -30,6 +31,12 @@ export const SMALLEST_LISTING_ASKED = {
   partySize: 2,
 };
 
+export interface OpenedApp {
+  readonly seatMapsRead: () => number;
+  readonly areasRead: () => number;
+  readonly cached: () => string[];
+}
+
 const running: Root[] = [];
 
 const closed = () =>
@@ -37,7 +44,7 @@ const closed = () =>
     for (const root of running.splice(0)) root.unmount();
   });
 
-export const opened = async (query: string) => {
+export const opened = async (query: string): Promise<OpenedApp> => {
   const upstream = fakeUpstream({
     seed: 4,
     standInAuditoriums: true,
@@ -68,15 +75,15 @@ export const opened = async (query: string) => {
   };
 };
 
-export const relaunched = async (query: string) => {
+export const relaunched = async (query: string): Promise<OpenedApp> => {
   closed();
   return opened(query);
 };
 
-export const editor = () =>
+export const editor = (): QueryScreen =>
   within(screen.getByRole("dialog", { name: /what are we seeing/i }));
 
-export const reset = () => {
+export const reset = (): void => {
   closed();
   vi.unstubAllGlobals();
   vi.useRealTimers();

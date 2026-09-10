@@ -1,4 +1,5 @@
 import type { RecentSearch, SeatProfile, SeatScout } from "@seatscout/client";
+import type { ReactElement } from "react";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { App, type Checkout, type Clock } from "./app.js";
 import type { Address } from "./browser.js";
@@ -39,7 +40,7 @@ export const Root = ({
   clock,
   remembered,
   checkout,
-}: RootProps) => {
+}: RootProps): ReactElement => {
   const query = useSyncExternalStore(address.subscribe, address.query);
   const today = localDate(useSyncExternalStore(clock.subscribe, clock.now));
   const [profile, setProfile] = useState(remembered.profile);

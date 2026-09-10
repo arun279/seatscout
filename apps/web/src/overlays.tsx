@@ -4,6 +4,7 @@ import type {
   SeatProfile,
   SeatScout,
 } from "@seatscout/client";
+import type { ReactElement } from "react";
 import { useSyncExternalStore } from "react";
 import type { Checkout, Clock } from "./app.js";
 import { Ask } from "./ask.js";
@@ -138,7 +139,7 @@ const Current = ({
   }
 };
 
-export const Overlays = ({ stack, ...rest }: OverlaysProps) => (
+export const Overlays = ({ stack, ...rest }: OverlaysProps): ReactElement => (
   <>
     {stack.map((overlay, at) => (
       <div key={String(at)}>

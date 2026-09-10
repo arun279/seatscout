@@ -15,7 +15,8 @@
     { "path": "tools/journey" },
     { "path": "tools/live-injections" },
     { "path": "tools/no-cache-storage-reach" },
-    { "path": "tools/no-empty-mutation-run" },
+    { "path": "tools/no-empty-run" },
+    { "path": "tools/planted-red" },
     { "path": "tools/footprint" },
     { "path": "tests/e2e" }
   ]

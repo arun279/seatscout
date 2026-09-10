@@ -1,0 +1,15 @@
+{
+  "minTokens": 100,
+  "minLines": 10,
+  "threshold": 3,
+  "reporters": ["console", "json"],
+  "output": "reports/duplication",
+  "ignore": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.fixtures.ts",
+    "**/*.fixtures.tsx",
+    "**/corpus/**"
+  ]
+}

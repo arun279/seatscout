@@ -1,11 +1,10 @@
+import { GATE_CLAIMS } from "./claims-in-prose.pairs.gates.mjs";
+
 const BIOME = "biome.json";
 const PRODUCT = ["packages", ":!*.test.ts", ":!*.fixtures.ts"];
-const RATCHET = ".size-limit.json";
 const STRYKER = "stryker.config.json";
-const CYCLOMATIC = ".oxlintrc.json";
 const SOURCES = ["*.ts", "*.tsx"];
 const CORPUS = "packages/core/src/corpus";
-const JOURNEY = "tests/e2e/journey.spec.ts";
 
 export const CLAIMS = [
   {
@@ -56,100 +55,6 @@ export const CLAIMS = [
     paths: ["apps"],
     files: 0,
     witness: ["packages/client"],
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /by Biome's \[`noExcessiveCognitiveComplexity`\]/,
-    holds: "the complexity rule that gates the build",
-    pattern: "noExcessiveCognitiveComplexity",
-    paths: [BIOME],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /The line counter is \[cloc\]/,
-    holds: "the toolchain naming the counter this decision picked",
-    pattern: "cloc",
-    paths: [
-      "package.json",
-      ".github",
-      "tools",
-      ":!*.test.ts",
-      ":!*.fixtures.ts",
-    ],
-    files: 2,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /\*\*The number and its exception process\.\*\*/,
-    holds: "the cyclomatic limit that gates the build",
-    pattern: '"max": 10',
-    paths: [CYCLOMATIC],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /the same documented meaning of `classic`/,
-    holds: "the counting variant the limit is defined over",
-    pattern: '"variant": "classic"',
-    paths: [CYCLOMATIC],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /\*\*Lines per file\*\* may not exceed 300, by Biome's/,
-    holds: "the file length rule that gates the build",
-    pattern: "noExcessiveLinesPerFile",
-    paths: [BIOME],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /calls it greater than or equal to a break threshold of 100, and exits/,
-    holds: "the mutation gate's breaking threshold",
-    pattern: '"break": 100',
-    paths: [STRYKER],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /\*\*Bundle size\*\* is a ratchet recorded in `\.size-limit\.json`/,
-    holds: "the ratchet a reviewer last accepted",
-    pattern: '"limit"',
-    paths: [RATCHET],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /The glob covers every emitted script rather than an entry point/,
-    holds: "the glob the ratchet weighs",
-    pattern: "dist/**/*.js",
-    paths: [RATCHET],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /`apps\/web\/dist\/\*\*\/\*\.css` weighs what the/,
-    holds: "the glob the stylesheet ratchet weighs",
-    pattern: "dist/**/*.css",
-    paths: [RATCHET],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /\*\*The journey\*\* is measured on the built tree served by the deployment's own worker/,
-    holds: "the script that holds the head's journey to the merge base's",
-    pattern: "tools/journey/src/index.ts",
-    paths: ["package.json"],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /its Slow 4G network profile, 150 ms of round-trip latency/,
-    holds: "the round-trip latency the journey emulates",
-    pattern: "latency: 150,",
-    paths: [JOURNEY],
-    files: 1,
   },
   {
     adr: "0007-prose-is-held-to-the-repository.md",
@@ -290,4 +195,5 @@ export const CLAIMS = [
     paths: ["apps/web/src/terms.ts"],
     files: 1,
   },
+  ...GATE_CLAIMS,
 ];

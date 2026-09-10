@@ -1,6 +1,7 @@
 import "./house.css";
 import "./results.css";
 import type { Snapshot } from "@seatscout/client";
+import type { ReactElement } from "react";
 import { nameOf } from "./coverage.js";
 import { accountOf, unreachedIn } from "./derived.js";
 import { noneOf, wordOf } from "./phrases.js";
@@ -37,7 +38,7 @@ const Remedy = ({
 export const Unreachable = ({
   when,
   ...remedy
-}: RemedyProps & { readonly when: string }) => (
+}: RemedyProps & { readonly when: string }): ReactElement => (
   <section className="verdict">
     <h2 className="display">The listing could not be read.</h2>
     <p className="lede">
@@ -52,7 +53,7 @@ export const Unreachable = ({
 export const Partial = ({
   snapshot,
   ...remedy
-}: RemedyProps & { readonly snapshot: Snapshot }) => {
+}: RemedyProps & { readonly snapshot: Snapshot }): ReactElement => {
   const account = accountOf(snapshot.coverage);
   return (
     <section className="verdict">
@@ -133,7 +134,7 @@ const NoneListed = ({ terms, when, onEdit }: EmptyProps) => (
   </section>
 );
 
-export const Empty = (props: EmptyProps) =>
+export const Empty = (props: EmptyProps): ReactElement =>
   props.snapshot.coverage.candidates === 0 ? (
     <NoneListed {...props} />
   ) : (

@@ -312,17 +312,94 @@ documentation states. That decision needs to know how much of the tree is runnin
 the limit rather than how one file is doing, so the count is the figure the decision takes
 and it gates nothing.
 
-**What counts as test code is written in four places, and they have to agree.** The
-`*.test.ts` suffix was the whole definition in all four: the pathspec of ADR 1's claim about
-modules that build a `Source`, the mutate glob, the footprint report's bucket classifier, and
-the `exclude` list of every product TypeScript project. Splitting the oversized test files
+**What counts as test code is written in five places, and they have to agree.** The
+`*.test.ts` suffix was the whole definition in the first four: the pathspec of ADR 1's claim
+about modules that build a `Source`, the mutate glob, the footprint report's bucket classifier,
+and the `exclude` list of every product TypeScript project. Splitting the oversized test files
 produced a second shape of test code, a `*.fixtures.ts` module holding the fixtures more than
-one piece needs, because a `*.test.ts` importing another runs its suites twice. Each of the four
-now names that suffix too. Left alone, the same lines would have moved into the product bucket
-of this report, into the mutation gate's subject, into ADR 1's count and into three packages'
-emitted `dist/`, all as a side effect of a line limit and none of it decided by anyone. Nothing
-binds the four lists together, so the next one will be found the same way this one's fourth
-member was, by somebody reading a config.
+one piece needs, because a `*.test.ts` importing another runs its suites twice. Each of them
+now names that suffix too, and the duplication gate's ignore list in `.jscpd.json` is the
+fifth, written when that gate arrived. Left alone, the same lines would have moved into the
+product bucket of this report, into the mutation gate's subject, into ADR 1's count and into
+three packages' emitted `dist/`, all as a side effect of a line limit and none of it decided
+by anyone. Nothing binds the five lists together, so the next one will be found the same way
+the fourth was, by somebody reading a config.
+
+**TypeScript is set to every strictness it offers**, and the five options it does not switch on under
+`strict` are on in `tsconfig.base.json`: `exactOptionalPropertyTypes`, `noImplicitOverride`,
+`noFallthroughCasesInSwitch`, `noPropertyAccessFromIndexSignature` and `isolatedDeclarations`. Each is
+binary and published, so none of them is a number this project chose. What they cost was paid once
+rather than deferred: turning them on surfaced 58 index-signature reads written as property access, 11
+optional properties assigned a value that could be undefined, and 228 exports whose type a declaration
+emitter cannot write down. `noImplicitOverride` and `noFallthroughCasesInSwitch` surfaced nothing,
+which is a reading and not a reason to leave them off. Every one is answered in the code. None is
+suppressed, because the two ways to suppress one are a comment and a type assertion, and both already
+fail the build.
+
+One property of `tsc --build` is worth knowing before it surprises somebody. Under `--noEmit`
+it skips the declaration transform, and every `isolatedDeclarations` diagnostic comes out of
+that transform, so a tree whose build information is already up to date can pass
+`pnpm typecheck` and fail `pnpm build` on the same files. A cold checkout reports them from
+either, which is what continuous integration runs; `tsc --build --force` is how to see them
+locally.
+
+`noPropertyAccessFromIndexSignature` and Biome's `useLiteralKeys` ask for the opposite thing about the
+same expression. The compiler wants a key that comes from an index signature read through brackets;
+the lint rule wants a bracketed literal key written back as a property access. Biome cannot tell a
+declared property from an index-signature one and the compiler can, so the rule is off and the option
+is on. That is the only rule turned off for the whole workspace out of Biome's recommended preset, and
+this is the reason it is off. The two `a11y` rules ADR 14 turns off are an override over one file.
+
+`isolatedDeclarations` reaches every project that emits, and reaches the ones that do not as well.
+`skipLibCheck` is set for `tools/footprint` alone, because `mutation-testing-metrics` 3.8.4 ships
+declarations that are inconsistent with themselves under `exactOptionalPropertyTypes`: its
+`MutantModel` declares `coveredBy?: string[]` and implements a `MutantResult` that declares
+`coveredBy: string[]`. That is a third party's declaration file rather than this tree's code, there is
+nothing here to fix, and the option is the one TypeScript documents for it. `tests/e2e` already set it.
+
+**Imports may not form a cycle**, by Biome's
+[`noImportCycles`](https://biomejs.dev/linter/rules/no-import-cycles/), whose documentation gives its
+source as ESLint's `import/no-cycle`. It is outside the recommended preset and reported at warning
+when it is switched on, which is no gate at all by the rule below, so `biome.json` names it at error.
+It belongs to Biome's `project` domain, so switching it on switches on Biome's scanner, and what that
+costs was measured rather than assumed before it joined the hook: over this tree `pnpm lint` runs in
+416 to 568 ms with the rule and 237 to 383 ms without it. The tree holds no cycle, so nothing had to be
+broken to turn it on. A planted pair of modules importing each other is committed under
+`tools/planted-red/planted`, and a test copies it into a git-ignored directory inside the project root
+and runs Biome over it, because the rule reads the module graph and only resolves an import inside the
+root it scanned. The pair is refused twice over, each import named with the path that closes the loop,
+and a planted pair that imports one way passes. `ignoreTypes` stays at the default the rule documents
+as enabled, which cuts a cycle only where the import is written `import type`; `verbatimModuleSyntax`
+is on here, so an inline
+`import { type X }` is not cut and is not ignored.
+
+**Duplicated code** may not exceed 3 percent of the lines it is measured over, by
+[jscpd](https://github.com/kucherenko/jscpd) at the threshold SonarSource publish as one of the four
+conditions of the Sonar way quality gate: "Duplication in the new code is less than or equal to 3.0%".
+The window the percentage is measured over is theirs too. For a language other than Java SonarSource
+require "at least 100 successive and duplicated tokens" spread over "10 lines of code for other
+languages", which is `minTokens` 100 and `minLines` 10 in `.jscpd.json`. Sonar hold that percentage
+against new code and this gate holds it against all of it, which is the stricter of the two readings
+and the only one a checkout can reach alone, since nothing measures `main` on a pre-push hook.
+
+The subject is `{apps,packages,tools}/*/src` less the test suffixes, which makes `.jscpd.json` the
+fifth place the definition of test code is written down. The tree reads 0.00 percent over 94 sources
+and 8,767 lines today, so nothing is exempted, and the one pair of files that shared a shape was made
+one file rather than exempted: two guard tools differing in a report path and a verdict are now one
+tool parameterised by both. Neither copy was long enough to reach `minLines` 10 in the same window, so
+the gate never saw them; a reviewer did.
+
+jscpd's exit status cannot say which of two things happened. It exits zero for duplication inside the
+threshold, and it exits zero for a run whose paths matched no file at all, a mistyped path included.
+`pnpm duplication` therefore runs the gate and then a guard over the JSON report it wrote, which fails
+when that report records no source read. It is the same guard the mutation run is judged by, told which
+run to read: `tools/no-empty-run` holds the report path, the count that decides whether the run
+measured anything, and the refusal for each of the two, and it is here for the reason this decision
+opens with.
+
+**Watched failing, watched silent.** A planted pair of modules sharing a sixteen-line block is refused
+by name and by percentage against the threshold; a planted pair that shares nothing passes in silence;
+a report recording no source read is refused by the guard; a report the run never wrote is refused too.
 
 **Comment load** is the number of comment lines in first-party source, and it may not
 exceed the ratchet recorded in `.footprint.json`. Only files with a JavaScript, TypeScript
@@ -352,14 +429,28 @@ emitted script rather than an entry point, so deferring bytes into a chunk that 
 later does not move the number. The measured size is printed beside the ratchet, so a
 ratchet that has drifted above the real size is visible from the two figures.
 
-Both halves of what the built directory serves are weighed, each against a ratchet of its
-own: the scripts the bundler emits, and the stylesheets beside them. A page costs a reader
-its scripts and its stylesheets together, so gating one and leaving the other unbounded
-would let bytes move from the weighed half to the free one, which is the deferred chunk
-under another name. The stylesheets are imports of the modules that draw with them, so the
-bundler emits them as it emits the scripts, and `apps/web/dist/**/*.css` weighs what the
-deployment serves rather than the sources it was built from. They arrived as unweighed
-copies of `apps/web/public` until the class gate below made them imports.
+Every kind of file the built directory serves is weighed, each against a ratchet of its own: the
+scripts the bundler emits, the stylesheets beside them, the three woff2 faces the page preloads, and
+the icons the page and the manifest name. A page costs a reader everything it fetches, so gating one
+kind and leaving another unbounded would let bytes move from the weighed kind to the free one, which
+is the deferred chunk under another name. The stylesheets are imports of the modules that draw with
+them, so the bundler emits them as it emits the scripts, and `apps/web/dist/**/*.css` weighs what the
+deployment serves rather than the sources it was built from. The fonts and the icons outweigh the
+scripts and the stylesheets together, which is why they are weighed rather than left out: 118,924 B
+and 134,269 B. Each glob is pointed at `apps/web/dist` rather than at `apps/web/public`, because the
+copy is what the deployment serves. The icon glob covers the `.png`, the `.ico` and the `.svg` the
+directory holds rather than the three raster sizes alone, for the same reason the stylesheet glob
+covers every sheet: an icon that is not weighed is somewhere bytes can go. Each of the two new
+ratchets was watched failing: lowered by a single byte, `size-limit` names the kind, the ratchet and
+the byte it went over, and exits 1.
+
+A ratchet a glob no longer reaches is worse than no ratchet, because it reads 0 B and passes. Two
+fixture `size-limit` configurations are committed beside a planted file: over the planted file the
+ratchet is refused by name, by ratchet and by the byte it went over, and over globs that reach nothing
+`size-limit` reports 0 B for the font kind and 0 B for the icon kind, holds neither to a ratchet, and
+passes each. The report refuses that reading rather than printing it: every entry must have weighed at
+least one file and must have been held to a number, and a list where any entry fails either test
+throws instead of becoming a verdict.
 
 Their difference is not printed as a third. The ratchet is not a budget derived from a
 device, a network or a page, so the room left under it is distance to a number this
@@ -416,6 +507,16 @@ defect it exists for. The annotation carries the worst interval and the count of
 frames beside the percentile, so the tail is reported rather than hidden, and two counts
 beside it say only that the gesture produced something, so a run cannot pass over nothing.
 
+**The dropped frames in the room are a ratchet now rather than an absolute.** The gesture spec used to
+hold the count of intervals longer than one idle frame to zero, and that absolute went red once on the
+runner, on one interval out of forty-five, which is the host and not the room. The gesture is made ten
+times over now, each on a freshly opened room so pan and zoom start where they started the first time,
+and the count of dropped frames per gesture is written down beside the journeys and held to the merge
+base by `tools/journey`: the head's median against the base's worst. The absolute is still reported,
+per gesture, in the test's own annotation and in the command's report. The 75th percentile of the
+frame intervals stays an absolute against the display's own idle cadence, because that is a published
+unit rather than a chosen one and it is not what flaked.
+
 **The journey** is measured on the built tree served by the deployment's own worker, in
 Chromium, ten times over, on the device stand-in Lighthouse publishes rather than on the
 runner as it comes: its mobile screen emulation, 412 by 823 CSS pixels at a device pixel
@@ -453,6 +554,29 @@ that same instant and reported beside the moment with the same statistic, gated 
 threshold nor ratchet, because no publisher offers a byte budget and the projects that gate
 memory gate a leak invariant rather than a magnitude.
 
+**What the main thread was busy with is recorded on every journey and held to the merge base.**
+Each of the ten journeys installs a `PerformanceObserver` for `longtask` with `buffered: true` before
+the page's own scripts run, counts the entries, and sums each entry's duration in excess of 50 ms.
+Both halves of that are the publishers'. The W3C Long Tasks API defines a long task as one "whose
+duration exceeds 50ms" and reports nothing shorter; web.dev define total blocking time as the sum of
+"its duration in excess of 50 milliseconds" over the long tasks after the first paint. What is
+recorded here is that sum over the whole journey rather than over web.dev's window, because the
+journey has no Time to Interactive to close the window at, and the record says so rather than calling
+it Lighthouse's metric.
+
+The figure is ratcheted to the merge base in the same head-median-against-base-worst form the moment
+above takes, under the same conditions check, for the same reason: no publisher sets a blocking budget
+for a runner. web.dev's 200 ms, which they publish as good "when tested on average mobile hardware",
+is printed beside it and gates nothing, because this runner applies no CPU multiplier and the section
+below says why it will not.
+
+**Watched rising, and watched at rest.** Unthrottled, ten journeys on this machine run no task over
+50 ms at all, so the reading is zero and the ratchet holds zero. A zero is a measurement and not the
+absence of one, and it was shown to be: one 120 ms busy wait added to the page takes every journey to
+one long task and 82 ms of blocking, and the ratchet then refuses the head by name against a merge
+base that blocked for none, while the moment beside it stays green. The reading depends on the host,
+which is why it is a ratchet and not a threshold.
+
 **Lighthouse's fourth stand-in, the 4x CPU multiplier, is measured and deliberately not
 applied.** Lighthouse documents that default as calibrated for a high-end desktop host and
 tells a weaker machine to lower it, so the multiplier scales the host rather than the branch
@@ -474,6 +598,13 @@ there first: a missing or invalid `lang` fails before the browser is even instal
 overlap deliberately, and what is only axe's is contrast, computed roles, and anything a
 script renders.
 
+**Every screen the end-to-end suite reaches is scanned by axe.** Two were reached without one: the
+results screen offline, where the card offers no hand-off and the reason stands over the list, and the
+results screen holding showtimes the Source never answered for, where the coverage strip offers a
+retry. Both are scanned against WCAG 2.2 at A and AA now and measured for the 44 px target with the
+rest of them. The Ask sheet with its seat controls and the coverage ledger already had scans, in
+`on-device.spec.ts` and `journey.spec.ts`.
+
 **Those scans are named so that they cannot be deleted quietly.** `tests/e2e` is outside the
 unit runner's include and outside the mutation gate's scope, so nothing judges what is in it,
 and for one revision the end-to-end run passed with no tests at all, which left a file
@@ -485,11 +616,50 @@ number: a floor on how many tests `tests/e2e` holds is a figure this decision wo
 justify, it would calcify whatever the suite held on the day it was written, and a count does
 not protect a particular scan in any case.
 
+**The service worker's precache list is the page's own list, by set equality.** `cache.ts` names what
+the worker puts in the shell cache and `index.html` names what the page fetches to draw itself, and
+until now those were three copies of one list, in the worker, in its unit test and in the end-to-end
+spec, with nothing holding any of them to the page. The end-to-end spec reads
+`apps/web/public/index.html` now instead of restating it: the page itself, the module its inline
+script imports, and every `<link>` it carries, whatever the `rel`. That set is held equal to what the
+running service worker actually put in the cache, in a real browser against the built tree, so a
+stylesheet the page links and the worker does not hold fails, and so does a path the worker holds that
+the page never loads. Naming the kinds of link to take in was the earlier shape and it read four of
+them, which passed over the `apple-touch-icon` the page links and the worker does not hold. Every link
+counts now, and the one exclusion is written down as an exclusion: the touch icon is fetched by the
+platform when the page is installed rather than by the page to draw itself, which is what the
+comparison is about. A test plants a linked stylesheet the worker cannot hold and reads it back out of
+the derived set, so the derivation is shown to take in a new link rather than assumed to. The unit
+test beside it keeps its own written list, because that one is a golden assertion the mutation gate
+judges and this one is a comparison between two live things. The reader throws rather than returning a
+short list when the page links nothing at all or when a link carries no path it can read, because a
+regular expression that had stopped matching would otherwise make the comparison vacuous, which is the
+failure this decision opens with arriving inside a test.
+
 **One question gets one gate.** The `dependencies` job scans the lockfile against the OSV
 database and fails on any advisory. It once also ran `pnpm audit`, which since 2021 has been
 a proxy in front of the same GitHub Advisory Database that OSV mirrors, so the two steps
 asked one database the same question through two doors, and the job failed whenever the
 weaker door did.
+
+**Every dependency's licence is held to a list**, by `osv-scanner --licenses` in the `dependencies` job
+that already asks the OSV database about advisories. The list is not a judgement about which licences
+are acceptable in the abstract, which would be a line this project drew. It is the set of SPDX
+identifiers the lockfile resolves to today, so the gate takes the regression form: a release that
+changes a licence, and a new dependency that brings a licence family the tree has not carried, both
+fail and get decided in a diff. Fifteen identifiers satisfy every expression 1,011 packages carry,
+`AND` needing both sides and `OR` needing one. A licence osv-scanner cannot determine is reported as
+`UNKNOWN`, and `UNKNOWN` is an identifier like any other here: it is not on the list, so it fails
+rather than passing, which is the whole reason the list is an allowlist and not a denylist.
+
+**Watched failing, watched silent.** The shipped list passes over the lockfile. Narrowed to the ten
+permissive identifiers alone, the same scan exits 1 and names all thirty-one violators by package and
+version. The `UNKNOWN` case is the one nothing in the tree exercises, so it is planted and run in the
+job rather than watched by hand: `tools/planted-red/planted/licences` holds an osv-scanner
+configuration overriding `typescript` 7.0.2's licence to `UNKNOWN`, and the `dependencies` job scans
+the lockfile a second time with that configuration and the same allowlist, expecting the scan to fail.
+A step after it fails the job when that scan passed. The file is not named `osv-scanner.toml`, so the
+shipped scan cannot pick it up as a configuration of its own.
 
 **A rule reported at a severity the linter exits zero on is no gate at all.** Biome's
 recommended preset reports `useNodejsImportProtocol` as information, and `noOctalEscape` and

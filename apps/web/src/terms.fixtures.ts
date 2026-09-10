@@ -7,47 +7,52 @@ export const EVERY_TERM =
 
 export const TONIGHT = {
   movie: "245569",
-  date: TODAY,
+  date: "2026-08-28",
   area: "75006",
   partySize: 2,
-} satisfies Terms;
+} as const;
 
 export const everything = (): Terms => termsFrom(EVERY_TERM, TODAY);
 
+const theatersOf = (query: string) => {
+  const { theaters } = termsFrom(query, TODAY);
+  return theaters === undefined ? {} : { theaters };
+};
+
 export const atOneTheater = (): Terms => ({
   ...TONIGHT,
-  theaters: termsFrom("?theater=aacbt", TODAY).theaters,
+  ...theatersOf("?theater=aacbt"),
 });
 
 export const atNoTheater = (): Terms => ({
   ...TONIGHT,
-  theaters: termsFrom("?theater=nowhere", TODAY).theaters,
+  ...theatersOf("?theater=nowhere"),
 });
 
 export const NO_MOVIE = {
-  date: TODAY,
+  date: "2026-08-28",
   area: "75006",
   partySize: 2,
-} satisfies Terms;
+} as const;
 
-export const NOTHING = { date: TODAY, partySize: 2 } satisfies Terms;
+export const NOTHING = { date: "2026-08-28", partySize: 2 } as const;
 
 export const NO_AREA = {
   movie: "245569",
-  date: TODAY,
+  date: "2026-08-28",
   partySize: 2,
-} satisfies Terms;
+} as const;
 
 export const SMALLEST_LISTING = {
   movie: "245569",
   date: "2026-08-27",
   area: "75006",
   partySize: 2,
-} satisfies Terms;
+} as const;
 
 export const SMALLEST_LISTING_WITH_RESULTS = {
   movie: "246427",
-  date: TODAY,
+  date: "2026-08-28",
   area: "75006",
   partySize: 2,
-} satisfies Terms;
+} as const;

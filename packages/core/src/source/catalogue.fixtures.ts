@@ -3,6 +3,7 @@ import {
   showtimeGroupingCaptures,
 } from "../corpus/captures.js";
 import type {
+  CapturedNearbyTheaters,
   CapturedShowtime,
   CapturedShowtimeGrouping,
 } from "../corpus/types.js";
@@ -24,7 +25,7 @@ export const NEARBY = "/napi/nearbyTheaters";
 export const AREA = "75006";
 export const TODAY = "2026-08-28";
 export const WIDE_RELEASE = "245569";
-export const GROUPINGS = [
+export const GROUPINGS: readonly (readonly [string, string])[] = [
   ["243819", TODAY],
   [WIDE_RELEASE, "2026-08-27"],
   [WIDE_RELEASE, TODAY],
@@ -38,7 +39,6 @@ export const rig = (
   const fetch = fakeUpstream({
     seed: 4,
     ...script,
-    routes: script.routes,
   });
   return {
     fetch,
@@ -73,13 +73,19 @@ export const everyShowtime = (
   ...catalogue.unidentified,
 ];
 
-export const counted = (catalogue: Catalogue, reason: UnbookableReason) =>
+export const counted = (
+  catalogue: Catalogue,
+  reason: UnbookableReason,
+): number =>
   catalogue.unbookable.filter((entry) => entry.reason === reason).length;
 
 export const grouping = (movie: string, date: string) =>
   `/napi/theaterShowtimeGroupings/${movie}/${date}`;
 
-export const groupingCapture = (movie: string, date: string) => {
+export const groupingCapture = (
+  movie: string,
+  date: string,
+): CapturedShowtimeGrouping => {
   const capture = showtimeGroupingCaptures.get(
     `showtimes/grouping-${movie}-${date}.json`,
   );
@@ -88,7 +94,7 @@ export const groupingCapture = (movie: string, date: string) => {
   return capture.body;
 };
 
-export const nearbyCapture = () => {
+export const nearbyCapture = (): CapturedNearbyTheaters => {
   const capture = nearbyTheatersCaptures.get("theaters/nearby-theaters.json");
   if (capture === undefined)
     throw new Error("nearby theaters were not captured");
@@ -122,22 +128,29 @@ const rewritten = (
   );
 };
 
-export const without = (value: unknown, field: string) =>
+export const without = (value: unknown, field: string): unknown =>
   rewritten(value, ([key, nested]) => (key === field ? [] : [[key, nested]]));
 
-export const instead = (value: unknown, field: string, to: unknown) =>
+export const instead = (value: unknown, field: string, to: unknown): unknown =>
   rewritten(value, ([key, nested]) => [[key, key === field ? to : nested]]);
 
-export const alongside = (value: unknown, field: string, item: unknown) =>
+export const alongside = (
+  value: unknown,
+  field: string,
+  item: unknown,
+): unknown =>
   rewritten(value, ([key, nested]) => [
     [key, key === field && Array.isArray(nested) ? [...nested, item] : nested],
   ]);
 
-export const answering = (route: string, body: unknown) => ({
+export const answering = (
+  route: string,
+  body: unknown,
+): Omit<UpstreamScript, "seed"> => ({
   routes: { [route]: { status: 200, body: JSON.stringify(body) } },
 });
 
-export const THEATERS_THE_SOURCE_STOPPED_IDENTIFYING = [
+export const THEATERS_THE_SOURCE_STOPPED_IDENTIFYING: string[] = [
   "AMC NorthPark 15",
   "AMC Village on the Parkway 9",
   "Cinemark Central Plano",
@@ -185,7 +198,7 @@ export const asTheSourceAnsweredIt = (): unknown =>
     without(showtimes, "id"),
   );
 
-export const readingOf = (body: unknown) =>
+export const readingOf = (body: unknown): Promise<Reading<Catalogue>> =>
   sourced(answering(grouping(WIDE_RELEASE, TODAY), body)).showtimesFor(
     WIDE_RELEASE,
     TODAY,

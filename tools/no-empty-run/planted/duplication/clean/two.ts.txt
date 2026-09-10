@@ -1,0 +1,12 @@
+export const titleOf = (film) => film.title.trim().replace(/\s+/g, " ");
+
+export const slugOf = (film) =>
+  titleOf(film)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+export const yearOf = (film) => Number(film.released.slice(0, 4));
+
+export const billing = (films) =>
+  films.map((film) => `${titleOf(film)} (${yearOf(film)})`).join(", ");

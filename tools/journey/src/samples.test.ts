@@ -1,11 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { conditionsOf, readingsOf, type Sample, samplesIn } from "./samples.ts";
+import {
+  conditionsOf,
+  gesturesIn,
+  readingsOf,
+  type Sample,
+  samplesIn,
+} from "./samples.ts";
 
 describe("reading the journeys a run wrote down", () => {
   it("reads every axis out of every journey", () => {
     expect(
       samplesIn(
-        '[{"firstSeatGroupsMs":210,"lcp":50,"inp":8,"cls":0.01,"heapBytes":1024,"conditions":"a slow connection"},{"firstSeatGroupsMs":330,"lcp":60,"inp":9,"cls":0.02,"heapBytes":2048,"conditions":"a slow connection"}]',
+        '[{"firstSeatGroupsMs":210,"lcp":50,"inp":8,"cls":0.01,"heapBytes":1024,"blockingMs":40,"longTasks":2,"conditions":"a slow connection"},{"firstSeatGroupsMs":330,"lcp":60,"inp":9,"cls":0.02,"heapBytes":2048,"blockingMs":40,"longTasks":2,"conditions":"a slow connection"}]',
       ),
     ).toEqual([
       {
@@ -14,6 +20,8 @@ describe("reading the journeys a run wrote down", () => {
         inp: 8,
         cls: 0.01,
         heapBytes: 1024,
+        blockingMs: 40,
+        longTasks: 2,
         conditions: "a slow connection",
       },
       {
@@ -22,6 +30,8 @@ describe("reading the journeys a run wrote down", () => {
         inp: 9,
         cls: 0.02,
         heapBytes: 2048,
+        blockingMs: 40,
+        longTasks: 2,
         conditions: "a slow connection",
       },
     ]);
@@ -35,6 +45,8 @@ describe("reading the journeys a run wrote down", () => {
         inp: null,
         cls: null,
         heapBytes: null,
+        blockingMs: null,
+        longTasks: null,
         conditions: null,
       },
     ]);
@@ -50,6 +62,8 @@ describe("reading the journeys a run wrote down", () => {
         inp: null,
         cls: null,
         heapBytes: null,
+        blockingMs: null,
+        longTasks: null,
         conditions: null,
       },
     ]);
@@ -83,6 +97,8 @@ describe("gathering one axis across the journeys", () => {
       inp: 8,
       cls: 0.01,
       heapBytes: 1024,
+      blockingMs: 40,
+      longTasks: 2,
       conditions: "a slow connection",
     },
     {
@@ -91,6 +107,8 @@ describe("gathering one axis across the journeys", () => {
       inp: null,
       cls: 0.02,
       heapBytes: 2048,
+      blockingMs: 40,
+      longTasks: 2,
       conditions: "a slow connection",
     },
   ];
@@ -107,7 +125,7 @@ describe("gathering one axis across the journeys", () => {
   });
 
   it("gathers an empty list from no journeys", () => {
-    expect(readingsOf([], (run) => run.lcp)).toEqual([]);
+    expect(readingsOf<Sample>([], (run) => run.lcp)).toEqual([]);
   });
 });
 
@@ -121,6 +139,8 @@ describe("the conditions the journeys were run under", () => {
       inp: 8,
       cls: 0.01,
       heapBytes: 1024,
+      blockingMs: 40,
+      longTasks: 2,
       conditions: value,
     }));
 
@@ -138,5 +158,38 @@ describe("the conditions the journeys were run under", () => {
   it("names none for journeys that recorded no conditions, and for no journeys at all", () => {
     expect(conditionsOf(under(null, null))).toBeNull();
     expect(conditionsOf([])).toBeNull();
+  });
+});
+
+describe("reading the gestures a run wrote down", () => {
+  it("reads the dropped frames and the conditions out of every gesture", () => {
+    expect(
+      gesturesIn(
+        '[{"droppedFrames":0,"conditions":"a phone at 4x"},{"droppedFrames":2,"conditions":"a phone at 4x"}]',
+      ),
+    ).toEqual([
+      { droppedFrames: 0, conditions: "a phone at 4x" },
+      { droppedFrames: 2, conditions: "a phone at 4x" },
+    ]);
+  });
+
+  it("reads conditions a gesture never recorded as nothing", () => {
+    expect(gesturesIn('[{"droppedFrames":1}]')).toEqual([
+      { droppedFrames: 1, conditions: null },
+    ]);
+  });
+
+  it("reads an empty run as no gestures", () => {
+    expect(gesturesIn("[]")).toEqual([]);
+  });
+
+  it("refuses gestures that do not carry the count of dropped frames", () => {
+    expect(gesturesIn('{"droppedFrames":1}')).toBeNull();
+    expect(gesturesIn('[{"conditions":"a phone at 4x"}]')).toBeNull();
+    expect(gesturesIn('[{"droppedFrames":"none"}]')).toBeNull();
+    expect(gesturesIn("[null]")).toBeNull();
+    expect(
+      gesturesIn('[{"droppedFrames":1},{"conditions":"a phone"}]'),
+    ).toBeNull();
   });
 });

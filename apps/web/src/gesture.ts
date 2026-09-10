@@ -31,8 +31,12 @@ const bounded = (view: View, extent: Extent): View => ({
   ty: clamped(view.ty, extent.height * (1 - view.scale), 0),
 });
 
-export const panned = (view: View, dx: number, dy: number, extent: Extent) =>
-  bounded({ ...view, tx: view.tx + dx, ty: view.ty + dy }, extent);
+export const panned = (
+  view: View,
+  dx: number,
+  dy: number,
+  extent: Extent,
+): View => bounded({ ...view, tx: view.tx + dx, ty: view.ty + dy }, extent);
 
 export const zoomed = (
   view: View,
@@ -97,7 +101,8 @@ export const mostZoomFor = (
   seatWidth: number,
   extentWidth: number,
   clientWidth: number,
-) => Math.max(1, TAP_TARGET / ((seatWidth * clientWidth) / extentWidth));
+): number =>
+  Math.max(1, TAP_TARGET / ((seatWidth * clientWidth) / extentWidth));
 
-export const transformOf = (view: View) =>
+export const transformOf = (view: View): string =>
   `translate(${view.tx} ${view.ty}) scale(${view.scale})`;

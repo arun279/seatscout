@@ -1,8 +1,24 @@
 import { act, fireEvent, screen, within } from "@testing-library/react";
 import { staged } from "./search.fixtures.js";
-import { type CapturedRoom, roomRoutes } from "./rooms.fixtures.js";
+import type { QueryScreen, Stage } from "./search.fixtures.js";
+import { roomRoutes } from "./rooms.fixtures.js";
+import type { CapturedRoom } from "./rooms.fixtures.js";
 
-export const nameOf = (element: Element) => element.getAttribute("aria-label");
+export const nameOf = (element: Element): string | null =>
+  element.getAttribute("aria-label");
+
+export interface RoomScreen {
+  readonly dialog: HTMLElement;
+  readonly room: QueryScreen;
+  readonly focused: () => Element;
+  readonly grid: () => HTMLElement;
+  readonly rowBar: () => HTMLElement;
+  readonly press: (
+    key: string,
+    options?: { readonly ctrlKey?: boolean },
+  ) => void;
+  readonly tabStops: () => string[];
+}
 
 const stopOf = (element: HTMLElement) => {
   if (element instanceof HTMLInputElement && element.type === "radio")
@@ -13,7 +29,7 @@ const stopOf = (element: HTMLElement) => {
     : role;
 };
 
-const roomScreen = () => {
+const roomScreen = (): RoomScreen => {
   const dialog = screen.getByRole("dialog");
   const room = within(dialog);
   const focused = () => {
@@ -42,7 +58,9 @@ const roomScreen = () => {
   };
 };
 
-export const opened = async (room: CapturedRoom) => {
+export const opened = async (
+  room: CapturedRoom,
+): Promise<Stage & RoomScreen> => {
   const stage = staged({ script: { routes: roomRoutes() } });
   await stage.settled();
   fireEvent.click(

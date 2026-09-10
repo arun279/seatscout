@@ -14,12 +14,8 @@ import {
   recordedCaptures,
   routeOf,
 } from "@seatscout/core/testing";
-import {
-  type Coverage,
-  type SearchTerms,
-  type Snapshot,
-  openSearch,
-} from "./search.js";
+import { openSearch } from "./search.js";
+import type { Coverage, Search, SearchTerms, Snapshot } from "./search.js";
 import { type CachedCatalogue, inMemoryStore } from "./store.js";
 
 export const SEAT_MAP = "/napi/seatMap/";
@@ -47,6 +43,14 @@ interface Options {
   readonly cached?: (catalogue: Catalogue) => CachedCatalogue;
 }
 
+export interface SearchRun {
+  readonly candidates: Catalogue;
+  readonly frozen: string[];
+  readonly search: Search;
+  readonly snapshots: Snapshot[];
+  readonly requested: () => number[];
+}
+
 const payloadOf = <Found>(reading: Reading<Found>): Found => {
   if (!reading.ok) throw new Error(`the read answered ${reading.reason}`);
   return reading.payload;
@@ -72,7 +76,9 @@ const roomNamed = (showtime: string) => {
   return answered(room);
 };
 
-export const refusalNamed = (reason: string) => {
+export const refusalNamed = (
+  reason: string,
+): { readonly status: number; readonly body: string } => {
   const captured = recordedCaptures().find(
     (capture) =>
       capture.status !== 200 && JSON.stringify(capture.body).includes(reason),
@@ -123,7 +129,7 @@ export const routesTo = (
     showtimes.map((showtime) => [`${SEAT_MAP}${showtime.id}`, answer]),
   );
 
-export const listing = async () => {
+export const listing = async (): Promise<Catalogue> => {
   const source = openSource({
     fetch: fakeUpstream({ seed: 1 }),
     now: () => AT,
@@ -133,7 +139,7 @@ export const listing = async () => {
   return payloadOf(await source.showtimesFor(WIDE_RELEASE, TODAY, AREA));
 };
 
-export const searching = async (options: Options = {}) => {
+export const searching = async (options: Options = {}): Promise<SearchRun> => {
   const listed = await listing();
   const terms: SearchTerms = {
     movie: WIDE_RELEASE,
@@ -141,8 +147,10 @@ export const searching = async (options: Options = {}) => {
     area: AREA,
     partySize: options.partySize ?? 2,
     accessibleSeating: options.accessibleSeating ?? false,
-    profile: options.profile,
-    theaters: options.at?.map((name) => theaterIn(listed, name)),
+    ...(options.profile === undefined ? {} : { profile: options.profile }),
+    ...(options.at === undefined
+      ? {}
+      : { theaters: options.at.map((name) => theaterIn(listed, name)) }),
   };
   const candidates = narrowed(listed, terms);
   const upstream = fakeUpstream({
@@ -191,14 +199,14 @@ export const searching = async (options: Options = {}) => {
 export const idsIn = (snapshot: Snapshot): Showtime["id"][] =>
   snapshot.results.map((result) => result.showtime.id);
 
-export const arrivalIn = (snapshots: readonly Snapshot[]) => {
+export const arrivalIn = (snapshots: readonly Snapshot[]): number[] => {
   const order: number[] = [];
   for (const snapshot of snapshots)
     for (const id of idsIn(snapshot)) if (!order.includes(id)) order.push(id);
   return order;
 };
 
-export const namedIn = (coverage: Coverage) => [
+export const namedIn = (coverage: Coverage): (Showtime | Unidentified)[] => [
   ...coverage.soldOut,
   ...coverage.noSeatMap,
   ...coverage.started,
@@ -206,7 +214,7 @@ export const namedIn = (coverage: Coverage) => [
   ...coverage.unidentified,
 ];
 
-export const accountedIn = (coverage: Coverage) =>
+export const accountedIn = (coverage: Coverage): number =>
   coverage.checked + namedIn(coverage).length + coverage.failed.length;
 
 export const withoutIdentity = (showtime: Showtime): Unidentified => ({

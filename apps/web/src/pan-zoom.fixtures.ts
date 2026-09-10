@@ -1,14 +1,21 @@
 import { fireEvent } from "@testing-library/react";
+import type { Point, View } from "./gesture.js";
 
-export const MAP_ON_SCREEN = { left: 20, top: 100, width: 340 };
+interface OnScreen {
+  readonly left: number;
+  readonly top: number;
+  readonly width: number;
+}
 
-export const wrapper = (dialog: HTMLElement) => {
+export const MAP_ON_SCREEN: OnScreen = { left: 20, top: 100, width: 340 };
+
+export const wrapper = (dialog: HTMLElement): SVGGElement => {
   const group = dialog.querySelector<SVGGElement>("svg > g");
   if (group === null) throw new Error("the map has no wrapping group");
   return group;
 };
 
-export const viewOf = (group: SVGElement) => {
+export const viewOf = (group: SVGElement): View => {
   const [tx = 0, ty = 0, scale = 1] = (
     /translate\(([-\d.]+) ([-\d.]+)\) scale\(([\d.]+)\)/.exec(
       group.getAttribute("transform") ?? "",
@@ -19,7 +26,7 @@ export const viewOf = (group: SVGElement) => {
   return { tx, ty, scale };
 };
 
-export const scaleOf = (group: SVGElement) => viewOf(group).scale;
+export const scaleOf = (group: SVGElement): number => viewOf(group).scale;
 
 const framedBy = (element: SVGElement) => {
   const [, , width = 1, height = 1] = (
@@ -30,7 +37,7 @@ const framedBy = (element: SVGElement) => {
   return { width, height, perUnit: MAP_ON_SCREEN.width / width };
 };
 
-export const onScreen = function (this: SVGElement) {
+export const onScreen = function (this: SVGElement): DOMRect {
   const { tx, ty, scale } = viewOf(this);
   const { height, perUnit } = framedBy(this);
   return new DOMRect(
@@ -41,7 +48,16 @@ export const onScreen = function (this: SVGElement) {
   );
 };
 
-export const spanOf = (group: SVGElement, cell: Element) => {
+export const spanOf = (
+  group: SVGElement,
+  cell: Element,
+): {
+  readonly left: number;
+  readonly right: number;
+  readonly top: number;
+  readonly bottom: number;
+  readonly frame: { readonly right: number; readonly bottom: number };
+} => {
   const { tx, ty, scale } = viewOf(group);
   const { height, perUnit } = framedBy(group);
   const [dx = 0, dy = 0] = (
@@ -70,7 +86,7 @@ export const spanOf = (group: SVGElement, cell: Element) => {
 export const underPointer = (
   group: SVGElement,
   client: { x: number; y: number },
-) => {
+): Point => {
   const { tx, ty, scale } = viewOf(group);
   const { perUnit } = framedBy(group);
   return {
@@ -83,8 +99,8 @@ export const drag = (
   group: SVGElement,
   from: { readonly x: number; readonly y: number },
   to: { readonly x: number; readonly y: number },
-  pointerId = 1,
-) => {
+  pointerId: number = 1,
+): void => {
   fireEvent.pointerDown(group, {
     pointerId,
     clientX: from.x,

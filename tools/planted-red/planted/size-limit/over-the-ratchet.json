@@ -1,0 +1,7 @@
+[
+  {
+    "name": "icons",
+    "path": "serves/*.svg",
+    "limit": "1 B"
+  }
+]
