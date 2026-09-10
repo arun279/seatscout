@@ -56,6 +56,7 @@ const stagedHandOff = (options: Parameters<typeof staged>[0] = {}) => {
 export const opened = async (
   options: Parameters<typeof staged>[0] = {},
   seats = /G6·G7$/,
+  name = HOOKY,
 ) => {
   const stage = stagedHandOff(options);
   await stage.settled();
@@ -64,7 +65,7 @@ export const opened = async (
   );
   return {
     stage,
-    sheet: within(screen.getByRole("dialog", { name: HOOKY })),
+    sheet: within(screen.getByRole("dialog", { name })),
   };
 };
 

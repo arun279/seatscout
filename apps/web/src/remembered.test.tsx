@@ -8,15 +8,19 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  ASKED,
   editor,
-  NO_AREA,
+  NO_AREA_QUERY,
+  NO_MOVIE_QUERY,
   opened,
   PROFILE,
   RECENT,
   relaunched,
   reset,
-  TONIGHT,
+  SMALLEST_LISTING_ASKED,
+  SMALLEST_LISTING_NO_AREA_QUERY,
+  SMALLEST_LISTING_QUERY,
+  TONIGHT_ASKED,
+  TONIGHT_QUERY,
 } from "./start.fixtures.js";
 
 describe("what the running application remembers on the device", () => {
@@ -26,17 +30,17 @@ describe("what the running application remembers on the device", () => {
   afterEach(reset);
 
   it("remembers nothing while the address names no Movie or no area", async () => {
-    await opened(NO_AREA);
+    await opened(NO_AREA_QUERY);
     await act(() => Promise.resolve());
     expect(localStorage.getItem(RECENT)).toBeNull();
 
-    await relaunched("?date=2026-08-28&area=75006&partySize=2");
+    await relaunched(NO_MOVIE_QUERY);
     await act(() => Promise.resolve());
     expect(localStorage.getItem(RECENT)).toBeNull();
   });
 
   it("remembers a search the address reaches only after the first screen is up", async () => {
-    await opened(NO_AREA);
+    await opened(SMALLEST_LISTING_NO_AREA_QUERY);
     expect(localStorage.getItem(RECENT)).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: /near where/i }));
     fireEvent.change(editor().getByLabelText("Near, by postal code"), {
@@ -45,12 +49,14 @@ describe("what the running application remembers on the device", () => {
     fireEvent.click(editor().getByRole("button", { name: /find seats/i }));
 
     await waitFor(() =>
-      expect(JSON.parse(localStorage.getItem(RECENT) ?? "[]")).toEqual([ASKED]),
+      expect(JSON.parse(localStorage.getItem(RECENT) ?? "[]")).toEqual([
+        SMALLEST_LISTING_ASKED,
+      ]),
     );
   });
 
   it("keeps an adjusted Profile on the device, searches under it, and opens with it after a relaunch", async () => {
-    await opened(NO_AREA);
+    await opened(NO_AREA_QUERY);
     fireEvent.click(screen.getByRole("button", { name: /reference seat/i }));
     fireEvent.change(editor().getByLabelText("Near, by postal code"), {
       target: { value: "75006" },
@@ -80,9 +86,12 @@ describe("what the running application remembers on the device", () => {
 
   it("remembers each search it runs on the device and offers it on the first screen, newest first", async () => {
     vi.useFakeTimers({ toFake: ["Date"] });
-    vi.setSystemTime(new Date(2026, 7, 28, 9, 0));
-    localStorage.setItem(RECENT, JSON.stringify([{ ...ASKED, partySize: 3 }]));
-    await opened(TONIGHT);
+    vi.setSystemTime(new Date(2026, 7, 27, 9, 0));
+    localStorage.setItem(
+      RECENT,
+      JSON.stringify([{ ...SMALLEST_LISTING_ASKED, partySize: 3 }]),
+    );
+    await opened(SMALLEST_LISTING_QUERY);
     await waitFor(() =>
       expect(JSON.parse(localStorage.getItem(RECENT) ?? "[]")).toHaveLength(2),
     );
@@ -102,7 +111,7 @@ describe("what the running application remembers on the device", () => {
   it("stops offering a remembered search once its day has passed, even while the screen stays open", async () => {
     vi.useFakeTimers({ toFake: ["Date", "setInterval", "clearInterval"] });
     vi.setSystemTime(new Date(2026, 7, 28, 23, 59, 59));
-    localStorage.setItem(RECENT, JSON.stringify([ASKED]));
+    localStorage.setItem(RECENT, JSON.stringify([TONIGHT_ASKED]));
     await opened("");
 
     expect(screen.getByRole("region", { name: "Run again" })).toBeVisible();
@@ -122,7 +131,7 @@ describe("what the running application remembers on the device", () => {
   it("re-runs a recent search in one press, reading every seat map again", async () => {
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(new Date(2026, 7, 28, 9, 0));
-    localStorage.setItem(RECENT, JSON.stringify([ASKED]));
+    localStorage.setItem(RECENT, JSON.stringify([TONIGHT_ASKED]));
     const page = await opened("");
     expect(page.seatMapsRead()).toBe(0);
     fireEvent.click(
@@ -131,7 +140,7 @@ describe("what the running application remembers on the device", () => {
       }),
     );
 
-    expect(window.location.search).toBe(TONIGHT);
+    expect(window.location.search).toBe(TONIGHT_QUERY);
     await waitFor(() =>
       expect(screen.getByRole("status")).toHaveTextContent(/172 checked$/),
     );

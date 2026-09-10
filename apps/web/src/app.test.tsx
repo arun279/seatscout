@@ -14,16 +14,13 @@ import {
   cards,
   EVERYTHING,
   NEARBY,
+  NO_AREA,
   NO_MOVIE,
   NOTHING,
   staged,
   TODAY,
-  TONIGHT,
 } from "./search.fixtures.js";
 import { modal } from "./modal.js";
-import type { Terms } from "./terms.js";
-
-const NO_AREA: Terms = { movie: "245569", date: TODAY, partySize: 2 };
 
 const windowListeners = (calls: readonly unknown[][]) =>
   calls
@@ -146,7 +143,7 @@ describe("the first screen", () => {
   ])(
     "opens the query for editing from the title card's %s line, with that term ready to change",
     async (line, control) => {
-      const stage = staged();
+      const stage = staged({ terms: AT_ONE_THEATER });
       await stage.programmed();
       fireEvent.click(screen.getByRole("button", { name: line }));
 
@@ -162,7 +159,7 @@ describe("the first screen", () => {
   );
 
   it("opens the sheet at the Formats from the line that says any showtime", async () => {
-    const stage = staged();
+    const stage = staged({ terms: NO_MOVIE });
     await stage.programmed();
     fireEvent.click(screen.getByRole("button", { name: /any showtime/i }));
 
@@ -170,8 +167,7 @@ describe("the first screen", () => {
   });
 
   it("keeps the query as it was on the way back, and closes", async () => {
-    const stage = staged();
-    await stage.settled();
+    const stage = staged({ terms: NO_MOVIE });
     fireEvent.click(
       screen.getByRole("button", { name: /two seats together/i }),
     );
@@ -215,9 +211,8 @@ describe("the first screen", () => {
     expect(screen.queryByRole("dialog", { hidden: true })).toBeNull();
   });
 
-  it("will not step the party below one", async () => {
-    const stage = staged({ terms: { ...TONIGHT, partySize: 1 } });
-    await stage.settled();
+  it("will not step the party below one", () => {
+    staged({ terms: { ...NO_MOVIE, partySize: 1 } });
     fireEvent.click(screen.getByRole("button", { name: /one seat/i }));
 
     expect(ask().getByLabelText("Fewer seats")).toBeDisabled();
@@ -225,16 +220,14 @@ describe("the first screen", () => {
 
   it("opens saying so when the device is already offline", async () => {
     vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
-    const stage = staged();
-    await stage.settled();
+    staged({ terms: NO_MOVIE });
 
     expect(screen.getByText(/^Offline\./)).toBeVisible();
   });
 
-  it("says so when the device goes offline, and stops saying so when it is back", async () => {
+  it("says so when the device goes offline, and stops saying so when it is back", () => {
     const onLine = vi.spyOn(navigator, "onLine", "get");
-    const stage = staged();
-    await stage.settled();
+    staged({ terms: NO_MOVIE });
 
     onLine.mockReturnValue(false);
     act(() => {
@@ -252,8 +245,7 @@ describe("the first screen", () => {
   it("listens to the window only while it is on the page", async () => {
     const added = vi.spyOn(window, "addEventListener");
     const removed = vi.spyOn(window, "removeEventListener");
-    const stage = staged();
-    await stage.settled();
+    const stage = staged({ terms: NO_MOVIE });
     stage.unmount();
 
     expect(windowListeners(added.mock.calls)).toHaveLength(2);

@@ -9,7 +9,13 @@ import {
   within,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { ASKED, failing, settledAlone, staged } from "./search.fixtures.js";
+import {
+  ASKED,
+  failing,
+  settledAlone,
+  SMALLEST_LISTING,
+  staged,
+} from "./search.fixtures.js";
 import { Ledger } from "./coverage.js";
 
 const ROWS: readonly (readonly [string, string, number])[] = [
@@ -150,6 +156,21 @@ describe("the account the first screen keeps", () => {
         "172 + 0 + 3 + 1 + 0 + 0 + 0 = 176 · nothing unaccounted",
       ),
     ).toBeVisible();
+    expect(ledger.getByText("Landmark Inwood Theatre · 1:30p")).toBeVisible();
+    expect(ledger.getByText("AMC Stonebriar 24 · 12:00p")).toBeVisible();
+  });
+
+  it("keys named ledger rows by ticketing URL when showtimes share a start time", async () => {
+    const settled = await settledAlone({ terms: SMALLEST_LISTING });
+    render(<Ledger snapshot={settled} onClose={() => {}} />);
+
+    const ledger = within(screen.getByRole("dialog", { name: /accounted/i }));
+    expect(
+      ledger.getByText("0 + 77 + 3 + 0 + 0 + 0 + 0 = 80 · nothing unaccounted"),
+    ).toBeVisible();
+    expect(
+      ledger.getByRole("listitem", { name: "Already started" }),
+    ).toHaveTextContent("77Already started");
   });
 
   it("explains every outcome, links the operator's page only where a retry can never help, and says what is still to come", async () => {
