@@ -69,6 +69,7 @@ jobs:
           cd "$RUNNER_TEMP/base"
           pnpm install --frozen-lockfile
           if listed="$(pnpm exec playwright test --list --grep @performance 2>&1)"; then
+            pnpm exec playwright install --with-deps chromium
             pnpm build
             pnpm exec playwright test --grep @performance
             cp reports/journey/samples.json "$GITHUB_WORKSPACE/reports/journey/base.json"
