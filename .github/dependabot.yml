@@ -13,6 +13,13 @@ updates:
     directory: '/'
     schedule:
       interval: weekly
+    ignore:
+      - dependency-name: react
+      - dependency-name: react-dom
+      - dependency-name: react-native
+      - dependency-name: expo
+      - dependency-name: '@types/react'
+      - dependency-name: '@types/react-dom'
     groups:
       non-major-updates:
         update-types:
