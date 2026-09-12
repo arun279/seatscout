@@ -10,6 +10,14 @@ const WORKFLOW = ".github/workflows/ci.yml";
 export const GATE_CLAIMS = [
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /\*\*A class no stylesheet rules is refused by Biome's `noUndeclaredClasses`\*\*/,
+    holds: "the class rule that gates the build",
+    pattern: '"noUndeclaredClasses": "error"',
+    paths: [BIOME],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
     says: /by Biome's \[`noExcessiveCognitiveComplexity`\]/,
     holds: "the complexity rule that gates the build",
     pattern: "noExcessiveCognitiveComplexity",
