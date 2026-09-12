@@ -128,25 +128,15 @@ ask TEAM_NAME "Team name:" '^[a-z0-9][a-z0-9-]*$'
 ACCESS_TEAM_DOMAIN="https://$TEAM_NAME.cloudflareaccess.com"
 remember ACCESS_TEAM_DOMAIN "$ACCESS_TEAM_DOMAIN"
 ok "Your team domain is $ACCESS_TEAM_DOMAIN"
-warn "Renaming the team later breaks stage 3 and the worker's ACCESS_TEAM_DOMAIN."
+warn "Renaming the team later breaks the worker's ACCESS_TEAM_DOMAIN."
 pause
 
-stage "Google identity provider"
-open_url "https://console.cloud.google.com/apis/credentials"
-step "Create a project if you have none, then configure the consent screen with"
-step "audience type External, so any Google account can reach the login page."
-step "Create an OAuth client of type Web application with:"
-say ""
-say "    Authorised JavaScript origin   $ACCESS_TEAM_DOMAIN"
-say "    Authorised redirect URI        $ACCESS_TEAM_DOMAIN/cdn-cgi/access/callback"
-say ""
-note "Reaching the login page is not access. The allowlist in stage 7 decides that."
-pause
+stage "Login method"
 open_url "https://one.dash.cloudflare.com/"
-step "Zero Trust > Integrations > Identity providers > Add new > Google."
-step "Paste the client ID and secret, save, then use Test."
+step "Zero Trust > Settings > Authentication > Login methods > Add new > One-time PIN."
+step "A new account does not add it by itself. Nothing else to create; no Google."
+note "Access mails a code only to an address the allowlist in stage 7 admits."
 pause
-
 stage "API token"
 open_url "https://dash.cloudflare.com/profile/api-tokens"
 step "Create Token > Create Custom Token."
