@@ -1,46 +1,25 @@
-import { exportJWK, generateKeyPair, SignJWT } from "jose";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import proxy from "./index.js";
 
-const ALGORITHM = "RS256";
-const AUDIENCE = "6bd6b1cd0f1b0b4b2c0a2b5c8f3d9e7a";
 const UPSTREAM = "https://aggregator.test";
-const CERTS = "/cdn-cgi/access/certs";
-
-const current = await generateKeyPair(ALGORITHM, { extractable: true });
-const rotated = await generateKeyPair(ALGORITHM, { extractable: true });
-const published = {
-  keys: [
-    { ...(await exportJWK(rotated.publicKey)), alg: ALGORITHM, kid: "rotated" },
-    { ...(await exportJWK(current.publicKey)), alg: ALGORITHM, kid: "current" },
-  ],
-};
+const SITE = "https://proxy.test";
+const READ = "/napi/nearbyTheaters?zipCode=10001";
+const OWN_PAGE = { "sec-fetch-site": "same-origin" };
 
 const BYTES_NO_PARSER_SURVIVES = Uint8Array.from([
   ...new TextEncoder().encode('{"seats":['),
   ...Array.from({ length: 256 }, (_, byte) => byte),
 ]);
 
-let teams = 0;
-
-const coldTeamDomain = () => {
-  teams += 1;
-  return `https://team${teams}.cloudflareaccess.test`;
-};
-
 const network = (
   answer: (request: Request) => Response = () => new Response("{}"),
 ) => {
-  const teamDomain = coldTeamDomain();
   const received: Request[] = [];
-  let keyFetches = 0;
+  const keyed: string[] = [];
+  let admitting = true;
 
   vi.stubGlobal("fetch", async (resource: URL | string, init?: RequestInit) => {
     const url = String(resource);
-    if (url === `${teamDomain}${CERTS}`) {
-      keyFetches += 1;
-      return Response.json(published);
-    }
     if (!url.startsWith(UPSTREAM)) {
       return new Response("unknown route", { status: 404 });
     }
@@ -58,36 +37,28 @@ const network = (
 
   return {
     env: {
-      ACCESS_TEAM_DOMAIN: teamDomain,
-      ACCESS_AUD: AUDIENCE,
       UPSTREAM_ORIGIN: UPSTREAM,
+      VISITOR_RATE: {
+        limit: async (of: { key: string }) => {
+          keyed.push(of.key);
+          return { success: admitting };
+        },
+      },
     },
     received,
-    keyFetches: () => keyFetches,
-    assertion: (
-      claim: { kid?: string; issuer?: string; audience?: string } = {},
-    ) =>
-      new SignJWT({ email: "moviegoer@example.com" })
-        .setProtectedHeader({ alg: ALGORITHM, kid: claim.kid ?? "current" })
-        .setIssuer(claim.issuer ?? teamDomain)
-        .setAudience(claim.audience ?? AUDIENCE)
-        .setExpirationTime("1h")
-        .sign(current.privateKey),
+    keyed,
+    exhaust: () => {
+      admitting = false;
+    },
   };
 };
 
 const through = (
-  { env }: { env: Partial<ReturnType<typeof network>["env"]> },
-  headers: Record<string, string> = {},
+  { env }: { env: ReturnType<typeof network>["env"] },
+  headers: Record<string, string> = OWN_PAGE,
   sent?: { method: string; body: string },
-) =>
-  proxy.fetch(
-    new Request("https://proxy.test/showtimes?zip=10001", {
-      headers,
-      ...sent,
-    }),
-    env,
-  );
+  path: string = READ,
+) => proxy.fetch(new Request(`${SITE}${path}`, { headers, ...sent }), env);
 
 const headerNamesOf = (request: Request | undefined) => [
   ...(request?.headers.keys() ?? []),
@@ -97,72 +68,126 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("access", () => {
-  it("rejects a request carrying no access assertion", async () => {
+describe("what the proxy answers at all", () => {
+  it("carries a read the app's own page issued", async () => {
     const upstream = network();
-    const response = await through(upstream);
 
-    expect(response.status).toBe(403);
-    expect(await response.text()).toBe("No access assertion");
-    expect(upstream.received).toEqual([]);
+    expect((await through(upstream)).status).toBe(200);
+    expect(upstream.received).toHaveLength(1);
   });
 
-  it.each([
-    ["naming a key the team domain does not publish", { kid: "unpublished" }],
-    ["whose signature does not match the key it names", { kid: "rotated" }],
-    ["issued for another application", { audience: "another-application" }],
-    [
-      "issued by another team domain",
-      { issuer: "https://elsewhere.cloudflareaccess.test" },
-    ],
-  ])("rejects an assertion %s", async (_, claim) => {
-    const upstream = network();
-    const response = await through(upstream, {
-      "cf-access-jwt-assertion": await upstream.assertion(claim),
-    });
-
-    expect(response.status).toBe(403);
-    expect(await response.text()).toBe("The access assertion did not verify");
-    expect(upstream.received).toEqual([]);
-  });
-
-  it("passes an identity the access layer admitted, reading the keys once", async () => {
-    const upstream = network();
-    const headers = { "cf-access-jwt-assertion": await upstream.assertion() };
-
-    expect((await through(upstream, headers)).status).toBe(200);
-    expect((await through(upstream, headers)).status).toBe(200);
-    expect(upstream.received).toHaveLength(2);
-    expect(upstream.keyFetches()).toBe(1);
-  });
-
-  it.each(["ACCESS_TEAM_DOMAIN", "ACCESS_AUD", "UPSTREAM_ORIGIN"])(
-    "refuses to serve anything without %s",
-    async (missing) => {
+  it.each(["/", "/index.html", "/napi", "/napi-archive/seatMap/1"])(
+    "proxies nothing at %s, so the deployment relays one upstream's reads and no more",
+    async (path) => {
       const upstream = network();
-      const response = await through(
-        { env: { ...upstream.env, [missing]: undefined } },
-        { "cf-access-jwt-assertion": await upstream.assertion() },
-      );
+      const response = await through(upstream, OWN_PAGE, undefined, path);
 
-      expect(response.status).toBe(500);
-      expect(await response.text()).toBe("The proxy is not configured");
+      expect(response.status).toBe(404);
+      expect(await response.text()).toBe("Nothing is proxied at that path");
       expect(upstream.received).toEqual([]);
     },
   );
+});
+
+describe("requests from this site's own pages", () => {
+  it.each(["cross-site", "same-site", "none"])(
+    "refuses a request whose fetch metadata says %s",
+    async (site) => {
+      const upstream = network();
+      const response = await through(upstream, { "sec-fetch-site": site });
+
+      expect(response.status).toBe(403);
+      expect(await response.text()).toBe("Not a request from this site");
+      expect(upstream.received).toEqual([]);
+    },
+  );
+
+  it.each([
+    ["an origin of this site", { origin: SITE }],
+    ["a referer on this site", { referer: `${SITE}/?movie=245569` }],
+  ])(
+    "carries a read from a browser that sends no fetch metadata but %s",
+    async (_, headers) => {
+      const upstream = network();
+
+      expect((await through(upstream, headers)).status).toBe(200);
+      expect(upstream.received).toHaveLength(1);
+    },
+  );
+
+  it.each([
+    ["nothing to say where it came from", {}],
+    ["an origin somewhere else", { origin: "https://elsewhere.test" }],
+    ["a referer somewhere else", { referer: "https://elsewhere.test/" }],
+    [
+      "an origin whose host only begins as this one",
+      {
+        origin: `${SITE}.elsewhere.test`,
+      },
+    ],
+    [
+      "a referer whose host only begins as this one",
+      {
+        referer: `${SITE}.elsewhere.test/`,
+      },
+    ],
+  ])(
+    "refuses a request that sends no fetch metadata and %s",
+    async (_, headers) => {
+      const upstream = network();
+      const response = await through(upstream, headers);
+
+      expect(response.status).toBe(403);
+      expect(await response.text()).toBe("Not a request from this site");
+      expect(upstream.received).toEqual([]);
+    },
+  );
+});
+
+describe("one visitor's share", () => {
+  it("refuses a visitor the rate limiter has stopped admitting", async () => {
+    const upstream = network();
+    upstream.exhaust();
+    const response = await through(upstream);
+
+    expect(response.status).toBe(429);
+    expect(await response.text()).toBe("Too many requests");
+    expect(upstream.received).toEqual([]);
+  });
+
+  it("counts a read against the address it came from", async () => {
+    const upstream = network();
+    await through(upstream, { ...OWN_PAGE, "cf-connecting-ip": "203.0.113.7" });
+
+    expect(upstream.keyed).toEqual(["203.0.113.7"]);
+  });
+
+  it("counts a read that names no address against one shared key", async () => {
+    const upstream = network();
+    await through(upstream);
+
+    expect(upstream.keyed).toEqual([""]);
+  });
+
+  it("spends nothing on a request it has already refused", async () => {
+    const upstream = network();
+    await through(upstream, { "sec-fetch-site": "cross-site" });
+
+    expect(upstream.keyed).toEqual([]);
+  });
 });
 
 describe("the hop to the upstream", () => {
   it("sends upstream only the headers the caller nominated", async () => {
     const upstream = network();
     await through(upstream, {
+      ...OWN_PAGE,
       accept: "application/json",
-      "cf-access-jwt-assertion": await upstream.assertion(),
       "cf-connecting-ip": "203.0.113.7",
       "content-type": "application/json",
-      cookie: "CF_Authorization=this-hop-only",
-      origin: "https://proxy.test",
-      referer: "https://proxy.test/results",
+      cookie: "session=this-hop-only",
+      origin: SITE,
+      referer: `${SITE}/results`,
       "user-agent": "seatscout/0.0.0",
     });
 
@@ -177,9 +202,7 @@ describe("the hop to the upstream", () => {
 
   it("names the upstream as its own referer, which is what the upstream admits", async () => {
     const upstream = network();
-    await through(upstream, {
-      "cf-access-jwt-assertion": await upstream.assertion(),
-    });
+    await through(upstream);
 
     expect(headerNamesOf(upstream.received[0])).toEqual(["referer"]);
     expect(upstream.received[0]?.headers.get("referer")).toBe(`${UPSTREAM}/`);
@@ -195,9 +218,7 @@ describe("the hop to the upstream", () => {
           ],
         }),
     );
-    const response = await through(upstream, {
-      "cf-access-jwt-assertion": await upstream.assertion(),
-    });
+    const response = await through(upstream);
 
     expect(response.headers.getSetCookie()).toEqual([]);
   });
@@ -213,9 +234,7 @@ describe("the response", () => {
           statusText: "Partial Content",
         }),
     );
-    const response = await through(upstream, {
-      "cf-access-jwt-assertion": await upstream.assertion(),
-    });
+    const response = await through(upstream);
 
     expect(new Uint8Array(await response.arrayBuffer())).toEqual(
       BYTES_NO_PARSER_SURVIVES,
@@ -226,17 +245,14 @@ describe("the response", () => {
       "application/octet-stream",
     );
     expect(upstream.received).toHaveLength(1);
-    expect(upstream.received[0]?.url).toBe(`${UPSTREAM}/showtimes?zip=10001`);
+    expect(upstream.received[0]?.url).toBe(`${UPSTREAM}${READ}`);
   });
 
   it("carries the caller's method and request body upstream", async () => {
     const upstream = network();
     await through(
       upstream,
-      {
-        "cf-access-jwt-assertion": await upstream.assertion(),
-        "content-type": "application/json",
-      },
+      { ...OWN_PAGE, "content-type": "application/json" },
       { method: "POST", body: '{"showtime":"abc"}' },
     );
 
@@ -252,9 +268,7 @@ describe("the response", () => {
           status: 302,
         }),
     );
-    const response = await through(upstream, {
-      "cf-access-jwt-assertion": await upstream.assertion(),
-    });
+    const response = await through(upstream);
 
     expect(response.status).toBe(302);
     expect(response.headers.get("location")).toBe(`${UPSTREAM}/session`);

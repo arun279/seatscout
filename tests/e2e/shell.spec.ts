@@ -3,6 +3,7 @@ import { expect, type Page, test } from "@playwright/test";
 import { shellFilesIn } from "../../apps/web/shell-files.js";
 
 const SEAT_MAP = "/napi/seatMap/561478479";
+const ROOM = '{"seats":[]}';
 
 const WCAG = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
@@ -66,10 +67,17 @@ test("the service worker holds every script and stylesheet the build emitted, th
   expect(await cachedPaths(page)).toEqual(shell);
 });
 
-test("a seat map passes through the service worker to the proxy without being cached", async ({
+test("a seat map passes through the service worker to the network without being cached", async ({
   page,
 }) => {
   await controlled(page);
+  await page.route(`**${SEAT_MAP}`, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: ROOM,
+    }),
+  );
 
   const answers = await page.evaluate(async (path) => {
     const seatMap = await fetch(path);
@@ -77,7 +85,7 @@ test("a seat map passes through the service worker to the proxy without being ca
     return [seatMap.status, await seatMap.text(), unlisted.status];
   }, SEAT_MAP);
 
-  expect(answers).toEqual([500, "The proxy is not configured", 200]);
+  expect(answers).toEqual([200, ROOM, 200]);
   expect(await cachedPaths(page)).toEqual(await shellFilesIn(DIST));
 });
 

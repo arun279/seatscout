@@ -1,61 +1,22 @@
-import { createRemoteJWKSet, jwtVerify } from "jose";
-
-const ACCESS_ASSERTION = "cf-access-jwt-assertion";
 const FORWARDED = ["accept", "content-type", "user-agent"];
+const ROUTE = "/napi/";
 
 type Env = {
-  ACCESS_TEAM_DOMAIN?: string;
-  ACCESS_AUD?: string;
-  UPSTREAM_ORIGIN?: string;
+  UPSTREAM_ORIGIN: string;
+  VISITOR_RATE: {
+    limit: (of: { key: string }) => Promise<{ success: boolean }>;
+  };
 };
 
-type Configuration = {
-  teamDomain: string;
-  aud: string;
-  upstream: string;
-  referer: string;
-};
+const claims = (header: string | null, origin: string) =>
+  header !== null && (header === origin || header.startsWith(`${origin}/`));
 
-const configurationOf = ({
-  ACCESS_TEAM_DOMAIN,
-  ACCESS_AUD,
-  UPSTREAM_ORIGIN,
-}: Env): Configuration | null =>
-  ACCESS_TEAM_DOMAIN && ACCESS_AUD && UPSTREAM_ORIGIN
-    ? {
-        teamDomain: ACCESS_TEAM_DOMAIN,
-        aud: ACCESS_AUD,
-        upstream: UPSTREAM_ORIGIN,
-        referer: `${new URL(UPSTREAM_ORIGIN).origin}/`,
-      }
-    : null;
-
-const keySets = new Map<string, ReturnType<typeof createRemoteJWKSet>>();
-
-const keysFor = (teamDomain: string) => {
-  const known = keySets.get(teamDomain);
-  if (known) return known;
-  const keys = createRemoteJWKSet(new URL("/cdn-cgi/access/certs", teamDomain));
-  keySets.set(teamDomain, keys);
-  return keys;
-};
-
-const refusal = async (
-  assertion: string | null,
-  { teamDomain, aud }: Configuration,
-) => {
-  if (assertion === null) {
-    return new Response("No access assertion", { status: 403 });
-  }
-  try {
-    await jwtVerify(assertion, keysFor(teamDomain), {
-      issuer: teamDomain,
-      audience: aud,
-    });
-    return null;
-  } catch {
-    return new Response("The access assertion did not verify", { status: 403 });
-  }
+const fromOwnPage = (headers: Headers, origin: string) => {
+  const site = headers.get("sec-fetch-site");
+  return site === null
+    ? claims(headers.get("origin"), origin) ||
+        claims(headers.get("referer"), origin)
+    : site === "same-origin";
 };
 
 const upstreamHeaders = (from: Headers, referer: string) => {
@@ -79,28 +40,28 @@ const callerResponse = (upstream: Response) => {
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    const configuration = configurationOf(env);
-    if (configuration === null) {
-      return new Response("The proxy is not configured", { status: 500 });
+    const { pathname, search, origin } = new URL(request.url);
+    if (!pathname.startsWith(ROUTE)) {
+      return new Response("Nothing is proxied at that path", { status: 404 });
+    }
+    if (!fromOwnPage(request.headers, origin)) {
+      return new Response("Not a request from this site", { status: 403 });
     }
 
-    const refused = await refusal(
-      request.headers.get(ACCESS_ASSERTION),
-      configuration,
-    );
-    if (refused !== null) return refused;
+    const visitor = request.headers.get("cf-connecting-ip") ?? "";
+    const { success } = await env.VISITOR_RATE.limit({ key: visitor });
+    if (!success) {
+      return new Response("Too many requests", { status: 429 });
+    }
 
-    const { pathname, search } = new URL(request.url);
-    const upstream = await fetch(
-      new URL(pathname + search, configuration.upstream),
-      {
-        method: request.method,
-        headers: upstreamHeaders(request.headers, configuration.referer),
-        body: request.body,
-        redirect: "manual",
-      },
-    );
+    const upstream = new URL(env.UPSTREAM_ORIGIN);
+    const answer = await fetch(new URL(pathname + search, upstream), {
+      method: request.method,
+      headers: upstreamHeaders(request.headers, `${upstream.origin}/`),
+      body: request.body,
+      redirect: "manual",
+    });
 
-    return callerResponse(upstream);
+    return callerResponse(answer);
   },
 };

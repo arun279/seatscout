@@ -82,8 +82,9 @@ traversal among it, and the platform adapters it already holds are judged there 
 exempted by a line written while the directory was empty. That is why the browser store
 adapter has unit tests of its own beside the browser run of its contract: a suite the mutation
 gate cannot execute cannot be what judges a mutated adapter. The stateless proxy is not part
-of the carve-out either: it has its own assertions, including that an unauthenticated request
-is rejected, and a fail-closed check is exactly the kind most worth proving can fail.
+of the carve-out either: it has its own assertions, including that a cross-site request is
+refused and that a visitor over the rate limit is, and a refusal is exactly the kind of
+behaviour most worth proving can fail.
 
 ## Consequences
 

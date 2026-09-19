@@ -2,6 +2,7 @@ import { GATE_CLAIMS } from "./claims-in-prose.pairs.gates.mjs";
 
 const BIOME = "biome.json";
 const PRODUCT = ["packages", ":!*.test.ts", ":!*.fixtures.ts"];
+const PROXY = "apps/proxy/src/index.ts";
 const STRYKER = "stryker.config.json";
 const SOURCES = ["*.ts", "*.tsx"];
 const CORPUS = "packages/core/src/corpus";
@@ -36,7 +37,31 @@ export const CLAIMS = [
     says: /forwards the request upstream, and streams/,
     holds: "the header allowlist the proxy forwards",
     pattern: 'const FORWARDED = ["accept", "content-type", "user-agent"]',
-    paths: ["apps/proxy/src/index.ts"],
+    paths: [PROXY],
+    files: 1,
+  },
+  {
+    adr: "0002-computation-on-the-client.md",
+    says: /A request is carried only when its `Sec-Fetch-Site` reads `same-origin`\./,
+    holds: "the fetch metadata the proxy reads",
+    pattern: 'headers.get("sec-fetch-site")',
+    paths: [PROXY],
+    files: 1,
+  },
+  {
+    adr: "0002-computation-on-the-client.md",
+    says: /Three of the wider kind in a minute is 540, which is the limit\./,
+    holds: "the rate limit the deployment declares",
+    pattern: '"limit": 540',
+    paths: ["apps/proxy/wrangler.json"],
+    files: 1,
+  },
+  {
+    adr: "0002-computation-on-the-client.md",
+    says: /a request for any other path is answered 404 rather than forwarded/,
+    holds: "the only path the proxy carries",
+    pattern: 'const ROUTE = "/napi/"',
+    paths: [PROXY],
     files: 1,
   },
   {
