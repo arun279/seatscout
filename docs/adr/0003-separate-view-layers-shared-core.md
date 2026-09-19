@@ -89,14 +89,6 @@ else supplied by a host rather than by the language are undeclared, and using on
 error. No package has a `fetch` either: what they need from a host arrives as an injected
 dependency typed by core itself, which is the shape that keeps them portable.
 
-The language a package may speak is not the newest one either. `packages/view-logic` sorts a
-copy it has just made rather than calling `toSorted`, which Hermes does not implement while it
-implements the other three that change an array by copy, and a call to a method that is not
-there is a crash on a phone rather than a red build. The compiler cannot refuse it yet: `lib`
-is the only gate that would, it applies to a package's whole program, and a package compiles
-against its siblings' sources rather than through a project reference, so lowering it is one
-change across every package and not one package's own line.
-
 A Biome override on `packages/**` then covers what the compiler cannot see.
 `noRestrictedImports` rejects React, React Native, Expo, Node and Cloudflare, and a second
 override restates that same list and adds sibling workspace packages for `packages/core`,
@@ -228,10 +220,11 @@ this application.
 **Nothing under `packages` may reach for an engine feature either**, which is the same rule as
 the globals above and was missed until this application ran. Hermes implements no
 `Array.prototype.toSorted`, so the five calls to it are `[...x].sort()`, which every engine
-has. Each of those arrays was already a copy or is spread into one, so no caller's array is
-sorted under it, and the mutation gate holds the five files it touched.
+has, and `packages/view-logic` sorts the array `filter` has just made rather than calling it.
+Each of those arrays was already a copy or is made by the call before, so no caller's array is
+sorted under it, and the mutation gate holds every file it touched.
 
-**Both packages and this application therefore set `lib` to `["ES2022"]`**, which is the
+**All three packages and this application therefore set `lib` to `["ES2022"]`**, which is the
 newest edition Hermes implements whole, so reaching past it is a type error rather than a
 crash on a phone. The edition is the unit because TypeScript's is: Hermes has `findLast`, and
 `toReversed`, `toSpliced` and `with` arrived in 2024, but `toSorted` was split out of that

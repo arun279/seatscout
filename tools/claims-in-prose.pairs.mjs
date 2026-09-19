@@ -82,18 +82,19 @@ export const CLAIMS = [
   },
   {
     adr: "0003-separate-view-layers-shared-core.md",
-    says: /\*\*Both packages and this application therefore set `lib` to `\["ES2022"\]`\*\*/,
+    says: /\*\*All three packages and this application therefore set `lib` to `\["ES2022"\]`\*\*/,
     holds:
       "the projects that compile against the edition Hermes implements whole",
     pattern: '"lib": ["ES2022"]',
     paths: [
       "packages/core/tsconfig.json",
       "packages/client/tsconfig.json",
+      "packages/view-logic/tsconfig.json",
       "apps/native/tsconfig.json",
       "apps/web/tsconfig.json",
       "tools/footprint/tsconfig.json",
     ],
-    files: 3,
+    files: 4,
   },
   {
     adr: "0003-separate-view-layers-shared-core.md",
