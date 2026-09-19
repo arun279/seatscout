@@ -89,14 +89,19 @@ interface TypeRole {
 export type Role =
   | "marqueeHero"
   | "marqueeTitle"
+  | "marqueeVerdict"
   | "marqueeRow"
   | "sentenceStrong"
+  | "sentenceLead"
   | "sentence"
   | "sentenceSmall"
+  | "ledgerCount"
   | "ledgerField"
+  | "ledgerSeats"
   | "ledger"
   | "ledgerRow"
   | "ledgerLabel"
+  | "ledgerTag"
   | "ledgerBand";
 
 const TYPE: Readonly<Record<Role, TypeRole>> = {
@@ -116,6 +121,13 @@ const TYPE: Readonly<Record<Role, TypeRole>> = {
     transform: "uppercase",
     cap: 2,
   },
+  marqueeVerdict: {
+    family: DISPLAY,
+    size: 31,
+    tracking: 0.025,
+    leading: 1,
+    transform: "uppercase",
+  },
   marqueeRow: {
     family: DISPLAY,
     size: 19,
@@ -128,6 +140,13 @@ const TYPE: Readonly<Record<Role, TypeRole>> = {
     size: 19,
     tracking: 0,
     leading: 1.2,
+    transform: "none",
+  },
+  sentenceLead: {
+    family: BODY_BOLD,
+    size: 15,
+    tracking: 0.002,
+    leading: 1.25,
     transform: "none",
   },
   sentence: {
@@ -151,6 +170,20 @@ const TYPE: Readonly<Record<Role, TypeRole>> = {
     leading: 1.25,
     transform: "none",
   },
+  ledgerCount: {
+    family: MONO,
+    size: 21,
+    tracking: 0,
+    leading: 1.15,
+    transform: "none",
+  },
+  ledgerSeats: {
+    family: MONO,
+    size: 13,
+    tracking: 0.03,
+    leading: 1.3,
+    transform: "none",
+  },
   ledger: {
     family: MONO,
     size: 12.5,
@@ -169,6 +202,13 @@ const TYPE: Readonly<Record<Role, TypeRole>> = {
     family: MONO,
     size: 10.5,
     tracking: 0.18,
+    leading: 1.5,
+    transform: "uppercase",
+  },
+  ledgerTag: {
+    family: MONO,
+    size: 9.5,
+    tracking: 0.13,
     leading: 1.5,
     transform: "uppercase",
   },

@@ -1,5 +1,5 @@
 import { REFERENCE } from "@seatscout/client";
-import { describe, expect, it, jest } from "@jest/globals";
+import { beforeAll, describe, expect, it, jest } from "@jest/globals";
 import type { Term, Terms } from "@seatscout/view-logic";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
@@ -7,30 +7,50 @@ import {
   everyControlReachesTheTouchFloor,
   everyControlSaysWhatItIs,
 } from "../../test/floors.js";
-import { phone } from "../../test/phone.js";
+import { phone, type Upstream } from "../../test/phone.js";
+import {
+  NOW,
+  TODAY,
+  TONIGHT,
+  WARM_UP,
+  warmTheCorpus,
+} from "../../test/rooms.js";
+import type { Clock } from "../host/clock.js";
 import { Search } from "./search.js";
 
-const TODAY = "2026-09-19";
+const PROMPT_DAY = "2026-09-19";
 
-const SHORT: Terms = { date: TODAY, partySize: 2 };
+const SHORT: Terms = { date: PROMPT_DAY, partySize: 2 };
+
+const STILL: Clock = { now: () => NOW, subscribe: () => () => undefined };
+
+beforeAll(warmTheCorpus, WARM_UP);
 
 const showing = async (
   over: {
     readonly terms?: Terms;
+    readonly today?: string;
+    readonly online?: boolean;
+    readonly upstream?: Upstream;
     readonly remembered?: Parameters<typeof phone>[0];
     readonly onAsk?: (term: Term) => void;
     readonly onRun?: (terms: Terms) => void;
   } = {},
 ) => {
-  const carried = phone(over.remembered);
+  const carried = phone(over.remembered, over.upstream ?? {});
   await render(
     <Search
+      clock={STILL}
       onAsk={over.onAsk ?? (() => undefined)}
+      onHandOff={() => undefined}
+      onLedger={() => undefined}
+      online={over.online ?? true}
+      onRoom={() => undefined}
       onRun={over.onRun ?? (() => undefined)}
       profile={REFERENCE}
       seatscout={carried.seatscout}
       terms={over.terms ?? SHORT}
-      today={TODAY}
+      today={over.today ?? PROMPT_DAY}
     />,
   );
   return carried;
@@ -143,7 +163,7 @@ describe("what this phone remembers", () => {
       remembered: [
         {
           movie: "One Battle After Another",
-          date: TODAY,
+          date: PROMPT_DAY,
           area: "75201",
           partySize: 4,
         },
@@ -158,7 +178,7 @@ describe("what this phone remembers", () => {
 
     expect(ran).toHaveBeenCalledWith({
       movie: "One Battle After Another",
-      date: TODAY,
+      date: PROMPT_DAY,
       area: "75201",
       partySize: 4,
     });
@@ -176,5 +196,43 @@ describe("what a thumb can reach", () => {
     await showing();
 
     everyControlSaysWhatItIs();
+  });
+});
+
+describe("the face the Search screen wears", () => {
+  it("prompts for what is missing while the query cannot be run", async () => {
+    await showing();
+
+    expect(
+      screen.getByRole("button", { name: "Find seats" }),
+    ).toBeOnTheScreen();
+    expect(screen.queryByTestId("list")).toBeNull();
+  });
+
+  it("ranks Seat Groups instead once the query carries a film and an area", async () => {
+    await showing({
+      upstream: { script: {} },
+      terms: { ...TONIGHT, until: "19:20" },
+      today: TODAY,
+    });
+
+    expect(await screen.findByText("Best seats first")).toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: "Find seats" })).toBeNull();
+  });
+});
+
+describe("what the screen says when the phone is offline", () => {
+  it("says seats are never cached, once, wherever the query has got to", async () => {
+    await showing({ online: false });
+
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Offline. Seats are never cached, so nothing here is refreshed until the connection returns.",
+    );
+  });
+
+  it("says nothing of the kind on a connection", async () => {
+    await showing();
+
+    expect(screen.queryByRole("status")).toBeNull();
   });
 });

@@ -1,31 +1,61 @@
-import { afterEach, describe, expect, it, jest } from "@jest/globals";
+import {
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  jest,
+} from "@jest/globals";
 import { fireEvent, screen, within } from "@testing-library/react-native";
 import { renderRouter } from "expo-router/testing-library";
 import { StyleSheet } from "react-native";
 import { nearby as mockNearby, phone as mockPhone } from "../test/phone.js";
+import { WARM_UP, warmTheCorpus } from "../test/rooms.js";
 import Layout, { unstable_settings } from "./app/_layout.js";
 import Ask from "./app/ask.js";
+import HandOffRoute from "./app/hand-off.js";
 import Index from "./app/index.js";
+import LedgerRoute from "./app/ledger.js";
+import RoomRoute from "./app/room.js";
 
 const mockLoading = jest.fn<() => [boolean, Error | null]>(() => [true, null]);
 
 jest.mock("expo-font", () => ({ useFonts: () => mockLoading() }));
 
+jest.mock("expo-network", () => ({
+  useNetworkState: () => ({ isConnected: true, isInternetReachable: true }),
+}));
+
 jest.mock("./host/source.js", () => ({
   seatscout: mockPhone([], {
-    area: "75234",
-    date: "2026-09-19",
-    programme: {
-      theaters: mockNearby("aacbt", "Cinemark Dallas XD and IMAX"),
-      movies: [{ id: "23184", title: "Akira" }],
-      unreached: [],
+    script: {},
+    playing: {
+      area: "75234",
+      date: "2026-09-19",
+      programme: {
+        theaters: mockNearby("aacbt", "Cinemark Dallas XD and IMAX"),
+        movies: [{ id: "23184", title: "Akira" }],
+        unreached: [],
+      },
     },
   }).seatscout,
 }));
 
+const LISTED =
+  "/?movie=246427&date=2026-08-28&area=75006&partySize=2&from=19:00&until=19:20";
+
+beforeAll(warmTheCorpus, WARM_UP);
+
 const opened = (initialUrl = "/") =>
   renderRouter(
-    { _layout: { default: Layout, unstable_settings }, index: Index, ask: Ask },
+    {
+      _layout: { default: Layout, unstable_settings },
+      index: Index,
+      ask: Ask,
+      room: RoomRoute,
+      "hand-off": HandOffRoute,
+      ledger: LedgerRoute,
+    },
     { initialUrl },
   );
 
@@ -43,6 +73,13 @@ const commit = async () => {
       name: "Find seats",
     }),
   );
+};
+
+const ranked = async () => {
+  const app = opened(LISTED);
+  await app;
+  await screen.findByText("Best seats first");
+  return { at: () => app.getPathname() };
 };
 
 describe("the stack the app opens on", () => {
@@ -158,6 +195,46 @@ describe("the Query a search is", () => {
       await screen.findByRole("button", { name: "Near 75234" }),
     ).toBeOnTheScreen();
     expect(app.getSearchParams()).toMatchObject({ movie: "23184" });
+  });
+});
+
+describe("a deep link that carries a whole query", () => {
+  it("ranks Seat Groups on the root screen without Ask ever opening", async () => {
+    const listed = await ranked();
+
+    expect(listed.at()).toBe("/");
+    expect(screen.getAllByTestId("card").length).toBeGreaterThan(0);
+  });
+
+  it("pushes the room when a card's body is pressed", async () => {
+    const listed = await ranked();
+    const [body] = screen.getAllByTestId("body");
+    if (body === undefined) throw new Error("no card was drawn");
+
+    await fireEvent.press(body);
+    await screen.findByText("The room");
+
+    expect(listed.at()).toBe("/room");
+  });
+
+  it("presents the hand-off when a card's Seat label is pressed", async () => {
+    const listed = await ranked();
+    const [seats] = screen.getAllByTestId("seats");
+    if (seats === undefined) throw new Error("no Seat label was drawn");
+
+    await fireEvent.press(seats);
+    await screen.findByText("Taking the seats");
+
+    expect(listed.at()).toBe("/hand-off");
+  });
+
+  it("presents the ledger from the coverage strip above the list", async () => {
+    const listed = await ranked();
+
+    await fireEvent.press(screen.getByRole("button", { name: "ledger ›" }));
+    await screen.findByText("Every showtime, accounted for");
+
+    expect(listed.at()).toBe("/ledger");
   });
 });
 

@@ -2,7 +2,7 @@ import "./house.css";
 import "./coverage.css";
 import type { Coverage, Snapshot } from "@seatscout/client";
 import type { ReactElement } from "react";
-import { accountOf, clockOf } from "@seatscout/view-logic";
+import { accountOf, coverageOf, LEDGER, nameOf } from "@seatscout/view-logic";
 import { modal } from "./modal.js";
 
 type Named = Coverage["soldOut"][number];
@@ -26,22 +26,9 @@ interface Row {
   readonly unreached?: boolean;
 }
 
-export const nameOf = (showtime: Named) =>
-  `${showtime.presentation.theater.name} · ${clockOf(showtime.startsAt)}`;
-
-const stripText = (snapshot: Snapshot) => {
-  if (snapshot.phase === "resolving") return "Reading the listing";
-  if (snapshot.phase === "unreachable") return "Nothing was read";
-  const account = accountOf(snapshot.coverage);
-  const counts = `${account.candidates} candidates · ${account.checked} checked`;
-  return account.remaining > 0
-    ? `${counts} · ${account.remaining} to go`
-    : counts;
-};
-
 export const Strip = ({ snapshot, onLedger }: StripProps): ReactElement => (
   <div className="coverage-strip">
-    <p role="status">{stripText(snapshot)}</p>
+    <p role="status">{coverageOf(snapshot)}</p>
     {snapshot.phase !== "resolving" && snapshot.phase !== "unreachable" && (
       <button
         type="button"
@@ -49,7 +36,7 @@ export const Strip = ({ snapshot, onLedger }: StripProps): ReactElement => (
         aria-haspopup="dialog"
         onClick={onLedger}
       >
-        ledger ›
+        {LEDGER}
       </button>
     )}
   </div>

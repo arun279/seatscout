@@ -18,6 +18,7 @@ import {
   type HeldSnapshots,
   heldSnapshots,
   ledeOf,
+  OFFLINE,
   programmeNear,
   type Term,
   type Terms,
@@ -253,8 +254,7 @@ export const App = ({ terms, ...rest }: AppProps): ReactElement => {
     <main className="stage">
       {!online && (
         <p className="offline" role="status">
-          Offline. Seats are never cached, so nothing here is refreshed until
-          the connection returns.
+          {OFFLINE}
         </p>
       )}
       <div className="screen-band" aria-hidden="true">

@@ -1,3 +1,5 @@
+export const READS_AT = 4.5;
+
 const WEIGHTS = [0.2126, 0.7152, 0.0722];
 
 const channelAt = (hex: string, index: number) => {

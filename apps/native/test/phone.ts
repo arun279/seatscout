@@ -6,12 +6,21 @@ import {
   type SeatScout,
   type Theater,
 } from "@seatscout/client";
+import { fakeUpstream, type UpstreamScript } from "@seatscout/client/testing";
 import { termsOf } from "@seatscout/view-logic";
 
 export interface Playing {
   readonly area: string;
   readonly date: string;
   readonly programme: Programme;
+}
+
+export type Fetch = Parameters<typeof createSeatScout>[0]["fetch"];
+
+export interface Upstream {
+  readonly script?: Omit<UpstreamScript, "seed"> | undefined;
+  readonly through?: ((upstream: Fetch) => Fetch) | undefined;
+  readonly playing?: Playing | undefined;
 }
 
 export interface Phone {
@@ -46,22 +55,35 @@ const heldBy = (
   };
 };
 
+const reaching = (upstream: Upstream): Fetch => {
+  if (upstream.script === undefined)
+    return (url) => Promise.reject(new Error(`nothing should be read: ${url}`));
+  return fakeUpstream({
+    seed: 4,
+    standInAuditoriums: true,
+    standInTheaters: true,
+    ...upstream.script,
+  });
+};
+
 export const phone = (
   remembered: readonly RecentSearch[] = [],
-  playing?: Playing,
+  given: Upstream = {},
 ): Phone => {
   const reads: string[] = [];
+  const upstream = reaching(given);
+  const send = given.through === undefined ? upstream : given.through(upstream);
   return {
     reads,
     seatscout: createSeatScout({
-      fetch: (url) => {
+      fetch: (url, init) => {
         reads.push(url);
-        return Promise.reject(new Error(`nothing should be read: ${url}`));
+        return send(url, init);
       },
       now: () => NOW,
       wait: () => Promise.resolve(),
       random: () => 0,
-      store: heldBy(remembered, playing),
+      store: heldBy(remembered, given.playing),
     }),
   };
 };
