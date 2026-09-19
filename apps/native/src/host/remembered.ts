@@ -10,11 +10,11 @@ export const useRemembered = (
   const { movie, date, area, partySize } = terms;
 
   useEffect(() => {
-    const read =
+    void (
       movie === undefined || area === undefined
         ? seatscout.recent.remembered()
-        : seatscout.recent.remember({ movie, date, area, partySize });
-    void read.then(setRemembered);
+        : seatscout.recent.remember({ movie, date, area, partySize })
+    ).then(setRemembered);
   }, [seatscout, movie, date, area, partySize]);
 
   return remembered;

@@ -152,6 +152,12 @@ says about view layers. `apps/web/src/store.ts` is the Web Storage adapter for t
 Core may not reach for `localStorage`, and `packages/client` may not either. The web
 application's entry publishes it alongside the two start functions, and that entry is what the
 bundler is given and what the deployment therefore holds.
+`apps/native/src/host/store.ts` is the same seam filled for a phone, over AsyncStorage, and
+`src/host/source.ts` hands it to the client the way the web entry hands the other one over. It
+is one module rather than a `.native.ts` and `.web.ts` pair because the package it reads
+through is already the pair: at the version the SDK pins, that package resolves its own native
+module on a phone and a `window.localStorage` implementation everywhere else, so the Expo web
+build is served by the same import. A pair here would be two files saying one thing.
 
 `apps/web/src/terms.ts` is the address adapter for a browser, and `URLSearchParams` is the whole
 of it: a query string becomes the address's name and value pairs, and the pairs become a query

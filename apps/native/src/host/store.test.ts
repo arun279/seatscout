@@ -1,12 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  jest,
-} from "@jest/globals";
+import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { type CachedCatalogue, storeContract } from "@seatscout/client";
 import { deviceStore } from "./store.js";
 
@@ -27,12 +20,8 @@ beforeEach(async () => {
   await AsyncStorage.clear();
 });
 
-afterEach(() => {
-  jest.restoreAllMocks();
-});
-
 describe("the store this phone keeps", () => {
-  it("satisfies the store contract, and writes through to the phone's own storage", async () => {
+  it("satisfies the store contract, and what reaches the storage beneath it is the value as text", async () => {
     expect(await failing()).toEqual([]);
     expect(await AsyncStorage.getItem("written")).toBe(REMEMBERED_TEXT);
   });
@@ -46,7 +35,7 @@ describe("the store this phone keeps", () => {
   it("reads as absent where the storage refuses to answer at all", async () => {
     await deviceStore.write("refused", REMEMBERED);
     jest
-      .spyOn(AsyncStorage, "getItem")
+      .mocked(AsyncStorage.getItem)
       .mockRejectedValueOnce(new Error("the database is locked"));
 
     expect(await deviceStore.read("refused")).toBeUndefined();
@@ -55,7 +44,7 @@ describe("the store this phone keeps", () => {
   it("drops a write the storage refuses and keeps answering", async () => {
     await deviceStore.write("held", REMEMBERED);
     jest
-      .spyOn(AsyncStorage, "setItem")
+      .mocked(AsyncStorage.setItem)
       .mockRejectedValueOnce(new Error("the disk is full"));
     await deviceStore.write("held", { ...REMEMBERED, fetchedAt: 2 });
 

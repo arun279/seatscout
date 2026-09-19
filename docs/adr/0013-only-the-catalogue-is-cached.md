@@ -103,16 +103,30 @@ like, is dropped rather than raised, because a write that did not land is a miss
 costs one request. A value that comes back as something other than what was written reads as
 absent for the same reason.
 
-**The store's contract is part of the package's surface, and it runs twice.** `storeContract`
-ships with `packages/client` rather than with its tests, because an adapter author is who needs
-it and the native adapter is who needs it next. Each clause answers with what the store did
-wrong, or with nothing. One of them is why the in-memory store serialises rather than holding
-the object it was given: a store hands back its own value, so a test double that hands back the
-caller's object would let a caller mutate what another caller is about to read, and would pass
-in Node what fails in a browser. The in-memory store runs the clauses under vitest; the browser
+**A phone's storage refuses in its own ways and is answered in the same two.**
+`apps/native/src/host/store.ts` is the adapter over AsyncStorage, which the Expo SDK pins and
+Expo Go bundles. A read the storage rejects and a value it no longer holds whole both read as
+absent, and a write it refuses is dropped, which is the paragraph above applied to a different
+store. **What it deliberately does not carry is the fallback to memory.** Reaching Web Storage
+can refuse before a key is ever named, and the fallback is what that one moment buys; a library
+reached as a module has no such moment and answers every call with a promise, so there is
+nothing to attempt once and nothing to decide from. A phone whose storage refused every call
+would therefore remember nothing rather than remember it until the app closes, which costs a
+request per miss and nothing else, and on a phone that case needs the native module to be
+missing, which is a crash at import rather than a store to fall back from.
+
+**The store's contract is part of the package's surface, and every adapter runs it.**
+`storeContract` ships with `packages/client` rather than with its tests, because an adapter
+author is who needs it. Each clause answers with what the store did wrong, or with nothing. One
+of them is why the in-memory store serialises rather than holding the object it was given: a
+store hands back its own value, so a test double that hands back the caller's object would let
+a caller mutate what another caller is about to read, and would pass in Node what fails in a
+browser. The in-memory store runs the clauses under vitest; the browser
 adapter runs the same clauses in a real browser, from a page that serves the built contract
 module and the built web bundle from one origin and renders each clause's verdict, which is
-also what makes a headed run readable by a person. A clause writes one of each shape the union
+also what makes a headed run readable by a person; the native adapter runs them under Jest
+against the storage library's own mock, with the module that really writes to the phone held by
+the headed pass a native change already owes. A clause writes one of each shape the union
 admits and reads it back, so an adapter that can hold a catalogue and not a Profile fails the
 contract rather than a screen. A contract that passes only in Node proves
 nothing about the adapter that ships, and because the mutation gate runs vitest and not
