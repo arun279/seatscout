@@ -36,7 +36,7 @@ Then scan this, with Expo Go on Android and with the camera on the iPhone:
 Or paste the address itself into Expo Go:
 
 ```text
-exp://u.expo.dev/bd0a1be7-8d02-4cd8-9a1b-d0431c52d495?channel-name=preview&runtime-version=exposdk:57.0.0
+exp://u.expo.dev/bd0a1be7-8d02-4cd8-9a1b-d0431c52d495?runtime-version=exposdk%3A57.0.0&channel-name=preview
 ```
 
 Neither of those changes when an update is published, so they are worth keeping. Each run of
