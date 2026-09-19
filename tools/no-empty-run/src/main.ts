@@ -27,6 +27,13 @@ export const main = (
   }
 
   const path = given ?? kind.report;
+  if (path === undefined) {
+    err.write(
+      `${named} writes a report for each run of it, so name the one to read.\n`,
+    );
+    return 1;
+  }
+
   const text = read(path);
   if (text === null) {
     err.write(kind.missing(path));

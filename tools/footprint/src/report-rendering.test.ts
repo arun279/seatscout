@@ -100,22 +100,23 @@ mutant alive.
 
 ### Mutation
 
-Stryker's own score over the runs that wrote the reports, each held to the threshold named
-in its own report rather than to one restated here. A run that weighed no mutant is refused
-instead of scored, because such a run scores NaN and NaN is never below a threshold. Two
-runners share the work: Vitest judges everything that runs in Node, and Jest judges the
-Expo app, which Vitest cannot render. Both runs are incremental: they start from what the
-run on \`main\` last judged, and from this branch's own last run after that. Nothing
-cross-checks the two, so a verdict reused here is one that run reached rather than one
-reached again.
+One run for each workspace, on a runner of its own, mutating that workspace and running only
+that workspace's own tests, so a mutant is killed by the tests that own it or by nothing at
+all. Each run is held to the threshold named in its own report rather than to one restated
+here, and a run that weighed no mutant is refused instead of scored, because such a run
+scores NaN and NaN is never below a threshold. Vitest judges everything that runs in Node
+and Jest judges the Expo app, which Vitest cannot render. Every run is incremental: it
+starts from what the run on \`main\` last judged of that workspace, and from this branch's
+own last run after that. Nothing cross-checks a reused verdict, so it is one that run
+reached rather than one reached again.
 
-| Run | Score | Detected | Weighed | Break |
+| Workspace | Score | Detected | Weighed | Break |
 | --- | ---: | ---: | ---: | ---: |
-| The engine, the packages and the tools, by Vitest | 100.00 | 2174 | 2174 | 100 |
-| The Expo app, by Jest | 100.00 | 180 | 180 | 100 |
+| packages/core | 100.00 | 2174 | 2174 | 100 |
+| apps/native | 100.00 | 180 | 180 | 100 |
 
-The engine, the packages and the tools, by Vitest: the score may not fall below the threshold, which is 100. At or above it.
-The Expo app, by Jest: the score may not fall below the threshold, which is 100. At or above it.
+packages/core: the score may not fall below the threshold, which is 100. At or above it.
+apps/native: the score may not fall below the threshold, which is 100. At or above it.
 `;
 
 const MEASURED: Measurement = {

@@ -46,18 +46,19 @@ describe("counting what a mutation run weighed", () => {
 
 describe("what the mutation guard says", () => {
   it("names the report, why the run passed its own gate, and what counts", () => {
-    expect(MUTATION.refusal("reports/mutation/mutation.json")).toBe(
-      "reports/mutation/mutation.json records a run that weighed no mutant.\n\n" +
+    expect(MUTATION.refusal("reports/mutation/core.json")).toBe(
+      "reports/mutation/core.json records a run that weighed no mutant.\n\n" +
         "Stryker scores such a run as NaN and breaks on score < threshold, so it passes its\n" +
         "own gate. A mutation score is a verdict over the mutants it weighed, and there were\n" +
-        "none: the mutate glob in stryker.config.json reaches no source, or every mutant was\n" +
-        "ignored or failed to compile. Killed, Survived, NoCoverage, Timeout are the statuses that count.\n",
+        "none: this shard's mutate glob in stryker.shards.json reaches no source, or every\n" +
+        "mutant was ignored or failed to compile.\n" +
+        "Killed, Survived, NoCoverage, Timeout are the statuses that count.\n",
     );
   });
 
-  it("says where the report should have been when there is none", () => {
-    expect(MUTATION.missing("reports/mutation/mutation.json")).toContain(
-      "does not exist, so the mutation run wrote no report",
+  it("calls a shard that left no report a verdict rather than an omission", () => {
+    expect(MUTATION.missing("reports/mutation/core.json")).toContain(
+      "does not exist, so the shard that writes it judged nothing",
     );
   });
 });

@@ -876,9 +876,11 @@ The mutation gate has the same shape one tool along, and takes the same answer. 
 computes its score as mutants detected over mutants valid, scores `NaN` when none was valid,
 and breaks on `score < threshold`, which `NaN` never satisfies: a run that weighed no mutant
 logs a score of `NaN`, calls it greater than or equal to a break threshold of 100, and exits
-zero. `pnpm test:mutation` therefore runs the gate and then a guard over the JSON report it
-wrote, which fails when no mutant in that report carries one of the four statuses the score
-counts. That is not a floor on how many mutants a run must weigh, which would be a number
+zero. `pnpm test:mutation` therefore runs the gate and then a guard over the JSON report each
+shard wrote, and the `footprint` job runs the same guard over every shard's report, so a shard
+that left none is refused rather than quietly left out of the score. The guard fails when no
+mutant in a report carries one of the four statuses the score counts. That is not a floor on
+how many mutants a run must weigh, which would be a number
 this project invented. It is the difference between a measurement and none, which is what a
 pass already claims.
 

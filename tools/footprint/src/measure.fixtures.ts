@@ -1,6 +1,6 @@
 import { BIOME, OXLINT } from "./limits.js";
 import type { Measure } from "./main.js";
-import { measureWith, RATCHET, STRYKER } from "./measure.js";
+import { measureWith, RATCHET, SHARDS } from "./measure.js";
 import type { Completed, Run } from "./shell.js";
 
 export interface Command {
@@ -8,7 +8,7 @@ export interface Command {
   readonly args: readonly string[];
 }
 
-export const MUTATION_REPORT = "reports/mutation/mutation.json";
+export const CORE_MUTATION_REPORT = "reports/mutation/core.json";
 export const NATIVE_MUTATION_REPORT = "reports/mutation/native.json";
 
 const OXLINT_OUTPUT = JSON.stringify({
@@ -122,11 +122,21 @@ const FILES: Record<string, string> = {
       },
     },
   }),
-  [STRYKER]: JSON.stringify({ jsonReporter: { fileName: MUTATION_REPORT } }),
-  [MUTATION_REPORT]: MUTATION_OUTPUT,
-  ["stryker.native.config.json"]: JSON.stringify({
-    jsonReporter: { fileName: NATIVE_MUTATION_REPORT },
-  }),
+  [SHARDS]: JSON.stringify([
+    {
+      id: "core",
+      workspace: "packages/core",
+      runner: "vitest",
+      report: CORE_MUTATION_REPORT,
+    },
+    {
+      id: "native",
+      workspace: "apps/native",
+      runner: "jest",
+      report: NATIVE_MUTATION_REPORT,
+    },
+  ]),
+  [CORE_MUTATION_REPORT]: MUTATION_OUTPUT,
   [NATIVE_MUTATION_REPORT]: MUTATION_OUTPUT,
 };
 

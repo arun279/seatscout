@@ -1,0 +1,51 @@
+[
+  {
+    "id": "core",
+    "workspace": "packages/core",
+    "runner": "vitest",
+    "mutate": ["packages/core/src/**/*.{ts,tsx}"],
+    "report": "reports/mutation/core.json"
+  },
+  {
+    "id": "client",
+    "workspace": "packages/client",
+    "runner": "vitest",
+    "mutate": ["packages/client/src/**/*.{ts,tsx}"],
+    "report": "reports/mutation/client.json"
+  },
+  {
+    "id": "view-logic",
+    "workspace": "packages/view-logic",
+    "runner": "vitest",
+    "mutate": ["packages/view-logic/src/**/*.{ts,tsx}"],
+    "report": "reports/mutation/view-logic.json"
+  },
+  {
+    "id": "web",
+    "workspace": "apps/web",
+    "runner": "vitest",
+    "mutate": ["apps/web/src/**/*.{ts,tsx}"],
+    "report": "reports/mutation/web.json"
+  },
+  {
+    "id": "proxy",
+    "workspace": "apps/proxy",
+    "runner": "vitest",
+    "mutate": ["apps/proxy/src/**/*.{ts,tsx}"],
+    "report": "reports/mutation/proxy.json"
+  },
+  {
+    "id": "tools",
+    "workspace": "tools",
+    "runner": "vitest",
+    "mutate": ["tools/*/src/**/*.{ts,tsx}"],
+    "report": "reports/mutation/tools.json"
+  },
+  {
+    "id": "native",
+    "workspace": "apps/native",
+    "runner": "jest",
+    "mutate": ["apps/native/src/**/*.{ts,tsx}"],
+    "report": "reports/mutation/native.json"
+  }
+]
