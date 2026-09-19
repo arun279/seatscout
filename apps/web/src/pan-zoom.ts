@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Dispatch, PointerEvent, SetStateAction } from "react";
 import {
   type Box,
+  type Cursor,
   FITTED,
   mostZoomFor,
   panned,
@@ -12,8 +13,7 @@ import {
   transformOf,
   type View,
   zoomed,
-} from "./gesture.js";
-import type { Cursor } from "./traversal.js";
+} from "@seatscout/view-logic";
 
 export interface Frame extends Box {
   readonly seatWidth: number;

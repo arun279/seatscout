@@ -1,8 +1,7 @@
 import { act, fireEvent, screen, within } from "@testing-library/react";
 import { staged } from "./search.fixtures.js";
 import type { QueryScreen, Stage } from "./search.fixtures.js";
-import { roomRoutes } from "./rooms.fixtures.js";
-import type { CapturedRoom } from "./rooms.fixtures.js";
+import { type CapturedRoom, roomRoutes } from "@seatscout/view-logic/testing";
 
 export const nameOf = (element: Element): string | null =>
   element.getAttribute("aria-label");

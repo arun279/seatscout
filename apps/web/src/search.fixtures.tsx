@@ -15,8 +15,7 @@ import type { BoundFunctions, queries } from "@testing-library/react";
 import { Profiler, useState } from "react";
 import { App } from "./app.js";
 import type { AppProps, Clock } from "./app.js";
-import type { ProgrammeState } from "./programme.js";
-import type { Terms } from "./terms.js";
+import type { ProgrammeState, Terms } from "@seatscout/view-logic";
 import { TODAY, TONIGHT } from "./terms.fixtures.js";
 
 export {

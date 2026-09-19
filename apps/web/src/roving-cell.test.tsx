@@ -6,7 +6,7 @@ import {
   LAKE_HIGHLANDS_1,
   VILLAGE_1,
   WEST_PLANO_28,
-} from "./rooms.fixtures.js";
+} from "@seatscout/view-logic/testing";
 
 describe("the roving cell under the keys the room binds", () => {
   afterEach(cleanup);

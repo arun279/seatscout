@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { REFERENCE } from "@seatscout/client";
 import { askedFrom } from "./asked.js";
 import { termsFrom } from "./terms.js";
-import { EVERY_TERM, TODAY } from "./terms.fixtures.js";
+import { EVERY_PARAMETER, TODAY } from "./terms.fixtures.js";
 
 describe("the search a query becomes", () => {
   it("becomes a search once it names a Movie and an area, and not before", () => {
@@ -33,7 +33,7 @@ describe("the search a query becomes", () => {
   });
 
   it("becomes a search carrying every term, with the window on the date and no term where none was asked", () => {
-    expect(askedFrom(termsFrom(EVERY_TERM, TODAY), REFERENCE)).toEqual({
+    expect(askedFrom(termsFrom(EVERY_PARAMETER, TODAY), REFERENCE)).toEqual({
       movie: "245569",
       date: "2026-08-28",
       area: "75006",

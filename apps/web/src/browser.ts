@@ -1,6 +1,6 @@
 import { createSeatScout, type SeatScout } from "@seatscout/client";
 import type { Checkout, Clock } from "./app.js";
-import { signal } from "./signal.js";
+import { signal } from "@seatscout/view-logic";
 import { browserStore } from "./store.js";
 
 const TICK_MS = 1000;

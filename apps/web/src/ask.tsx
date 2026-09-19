@@ -13,10 +13,16 @@ import { Chips, TheaterChips } from "./ask-chips.js";
 import { Film } from "./ask-film.js";
 import { modal } from "./modal.js";
 import { Profile } from "./profile.js";
-import { type HeldProgramme, movieOf, titleOf } from "./programme.js";
+import {
+  type HeldProgramme,
+  movieOf,
+  type Term,
+  type Terms,
+  termsOf,
+  titleOf,
+  windowIn,
+} from "@seatscout/view-logic";
 import { Recent } from "./recent.js";
-import { type Terms, termsOf, windowIn } from "./terms.js";
-import type { Term } from "./title-card-terms.js";
 
 interface AskProps {
   readonly terms: Terms;
@@ -169,7 +175,7 @@ export const Ask = ({
           event.preventDefault();
           onFind(
             termsOf(
-              { ...draft, movie: movieOf(film, playing.movies) ?? null },
+              { ...draft, movie: movieOf(film, playing.movies) },
               terms.date,
             ),
             profile,

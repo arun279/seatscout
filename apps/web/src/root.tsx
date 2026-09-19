@@ -3,8 +3,8 @@ import type { ReactElement } from "react";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { App, type Checkout, type Clock } from "./app.js";
 import type { Address } from "./browser.js";
-import { twoDigits } from "./phrases.js";
-import { queryOf, type Terms, termsFrom } from "./terms.js";
+import { type Terms, twoDigits } from "@seatscout/view-logic";
+import { queryOf, termsIn } from "./terms.js";
 
 export interface Remembered {
   readonly profile: SeatProfile;
@@ -45,10 +45,10 @@ export const Root = ({
   const today = localDate(useSyncExternalStore(clock.subscribe, clock.now));
   const [profile, setProfile] = useState(remembered.profile);
   const [recent, setRecent] = useState(remembered.recent);
-  const terms = termsFrom(query, today);
+  const terms = termsIn(query, today);
 
   useEffect(() => {
-    const { movie, date, area, partySize } = termsFrom(query, today);
+    const { movie, date, area, partySize } = termsIn(query, today);
     if (movie === undefined || area === undefined) return;
     void seatscout.recent
       .remember({ movie, date, area, partySize })

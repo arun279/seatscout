@@ -44,6 +44,6 @@ const soonest = (left: SeatGroupResult, right: SeatGroupResult) =>
 export const listed = (
   results: readonly SeatGroupResult[],
 ): readonly SeatGroupResult[] => [
-  ...results.filter(tied).toSorted(soonest),
+  ...results.filter(tied).sort(soonest),
   ...results.filter((result) => !tied(result)),
 ];

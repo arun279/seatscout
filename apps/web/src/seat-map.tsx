@@ -7,9 +7,16 @@ import type {
 } from "@seatscout/client";
 import type { ReactElement } from "react";
 import { type KeyboardEvent, type ReactNode, useState } from "react";
-import { gridLabelOf, seatNameOf } from "./auditorium-phrases.js";
+import {
+  type Cursor,
+  gridLabelOf,
+  isMove,
+  moved,
+  type Place,
+  placed,
+  seatNameOf,
+} from "@seatscout/view-logic";
 import { type Frame, usePanZoom } from "./pan-zoom.js";
-import { type Cursor, isMove, moved, type Place, placed } from "./traversal.js";
 
 interface SeatMapProps {
   readonly auditorium: Auditorium;

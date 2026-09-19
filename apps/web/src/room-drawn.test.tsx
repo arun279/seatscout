@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { cleanup } from "@testing-library/react";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { opened } from "./auditorium.fixtures.js";
-import { WEST_PLANO_28 } from "./rooms.fixtures.js";
+import { WEST_PLANO_28 } from "@seatscout/view-logic/testing";
 
 const SOURCE = "apps/web/src";
 const SHEET = /^import "\.\/([\w-]+\.css)";$/gm;

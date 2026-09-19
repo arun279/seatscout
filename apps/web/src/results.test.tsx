@@ -19,8 +19,7 @@ import {
   TODAY,
   TONIGHT,
 } from "./search.fixtures.js";
-import type { HeldSnapshots } from "./held.js";
-import { clockOf, labelOf } from "./phrases.js";
+import { clockOf, type HeldSnapshots, labelOf } from "@seatscout/view-logic";
 import { Results } from "./results.js";
 import { drawn } from "./stylesheet.fixtures.js";
 

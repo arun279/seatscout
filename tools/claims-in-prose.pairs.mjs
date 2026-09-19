@@ -240,7 +240,7 @@ export const CLAIMS = [
     says: /The query lives in the address as `movie`, `date`, `area`, `partySize`, `chain`/,
     holds: "the module that reads a query out of the address",
     pattern: "partySize",
-    paths: ["apps/web/src/terms.ts"],
+    paths: ["packages/view-logic/src/terms.ts"],
     files: 1,
   },
   ...GATE_CLAIMS,

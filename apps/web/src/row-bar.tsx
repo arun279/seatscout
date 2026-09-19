@@ -1,7 +1,7 @@
 import "./auditorium.css";
 import type { AuditoriumMap, SeatRow } from "@seatscout/client";
 import type { ReactElement } from "react";
-import { rowTextOf } from "./auditorium-phrases.js";
+import { rowTextOf } from "@seatscout/view-logic";
 
 interface RowBarProps {
   readonly row: SeatRow;

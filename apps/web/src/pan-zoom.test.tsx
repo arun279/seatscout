@@ -12,7 +12,7 @@ import {
   viewOf,
   wrapper,
 } from "./pan-zoom.fixtures.js";
-import { WEST_PLANO_28 } from "./rooms.fixtures.js";
+import { WEST_PLANO_28 } from "@seatscout/view-logic/testing";
 
 describe("panning and zooming the drawn room", () => {
   beforeEach(() => {

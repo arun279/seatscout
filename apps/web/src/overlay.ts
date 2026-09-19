@@ -1,7 +1,6 @@
 import type { Search, SeatGroupResult } from "@seatscout/client";
 import { useState } from "react";
-import type { HeldSnapshots } from "./held.js";
-import type { Term } from "./title-card-terms.js";
+import type { HeldSnapshots, Term } from "@seatscout/view-logic";
 
 export type Overlay =
   | { readonly kind: "ask"; readonly focus: Term }

@@ -5,6 +5,8 @@
     { "path": "packages/core/tsconfig.test.json" },
     { "path": "packages/client" },
     { "path": "packages/client/tsconfig.test.json" },
+    { "path": "packages/view-logic" },
+    { "path": "packages/view-logic/tsconfig.test.json" },
     { "path": "apps/native" },
     { "path": "apps/web" },
     { "path": "apps/web/tsconfig.test.json" },

@@ -3,10 +3,14 @@ import "./results.css";
 import type { Snapshot } from "@seatscout/client";
 import type { ReactElement } from "react";
 import { nameOf } from "./coverage.js";
-import { accountOf, unreachedIn } from "./derived.js";
-import { noneOf, wordOf } from "./phrases.js";
-import type { Terms } from "./terms.js";
-import type { Term } from "./title-card-terms.js";
+import {
+  accountOf,
+  noneOf,
+  type Term,
+  type Terms,
+  unreachedIn,
+  wordOf,
+} from "@seatscout/view-logic";
 
 interface RemedyProps {
   readonly onRetry: () => void;

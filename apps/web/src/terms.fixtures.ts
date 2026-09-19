@@ -1,4 +1,5 @@
-import { type Terms, termsFrom } from "./terms.js";
+import { termsIn } from "./terms.js";
+import type { Terms } from "@seatscout/view-logic";
 
 export const TODAY = "2026-08-28";
 
@@ -12,10 +13,10 @@ export const TONIGHT = {
   partySize: 2,
 } as const;
 
-export const everything = (): Terms => termsFrom(EVERY_TERM, TODAY);
+export const everything = (): Terms => termsIn(EVERY_TERM, TODAY);
 
 const theatersOf = (query: string) => {
-  const { theaters } = termsFrom(query, TODAY);
+  const { theaters } = termsIn(query, TODAY);
   return theaters === undefined ? {} : { theaters };
 };
 

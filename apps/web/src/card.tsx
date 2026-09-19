@@ -1,7 +1,13 @@
 import "./results.css";
 import type { SeatGroupResult } from "@seatscout/client";
 import type { ReactElement } from "react";
-import { ageOf, clockOf, labelOf, spokenOf, whyOf } from "./phrases.js";
+import {
+  ageOf,
+  clockOf,
+  labelOf,
+  spokenOf,
+  whyOf,
+} from "@seatscout/view-logic";
 import { RoomPlan } from "./room-plan.js";
 
 interface CardProps {
