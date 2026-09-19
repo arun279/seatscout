@@ -21,15 +21,27 @@ Early development. Not yet usable.
 
 The app runs on a phone through [Expo Go](https://expo.dev/go). It opens a published update
 rather than a development server, so it needs nothing running anywhere and works wherever the
-phone has a network. Every merge to `main` that changes the app, or a package it bundles,
+phone has a network. Every merge to `main` that changes the app, or anything under `packages/`,
 publishes to the `preview` channel, and the phone opens whichever update is newest there.
 
-Install Expo Go for Expo SDK 57 and sign in to it with the Expo account that owns the project.
-Expo's note on SDK 57 says Expo Go asks to be signed in before it opens a project, and being
-signed in is also what lists the project on Expo Go's Home tab, so the QR code stops being the
-only way in.
+Expo Go carries one SDK, and it has to be the one this project is on, which is SDK 57. Sign in
+to Expo Go with the Expo account that owns the project: Expo's own note on SDK 57 says Expo Go
+asks to be signed in before it opens a project, and being signed in also lists the project on
+its Home tab, which is a second way in when no code is to hand.
 
-Then scan this, with Expo Go on Android and with the camera on the iPhone:
+**Android.** Install Expo Go from the Play Store, or take the SDK 57 build from
+<https://expo.dev/go> when the store one is behind. Open it, sign in, and scan the code below
+from its Home tab. An open report upstream,
+[expo/expo#50139](https://github.com/expo/expo/issues/50139), has Expo Go on Android refusing
+every SDK 57 update with `Failed to download remote update` while the same update loads on
+iOS. If that is what the phone says, it is that and not this repository.
+
+**iPhone.** Install Expo Go for SDK 57 the same way. When the App Store build is behind,
+`npx eas-cli@latest go` builds Expo Go against your own Apple developer account and submits it
+to your TestFlight, a one-off that repeats only at the next SDK. Sign in, then point the camera
+at the code below and open what it offers.
+
+The code:
 
 <https://qr.expo.dev/eas-update?projectId=bd0a1be7-8d02-4cd8-9a1b-d0431c52d495&runtimeVersion=exposdk:57.0.0&channel=preview>
 
@@ -39,8 +51,10 @@ Or paste the address itself into Expo Go:
 exp://u.expo.dev/bd0a1be7-8d02-4cd8-9a1b-d0431c52d495?runtime-version=exposdk%3A57.0.0&channel-name=preview
 ```
 
-Neither of those changes when an update is published, so they are worth keeping. Each run of
-the publish also prints them in its own summary.
+Both addresses name the SDK, so both of them move when `apps/native` moves to a new Expo SDK,
+and `pnpm claims` refuses the pair until they agree. Neither changes when an update is
+published, so they are worth keeping. Each run of the publish prints them again in its own
+summary.
 
 ## What makes it different
 

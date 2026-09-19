@@ -42,7 +42,7 @@ jobs:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
           if [ -z "$EXPO_TOKEN" ]; then
-            echo "::error::This repository holds no EXPO_TOKEN, so the phones cannot be sent the app. README.md says which account it has to come from."
+            echo "::error::This repository holds no EXPO_TOKEN, so the phones cannot be sent the app. CONTRIBUTING.md says where it comes from."
             exit 1
           fi
           if ! npx --yes "$EAS_CLI" whoami; then
@@ -57,9 +57,11 @@ jobs:
         run: |
           npx --yes "$EAS_CLI" update --channel "$CHANNEL" --environment preview \
             --message "$(git log -1 --pretty=%s)" --json > "$RUNNER_TEMP/update.json"
+          project="$(jq -er .expo.extra.eas.projectId app.json)"
+          runtime="$(jq -er 'first(.[].runtimeVersion)' "$RUNNER_TEMP/update.json")"
           {
-            echo "project=$(jq -r .expo.extra.eas.projectId app.json)"
-            echo "runtime=$(jq -r 'first(.[].runtimeVersion)' "$RUNNER_TEMP/update.json")"
+            echo "project=$project"
+            echo "runtime=$runtime"
           } >> "$GITHUB_OUTPUT"
       - name: Say where to scan it
         env:

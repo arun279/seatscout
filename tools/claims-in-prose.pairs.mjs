@@ -260,5 +260,13 @@ export const CLAIMS = [
     paths: ["packages/view-logic/src/terms.ts"],
     files: 1,
   },
+  {
+    adr: "README.md",
+    says: /Both addresses name the SDK, so both of them move when `apps\/native` moves to a new Expo SDK/,
+    holds: "the manifest holding the Expo SDK the phone's addresses name",
+    pattern: '"expo": "57.',
+    paths: ["apps/native/package.json"],
+    files: 1,
+  },
   ...GATE_CLAIMS,
 ];
