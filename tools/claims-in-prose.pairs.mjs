@@ -3,7 +3,8 @@ import { GATE_CLAIMS } from "./claims-in-prose.pairs.gates.mjs";
 const BIOME = "biome.json";
 const PRODUCT = ["packages", ":!*.test.ts", ":!*.fixtures.ts"];
 const PROXY = "apps/proxy/src/index.ts";
-const STRYKER = "stryker.config.json";
+const STRYKER = "stryker.config.mjs";
+const SHARDS = "stryker.shards.json";
 const SOURCES = ["*.ts", "*.tsx"];
 const CORPUS = "packages/core/src/corpus";
 
@@ -191,17 +192,17 @@ export const CLAIMS = [
   {
     adr: "0012-every-mutant-must-die.md",
     says: /\*\*Nothing is carved out, and it takes two runners to say so\.\*\*/,
-    holds: "the directory the run in Node leaves to the other runner",
-    pattern: "!apps/native/src",
-    paths: [STRYKER],
+    holds: "the shard that takes the directory Vitest cannot render",
+    pattern: '"runner": "jest"',
+    paths: [SHARDS],
     files: 1,
   },
   {
     adr: "0012-every-mutant-must-die.md",
     says: /sets `coverageAnalysis` to `off`/,
-    holds: "the runner configuration that takes the Expo app",
-    pattern: '"coverageAnalysis": "off"',
-    paths: ["stryker.native.config.json"],
+    holds: "the runner settings that take the Expo app",
+    pattern: 'coverageAnalysis: "off"',
+    paths: [STRYKER],
     files: 1,
   },
   {
