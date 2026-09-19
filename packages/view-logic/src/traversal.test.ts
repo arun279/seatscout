@@ -223,4 +223,33 @@ describe("the keyboard model over the five captured rooms", () => {
       "D8",
     ]);
   });
+
+  it("binds the eight keys that move the cursor, and leaves every other key alone", () => {
+    const pressed = [
+      "a",
+      "ArrowRight",
+      "ArrowLeft",
+      "Enter",
+      "ArrowDown",
+      "ArrowUp",
+      "Escape",
+      "Home",
+      "End",
+      "Tab",
+      "PageUp",
+      "PageDown",
+      " ",
+    ];
+
+    expect(pressed.filter(isMove)).toEqual([
+      "ArrowRight",
+      "ArrowLeft",
+      "ArrowDown",
+      "ArrowUp",
+      "Home",
+      "End",
+      "PageUp",
+      "PageDown",
+    ]);
+  });
 });

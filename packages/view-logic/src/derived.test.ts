@@ -5,7 +5,13 @@ import {
 } from "@seatscout/client";
 import { fakeUpstream } from "@seatscout/client/testing";
 import { describe, expect, it } from "vitest";
-import { accountOf, listed, tiedIn, unreachedIn } from "./derived.js";
+import {
+  accountOf,
+  beingReadIn,
+  listed,
+  tiedIn,
+  unreachedIn,
+} from "./derived.js";
 
 const searched = () =>
   createSeatScout({
@@ -86,5 +92,33 @@ describe("what the screen derives from a snapshot", () => {
       first.showtime.id,
       first.showtime.id,
     ]);
+  });
+
+  it("counts the seat maps being read as the remainder still to come, and as the ones being retried once nothing else is to come", async () => {
+    const settled = await searched();
+    const [showtime] = settled.coverage.failed;
+    if (showtime === undefined) throw new Error("no room failed");
+    const named = {
+      started: [],
+      noSeatMap: repeated(showtime, 3),
+      soldOut: repeated(showtime, 1),
+      salesOff: [],
+      unidentified: [],
+    };
+    const stillToCome: Coverage = {
+      ...named,
+      candidates: 176,
+      checked: 170,
+      failed: [],
+    };
+    const retrying: Coverage = {
+      ...named,
+      candidates: 176,
+      checked: 169,
+      failed: repeated(showtime, 3),
+    };
+
+    expect(beingReadIn({ ...settled, coverage: stillToCome })).toBe(2);
+    expect(beingReadIn({ ...settled, coverage: retrying })).toBe(3);
   });
 });
