@@ -1,0 +1,24 @@
+export const pick = (at: number): string => {
+  switch (at) {
+    case 1:
+      return "row 1";
+    case 2:
+      return "row 2";
+    case 3:
+      return "row 3";
+    case 4:
+      return "row 4";
+    case 5:
+      return "row 5";
+    case 6:
+      return "row 6";
+    case 7:
+      return "row 7";
+    case 8:
+      return "row 8";
+    case 9:
+      return "row 9";
+    default:
+      return "no row";
+  }
+};

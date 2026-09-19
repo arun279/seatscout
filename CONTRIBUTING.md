@@ -113,8 +113,10 @@ Each of these has one way through and no exemption to grant.
 - **A count stated in prose, or a claim a record makes about this repository.** Correct the
   sentence or correct the tree, then follow the sentence into
   `tools/counts-in-prose/claims.ts` or `tools/claims-in-prose.pairs.mjs`, where every pair is
-  declared. A new ADR fails `pnpm claims` until it is paired in the second of those or
-  recorded in `tools/claims-in-prose.unchecked.mjs` as carrying no claim a search can hold.
+  declared; the sentences ADR 6 makes about a gate's globs and thresholds are in
+  `tools/claims-in-prose.pairs.gates.mjs` beside it. A new ADR fails `pnpm claims` until it is
+  paired in one of the last two or recorded in `tools/claims-in-prose.unchecked.mjs` as
+  carrying no claim a search can hold.
 - **A word the spell check does not know.** Put it in the `words` list in `cspell.json`. The
   `flagWords` list beside it is the opposite and has no remedy; ADR 8 says what it refuses and
   why.
@@ -215,6 +217,14 @@ the reason that record gives.
 Keep a hot test's work under Vitest's default timeout with room to spare. The dry run makes
 a test slower by an amount that depends on files it never touches, so a dry-run timeout on a
 test nobody edited means the test's work has to be divided rather than the timeout raised.
+
+A rule is only a gate while it still refuses something, so each one is watched refusing a
+fixture. `tools/planted-red` copies the fixtures under `tools/planted-red/planted` into a
+git-ignored directory and runs Biome, oxlint, the compiler, jscpd and size-limit over them,
+reading each tool's own diagnostic rather than its exit status. Loosening a rule in
+`biome.json`, `.oxlintrc.json`, `.jscpd.json`, `.size-limit.json` or `tsconfig.base.json`
+therefore fails the unit suite instead of passing quietly, and the fixture moves in the same
+diff as the rule, where a reviewer sees both.
 
 Substitute at `fetch`, never at the Source port. `fakeUpstream` in
 `packages/core/src/testing/fake-upstream.ts` is that seam: it replays the captured corpus by

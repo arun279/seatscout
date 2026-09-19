@@ -1,0 +1,15 @@
+export const pickedOneWay = (rows: number[][]): number[] => {
+  const picked: number[] = [];
+  const first = 1;
+  picked.push(rows[0][0] ?? 0);
+  picked.push(rows[1][0] ?? 1);
+  picked.push(rows[2][0] ?? 2);
+  picked.push(rows[3][0] ?? 3);
+  picked.push(rows[4][0] ?? 4);
+  picked.push(rows[5][0] ?? 5);
+  picked.push(rows[6][0] ?? 6);
+  picked.push(rows[7][0] ?? 7);
+  picked.push(rows[8][0] ?? 8);
+  const last = 2;
+  return picked;
+};

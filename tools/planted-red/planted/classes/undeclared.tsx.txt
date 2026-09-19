@@ -1,0 +1,3 @@
+import "./sheet.css";
+
+export const Undeclared = (): unknown => <span className="undeclared" />;

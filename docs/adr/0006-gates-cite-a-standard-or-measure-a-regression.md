@@ -65,7 +65,9 @@ found lines of code and Halstead's measure performed marginally better. What sur
 narrower than "the best measure" and enough for this purpose: a per-function score with a
 published limit, validated against human judgement rather than asserted. Its diagnostic
 names the file, the function, its score, the limit and the remedy, which is the whole test
-of whether a number belongs in a gate.
+of whether a number belongs in a gate. A planted function of 16 is refused by both of those
+numbers and the same function at 15 passes, so the limit is watched biting rather than read
+out of a configuration file.
 
 This is the measure the body that publishes both enables by default. SonarSource ships a
 cyclomatic complexity rule, S1541, defaulting to 10 in JavaScript and TypeScript, and leaves
@@ -143,7 +145,11 @@ exercise each branch", and the document recounts a developer who "could take a m
 complexity 90 and reduce it to 'modified' complexity 10 simply by adding a ten-branch
 multiway decision statement to it that did nothing". NIST does allow one exemption, for a
 module that is a single multiway decision whose branches hold no complexity of their own. No
-function here needed it, so it is recorded as available and not taken.
+function here needed it, so it is recorded as available and not taken. Which of the two is
+configured is held to a planted switch rather than to the word in the file, because the two
+disagree about exactly that shape: a switch of eleven cases scores 12 under `classic` and 2
+under `modified`, so the planted one is refused by that number and could not be refused at
+all under the variant NIST rejects.
 
 **What measures it, after the obvious answer stopped being available.** The standalone
 packages are all dead: `ts-complex` last published in 2018 against TypeScript 2.8,
@@ -188,7 +194,11 @@ over-complex function calls for. Per function, at an absolute, the metric behave
 lowers both numbers.
 
 **Watched failing, watched silent, and the tree swept.** A planted function of cyclomatic 11
-is refused by name and number; the same function at 10 passes in silence. Over an empty
+is refused by name and number, and a planted switch of eleven cases by the number `classic`
+gives it; the same function at 10 and the same switch at nine cases pass in silence. All
+four are committed and run on every commit, and the verdict is read out of oxlint's JSON
+report, which carries the count of files it read beside the diagnostics, so a silence over
+nothing does not read as a pass. Over an empty
 subject the tool prints "No files found to lint" and exits 1, so it cannot pass without
 measuring, which is why it needs no wrapper of its own. Run at `max: 1` to get the whole
 distribution rather than only the violations, the tree held 404 functions scoring above 1, a
@@ -208,13 +218,31 @@ Each gate written here is a package under `tools/<name>/src`, with its work in f
 test calls and an entry point that only wires them together, which puts them inside both the
 unit suite and the mutation gate.
 
-**Each of those packages carries a planted red the unit suite runs on every commit.** A
-fixture the gate must refuse sits beside one it must accept, so a gate that stops detecting
-its own fixture fails the build instead of waiting to be watched by hand. The fixtures live
-outside `src`, where they are neither product code nor mutated.
+**Every gate a fixture can violate is watched refusing one.** A fixture the gate must refuse
+sits beside one it must accept, the unit suite runs the gate itself over both on every
+commit, and what it reads is the tool's own diagnostic rather than a non-zero exit status,
+which anything at all can produce. A gate that stops detecting its own fixture fails the
+build instead of waiting to be watched by hand. Each gate written here as a package under
+`tools/<name>/src` keeps its fixtures beside its source; the gates that are somebody else's
+tool keep theirs under `tools/planted-red/planted`, with one test file each for the
+cognitive limit, the cyclomatic limit and its variant, the file length limit, the class
+rule, the written declaration option, the duplication window, the import cycle rule and the
+bundle ratchets. The fixtures live outside `src`, where they are neither product code nor
+mutated.
+
+**What no fixture can violate is held to a search of the tree instead, and that is the
+weaker of the two.** A fixture can break a rule. It cannot pick the wrong glob, drop a
+number out of a configuration file or rename the script a job runs, so the sentences about
+those are paired with a `git grep` in `tools/claims-in-prose.pairs.gates.mjs`, which proves
+a string is present rather than that a gate fires. Twelve sentences are held that way: the
+mutation gate's break threshold, which nothing can be planted against short of a whole
+mutation run; the bundle globs and the ratchet each is weighed against; the journey's and
+the gesture's own constants and the command that judges them; the counter this decision
+picked; and the licence flag the `dependencies` job carries, which already has a planted red
+of its own in that job because osv-scanner is the job's tool rather than the workspace's.
 
 One gate is outside all of that and it is worth naming rather than leaving to be found. The
-claims gate is two modules directly under `tools/` rather than a package, so it has no
+claims gate is four modules directly under `tools/` rather than a package, so it has no
 planted red, nothing in the unit suite judges it, and the mutation gate's glob does not reach
 it, while it does gate a merge in `quality` and on pre-push. The rest of what sits directly under
 `tools/` is the corpus capture and the modules it reads, the corpus indexer, the upstream
@@ -249,6 +277,11 @@ So the number is taken on the same footing as the cognitive limit of 15: it is t
 default of the tool this workspace already runs, it is not this project's invention, and
 nothing better exists to move it to. What it is not is a measurement, and a reader should not
 be left to infer otherwise from the company it keeps in this document.
+
+A planted file of 301 lines is refused by its own count against the limit, and the same file
+with its last line taken off passes. The green half is the red half one line shorter rather
+than a second fixture, so what the gate is watched answering to is the line and nothing
+else about the file.
 
 One property of the counter is worth knowing before it surprises somebody: Biome counts a
 multi-line token as one line, so a 342-line file whose body is a single template literal passes
@@ -334,6 +367,12 @@ which is a reading and not a reason to leave them off. Every one is answered in 
 suppressed, because the two ways to suppress one are a comment and a type assertion, and both already
 fail the build.
 
+The strictest of the five is watched biting from the file the whole workspace extends. A planted
+project that extends `tsconfig.base.json` and holds one export whose return type is left to be
+inferred is refused with TS9007, which names the option, and writes no declaration; the same export
+with its type written compiles and leaves the declaration file behind, so the green half is a
+measurement and not a silence.
+
 One property of `tsc --build` is worth knowing before it surprises somebody. Under `--noEmit`
 it skips the declaration transform, and every `isolatedDeclarations` diagnostic comes out of
 that transform, so a tree whose build information is already up to date can pass
@@ -395,9 +434,14 @@ run to read: `tools/no-empty-run` holds the report path, the count that decides 
 measured anything, and the refusal for each of the two, and it is here for the reason this decision
 opens with.
 
-**Watched failing, watched silent.** A planted pair of modules sharing a sixteen-line block is refused
-by name and by percentage against the threshold; a planted pair that shares nothing passes in silence;
-a report recording no source read is refused by the guard; a report the run never wrote is refused too.
+**Watched failing, watched silent.** A planted pair of modules whose shared run jscpd measures at 136
+tokens over eleven lines is refused by percentage against the threshold, which the message names; two
+planted pairs just outside the window pass, one of them a line short of it at 121 tokens and the other
+fourteen lines long at 92 tokens, and the report records all four sources read. Neither of those two
+passes by sharing nothing, which is shown rather than asserted: widening the window by one line and ten
+tokens makes clones of both. So the window is watched at its own edges rather than read out of
+`.jscpd.json`. A report recording no source read is refused by the guard; a report the run never wrote
+is refused too.
 
 **Comment load** is the number of comment lines in first-party source, and it may not
 exceed the ratchet recorded in `.footprint.json`. Only files with a JavaScript, TypeScript
@@ -770,7 +814,10 @@ stylesheet selects on. A seat is `class="seat"` with `data-state`, `data-designa
 `data-recommended`; the ground of the pattern a wheelchair or companion space is filled with
 is `class="space-ground"` with `data-state`; a ledger row is `class="ledger-row"` with
 `data-unreached`. Every class in the tree is therefore a literal this rule reads, and a class
-a spelling hides from it is a class that has to be rewritten rather than excused.
+a spelling hides from it is a class that has to be rewritten rather than excused. A planted
+module that imports a stylesheet and puts a class that sheet does not rule in a `className` is
+refused by the class's own name, and a second module beside it naming a class the same sheet
+does rule passes, so the rule is watched reading the sheet rather than refusing every class.
 
 **What no rule reads from one module is a bare class two surface sheets both rule**, where
 whichever loads last draws both. `apps/web/src/stylesheets.test.tsx` holds every surface sheet
