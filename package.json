@@ -9,7 +9,6 @@
   },
   "scripts": {
     "build": "tsc --build --pretty false && pnpm --filter @seatscout/web build",
-    "cache-storage": "node tools/no-cache-storage-reach/src/index.ts",
     "claims": "node tools/claims-in-prose.mjs",
     "complexity": "oxlint",
     "contract:alarm": "node tools/contract-alarm.mjs",
@@ -23,7 +22,6 @@
     "icons": "node tools/app-icon.mjs",
     "journey": "node tools/journey/src/index.ts",
     "lint": "biome lint .",
-    "live-injections": "node tools/live-injections/src/index.ts",
     "prepare": "lefthook install && git worktree prune",
     "spell": "cspell lint --dot .",
     "test:e2e": "playwright test --list --grep @accessibility && playwright test --grep-invert @performance",

@@ -190,10 +190,10 @@ export const CLAIMS = [
   },
   {
     adr: "0013-only-the-catalogue-is-cached.md",
-    says: /is the whole of the gate that keeps the writer the only writer/,
-    holds: "the command the reach check runs under",
-    pattern: "tools/no-cache-storage-reach/src/index.ts",
-    paths: ["package.json"],
+    says: /are the whole of the gate that keeps the writer the only writer/,
+    holds: "the property rule that keeps the writer the only writer",
+    pattern: "noJsRestrictedProperties",
+    paths: [BIOME],
     files: 1,
   },
   {

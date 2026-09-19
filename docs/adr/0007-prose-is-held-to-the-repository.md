@@ -26,8 +26,8 @@ put a public hostname into a repository secret and stop the nightly contract che
 Neither failure needs a figure anyone has to choose, which is why
 [ADR 6](0006-gates-cite-a-standard-or-measure-a-regression.md) does not reach these two
 gates: that decision governs a gate that needs a number. The two facts a pair compares are
-both in the repository. The exact checks beside these, the import ban and
-`pnpm cache-storage`, sit outside ADR 6 for the same reason.
+both in the repository. The exact checks beside these, the import ban and the Cache Storage
+ban, sit outside ADR 6 for the same reason.
 
 ## Decision
 

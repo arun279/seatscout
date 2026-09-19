@@ -204,16 +204,14 @@ defined per function, as every published complexity rule is, so branching writte
 level of a module is outside all of them. Nothing under `apps/` or `packages/` writes any. The scripts directly
 under `tools/` used to, and that was the same shape as sitting outside the mutation gate's
 scope: work that happens as a module loads is work nothing can call, so nothing can judge it.
-Each of the three gates written here is now a package under `tools/<name>/src`, with its work
-in functions a test calls and an entry point that only wires them together, which puts them
-inside both the unit suite and the mutation gate.
+Each gate written here is a package under `tools/<name>/src`, with its work in functions a
+test calls and an entry point that only wires them together, which puts them inside both the
+unit suite and the mutation gate.
 
 **Each of those packages carries a planted red the unit suite runs on every commit.** A
 fixture the gate must refuse sits beside one it must accept, so a gate that stops detecting
 its own fixture fails the build instead of waiting to be watched by hand. The fixtures live
-outside `src`, where they are neither product code nor mutated, and the reach check's planted
-red builds a throwaway repository of its own and runs the entry point inside it, so it
-depends on no checkout but its own.
+outside `src`, where they are neither product code nor mutated.
 
 One gate is outside all of that and it is worth naming rather than leaving to be found. The
 claims gate is two modules directly under `tools/` rather than a package, so it has no

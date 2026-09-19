@@ -104,7 +104,7 @@ fixtures. Here every link a live map sends must name the Seat immediately beside
 same row, on the side it claims, across a gap the same band rule calls contiguous. It is the
 adapter's own rule applied to today's rooms, not a second copy of it.
 
-**The answers come from a global setup rather than from the test.** `tools/live-answers.mjs`
+**The answers come from a global setup rather than from the test.** `tools/live-answers.ts`
 reads an area, takes the day's widest release, and asks for one seat map per Chain plus
 whatever the listing already knows to be unbookable, and hands on the area and the listing
 answers it already made rather than asking for them twice, which is under twenty requests
@@ -115,16 +115,21 @@ pure function the mutation gate can reach. It is a second client of the aggregat
 than a share of `capture-corpus.mjs`, because that tool's session exists to harvest the
 values it has to redact and its getter exists to keep a request ledger, and neither belongs
 here. The area it reads is a constant beside the user agent that was always one, and the
-origin comes from `tools/upstream.mjs`, which `capture-corpus.mjs` reads too: the tool that
+origin comes from `tools/upstream.ts`, which `capture-corpus.mjs` reads too: the tool that
 records the corpus and the tool that checks it have to name the same aggregator for the check
 to mean anything, so they name it once. The area is the postal code of the theater the corpus
 is anchored on, which the corpus's own first result already carries in its address.
 
-**What the setup provides is checked on every pull request.** A live test asks for its answer
-by name and gets `undefined` if the setup stopped providing it, which reaches a maintainer as
-a type error inside a nightly that then blames the upstream. `pnpm live-injections` holds
-every name the live suite injects to a name the setup provides, and it is a step in
-`quality`, so a rebase that drops one fails the pull request instead of the night.
+**What the setup provides and what the suite injects are one declaration.** A live test asks
+for its answer by name and gets `undefined` if the setup stopped providing it, which reaches a
+maintainer as a type error inside a nightly that then blames the upstream. Vitest types both
+halves against `ProvidedContext`, so the declaration is written once, in
+`packages/core/src/testing/live-context.ts`, and the setup and both live suites import it.
+A name on neither side of it is a compile error at `pnpm typecheck`, which runs on pre-push
+and in `quality`, so a rebase that drops a name fails the pull request instead of the night.
+What that does not reach is a name declared and provided by nobody: it compiles, and the
+`undefined` it hands the test is found on the night. The declaration sits beside the suite
+that reads it, so a name nothing asks for is a line a reviewer sees go in.
 
 The same lane carries one more reading of the world, the live search timing in
 [ADR 16](0016-a-search-reports-its-coverage.md). A failure there opens the same issue,

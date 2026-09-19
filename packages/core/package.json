@@ -6,6 +6,7 @@
   "main": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./live-context": "./src/testing/live-context.ts",
     "./testing": "./src/testing/fake-upstream.ts"
   },
   "scripts": {

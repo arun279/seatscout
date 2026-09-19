@@ -1,25 +1,13 @@
 import { describe, expect, inject, it } from "vitest";
 import { seatsFrom } from "../source/seat-map.js";
 import {
-  type Answer,
   areaDivergencesIn,
   type Divergence,
   divergencesIn,
   listingDivergencesIn,
   scheduleDivergencesIn,
 } from "./contract.js";
-
-declare module "vitest" {
-  interface ProvidedContext {
-    readonly liveSeatMaps: readonly Answer[];
-    readonly liveArea: Answer;
-    readonly liveSchedule: Answer;
-    readonly liveListing: Answer;
-  }
-  interface TaskMeta {
-    contract?: readonly string[];
-  }
-}
+import "./live-context.js";
 
 const SAYING: Readonly<Record<Divergence["kind"], string>> = {
   unreadable: "an answer that is not JSON",

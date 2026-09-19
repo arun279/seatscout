@@ -55,8 +55,6 @@ shellcheck deploy/*.sh
 pnpm spell
 pnpm typecheck
 pnpm dead-code
-pnpm live-injections
-pnpm cache-storage
 pnpm counts
 pnpm claims
 pnpm test:unit
@@ -80,7 +78,7 @@ dependency's licence and fails on any SPDX identifier outside the allowlist that
 carries, a licence it could not determine included.
 
 Two hooks run some of that earlier, and `lefthook.yml` declares both. The pre-commit hook
-runs six checks over staged files. The pre-push hook reads the refs the push carries and
+runs five checks over staged files. The pre-push hook reads the refs the push carries and
 hands one that sends commits to `push-checks`, which runs ten checks; a push that only
 deletes a branch sends none, so it runs none of them. `pnpm exec lefthook run push-checks`
 runs the same ten by hand.
@@ -97,9 +95,6 @@ their own. The rest read the whole tree, because none of them takes two seconds.
 Neither hook is a substitute for the list above. `quality` installs into an empty runner, so
 it reads every file with no cache to reuse and no scope, and it is what a merge waits for.
 The hooks answer on the change; the job answers on the tree.
-
-`pnpm cache-storage` reads the index, so it reports on the last `git add` rather than on the
-edit in front of you.
 
 ## When a gate refuses
 
@@ -145,6 +140,13 @@ Each of these has one way through and no exemption to grant.
   determine reads as `UNKNOWN` and fails like any other identifier that is not on the list.
   Add the identifier to that list in the same diff, where a reviewer sees which dependency
   brought it.
+- **A reach for Cache Storage.** `pnpm lint` denies the `caches` global under `apps/` with
+  Biome's `noRestrictedGlobals`, and the `caches` property everywhere with its
+  `noJsRestrictedProperties`, so `self.caches` is refused beside a bare `caches`. There is one
+  exemption and it is the writer, `apps/web/src/worker/cache.ts`; read a cached response
+  through `cachedShell` and write one nowhere.
+  [ADR 13](docs/adr/0013-only-the-catalogue-is-cached.md) says why a seat map may never be
+  held.
 - **An import cycle.** Biome's `noImportCycles` names the import that closes the loop. Move
   what both modules need into a third, or make the import `import type`, which the compiler
   erases and which the rule ignores.

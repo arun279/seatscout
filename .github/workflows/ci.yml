@@ -49,8 +49,6 @@ jobs:
       - run: pnpm spell
       - run: pnpm typecheck
       - run: pnpm dead-code
-      - run: pnpm live-injections
-      - run: pnpm cache-storage
       - run: pnpm counts
       - run: pnpm claims
       - run: pnpm test:unit
