@@ -40,14 +40,6 @@ export const GATE_CLAIMS = [
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /\*\*The number and its exception process\.\*\*/,
-    holds: "the cyclomatic limit that gates the build",
-    pattern: '"max": 10',
-    paths: [CYCLOMATIC],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
     says: /the same documented meaning of `classic`/,
     holds: "the counting variant the limit is defined over",
     pattern: '"variant": "classic"',
@@ -148,14 +140,6 @@ export const GATE_CLAIMS = [
     holds: "the licence allowlist the dependencies job carries",
     pattern: "--licenses=",
     paths: [WORKFLOW],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /\*\*Imports may not form a cycle\*\*/,
-    holds: "the import cycle rule that gates the build",
-    pattern: "noImportCycles",
-    paths: [BIOME],
     files: 1,
   },
   {

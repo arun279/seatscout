@@ -1,0 +1,19 @@
+export const thinlyOneWay = (rows: number[][]): number[] => {
+  const picked: number[] = [];
+  const first = 1;
+  picked.push(0);
+  picked.push(1);
+  picked.push(2);
+  picked.push(3);
+  picked.push(4);
+  picked.push(5);
+  picked.push(6);
+  picked.push(7);
+  picked.push(8);
+  picked.push(9);
+  picked.push(10);
+  picked.push(11);
+  picked.push(12);
+  const last = 2;
+  return picked;
+};

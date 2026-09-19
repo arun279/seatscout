@@ -1,0 +1,19 @@
+export const grade = (at: number): number => {
+  let score = 0;
+  if (at > 1) score += 1;
+  if (at > 2) score += 2;
+  if (at > 3) score += 3;
+  if (at > 4) score += 4;
+  if (at > 5) score += 5;
+  if (at > 6) score += 6;
+  if (at > 7) score += 7;
+  if (at > 8) score += 8;
+  if (at > 9) score += 9;
+  if (at > 10) score += 10;
+  if (at > 11) score += 11;
+  if (at > 12) score += 12;
+  if (at > 13) score += 13;
+  if (at > 14) score += 14;
+  if (at > 15) score += 15;
+  return score;
+};

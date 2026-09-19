@@ -1,14 +1,10 @@
-import { spawnSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
+import { ran } from "./planted.fixtures.ts";
 
 const PLANTED = "tools/planted-red/planted/size-limit";
 
 const sizeLimitOver = (config: string) => {
-  const run = spawnSync(
-    "pnpm",
-    ["exec", "size-limit", "--config", `${PLANTED}/${config}`, "--json"],
-    { encoding: "utf8" },
-  );
+  const run = ran("size-limit", "--config", `${PLANTED}/${config}`, "--json");
   return { status: run.status, weighed: JSON.parse(run.stdout) };
 };
 
