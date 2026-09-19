@@ -18,6 +18,7 @@ export default defineConfig({
     ],
     projects: [
       {
+        extends: true,
         test: {
           name: "node",
           include: ["{apps,packages,tools}/*/**/*.{test,spec}.?(c|m)[jt]s"],
@@ -25,6 +26,7 @@ export default defineConfig({
         },
       },
       {
+        extends: true,
         test: {
           name: "screen",
           environment: "jsdom",

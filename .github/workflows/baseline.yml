@@ -16,10 +16,19 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  GH_REPO: ${{ github.repository }}
+  GH_TOKEN: ${{ github.token }}
+  RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
 jobs:
   mutation:
     runs-on: ubuntu-24.04
     timeout-minutes: 240
+    permissions:
+      contents: read
+      actions: read
+      issues: write
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -35,8 +44,6 @@ jobs:
         run: echo "main=$(git rev-parse 'HEAD^{tree}')" >> "$GITHUB_OUTPUT"
       - name: On a push, inherit the merged branch's report from the artifact its own run published; the schedule starts from nothing
         if: github.event_name == 'push'
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           id="$(gh api "repos/${{ github.repository }}/actions/artifacts?name=stryker-tree-${{ steps.tree.outputs.main }}&per_page=1" --jq '.artifacts[0].id // empty')"
           if [ -n "$id" ]; then
@@ -48,30 +55,47 @@ jobs:
             echo "No branch published a report for tree ${{ steps.tree.outputs.main }}; judging main from nothing."
           fi
       - name: Judge main
+        id: judge
         run: |
           set -o pipefail
           pnpm test:mutation:incremental 2>&1 | tee "$RUNNER_TEMP/stryker-mutation.log"
+      - name: Name the tests the initial run reported failing
+        if: ${{ !cancelled() && steps.judge.outcome == 'failure' }}
+        run: |
+          awk '/One or more tests (failed in|resulted in an error)|Initial test run timed out/ { naming = 1; next }
+               naming && /^[[:space:]]/ { print; next }
+               naming { exit }' "$RUNNER_TEMP/stryker-mutation.log" \
+            > "$RUNNER_TEMP/failing-tests.txt"
+          if [ -s "$RUNNER_TEMP/failing-tests.txt" ]; then
+            echo "::error::The initial test run failed. The tests it named:"
+            cat "$RUNNER_TEMP/failing-tests.txt"
+          else
+            echo "The mutation run failed over something other than a failing test, or Stryker no longer names them the way this step reads."
+          fi
       - name: Check that mutation saw every test file
         id: mutation_test_collection
         run: |
           set -o pipefail
           ran_tests="$(sed -n 's/.*Initial test run succeeded\. Ran \([0-9][0-9]*\) tests.*/\1/p' "$RUNNER_TEMP/stryker-mutation.log" | tail -n 1)"
-          expected_tests="$(
-            find apps packages tools -path "*/src/*" \( -name "*.ts" -o -name "*.tsx" \) ! \( -path "apps/native/src/*" -name "*.tsx" \) ! -name "*.test.*" ! -name "*.spec.*" ! -name "*.fixtures.*" -print0 |
-              xargs -0 pnpm exec vitest related --config vitest.config.ts --run --reporter=json |
-              jq '.numTotalTests'
-          )"
+          RELATED_FILES="$(find apps packages tools -path "*/src/*" \( -name "*.ts" -o -name "*.tsx" \) ! \( -path "apps/native/src/*" -name "*.tsx" \) ! -name "*.test.*" ! -name "*.spec.*" ! -name "*.fixtures.*")" \
+            pnpm exec vitest list --config vitest.related.config.ts --json="$RUNNER_TEMP/related-tests.json"
+          if [ ! -s "$RUNNER_TEMP/related-tests.json" ]; then
+            echo "::error::Vitest wrote no listing of the related tests, so there is nothing to hold Stryker's initial run to. Its own errors are above."
+            exit 1
+          fi
+          expected_tests="$(jq 'length' "$RUNNER_TEMP/related-tests.json")"
           echo "Stryker initial tests: ${ran_tests:-missing}"
           echo "Expected Stryker-related unit tests: $expected_tests"
-          if [ -n "$ran_tests" ] && [ "$ran_tests" -eq "$expected_tests" ]; then
+          DIFFERENCE="Stryker ran ${ran_tests:-no} tests, but the related listing holds $expected_tests. A listing leaves out a skipped test where Stryker's run counts it, so one skip in the suite reads as a difference of one here; a wider gap is a collection that fell short."
+          if [ -n "$ran_tests" ] && [ "$expected_tests" -gt 0 ] && [ "$ran_tests" -eq "$expected_tests" ]; then
             echo "complete=true" >> "$GITHUB_OUTPUT"
           else
             echo "complete=false" >> "$GITHUB_OUTPUT"
-            echo "::error::Stryker ran ${ran_tests:-no} tests, but the Stryker-related unit test count is $expected_tests."
+            echo "::error::$DIFFERENCE"
             {
               echo "### Incomplete mutation test collection"
               echo
-              echo "Stryker ran ${ran_tests:-no} tests, but the Stryker-related unit test count is $expected_tests. The incremental mutation report was not saved."
+              echo "$DIFFERENCE The incremental mutation report was not saved."
             } >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
@@ -89,3 +113,42 @@ jobs:
         with:
           path: reports/stryker-incremental.json
           key: stryker-tree-${{ steps.tree.outputs.main }}
+      - name: Say that main's baseline is red, where the maintainer will see it
+        if: ${{ failure() && github.event_name != 'workflow_dispatch' }}
+        run: |
+          step=$(gh api "repos/$GH_REPO/actions/runs/$GITHUB_RUN_ID/jobs" \
+            --jq '[.jobs[].steps[] | select(.conclusion == "failure") | .name] | first // empty')
+          {
+            echo "The Baseline run on main failed at \`${step:-a step the run does not name}\`, so main's tree was not judged and no seed was saved for the next branch to start from."
+            echo
+            if [ -s "$RUNNER_TEMP/failing-tests.txt" ]; then
+              echo "The tests the initial run reported failing:"
+              echo
+              echo '```'
+              cat "$RUNNER_TEMP/failing-tests.txt"
+              echo '```'
+              echo
+            fi
+            echo "$RUN"
+          } > baseline.md
+          cat baseline.md >> "$GITHUB_STEP_SUMMARY"
+          gh label create baseline-red --color B60205 --force \
+            --description "A Baseline run on main is red, and its comments say how"
+          open=$(gh issue list --label baseline-red --state open --limit 1 \
+            --json number --jq '.[0].number // empty')
+          if [ -n "$open" ]; then
+            gh issue comment "$open" --body-file baseline.md
+          else
+            gh issue create --label baseline-red --body-file baseline.md \
+              --title "The Baseline run on main failed"
+          fi
+      - name: Close what a green baseline answers
+        if: success()
+        run: |
+          open=$(gh issue list --label baseline-red --state open --limit 1 \
+            --json number --jq '.[0].number // empty')
+          if [ -n "$open" ]; then
+            gh issue comment "$open" --body \
+              "A later Baseline judged main's whole tree and passed. $RUN"
+            gh issue close "$open" --reason completed
+          fi

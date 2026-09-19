@@ -33,6 +33,16 @@ nothing to inherit from. That run leaves its incremental file in the Actions cac
 branch run reuses the baseline's verdicts rather than reaching them again, so what the
 baseline got wrong a branch inherits until the file it wrote is replaced.
 
+**A red baseline leaves no seed, so it says so where somebody will read it.** The workflow
+opens an issue labelled `baseline-red`, or comments on the open one, naming the step the run
+itself reports as failed, the tests the initial run reported failing and the run; any green
+Baseline afterwards comments on that issue and closes it, a run started by hand included,
+because a maintainer confirming the fix by hand should not have to wait for the next push.
+That is the shape [ADR 11](0011-a-nightly-reading-judges-the-world.md) already gives the
+nightly reading, and for the same reason: the two red runs of 2026-09-19 were found by
+somebody looking rather than by anybody being told. Filing is the half a run by hand skips,
+so re-running one to watch it costs no issue.
+
 `main`'s run follows the merge that changed `main` rather than a clock. On a schedule it
 re-judged a tree that had not moved, and the seed a branch started from was always as old as
 the last night rather than as old as the last merge. A merge landing while one is still
@@ -51,10 +61,27 @@ terminates the mutation process afterwards, so the file saved is the one that wa
 and the work in flight is lost either way.
 
 Before either workflow saves that file, it reads Stryker's own initial-run count and holds
-it to Vitest's JSON count from `vitest related` over the files `stryker.config.json` mutates,
-using the same related-mode collection as Stryker's Vitest runner. A short or missing count
-means the runner did not collect the whole related unit suite, so the job fails and the
-partial report is not cached as a seed for later runs.
+it to the tests `vitest list` collects over the files `stryker.config.json` mutates, in the
+same related mode Stryker's Vitest runner selects with. A short or missing count means the
+runner did not collect the whole related unit suite, so the job fails and the partial report
+is not cached as a seed for later runs. A count of nothing fails too, because a pass has to
+entail a measurement.
+
+**That count is collected rather than run.** The step used to run every related test in
+order to count them, and piped the runner's JSON into `jq`. So a single test timing out
+failed the step with `xargs`'s exit code 123 and sent the name of the test that timed out
+into `jq` with the rest of the output: the Baseline run of 2026-09-19 reported that code and
+named nothing at all. A listing makes the same selection without the run, writes its JSON to
+a file rather than into a pipe, and leaves its own errors on the step's output.
+
+Related mode is not among the `list` command's flags in the pinned Vitest, so
+`vitest.related.config.ts` carries it: each workflow names the mutated files in
+`RELATED_FILES` and that configuration passes them to `test.related`.
+
+The two counts are not reached the same way, and one difference survives that. A listing
+leaves a skipped test out and Stryker's run counts it, so the first `it.skip` in the suite
+makes the two differ by one. The tree holds none today, the numbers agreed at 984 when this
+was changed, and the refusal names that case rather than leaving a reader to find it.
 
 The incremental mode is Stryker's own, and it is a reuse of earlier results rather than a
 second opinion about them: it matches a mutant by the content of the file it sits in and of
@@ -78,9 +105,9 @@ into the client, which is behaviour, and it is judged like any other adapter.
 
 The carve-out is written the same way in two places, because the gate is two numbers that have
 to agree. `stryker.config.json` says which files are mutated; the `footprint` job counts the
-tests `vitest related` finds over that same set and holds Stryker's own initial run to it. A
-set named one way in one place and another way in the other is a run that judged less than it
-looked like it did, which is what that step exists to catch.
+tests the listing finds in related mode over that same set and holds Stryker's own initial run
+to it. A set named one way in one place and another way in the other is a run that judged less
+than it looked like it did, which is what that step exists to catch.
 
 `apps/web` stays inside the gate: it is the view layer that will hold real behaviour, keyboard
 traversal among it, and the platform adapters it already holds are judged there rather than
@@ -114,6 +141,16 @@ hundreds past 1,250 and the Seat Profile sweep, unchanged, went from 1.6 s to 5.
 dry run and timed out. It is now five sweeps of one benchmark room each rather than one of
 five, with the same assertions partitioned. The remedy is to divide the test's work, not to
 raise the timeout.
+
+**The allowance the dry run does get has to be written where a project reads it.**
+`vitest.stryker.config.ts` merges 30 seconds into the root configuration, and in the pinned
+Vitest a project declared inline inherits nothing from the root unless it says
+`extends: true`. The two projects in `vitest.config.ts` both say it, and `pnpm counts` refuses
+a third that does not. Without it the merge reached no test at all, every one of them ran at
+the default 5 seconds under the instrumentation, and the sweep above timed out again on
+2026-09-19 on a tree whose own pull request was green. Vitest's own migration guide makes
+`extends: true` the default for an inline project in the next major, so this leans with that
+change rather than against it.
 
 **Two Stryker settings are less redundant than they look.** The vitest runner is named in
 `plugins` because Stryker resolves its own plugin search against its package directory, which

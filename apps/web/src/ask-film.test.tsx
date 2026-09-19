@@ -15,6 +15,7 @@ import {
   NEARBY,
   NOTHING,
   SCHEDULES,
+  SMALLEST_LISTING,
   staged,
   TODAY,
 } from "./search.fixtures.js";
@@ -70,6 +71,7 @@ describe("the Ask sheet's film field", () => {
 
   it("names the one Theater whose films could not be read in the singular", async () => {
     await opened({
+      terms: SMALLEST_LISTING,
       script: { sequences: { [`${SCHEDULES}aacbt`]: [500, 500, 500] } },
     });
 
@@ -184,6 +186,7 @@ describe("the Ask sheet's film field", () => {
 
   it("says when what is playing could not be read, and still takes a film's number", async () => {
     const stage = await opened({
+      terms: SMALLEST_LISTING,
       script: { sequences: { [NEARBY]: [500, 500, 500] } },
     });
 
@@ -196,12 +199,18 @@ describe("the Ask sheet's film field", () => {
     find();
 
     expect(stage.chosen).toEqual([
-      { movie: "243819", date: TODAY, area: "75006", partySize: 2 },
+      {
+        movie: "243819",
+        date: SMALLEST_LISTING.date,
+        area: "75006",
+        partySize: 2,
+      },
     ]);
   });
 
   it("names the Theaters whose films could not be read", async () => {
     await opened({
+      terms: SMALLEST_LISTING,
       script: {
         sequences: {
           [`${SCHEDULES}aacbt`]: [500, 500, 500],

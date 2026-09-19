@@ -13,6 +13,7 @@ import {
 const BIOME = "biome.json";
 const ENTRY = "apps/web/src/index.ts";
 const LEFTHOOK = "lefthook.yml";
+const VITEST = "vitest.config.ts";
 const PACKAGES = "packages";
 const ADAPTER = "packages/core/src/source/catalogue.ts";
 const CATALOGUE = "packages/core/src/domain/catalogue.ts";
@@ -47,6 +48,17 @@ const hookCommands = (read: Read, hook: string) =>
 
 const sheetsImported = (read: Read) =>
   [...read(ENTRY).matchAll(/^import "\.\/[\w-]+\.css";$/gm)].length;
+
+const projectsExtending = (read: Read) => {
+  const config = read(VITEST);
+  const projects = [...config.matchAll(/^ {10}name: "/gm)];
+  const extending = [...config.matchAll(/^ {8}extends: true,$/gm)];
+  if (projects.length !== extending.length)
+    throw new Error(
+      `a project in ${VITEST} does not extend the root configuration, so the dry run's timeout never reaches its tests`,
+    );
+  return extending.length;
+};
 
 const outcomes = (read: Read) =>
   fieldsOf(read, SEARCH, "Coverage").filter((field) => field !== "candidates");
@@ -83,6 +95,7 @@ const CONTEXT = "CONTEXT.md";
 const CONTRIBUTING = "CONTRIBUTING.md";
 const DRAWING = "docs/adr/0014-the-room-is-read-from-its-drawing.md";
 const LAYERS = "docs/adr/0003-separate-view-layers-shared-core.md";
+const MUTANTS = "docs/adr/0012-every-mutant-must-die.md";
 const NIGHTLY = "docs/adr/0011-a-nightly-reading-judges-the-world.md";
 const PROFILE_RECORD =
   "docs/adr/0018-good-seats-are-scored-against-a-reference.md";
@@ -106,6 +119,12 @@ export const CLAIMS: readonly Claim[] = [
     says: /passes over all (\w+) overrides in `pnpm-workspace\.yaml`/,
     about: `the entries under overrides, in ${WORKSPACE}`,
     count: (read) => overridden(read).length,
+  },
+  {
+    document: MUTANTS,
+    says: /The (\w+) projects in `vitest\.config\.ts` both say it/,
+    about: `the projects that extend the root configuration, in ${VITEST}`,
+    count: projectsExtending,
   },
   {
     document: CONTRIBUTING,

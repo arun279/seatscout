@@ -177,8 +177,10 @@ Each of these has one way through and no exemption to grant.
   React component that returns markup returns `ReactElement`.
 - **The test count.** `.footprint.json` holds a floor under the tests the two runners collect,
   by their own listings rather than by a run; the mutation-cache guard separately compares
-  Stryker's initial run to Vitest's JSON count from `vitest related` over the files
-  `stryker.config.json` mutates. Put the tests back, or lower the ratchet in the same diff.
+  Stryker's initial run to the tests `vitest list` collects over the files
+  `stryker.config.json` mutates, in the related mode `vitest.related.config.ts` turns on from
+  the `RELATED_FILES` the workflow names. Put the tests back, or lower the ratchet in the same
+  diff.
 
 Take a ratchet's new value from the `footprint` comment on the pull request rather than from a
 local run: the job measures the merge of your branch with `main` rather than the branch alone,
@@ -219,6 +221,9 @@ the reason that record gives.
 Keep a hot test's work under Vitest's default timeout with room to spare. The dry run makes
 a test slower by an amount that depends on files it never touches, so a dry-run timeout on a
 test nobody edited means the test's work has to be divided rather than the timeout raised.
+Open one room per `it`: what a screen test costs is the search its terms set off, and
+`SMALLEST_LISTING` in `apps/web/src/terms.fixtures.ts` names the terms whose search reads the
+fewest captures.
 
 A rule is only a gate while it still refuses something, so each one is watched refusing a
 fixture. `tools/planted-red` copies the fixtures under `tools/planted-red/planted` into a
@@ -259,12 +264,6 @@ activates a mutant in one worker while its tests run in another, and the run rep
 that a hand-planted mutant refutes. A scoped run by hand needs the same prefix:
 `VITEST_MAX_WORKERS=1 pnpm exec stryker run --incremental --force --mutate <files>`.
 
-The workflows save that incremental file only after Stryker's initial run says it ran at
-least the unit-test floor implied by `.footprint.json`: the total test ratchet minus the
-Playwright tests collected by the footprint command. A short or missing count means the
-initial collection was partial, so the job fails and the partial seed is left out of the
-cache.
-
 Each report is saved under two names, the branch's and the tree's. A pull request merged up to
 date has exactly the tree main gets, so the next branch restores the merged branch's report by
 main's tree hash and judges only what it changed. A cache saved on a branch is invisible to main,
@@ -272,6 +271,9 @@ so a passing run also publishes its report as an artifact named by the tree; the
 push downloads that artifact for main's tree, judges the nothing that changed, and saves the seed
 under main, where every branch can restore it. Its nightly schedule judges main from nothing, which
 is the one full run.
+
+A Baseline that fails saves no seed, so it opens an issue labelled `baseline-red`, and any
+green Baseline closes it. See [ADR 12](docs/adr/0012-every-mutant-must-die.md).
 
 ## Refreshing the corpus
 

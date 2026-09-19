@@ -48,13 +48,10 @@ describe("the room a result opens into", () => {
     ).toBeVisible();
   });
 
-  it("is six tab stops whatever the room: back, the row bar, back to the recommendation, the map, the alternates and the dock", async () => {
+  it("is six tab stops in a small room: back, the row bar, back to the recommendation, the map, the alternates and the dock", async () => {
     const small = await opened(STRIKE_AND_REEL_1);
-    const smallStops = small.tabStops();
-    cleanup();
-    const large = await opened(WEST_PLANO_28);
 
-    expect(smallStops).toEqual([
+    expect(small.tabStops()).toEqual([
       "button:‹ Back to the list",
       "button:ROW D4th row of 5 from the front. 10 seats, 4 bookable.",
       "button:Back to D8 D7",
@@ -62,6 +59,11 @@ describe("the room a result opens into", () => {
       "radiogroup:chosen",
       "button:D8·D7",
     ]);
+  });
+
+  it("is six tab stops in a room of 304 Seats too, one Seat of which is in the tab order", async () => {
+    const large = await opened(WEST_PLANO_28);
+
     expect(large.tabStops()).toHaveLength(6);
     expect(large.dialog.querySelectorAll('[role="gridcell"]')).toHaveLength(
       304,
@@ -200,7 +202,7 @@ describe("the room a result opens into", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("reads the legend and the billing line off what is lit, so choosing a penalised pair says so, and drops the console entry from a room with no pods", async () => {
+  it("reads the legend and the billing line off what is lit, so choosing a penalised pair says so", async () => {
     const pods = await opened(VILLAGE_1);
     const billing = () =>
       [...pods.dialog.querySelectorAll(".billing span")].map(
@@ -232,8 +234,9 @@ describe("the room a result opens into", () => {
       "One seat left of centre",
       "Against a wall",
     ]);
-    cleanup();
+  });
 
+  it("drops the console entry from the legend of a room with no pods", async () => {
     const plain = await opened(WEST_PLANO_28);
 
     expect(
