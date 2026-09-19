@@ -220,11 +220,15 @@ test nobody edited means the test's work has to be divided rather than the timeo
 
 A rule is only a gate while it still refuses something, so each one is watched refusing a
 fixture. `tools/planted-red` copies the fixtures under `tools/planted-red/planted` into a
-git-ignored directory and runs Biome, oxlint, the compiler, jscpd and size-limit over them,
-reading each tool's own diagnostic rather than its exit status. Loosening a rule in
-`biome.json`, `.oxlintrc.json`, `.jscpd.json`, `.size-limit.json` or `tsconfig.base.json`
-therefore fails the unit suite instead of passing quietly, and the fixture moves in the same
-diff as the rule, where a reviewer sees both.
+git-ignored directory and runs Biome, oxlint, the compiler and jscpd over them under the
+configuration this workspace ships, reading each tool's own diagnostic rather than its exit
+status. Loosening a rule in `biome.json`, `.oxlintrc.json`, `.jscpd.json` or
+`tsconfig.base.json` therefore fails the unit suite instead of passing quietly, and the
+fixture moves in the same diff as the rule, where a reviewer sees both. The size-limit
+fixtures are the exception: they carry ratchets of their own rather than the shipped ones, so
+what they watch is that size-limit still refuses a file over a ratchet and still reports a
+glob that reached nothing. The nine files answer in about seven seconds on two workers,
+inside `pnpm test:unit`.
 
 Substitute at `fetch`, never at the Source port. `fakeUpstream` in
 `packages/core/src/testing/fake-upstream.ts` is that seam: it replays the captured corpus by

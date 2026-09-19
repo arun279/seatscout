@@ -1,21 +1,15 @@
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { overPlanted, ran, said } from "./planted.fixtures.ts";
+import { biomeOver, overPlanted, said } from "./planted.fixtures.ts";
 
-const biomeOver = (named: string) =>
-  overPlanted("classes", (at) =>
-    ran(
-      "biome",
-      "lint",
-      "--vcs-enabled=false",
-      "--only=nursery/noUndeclaredClasses",
-      join(at, named),
-    ),
-  );
+const RULE = "nursery/noUndeclaredClasses";
+
+const drawn = (named: string) =>
+  overPlanted("classes", (at) => biomeOver(RULE, join(at, named)));
 
 describe("the planted red under the undeclared class gate", () => {
   it("refuses a class the imported stylesheet does not rule, naming the class", () => {
-    const run = biomeOver("undeclared.tsx");
+    const run = drawn("undeclared.tsx");
 
     expect(run.status).toBe(1);
     expect(said(run)).toContain(
@@ -25,7 +19,7 @@ describe("the planted red under the undeclared class gate", () => {
   });
 
   it("accepts a class that stylesheet does rule, so it is not refusing every class", () => {
-    const run = biomeOver("declared.tsx");
+    const run = drawn("declared.tsx");
 
     expect(run.status).toBe(0);
     expect(run.stdout).toContain("Checked 1 file");

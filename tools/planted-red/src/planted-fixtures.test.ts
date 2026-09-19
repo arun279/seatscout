@@ -11,16 +11,33 @@ const nothingPlantedIn = (fixture: string) => {
 };
 
 describe("the fixtures the planted reds are run over", () => {
-  it("refuses a fixture the tree no longer carries, rather than running a gate over nothing", () => {
-    expect(() => overPlanted("no-such-gate", () => 0)).toThrow("no-such-gate");
+  it("runs no gate at all over a fixture the tree no longer carries", () => {
+    let reached = false;
+
+    expect(() =>
+      overPlanted("no-such-gate", () => {
+        reached = true;
+        return 0;
+      }),
+    ).toThrow();
+    expect(reached).toBe(false);
   });
 
-  it("refuses a fixture directory that plants no file, for the same reason", () => {
+  it("runs none over a fixture directory that plants no file either", () => {
     const from = nothingPlantedIn("emptied");
+    let reached = false;
 
-    expect(() => overPlanted("emptied", () => 0, from)).toThrow(
-      "plants no file to run a gate over",
-    );
+    expect(() =>
+      overPlanted(
+        "emptied",
+        () => {
+          reached = true;
+          return 0;
+        },
+        from,
+      ),
+    ).toThrow("plants no file to run a gate over");
+    expect(reached).toBe(false);
 
     rmSync(from, { recursive: true, force: true });
   });

@@ -1,11 +1,29 @@
 const BIOME = "biome.json";
 const RATCHET = ".size-limit.json";
 const STRYKER = "stryker.config.json";
+const CYCLOMATIC = ".oxlintrc.json";
 const JOURNEY = "tests/e2e/journey.spec.ts";
 const GESTURE = "tests/e2e/auditorium.spec.ts";
+const DUPLICATION = ".jscpd.json";
 const WORKFLOW = ".github/workflows/ci.yml";
 
 export const GATE_CLAIMS = [
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /\*\*A class no stylesheet rules is refused by Biome's `noUndeclaredClasses`\*\*/,
+    holds: "the class rule that gates the build",
+    pattern: '"noUndeclaredClasses": "error"',
+    paths: [BIOME],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /by Biome's \[`noExcessiveCognitiveComplexity`\]/,
+    holds: "the complexity rule that gates the build",
+    pattern: "noExcessiveCognitiveComplexity",
+    paths: [BIOME],
+    files: 1,
+  },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
     says: /The line counter is \[cloc\]/,
@@ -19,6 +37,22 @@ export const GATE_CLAIMS = [
       ":!*.fixtures.ts",
     ],
     files: 2,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /the same documented meaning of `classic`/,
+    holds: "the counting variant the limit is defined over",
+    pattern: '"variant": "classic"',
+    paths: [CYCLOMATIC],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /\*\*Lines per file\*\* may not exceed 300, by Biome's/,
+    holds: "the file length rule that gates the build",
+    pattern: "noExcessiveLinesPerFile",
+    paths: [BIOME],
+    files: 1,
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
@@ -74,6 +108,30 @@ export const GATE_CLAIMS = [
     holds: "the round-trip latency the journey emulates",
     pattern: "latency: 150,",
     paths: [JOURNEY],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /the five options it does not switch on under `strict` are on in/,
+    holds: "the strictest of those options, in the shared compiler settings",
+    pattern: '"isolatedDeclarations": true',
+    paths: ["tsconfig.base.json"],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /which is `minTokens` 100 and `minLines` 10 in `\.jscpd\.json`/,
+    holds: "the duplication window the Sonar way defines",
+    pattern: '"minTokens": 100',
+    paths: [DUPLICATION],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /"Duplication in the new code is less than or equal to 3\.0%"/,
+    holds: "the duplication threshold that gates the build",
+    pattern: '"threshold": 3',
+    paths: [DUPLICATION],
     files: 1,
   },
   {

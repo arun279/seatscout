@@ -17,6 +17,12 @@ export const ran = (...command: string[]): SpawnSyncReturns<string> =>
 export const said = (run: SpawnSyncReturns<string>): string =>
   `${run.stdout}${run.stderr}`;
 
+export const biomeOver = (
+  rule: string,
+  target: string,
+): SpawnSyncReturns<string> =>
+  ran("biome", "lint", "--vcs-enabled=false", `--only=${rule}`, target);
+
 export const overPlanted = <Verdict>(
   fixture: string,
   reach: (at: string) => Verdict,
@@ -32,7 +38,9 @@ export const overPlanted = <Verdict>(
       `${from}/${fixture}/${named}`,
       join(at, named.replace(/\.txt$/, "")),
     );
-  const reached = reach(at);
-  rmSync(at, { recursive: true, force: true });
-  return reached;
+  try {
+    return reach(at);
+  } finally {
+    rmSync(at, { recursive: true, force: true });
+  }
 };

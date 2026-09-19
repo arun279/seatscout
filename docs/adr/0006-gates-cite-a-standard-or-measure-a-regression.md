@@ -218,28 +218,36 @@ Each gate written here is a package under `tools/<name>/src`, with its work in f
 test calls and an entry point that only wires them together, which puts them inside both the
 unit suite and the mutation gate.
 
-**Every gate a fixture can violate is watched refusing one.** A fixture the gate must refuse
-sits beside one it must accept, the unit suite runs the gate itself over both on every
-commit, and what it reads is the tool's own diagnostic rather than a non-zero exit status,
-which anything at all can produce. A gate that stops detecting its own fixture fails the
-build instead of waiting to be watched by hand. Each gate written here as a package under
-`tools/<name>/src` keeps its fixtures beside its source; the gates that are somebody else's
-tool keep theirs under `tools/planted-red/planted`, with one test file each for the
-cognitive limit, the cyclomatic limit and its variant, the file length limit, the class
-rule, the written declaration option, the duplication window, the import cycle rule and the
-bundle ratchets. The fixtures live outside `src`, where they are neither product code nor
-mutated.
+**A gate is watched refusing a planted violation wherever a fixture can commit one.** A
+fixture the gate must refuse sits beside one it must accept, the unit suite runs the gate
+itself over both on every commit, and what it reads is the tool's own diagnostic rather than
+a non-zero exit status, which anything at all can produce. A gate that stops detecting its
+own fixture fails the build instead of waiting to be watched by hand. Each gate written here
+as a package under `tools/<name>/src` keeps its fixtures beside its source; the gates that
+are somebody else's tool keep theirs under `tools/planted-red/planted`, with one test file
+each for the cognitive limit, the cyclomatic limit and its variant, the file length limit,
+the class rule, the written declaration option, the duplication window, the import cycle
+rule and the bundle ratchets. That whole set answers in about seven seconds on two workers,
+which is why it sits in `pnpm test:unit` beside everything else rather than in a job of its
+own. The fixtures live outside `src`, where they are neither product code nor mutated.
 
-**What no fixture can violate is held to a search of the tree instead, and that is the
-weaker of the two.** A fixture can break a rule. It cannot pick the wrong glob, drop a
-number out of a configuration file or rename the script a job runs, so the sentences about
-those are paired with a `git grep` in `tools/claims-in-prose.pairs.gates.mjs`, which proves
-a string is present rather than that a gate fires. Twelve sentences are held that way: the
-mutation gate's break threshold, which nothing can be planted against short of a whole
-mutation run; the bundle globs and the ratchet each is weighed against; the journey's and
-the gesture's own constants and the command that judges them; the counter this decision
-picked; and the licence flag the `dependencies` job carries, which already has a planted red
-of its own in that job because osv-scanner is the job's tool rather than the workspace's.
+Three gates here could carry a planted red and do not, and naming them is better than
+leaving the sentence above to be read as covering them: the Grit plugin that refuses a
+collected response, and the two bans that keep Cache Storage behind one writer.
+
+**A planted red holds the gate. A pair holds this record's wording, and neither does the
+other's job.** A fixture proves a rule fires. It cannot prove that this document still says
+300 where the tool says 300, because a fixture has no opinion about prose, so each sentence
+here that carries a number or a rule name is also paired with a search of the tree in
+`tools/claims-in-prose.pairs.gates.mjs`. Nineteen are. Seven of the nineteen now sit beside a
+planted red as well, and two sentences that carried neither a number nor a name were dropped
+along with the grep that was their only witness, since the red beside them says everything
+they said. The twelve with no red at all are the ones a fixture cannot reach: the mutation
+gate's break threshold, which nothing can be planted against short of a whole mutation run;
+the bundle globs and the ratchet each is weighed against; the journey's and the gesture's own
+constants and the command that judges them; the counter this decision picked; and the licence
+flag the `dependencies` job carries, which already has a planted red of its own in that job
+because osv-scanner is the job's tool rather than the workspace's.
 
 One gate is outside all of that and it is worth naming rather than leaving to be found. The
 claims gate is four modules directly under `tools/` rather than a package, so it has no
@@ -435,13 +443,15 @@ measured anything, and the refusal for each of the two, and it is here for the r
 opens with.
 
 **Watched failing, watched silent.** A planted pair of modules whose shared run jscpd measures at 136
-tokens over eleven lines is refused by percentage against the threshold, which the message names; two
-planted pairs just outside the window pass, one of them a line short of it at 121 tokens and the other
-fourteen lines long at 92 tokens, and the report records all four sources read. Neither of those two
-passes by sharing nothing, which is shown rather than asserted: widening the window by one line and ten
-tokens makes clones of both. So the window is watched at its own edges rather than read out of
-`.jscpd.json`. A report recording no source read is refused by the guard; a report the run never wrote
-is refused too.
+tokens is refused by percentage against the threshold, which the message names; two planted pairs just
+outside the window pass, one a line short of it at 121 tokens and the other well inside the line floor
+at 92 tokens, and the report records all four sources read. Neither of those two passes by sharing
+nothing, which is shown rather than asserted: widening the window by one line and ten tokens makes
+clones of both. So the window is watched at its own edges rather than read out of `.jscpd.json`. One
+property of the report is worth knowing before it surprises somebody: the line count it prints for a
+clone is one more than the span it holds to `minLines`, so the pair it reports at ten lines is the pair
+that fell a line short of a floor of 10. A report recording no source read is refused by the guard; a
+report the run never wrote is refused too.
 
 **Comment load** is the number of comment lines in first-party source, and it may not
 exceed the ratchet recorded in `.footprint.json`. Only files with a JavaScript, TypeScript
@@ -868,8 +878,11 @@ read that file from disk. `stylesheets.test.tsx` reads every sheet under `apps/w
 the planted pair under `apps/web/tests/planted` with `readFile`. The sheets under
 `apps/web/src` are imports of the modules that draw with them, so a change to one of those is
 reached; the planted pair is imported by nothing, so an edit to it selects no test at all
-locally while the suite fails on it. That is the hole in the fast layer, it is there by
-design, and the gating layer closes it by running the suite whole.
+locally while the suite fails on it. The planted reds have the same property one step along,
+and it is the more useful half to know: `biome.json`, `.oxlintrc.json`, `.jscpd.json` and
+`.size-limit.json` are in no module graph, so loosening a rule in one of them selects no test
+on the hook. That is the hole in the fast layer, it is there by design, and the gating layer
+closes it by running the suite whole.
 
 The trigger list is written out rather than left to the tool's default, because the default
 for the tool's own config file does not work. `**/{vitest,vite}.config.*/**` matches no path

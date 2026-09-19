@@ -1,20 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { overPlanted, ran, said } from "./planted.fixtures.ts";
+import { biomeOver, overPlanted, said } from "./planted.fixtures.ts";
 
-const biomeOver = (fixture: string) =>
-  overPlanted(fixture, (at) =>
-    ran(
-      "biome",
-      "lint",
-      "--vcs-enabled=false",
-      "--only=suspicious/noImportCycles",
-      at,
-    ),
-  );
+const RULE = "suspicious/noImportCycles";
 
 describe("the planted red under the import cycle gate", () => {
   it("refuses a planted pair of modules importing each other, naming both imports", () => {
-    const run = biomeOver("cycles");
+    const run = overPlanted("cycles", (at) => biomeOver(RULE, at));
 
     expect(run.status).toBe(1);
     expect(said(run)).toContain("This import is part of a cycle");
@@ -22,7 +13,7 @@ describe("the planted red under the import cycle gate", () => {
   });
 
   it("accepts a planted pair that imports one way, so it is not refusing every import", () => {
-    const run = biomeOver("no-cycle");
+    const run = overPlanted("no-cycle", (at) => biomeOver(RULE, at));
 
     expect(run.status).toBe(0);
     expect(said(run)).not.toContain("part of a cycle");
