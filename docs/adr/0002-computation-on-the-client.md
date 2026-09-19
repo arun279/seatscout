@@ -32,20 +32,20 @@ proxy that forwards bytes without parsing them consumes roughly one millisecond 
 ten millisecond ceiling. The ceiling only becomes a constraint if the server parses and
 scores the payloads it is forwarding.
 
-That figure is now measured rather than estimated. The proxy was bundled and served by the
-platform runtime directly, with no development harness around it and local stand-ins for
-the signing certificates and the upstream, and its isolate sampled by the JavaScript engine's
-own CPU profiler over the debugging protocol at a one millisecond interval. It spends 0.98
-to 1.09 milliseconds of CPU per invocation over four runs of 3,000 requests each; the same
-worker refusing a request, which verifies nothing and calls nothing, spends 0.31 to 0.55.
-Payload size does not enter it, because the body is never read. Measuring through the
-development server instead reads roughly five milliseconds, of which nearly three is the
-harness answering a request the worker refuses immediately.
+That figure was measured rather than estimated, on the build that still verified a sign-in
+assertion. The proxy was bundled and served by the platform runtime directly, with no
+development harness around it and local stand-ins for the signing certificates and the
+upstream, and its isolate sampled by the JavaScript engine's own CPU profiler over the
+debugging protocol at a one millisecond interval. It spent 0.98 to 1.09 milliseconds of CPU
+per invocation over four runs of 3,000 requests each; the same worker refusing a request,
+which called nothing, spent 0.31 to 0.55. Payload size did not enter it, because the body is
+never read. Measuring through the development server instead read roughly five milliseconds,
+of which nearly three was the harness answering a request the worker refused immediately.
 
-That reading predates the removal of the sign-in gate and is kept as a ceiling rather than
-re-taken. What it measured on the forwarding path is what still runs: one upstream request
-and no parsing. What it also measured, a signature verified against a fetched key set, is
-gone, and what replaced it is a header comparison and one rate limiter call.
+Those figures are historical and have not been taken again. What they establish is the shape
+of the argument rather than a reading of the code that ships: on a proxy that forwards bytes
+without parsing them, the work is the round trip, and the isolate's own share of a ten
+millisecond budget is about one.
 
 ## Decision
 
@@ -78,10 +78,11 @@ The first is
 `Sec-Fetch-Site` reads `same-origin`. The browser sets that header and page script cannot,
 because the `Sec-` prefix makes it a forbidden request header, and the application's own
 reads are same-origin by construction, since `packages/core` asks for `/napi/…` relative to
-the page it runs on. Where the header is absent — a browser older than
+the page it runs on. The header is absent from a browser older than
 [Chrome 76, Firefox 90 or Safari 16.4](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Site),
-or a client that is not a browser at all — the request is carried only if its `Origin` or
-`Referer` names this deployment's own origin. That fallback is deliberately stricter than
+and from a client that is not a browser at all. Where it is absent, the request is carried
+only if its `Origin` or `Referer` names this deployment's own origin. That fallback is
+deliberately stricter than
 [the published guidance](https://web.dev/articles/fetch-metadata), which suggests admitting
 a request that sends no Fetch Metadata at all; admitting it would leave every command-line
 client through the guard it exists for.
@@ -92,10 +93,18 @@ and keyed on `CF-Connecting-IP`. Its size comes from what a search costs rather 
 round number. A live search reads one listing and 48 seat maps, timed in
 [ADR 16](0016-a-search-reports-its-coverage.md); the corpus search `tests/e2e/query.spec.ts`
 runs checks 170 candidates besides its listings. One search is therefore 50 to 180 proxy
-requests, arriving together. Three of the wider kind in a minute is 540, which is the limit.
-The period is 60 seconds because the binding takes 10 or 60 and nothing else. It counts
-within one Cloudflare location rather than across all of them, which the documentation says
-plainly, so it is a bound on one visitor's share and not an accounting of it.
+requests, arriving together. The measurement fixes the unit; how many units to allow is a
+judgement, and the judgement is three, so that someone who searches, changes a term and
+searches again is never the one refused. Three of the wider kind in a minute is 540, which
+is the limit. The period is 60 seconds because the binding takes 10 or 60 and nothing else.
+
+The key is the visitor's address, which the same documentation lists as the thing it does
+not recommend keying on, because an address is shared: a mobile network or an office puts
+many people behind one. Without a login there is no other per-visitor signal, and a login is
+what this decision has just removed. Allowing three searches rather than one is what keeps a
+shared address workable, and the limit counts within one Cloudflare location rather than
+across all of them, which the documentation also says plainly, so it is a bound on a share
+and not an accounting of one.
 
 Neither guard is a permission system and neither is offered as one. They are what makes a
 proxy bound to one upstream, and to the `/napi/` paths of it that `packages/core` reads, not
@@ -108,7 +117,8 @@ One Worker is the whole deployment: `apps/proxy/wrangler.json` declares an asset
 that is everything `apps/web` builds, and a script that is the proxy. A request matching a
 built file is served by the platform without invoking the Worker at all, and every other
 request reaches the proxy. That is the platform's default routing and it is why the
-configuration is seven keys rather than a routing table. `assets` declares a directory and
+configuration is a short list of settings rather than a routing table. `assets` declares a
+directory and
 nothing else: naming a binding would hand the Worker a reader for what it publishes, and
 putting the Worker in front of every asset is what a Worker that needed to transform assets
 would do. Both are one reviewed line away if a reason arrives.

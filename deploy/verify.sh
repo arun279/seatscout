@@ -107,9 +107,9 @@ section "Deploy on merge"
 
 RUN="$(gh run list --workflow deploy.yml --branch main --limit 1 --json conclusion,url --jq '.[] | "\(.conclusion) \(.url)"' 2>/dev/null || true)"
 case "$RUN" in
-  "") bad "the Deploy workflow has never run on main" "Run it: gh workflow run deploy.yml --ref main" ;;
+  "") bad "the Deploy workflow has never run on main" "It releases on a version bump: raise the version in package.json and merge" ;;
   success*) ok "the last deploy of main succeeded" ;;
-  *) bad "the last deploy of main ended $RUN" "Read the run, fix it, and dispatch another" ;;
+  *) bad "the last deploy of main ended $RUN" "Read the run, fix it, and merge another version bump" ;;
 esac
 
 section "Live deployment"
@@ -146,7 +146,7 @@ section "The proxy"
 
 READ="$SEATSCOUT_URL$AREA_ROUTE?zipCode=$AREA&limit=$THEATERS"
 
-CARRIED="$(request -H "Sec-Fetch-Site: same-origin" -H "Origin: $SEATSCOUT_URL" "$READ")"
+CARRIED="$(request -H "Sec-Fetch-Site: same-origin" "$READ")"
 BODY="$(cat "$WORK/body")"
 
 if [[ "$BODY" == "Not a request from this site" ]]; then
@@ -162,7 +162,7 @@ else
   ok "a same-origin read is carried upstream and answered"
 fi
 
-REFUSED="$(request -H "Sec-Fetch-Site: cross-site" -H "Origin: https://elsewhere.example" "$READ")"
+REFUSED="$(request -H "Sec-Fetch-Site: cross-site" "$READ")"
 if [[ "$REFUSED" == "403" ]]; then
   ok "a cross-site read is refused"
 else

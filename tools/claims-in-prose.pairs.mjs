@@ -50,6 +50,14 @@ export const CLAIMS = [
   },
   {
     adr: "0002-computation-on-the-client.md",
+    says: /runs checks 170 candidates besides its listings\./,
+    holds: "the corpus search the limit is sized from",
+    pattern: "170 checked",
+    paths: ["tests/e2e/query.spec.ts"],
+    files: 1,
+  },
+  {
+    adr: "0002-computation-on-the-client.md",
     says: /Three of the wider kind in a minute is 540, which is the limit\./,
     holds: "the rate limit the deployment declares",
     pattern: '"limit": 540',

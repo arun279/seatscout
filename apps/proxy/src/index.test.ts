@@ -39,8 +39,8 @@ const network = (
     env: {
       UPSTREAM_ORIGIN: UPSTREAM,
       VISITOR_RATE: {
-        limit: async (of: { key: string }) => {
-          keyed.push(of.key);
+        limit: async (options: { key: string }) => {
+          keyed.push(options.key);
           return { success: admitting };
         },
       },
@@ -53,12 +53,16 @@ const network = (
   };
 };
 
+type Stub = { env: ReturnType<typeof network>["env"] };
+
+const at = ({ env }: Stub, path: string) =>
+  proxy.fetch(new Request(`${SITE}${path}`, { headers: OWN_PAGE }), env);
+
 const through = (
-  { env }: { env: ReturnType<typeof network>["env"] },
+  { env }: Stub,
   headers: Record<string, string> = OWN_PAGE,
   sent?: { method: string; body: string },
-  path: string = READ,
-) => proxy.fetch(new Request(`${SITE}${path}`, { headers, ...sent }), env);
+) => proxy.fetch(new Request(`${SITE}${READ}`, { headers, ...sent }), env);
 
 const headerNamesOf = (request: Request | undefined) => [
   ...(request?.headers.keys() ?? []),
@@ -80,7 +84,7 @@ describe("what the proxy answers at all", () => {
     "proxies nothing at %s, so the deployment relays one upstream's reads and no more",
     async (path) => {
       const upstream = network();
-      const response = await through(upstream, OWN_PAGE, undefined, path);
+      const response = await at(upstream, path);
 
       expect(response.status).toBe(404);
       expect(await response.text()).toBe("Nothing is proxied at that path");
@@ -162,7 +166,7 @@ describe("one visitor's share", () => {
     expect(upstream.keyed).toEqual(["203.0.113.7"]);
   });
 
-  it("counts a read that names no address against one shared key", async () => {
+  it("counts a read the platform named no address for against one key", async () => {
     const upstream = network();
     await through(upstream);
 

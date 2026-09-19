@@ -25,9 +25,10 @@ cd deploy
 
 A **Cloudflare account** on the free plan. Workers gives 100,000 script requests a day,
 10 ms of CPU per invocation and 50 subrequests per invocation; requests to static assets
-are free and unlimited and do not count against the daily figure. A search issues about
-one proxy request per candidate screening, which measured about 48, so the daily
-allowance is roughly two thousand searches. Nothing here reaches a paid feature.
+are free and unlimited and do not count against the daily figure. A search issues one proxy
+request per candidate screening besides its listings, which is 50 to 180, so the daily
+allowance is between five hundred and two thousand searches. Nothing here reaches a paid
+feature.
 
 A **GitHub repository** you can set secrets on, which is what deploys on merge.
 
@@ -125,12 +126,12 @@ Read on 2026-09-19.
 - The rate limiting binding, its configuration shape, its 10 or 60 second period and its
   locality: `developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/`. It left
   beta on 2025-09-19: `developers.cloudflare.com/changelog/post/2025-09-19-ratelimit-workers-ga/`.
-  The documentation states no plan restriction on it and it needs no dashboard step; this
-  deployment runs it on the free plan.
+  The documentation states no plan restriction on it and it needs no dashboard step, and
+  this deployment is on the free plan.
 - `Sec-Fetch-Site`, its values and its `Sec-` prefix being a forbidden request header name:
   `w3.org/TR/fetch-metadata/` and
   `developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Site`, which is
-  also where the browser versions above come from.
+  also where the browser versions in ADR 2 come from.
 - Allowing requests that send no Fetch Metadata, which this proxy deliberately does not do:
   `web.dev/articles/fetch-metadata`.
 - The environment variables `wrangler` reads:

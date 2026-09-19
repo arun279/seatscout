@@ -4,18 +4,18 @@ const ROUTE = "/napi/";
 type Env = {
   UPSTREAM_ORIGIN: string;
   VISITOR_RATE: {
-    limit: (of: { key: string }) => Promise<{ success: boolean }>;
+    limit: (options: { key: string }) => Promise<{ success: boolean }>;
   };
 };
 
-const claims = (header: string | null, origin: string) =>
+const namesThisSite = (header: string | null, origin: string) =>
   header !== null && (header === origin || header.startsWith(`${origin}/`));
 
 const fromOwnPage = (headers: Headers, origin: string) => {
   const site = headers.get("sec-fetch-site");
   return site === null
-    ? claims(headers.get("origin"), origin) ||
-        claims(headers.get("referer"), origin)
+    ? namesThisSite(headers.get("origin"), origin) ||
+        namesThisSite(headers.get("referer"), origin)
     : site === "same-origin";
 };
 
@@ -48,16 +48,17 @@ export default {
       return new Response("Not a request from this site", { status: 403 });
     }
 
-    const visitor = request.headers.get("cf-connecting-ip") ?? "";
-    const { success } = await env.VISITOR_RATE.limit({ key: visitor });
+    const { success } = await env.VISITOR_RATE.limit({
+      key: request.headers.get("cf-connecting-ip") ?? "",
+    });
     if (!success) {
       return new Response("Too many requests", { status: 429 });
     }
 
-    const upstream = new URL(env.UPSTREAM_ORIGIN);
-    const answer = await fetch(new URL(pathname + search, upstream), {
+    const target = new URL(env.UPSTREAM_ORIGIN);
+    const answer = await fetch(new URL(pathname + search, target), {
       method: request.method,
-      headers: upstreamHeaders(request.headers, `${upstream.origin}/`),
+      headers: upstreamHeaders(request.headers, `${target.origin}/`),
       body: request.body,
       redirect: "manual",
     });
