@@ -241,8 +241,10 @@ one source.
 ## Deploying
 
 `deploy/README.md` is the runbook, `deploy/setup.sh` walks it, and `deploy/verify.sh` reads
-back what took effect without reading a secret. `.github/workflows/deploy.yml` deploys on
-merge to `main` and on manual dispatch, running `wrangler` from the workspace so the version
+back what took effect without reading a secret. `.github/workflows/deploy.yml` releases when a
+merge to `main` changes the `version` in the root `package.json`: it deploys, tags the commit
+`v<version>` and publishes a GitHub release with generated notes. No other merge deploys and
+there is no manual trigger; to release, bump the version in a pull request. It runs `wrangler` from the workspace so the version
 that deploys is the version the lockfile pins and the dry run in `quality` already
 exercised. With neither `CLOUDFLARE_API_TOKEN` nor `CLOUDFLARE_ACCOUNT_ID` set its first
 step skips every step after it and says so in the run summary, so a fork gets a green build

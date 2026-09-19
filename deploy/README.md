@@ -80,7 +80,9 @@ application.
    Account Details > Account ID, or press Ctrl/Cmd-K anywhere in the dashboard and run
    "Copy account ID".
 6. **Deploy once**, so the Worker exists for the next step to point Access at. The
-   workflow runs on merge to `main` and on manual dispatch. The Worker appears at
+   workflow releases when a merge to `main` changes the `version` in the root
+   `package.json`, and at no other time; if nothing has been released yet, `setup.sh`
+   offers to run `wrangler deploy` from this machine once. The Worker appears at
    `https://<name>.<your-subdomain>.workers.dev`, the name coming from `name` in
    `apps/proxy/wrangler.json`.
 

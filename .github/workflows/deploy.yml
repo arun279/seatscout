@@ -4,10 +4,11 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
+    paths:
+      - package.json
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: deploy
@@ -18,6 +19,22 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
+      - name: Check out repository, with the commit before this one
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 2
+      - name: Read the version this merge states and the one before it
+        id: version
+        run: |
+          now="$(jq -r .version package.json)"
+          before="$(git show HEAD^:package.json | jq -r .version)"
+          echo "now=$now" >> "$GITHUB_OUTPUT"
+          if [ "$now" != "$before" ]; then
+            echo "bumped=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "bumped=false" >> "$GITHUB_OUTPUT"
+            echo "package.json changed but its version did not ($now), so nothing was released." >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Look for the hosting credentials
         id: look
         env:
@@ -33,26 +50,28 @@ jobs:
             echo "Set CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID together or not at all. See deploy/README.md." >&2
             exit 1
           fi
-      - name: Check out repository
-        if: steps.look.outputs.present == 'true'
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set up pnpm and Node.js
-        if: steps.look.outputs.present == 'true'
+        if: steps.look.outputs.present == 'true' && steps.version.outputs.bumped == 'true'
         uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
         with:
           runtime: node@24.20.0
           cache: true
           install: false
       - name: Install what the build needs
-        if: steps.look.outputs.present == 'true'
+        if: steps.look.outputs.present == 'true' && steps.version.outputs.bumped == 'true'
         run: pnpm install --frozen-lockfile
       - name: Build what the deployment publishes
-        if: steps.look.outputs.present == 'true'
+        if: steps.look.outputs.present == 'true' && steps.version.outputs.bumped == 'true'
         run: pnpm build
       - name: Deploy the worker and the assets it serves
-        if: steps.look.outputs.present == 'true'
+        if: steps.look.outputs.present == 'true' && steps.version.outputs.bumped == 'true'
         working-directory: apps/proxy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: pnpm exec wrangler deploy
+      - name: Tag the release and publish its notes
+        if: steps.look.outputs.present == 'true' && steps.version.outputs.bumped == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "v${{ steps.version.outputs.now }}" --target "$GITHUB_SHA" --generate-notes
