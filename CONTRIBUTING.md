@@ -39,7 +39,9 @@ Nothing configures it: `apps/proxy/wrangler.json` names the upstream it forwards
 rate limit it holds each visitor to, and nobody signs in.
 
 Expo prints a URL of its own; open that one in Expo Go. `/ios` and `/android` are ignored
-because `expo prebuild` generates them.
+because `expo prebuild` generates them. A phone that cannot reach this machine, which is any
+phone when the server runs behind a NAT, opens the published update instead of this server;
+`README.md` says how.
 
 ## Before you push
 
@@ -305,6 +307,25 @@ that deploys is the version the lockfile pins and the dry run in `quality` alrea
 exercised. With neither `CLOUDFLARE_API_TOKEN` nor `CLOUDFLARE_ACCOUNT_ID` set its first
 step skips every step after it and says so in the run summary, so a fork gets a green build
 rather than a confusing red one; with one of the two set it fails and names the other.
+
+`.github/workflows/preview.yml` is the other thing a merge can start, and it is not a release.
+A merge to `main` that changes `apps/native`, anything under `packages/`, or what the install
+resolves, publishes an EAS Update to the `preview` channel, which is the channel the phones
+follow. That is deliberately not the release trigger: the point of it is to see each slice on a
+phone as it lands, and a release is a version the owner chose to cut. `--environment` names
+which of EAS's own environments the publish reads variables from, and `eas update` has required
+it since SDK 55. It publishes with `npx` at the `eas-cli` version the workflow pins, rather than
+from the workspace the way `wrangler` deploys, because `eas-cli` is a publisher and not a
+dependency of anything this repository builds: in the lockfile it would be installed by every
+job that installs at all, and an advisory against a tool one job runs would stand in the way of
+every merge. The version is a literal a reviewer sees move. It publishes with the repository
+secret `EXPO_TOKEN`, a robot user holding the developer role on the account
+`apps/native/app.json` names as the owner. Where
+the deploy skips itself and stays green without its credentials, this job fails and names which
+half is missing, because a deployment a fork never wanted is a fair thing to skip and an app
+that has quietly stopped reaching the phones is not. The run's summary carries the QR code
+address and the update address; `README.md` carries the same two, since neither moves between
+updates, and `pnpm claims` holds the SDK they name to the one `apps/native` is on.
 
 ## Dependency updates
 

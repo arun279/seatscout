@@ -9,8 +9,4 @@ export const UNCHECKED = {
   "CONTEXT.md":
     "it is the domain glossary, and the sets and counts it states are held term by term " +
     "by tools/counts-in-prose, which is the right instrument for a count",
-  "README.md":
-    "it describes the product to a reader and states no shape of this tree that a search " +
-    "could hold; what it says of the Reference profile is defined in CONTEXT.md, which is " +
-    "where tools/counts-in-prose holds it",
 };

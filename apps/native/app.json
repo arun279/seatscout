@@ -3,8 +3,17 @@
     "name": "SeatScout",
     "slug": "seatscout",
     "scheme": "seatscout",
+    "owner": "arunkris-expo",
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
     "updates": {
-      "enabled": false
+      "url": "https://u.expo.dev/bd0a1be7-8d02-4cd8-9a1b-d0431c52d495"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "bd0a1be7-8d02-4cd8-9a1b-d0431c52d495"
+      }
     }
   }
 }

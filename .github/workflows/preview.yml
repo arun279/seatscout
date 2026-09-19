@@ -1,0 +1,78 @@
+name: Preview
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - apps/native/**
+      - packages/**
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - .github/workflows/preview.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preview
+  cancel-in-progress: false
+
+env:
+  CHANNEL: preview
+  EAS_CLI: eas-cli@24.7.0
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
+        with:
+          runtime: node@24.20.0
+          cache: true
+          install: false
+      - name: Install what the bundle is built from
+        run: pnpm install --frozen-lockfile
+      - name: Name the account the token answers for
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::error::This repository holds no EXPO_TOKEN, so the phones cannot be sent the app. CONTRIBUTING.md says where it comes from."
+            exit 1
+          fi
+          if ! npx --yes "$EAS_CLI" whoami; then
+            echo "::error::EXPO_TOKEN was refused. It has to be a live token for a user with the developer role on the account apps/native/app.json names as the owner."
+            exit 1
+          fi
+      - name: Publish the update both phones follow
+        id: published
+        working-directory: apps/native
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          npx --yes "$EAS_CLI" update --channel "$CHANNEL" --environment preview \
+            --message "$(git log -1 --pretty=%s)" --json > "$RUNNER_TEMP/update.json"
+          project="$(jq -er .expo.extra.eas.projectId app.json)"
+          runtime="$(jq -er 'first(.[].runtimeVersion)' "$RUNNER_TEMP/update.json")"
+          {
+            echo "project=$project"
+            echo "runtime=$runtime"
+          } >> "$GITHUB_OUTPUT"
+      - name: Say where to scan it
+        env:
+          PROJECT: ${{ steps.published.outputs.project }}
+          RUNTIME: ${{ steps.published.outputs.runtime }}
+        run: |
+          code="https://qr.expo.dev/eas-update?projectId=$PROJECT&runtimeVersion=$RUNTIME&channel=$CHANNEL"
+          address="exp://u.expo.dev/$PROJECT?runtime-version=${RUNTIME/:/%3A}&channel-name=$CHANNEL"
+          {
+            echo "## Open this on your phone"
+            echo
+            echo "Scan the code at <$code>, or type \`$address\` into Expo Go."
+            echo "Neither address changes from one update to the next."
+          } >> "$GITHUB_STEP_SUMMARY"
