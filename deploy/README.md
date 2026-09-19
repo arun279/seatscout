@@ -47,7 +47,7 @@ secrets from those logs while doing nothing of the kind for anything else.
 
 Those two are the whole list. The upstream the proxy forwards to is not on it: it is
 `UPSTREAM_ORIGIN` under `vars` in `apps/proxy/wrangler.json`, in the open, because the
-captured corpus names it in every ticketing URL and `tools/upstream.mjs` names it outright.
+captured corpus names it in every ticketing URL and `tools/upstream.ts` names it outright.
 Pointing an instance somewhere else is a one-line edit rather than a secret to set.
 
 ## Who the proxy answers

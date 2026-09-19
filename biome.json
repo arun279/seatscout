@@ -26,6 +26,17 @@
         "useLiteralKeys": "off"
       },
       "nursery": {
+        "noJsRestrictedProperties": {
+          "level": "error",
+          "options": {
+            "entries": [
+              {
+                "property": "caches",
+                "message": "Cache Storage is reached only through apps/web/src/worker/cache.ts. See ADR 13."
+              }
+            ]
+          }
+        },
         "noUndeclaredClasses": "error",
         "noUnsafeTypeAssertion": "error"
       },
@@ -41,7 +52,8 @@
       "suspicious": {
         "noImportCycles": "error",
         "noOctalEscape": "error",
-        "noTsIgnore": "error"
+        "noTsIgnore": "error",
+        "noUselessEscapeInString": "error"
       },
       "correctness": {
         "noUnusedVariables": "error"
@@ -56,6 +68,23 @@
           "a11y": {
             "noNoninteractiveElementToInteractiveRole": "off",
             "useSemanticElements": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/**", "!apps/web/src/worker/cache.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedGlobals": {
+              "level": "error",
+              "options": {
+                "deniedGlobals": {
+                  "caches": "Cache Storage is reached only through apps/web/src/worker/cache.ts, whose writer takes no argument and caches the build's own output. See ADR 13."
+                }
+              }
+            }
           }
         }
       }

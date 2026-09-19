@@ -71,7 +71,7 @@ WORKER="$(node -p 'require("./apps/proxy/wrangler.json").name')"
 ADAPTER=packages/core/src/source/aggregator.ts
 AREA_ROUTE="$(sed -n 's#^ *`\(/napi/[A-Za-z]*\)?zipCode=.*#\1#p' "$ADAPTER")"
 THEATERS="$(sed -n 's/^const THEATERS_ASKED_FOR = \([0-9]*\);$/\1/p' "$ADAPTER")"
-AREA="$(sed -n 's/^const ANCHOR_THEATER_ZIP = "\(.*\)";$/\1/p' tools/live-answers.mjs)"
+AREA="$(sed -n 's/^const ANCHOR_THEATER_ZIP = "\(.*\)";$/\1/p' tools/live-answers.ts)"
 
 section "Repository"
 

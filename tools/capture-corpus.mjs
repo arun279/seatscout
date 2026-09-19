@@ -18,7 +18,7 @@ import {
   spreadOverTheaters,
 } from "./corpus-rows.mjs";
 import { shapeOf } from "./corpus-shape.mjs";
-import { UPSTREAM_ORIGIN as HOST } from "./upstream.mjs";
+import { UPSTREAM_ORIGIN as HOST } from "./upstream.ts";
 
 const UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36";

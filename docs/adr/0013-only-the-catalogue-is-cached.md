@@ -163,88 +163,82 @@ offline in a fallback face would be a different screen from the one the directio
 
 ### The reach check
 
-`tools/no-cache-storage-reach/` is the whole of the gate that keeps the writer the only
-writer. It takes the staged content of every tracked file under `apps/`, refuses any that
-carries the letters `caches`, and refuses a pathspec that matched no tracked file at all. It
-runs over that tree in `quality` and again in the pre-commit hook.
+Two rules in `biome.json` are the whole of the gate that keeps the writer the only writer.
+`noRestrictedGlobals` denies the global `caches` under `apps/**`, and the override that
+carries it excludes one file, `apps/web/src/worker/cache.ts`. `noJsRestrictedProperties`
+denies the property `caches` across the workspace, which is the member form the global rule
+cannot see. Both run under `pnpm lint`: over the staged files in the pre-commit hook, over the
+tree on pre-push and again in `quality`.
 
-**It reads source text rather than an abstract syntax tree, and that is the point.** A member
-pattern sees only the spellings it enumerates, and `self?.caches`, a key held in a variable, a
-template literal, `Reflect.get(self, "caches")` and a renaming destructure all reach Cache
-Storage without being one, and none of them can be written without the letters. It was watched
-refusing every reach planted across those surfaces, and staying silent on the ones that have
-to pass. On the gates it replaces, seven of twelve spellings walked past in a source file and
-eight of twelve in the shipped page.
+**It takes both rules, because neither is the whole ban.** The global rule matches a bare
+identifier and nothing else, which is the limit
+[ADR 3](0003-separate-view-layers-shared-core.md) already records: a ban on `caches` alone
+leaves `self.caches`, `globalThis.caches` and `window.caches` reaching Cache Storage without
+naming it. Under `packages/` the answer is to deny every name that denotes the global object
+as well, and that answer is not available here, because the worker is written in terms of
+`self`. The property rule closes the member side instead, and it closes it across the
+workspace rather than under `apps/`, so `self.caches` under `tools/` or `tests/` is refused
+too. Both were watched refusing a planted reach and staying silent on what has to pass:
+`caches.open("shell")`, `self.caches`, `globalThis.caches` and `window.caches.match` in a
+source file, `caches.open("shell")` in the proxy, and both the bare and the member form inside
+the inline module script `public/index.html` ships to every device. The writer was green
+throughout.
 
-**It names three files and trusts none of them further than it has to.** `cache.ts` is exempt
-because it is the writer. The worker's two test files are allowed the single literal
-`vi.stubGlobal("caches",`, which is struck from those two files alone before the letters are
-looked for, because that is how they hand the module under test a fake and the runner's API
-takes the global's name as a string. Everything else in them is refused: a test writing
-`self.caches.open(...)` draws the same error a source file would, and it has to, because a
-test file can be exported from and an export reaching the web application's entry reaches its
-built output. Both weaker shapes of this exemption were built and broken first. Exempting
-`*.test.ts` wholesale let a reach travel that export route into the built output. Striking the
-idiom in every file let any file declare its own `vi` whose `stubGlobal` returns
-`Reflect.get(self, name)`, so the call that hides the letters was also the call that made the
-reach. Naming the two files closes both.
+**The two worker test files need no exemption, and that is what reading a tree buys.** They
+hand the module under test a fake through `vi.stubGlobal("caches", ...)`, where the global's
+name is a string argument rather than a reference, so neither rule sees it. The text scan this
+replaces had to strike that one literal out of those two files by name before looking for the
+letters, and had to refuse the word in a comment and in prose under `apps/` along with it.
+Neither cost survives, and no file is trusted for having a name on a list.
 
 **The surface is every application rather than one directory.** `public/index.html` carries an
-inline module script that ships to every device, and the linter ban on `caches` was scoped to
-the web application's `src`, so a bare `caches.open("shell")` in the page was refused by
-nothing. Biome does lint JavaScript inside an HTML `<script>`, which is worth stating because
-it is the opposite of what it looks like: the deleted plugin fired there on the member forms,
-and only the scoped rule missed. `apps/proxy` is in scope because it is the Worker that serves
+inline module script that ships to every device. Biome does lint JavaScript inside an HTML
+`<script>`, which is worth stating because it is the opposite of what it looks like, and both
+rules were watched firing there. `apps/proxy` is in scope because it is the Worker that serves
 seat maps, `caches.default` is the platform idiom for holding a response, and that proxy holds
-nothing about anybody. The check names `apps/` and no application inside it, because
+nothing about anybody. The override names `apps/**` and no application inside it, because
 `pnpm-workspace.yaml` declares every application as `apps/*` and a gate that lists its subjects
 one by one governs the applications that existed when it was written.
-
-**It decodes every escape, because otherwise it does not hold at all.** `caches` is a
-lawful identifier that a bundler emits as `caches`, and `self["caches"]` is a lawful key,
-so an escape is a two-character edit to any reach. Enumerating the forms one at a time is how
-this half was got wrong once already: reading `\uXXXX` and `\u{...}` and nothing else left
-`self["\x63aches"]` walking past, and left the two cheapest routes open besides, a line
-continuation inside the string and the identity escape `"\c\a\c\h\e\s"`, which needs no digits
-at all and which every engine reads as `caches`. So the decoder is general rather than a list:
-`\u{...}`, `\uXXXX` and `\xXX` become their code point, a backslash before a line terminator
-takes the line terminator with it, and every other backslash is dropped, which is what a string
-literal does with one. The one form that escapes that reading is a legacy octal escape, which
-is a syntax error in a module, and Biome's own `noOctalEscape` refuses it as an error rather
-than as the warning its recommended preset makes it.
-
-**The cost was measured rather than assumed, and it is zero.** Across every tracked file under
-`apps/`, one carries the letters once the idiom is struck, and it is the writer. The word does
-appear elsewhere in the workspace, which is what decided the surface rather than a wider one:
-a client test is named for caching for two hours, and the end-to-end suite reads Cache Storage
-back on purpose to assert what the worker holds. Both would be refused by a workspace-wide
-check and neither is a reach.
 
 ## Consequences
 
 Availability is never held anywhere, so the re-verification
 [ADR 4](0004-booking-ends-at-a-deep-link.md) requires has nothing to compete with.
 
-**What the check surrenders and what stays open, stated rather than implied.** The deleted
-plugin was a workspace-wide member rule, so `self.caches` under `tools/` or `tests/` is now
-refused by nothing; that is a real loss and a small one, since neither ships and the
-end-to-end suite reads Cache Storage there on purpose. The check reads the index, so it judges
-what is staged rather than what is in the editor, which is right for a commit gate. Three
-routes remain open, and they are listed rather than implied because an enumeration that is
-short by one is worth less than no enumeration at all. A name assembled at run time, which no
-source-text check can see. A reach written inside one of the three files named above, which
-would also have to be exported into the build past a bundle ratchet that a test file's imports
-would break by two orders of magnitude. And a spelling that is not a JavaScript escape: an
-HTML character reference in an event handler attribute, `onload="&#99;aches.open('shell')"`,
-which the HTML parser decodes and this check does not, and which Biome does not reach either,
-since it lints the contents of a `<script>` and not the value of an `on*` attribute. That one
-is closed by the page having no such attribute and no reason to grow one. All three need a
-deliberate decoy rather than a slip, all three are plain in review, and they stand on the same
-footing as the import ban's own known-open routes.
+**What the check surrenders and what stays open, stated rather than implied.** Four routes
+remain open, and they are listed rather than implied because an enumeration that is short by
+one is worth less than no enumeration at all. Each was spelled out and linted rather than
+reasoned about.
 
-It costs prose: the check reads file text rather than string literals, so a Markdown file under
-`apps/` could not use the word, nor spell it in any of the escaped forms the decoder reads, and
-would have to write Cache Storage instead.
+**An escape, and this one is a loss rather than a route that was always open.** A rule reading
+a syntax tree sees the spelling the parser kept, not the value an engine reads, so
+`self["\x63aches"]`, `self["\u0063aches"]` and `self["\u{63}aches"]` pass, and so does the
+identifier `\u0063aches`, which is a lawful spelling of the global itself. Plain
+`self["caches"]` and plain `caches` are refused, and the identity escape `self["\caches"]` is
+refused too, by Biome's
+[`noUselessEscapeInString`](https://biomejs.dev/linter/rules/no-useless-escape-in-string/),
+which this decision raises from its recommended warning to an error for that reason. The text
+scan this replaces decoded every escape and closed all of them. Nothing documented replaces
+that half: Biome's two rules read references, oxlint carries no rule for it, and the nearest
+published rules, `unicorn/no-hex-escape` and `unicorn/prefer-unicode-code-point-escapes`,
+rewrite an escape rather than refuse one. Closing it again means a text scan again, which is
+the tool this decision deleted.
+
+A name assembled at run time, `Reflect.get(self, "caches")` among them, which no rule reading
+references can see; the text scan did refuse that one, and it is the price of no longer
+refusing the word in a comment or in a test's name. A bare `caches` written inside the writer,
+which is the one file the global ban excludes, and one a reviewer reads; a member reach there
+is still refused, because the property rule excludes nothing. And an HTML character reference
+in an event handler attribute, `onload="&#99;aches.open('shell')"`, which the HTML parser
+decodes and Biome does not reach, since it lints the contents of a `<script>` and not the
+value of an `on*` attribute; that one is closed by the page having no such attribute and no
+reason to grow one.
+
+All four need a deliberate decoy rather than a slip, all four are plain in review, and they
+stand on the same footing as the import ban's own known-open routes.
+
+It costs no prose and no test name. The rules read references rather than letters, so a record
+under `apps/` may write the word, and a client test may be named for caching for two hours.
 
 `tests/e2e/shell.spec.ts` drives all of it in a real browser against the built output, served
 by `wrangler dev` from the Playwright configuration's `webServer`: the worker the deployment

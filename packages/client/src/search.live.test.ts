@@ -1,22 +1,8 @@
 import { openSource, type Reading } from "@seatscout/core";
+import "@seatscout/core/live-context";
 import { describe, expect, inject, it } from "vitest";
 import { openSearch } from "./search.js";
 import { inMemoryStore } from "./store.js";
-
-declare module "vitest" {
-  interface ProvidedContext {
-    readonly liveSearch: {
-      readonly origin: string;
-      readonly area: string;
-      readonly movie: string;
-      readonly date: string;
-      readonly headers: Readonly<Record<string, string>>;
-    };
-  }
-  interface TaskMeta {
-    contract?: readonly string[];
-  }
-}
 
 const SEAT_MAP = "/napi/seatMap/";
 const CONCURRENCY = 24;

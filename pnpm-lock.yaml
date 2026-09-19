@@ -186,18 +186,6 @@ importers:
         specifier: 26.6.1
         version: 26.6.1
 
-  tools/live-injections:
-    devDependencies:
-      '@types/node':
-        specifier: 26.6.1
-        version: 26.6.1
-
-  tools/no-cache-storage-reach:
-    devDependencies:
-      '@types/node':
-        specifier: 26.6.1
-        version: 26.6.1
-
   tools/no-empty-run:
     devDependencies:
       '@types/node':
