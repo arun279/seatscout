@@ -70,9 +70,9 @@ and the verdict belongs where the number is printed.
 [ADR 6](0006-gates-cite-a-standard-or-measure-a-regression.md) carries the guard that makes
 a run weighing no mutant fail.
 
-**One thing is carved out: `apps/native/src/**/*.tsx`.** Those are the files React Native
-renders, and Vitest cannot render React Native, so the runner that judges them is a later
-change rather than a line drawn here. Nothing else in that application is out: `src/source.ts`
+**One thing is carved out: the `.tsx` files under `apps/native/src`.** Those are the files
+React Native renders, and Vitest cannot render React Native, so the runner that judges them
+is a later change rather than a line drawn here. Nothing else in that application is out: `src/source.ts`
 wires the Source's origin, the headers a read carries and the device's own clock and timers
 into the client, which is behaviour, and it is judged like any other adapter.
 
