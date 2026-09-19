@@ -31,9 +31,9 @@ allowance is roughly two thousand searches. Nothing here reaches a paid feature.
 **Cloudflare Zero Trust**, also free, up to 50 users. Sign-up asks for a payment method on
 the free plan and does not charge it.
 
-A **Google Cloud project**, only to hold an OAuth client. There is no charge and no API to
-enable. Cloudflare's Google integration works with ordinary Google accounts and does not
-need Google Workspace.
+Nothing from Google. Access signs people in with a one-time PIN it mails to an allowed
+address. A new Zero Trust account no longer adds that login method by itself, so it is one
+click at Zero Trust > Settings > Authentication > Login methods > Add new > One-time PIN.
 
 A **GitHub repository** you can set secrets on, which is what deploys on merge.
 
@@ -66,15 +66,11 @@ application.
 1. **Create a Cloudflare account** at `dash.cloudflare.com`.
 2. **Turn on Zero Trust** and choose a team name. Your team domain is
    `https://<team-name>.cloudflareaccess.com`, and it is later at Zero Trust > Settings.
-   Changing the team name afterwards invalidates the OAuth redirect in step 3 and the
-   `ACCESS_TEAM_DOMAIN` in step 9.
-3. **Add Google as an identity provider.** In the Google Cloud console, configure the
-   consent screen with audience type External, then create an OAuth client of type Web
-   application with `https://<team-name>.cloudflareaccess.com` as an authorised JavaScript
-   origin and `https://<team-name>.cloudflareaccess.com/cdn-cgi/access/callback` as an
-   authorised redirect URI. Then in Cloudflare, Zero Trust > Integrations > Identity
-   providers > Add new > Google, paste the client ID and secret, save, and use **Test**.
-   Reaching the login page is not access; the allowlist in step 7 is what decides.
+   Changing the team name afterwards invalidates the `ACCESS_TEAM_DOMAIN` in step 9.
+3. **Add the login method.** Zero Trust > Settings > Authentication > Login methods >
+   Add new > One-time PIN. Access mails a code only to an address the allowlist in step 7
+   admits, and the login page says a code was sent either way, so no identity provider and
+   no OAuth client are needed.
 4. **Create an API token and set it as `CLOUDFLARE_API_TOKEN`.** Manage Account > API
    Tokens > Create Token > Create Custom Token. One permission: Account > Workers Scripts
    > Edit, scoped to this account alone. The token is shown once. Nothing else is needed
@@ -147,9 +143,9 @@ It proves:
   the upstream admits, which is why a non-2xx answer is a failure here: the upstream
   refuses a missing `Referer` with a message that blames a session instead.
 
-It cannot prove that a non-allowlisted account is refused. Reaching the refusal means
-completing a Google login as somebody who is not on the list, which needs a browser and a
-second Google account. Access is deny by default and the anonymous redirect establishes
+It cannot prove that a non-allowlisted address is refused. Reaching the refusal means
+asking for a PIN as somebody who is not on the list, which needs a browser and a second
+mailbox. Access is deny by default and the anonymous redirect establishes
 that the gate is there; the allowlist itself is a manual check.
 
 
@@ -170,8 +166,8 @@ Read on 2026-08-28.
   `developers.cloudflare.com/workers/configuration/cloudflare-access/` and
   `developers.cloudflare.com/changelog/post/2026-08-14-workers-access/`, which is where
   attaching the policy to the Worker rather than to each hostname was introduced.
-- Google as an identity provider, and the redirect URI:
-  `developers.cloudflare.com/cloudflare-one/integrations/identity-providers/google/`.
+- One-time PIN login, and that a new account no longer adds it by itself:
+  `developers.cloudflare.com/cloudflare-one/integrations/identity-providers/one-time-pin/`.
 - Policies, the Emails selector, deny by default and Service Auth ordering:
   `developers.cloudflare.com/cloudflare-one/access-controls/policies/`.
 - Service tokens and the assertion a service token request carries:
