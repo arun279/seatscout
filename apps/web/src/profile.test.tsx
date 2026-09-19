@@ -2,22 +2,8 @@ import "@testing-library/jest-dom/vitest";
 import { REFERENCE } from "@seatscout/client";
 import { cleanup, fireEvent, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import {
-  ask,
-  atOneTheater,
-  cards,
-  FRONT_ROW,
-  NO_MOVIE,
-  staged,
-} from "./search.fixtures.js";
-
-const WEIGHTS = [
-  ["Missing your spot", "1", "depthWeight"],
-  ["Watching at an angle", "1", "offAxisWeight"],
-  ["The front rows", "0.25", "frontBandWeight"],
-  ["A wall, or the back row", "0.25", "wallBandWeight"],
-  ["A console between seats", "0.25", "podDividerWeight"],
-] as const;
+import { opened, room, slide, WEIGHTS } from "./profile.fixtures.js";
+import { atOneTheater, cards, FRONT_ROW } from "./search.fixtures.js";
 
 const rowOf = (card: HTMLElement) =>
   Number(
@@ -28,22 +14,6 @@ const rowOf = (card: HTMLElement) =>
 
 const ringOf = (card: Element) =>
   card.querySelector(".mp-target")?.getAttribute("cy");
-
-const opened = async (options: Parameters<typeof staged>[0] = {}) => {
-  const stage = staged({ terms: NO_MOVIE, ...options });
-  if (stage.searches.length > 0) await stage.settled();
-  fireEvent.click(screen.getByRole("button", { name: /seat$/i }));
-  return { stage, editor: ask() };
-};
-
-const slide = (control: HTMLElement, value: number) =>
-  fireEvent.change(control, { target: { value: `${value}` } });
-
-const room = () => {
-  const drawn = document.querySelector("dialog svg.seat-picker");
-  if (drawn === null) throw new Error("the sheet draws no room");
-  return drawn;
-};
 
 describe("where you sit, on the Ask sheet", () => {
   afterEach(cleanup);
@@ -176,6 +146,32 @@ describe("where you sit, on the Ask sheet", () => {
       "aria-valuetext",
       "25% of the way to house right",
     );
+  });
+
+  it("holds every value in an output of the control it belongs to, so a name and its value are two readings and never one run", async () => {
+    const { editor } = await opened();
+
+    expect(
+      [...document.querySelectorAll("dialog .range")].map((range) => [
+        range.querySelector("label")?.textContent,
+        range.querySelector("output")?.textContent,
+        range.querySelector("output")?.getAttribute("for") ===
+          range.querySelector("input")?.id,
+      ]),
+    ).toEqual([
+      ["How far back", "67% of the way back", true],
+      ["Left or right", "on the centreline", true],
+      ["Missing your spot", "Avoid", true],
+      ["Watching at an angle", "Avoid", true],
+      ["The front rows", "A little", true],
+      ["A wall, or the back row", "A little", true],
+      ["A console between seats", "A little", true],
+    ]);
+    const [depth] = editor.getAllByRole("slider");
+    const mind = editor.getByRole("group", { name: "And what you mind" });
+    expect(depth).toHaveAccessibleName("How far back");
+    expect(mind).toHaveTextContent("Missing your spot Avoid");
+    expect(mind).not.toHaveTextContent("Missing your spotAvoid");
   });
 
   it("places the target where the drawn room is pressed, and follows the pointer while it is held down", async () => {

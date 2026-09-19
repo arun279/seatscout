@@ -2,6 +2,8 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  --cta-height: 172px;
+  scroll-padding-bottom: var(--cta-height);
 }
 
 .hand-off[open] {

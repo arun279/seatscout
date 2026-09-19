@@ -111,6 +111,18 @@
   min-height: 48px;
 }
 
+.cta {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  position: sticky;
+  bottom: 0;
+  min-height: var(--cta-height);
+  margin: 0 -22px;
+  padding: 12px 22px 32px;
+  background: var(--house);
+}
+
 .back {
   align-self: flex-start;
   position: relative;

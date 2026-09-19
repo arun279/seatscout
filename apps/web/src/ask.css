@@ -2,6 +2,8 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  --cta-height: 132px;
+  scroll-padding-bottom: var(--cta-height);
 }
 
 .ask[open] {
@@ -89,13 +91,6 @@
   gap: 4px;
 }
 
-.range .top {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-}
-
 .range .name {
   font-size: 14px;
   font-weight: 600;
@@ -105,8 +100,8 @@
 .range .said {
   font-family: var(--mono);
   font-size: 11px;
+  line-height: 1.5;
   color: var(--beam-dim);
-  white-space: nowrap;
 }
 
 .ends {
@@ -240,16 +235,6 @@
 .suggestion em {
   font-style: normal;
   color: var(--velvet-lit);
-}
-
-.cta {
-  display: flex;
-  flex-direction: column;
-  position: sticky;
-  bottom: 0;
-  margin: 0 -22px;
-  padding: 12px 22px 32px;
-  background: linear-gradient(180deg, transparent, var(--house) 30%);
 }
 
 .ask .privacy-note {
