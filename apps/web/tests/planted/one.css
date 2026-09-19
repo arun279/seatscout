@@ -7,7 +7,7 @@
 }
 
 @media (min-width: 40em) {
-  .lit {
+  .unlit {
     color: blue;
   }
 }

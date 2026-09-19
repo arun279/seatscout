@@ -20,6 +20,19 @@ pre-commit:
       fail_text: Install gitleaks, or run git commit --no-verify to skip the scan
 
 pre-push:
+  jobs:
+    - name: push-checks
+      use_stdin: true
+      run: |
+        refs= sends=
+        while read -r local_ref _; do
+          refs=y
+          [ "$local_ref" = "(delete)" ] || sends=y
+        done
+        if [ -n "$refs" ] && [ -z "$sends" ]; then exit 0; fi
+        exec pnpm exec lefthook run push-checks
+
+push-checks:
   parallel: true
   commands:
     format:
@@ -27,7 +40,7 @@ pre-push:
     lint:
       run: pnpm lint
     spell:
-      run: pnpm spell
+      run: pnpm spell --cache --cache-strategy content
     typecheck:
       run: pnpm typecheck
     complexity:
@@ -35,11 +48,11 @@ pre-push:
     duplication:
       run: pnpm duplication
     unit:
-      run: pnpm test:unit
+      run: pnpm test:unit --changed origin/main --passWithNoTests
       env:
-        VITEST_MAX_WORKERS: 3
+        VITEST_MAX_WORKERS: "3"
     dead-code:
-      run: pnpm dead-code
+      run: pnpm dead-code --cache
     counts:
       run: pnpm counts
     claims:

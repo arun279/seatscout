@@ -80,10 +80,23 @@ dependency's licence and fails on any SPDX identifier outside the allowlist that
 carries, a licence it could not determine included.
 
 Two hooks run some of that earlier, and `lefthook.yml` declares both. The pre-commit hook
-runs six checks over staged files. The pre-push hook runs ten over the whole workspace, the
-unit suite among them, which is why a push takes longer than a commit. Neither is a
-substitute for the list above: both are subsets of it, chosen for what is cheap enough to run
-that often.
+runs six checks over staged files. The pre-push hook reads the refs the push carries and
+hands one that sends commits to `push-checks`, which runs ten checks; a push that only
+deletes a branch sends none, so it runs none of them. `pnpm exec lefthook run push-checks`
+runs the same ten by hand.
+
+Those ten are scoped to the change wherever the tool scopes itself. The unit stage runs
+`--changed origin/main`, which is the tests that reach what the branch changed since its merge
+base with `main`. A shared file brings the whole suite back: a Vitest config, `package.json`,
+a `tsconfig*.json`, `pnpm-lock.yaml` or a setup file. Those are `forceRerunTriggers` in
+`vitest.config.ts`, and the list is written out there rather than left to the default, whose
+glob for its own config file matches nothing. The type check reuses the build information
+`tsc --build` leaves behind. The spell check and the dead-code check each reuse a cache of
+their own. The rest read the whole tree, because none of them takes two seconds.
+
+Neither hook is a substitute for the list above. `quality` installs into an empty runner, so
+it reads every file with no cache to reuse and no scope, and it is what a merge waits for.
+The hooks answer on the change; the job answers on the tree.
 
 `pnpm cache-storage` reads the index, so it reports on the last `git add` rather than on the
 edit in front of you.

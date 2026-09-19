@@ -10,6 +10,7 @@ playwright-report/
 reports/
 test-results/
 .stryker-tmp/
+.cspellcache
 *.tsbuildinfo
 .env
 .env.*
