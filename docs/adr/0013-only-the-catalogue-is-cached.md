@@ -212,8 +212,8 @@ reasoned about.
 
 **An escape, and this one is a loss rather than a route that was always open.** A rule reading
 a syntax tree sees the spelling the parser kept, not the value an engine reads, so
-`self["\x63aches"]`, `self["caches"]` and `self["\u{63}aches"]` pass, and so does the
-identifier `caches`, which is a lawful spelling of the global itself. Plain
+`self["\x63aches"]`, `self["\u0063aches"]` and `self["\u{63}aches"]` pass, and so does the
+identifier `\u0063aches`, which is a lawful spelling of the global itself. Plain
 `self["caches"]` and plain `caches` are refused, and the identity escape `self["\caches"]` is
 refused too, by Biome's
 [`noUselessEscapeInString`](https://biomejs.dev/linter/rules/no-useless-escape-in-string/),
