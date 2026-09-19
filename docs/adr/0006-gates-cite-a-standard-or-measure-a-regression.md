@@ -666,9 +666,9 @@ version the SDK does not expect. [expo-doctor](https://docs.expo.dev/develop/too
 check as one of twenty-one, which between them read the app config against its schema, the lock
 file, the Metro configuration, duplicate and overridden dependencies, the peer dependencies the
 native modules require, and the packages React Native Directory knows about. Both run in `quality`.
-The first run failed one check of the twenty-one: `expo`, `expo-constants`,
-`expo-linking` and `expo-router` were each a few patch releases below what the installed SDK
-expects. Those four are moved to the versions it named. Expo documents `expo.install.exclude` as
+The first run failed one check of the twenty-one: `expo`, `expo-constants`, `expo-linking` and
+`expo-router` were each a few patch releases below what the installed SDK expects. Those four are
+moved to the versions it named. Expo documents `expo.install.exclude` as
 the way to hold a package back from that check, and `apps/native/package.json` carries no such
 list, because a package in it is a package the SDK is no longer asked about. The check this
 workspace expected to fight, the one that refuses an override breaking a critical dependency
@@ -698,9 +698,9 @@ policy of its own. manypkg's documented answer is to write a specifier semver ca
 takes that package out of the gate instead.
 
 syncpack is a compiled binary and answers over this workspace in 0.9 seconds, measured rather than
-assumed, so it runs on the pre-push hook as `pnpm versions` as well as in `quality`. It carries no configuration file. The
-default group is already the policy this workspace wants, and a file restating it would be a second
-place for that policy to drift.
+assumed, so it runs on the pre-push hook as `pnpm versions` as well as in `quality`. It carries no
+configuration file. The default group is already the policy this workspace wants, and a file
+restating it would be a second place for that policy to drift.
 
 pnpm's own catalogs are the other answer to this question and are not taken here. A catalog removes
 the drift by construction rather than refusing it afterwards, which is the stronger shape. It does
