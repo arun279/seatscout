@@ -94,9 +94,8 @@ export const markedIn = (
   typed: string,
 ): readonly [string, string, string] => {
   const looked = typed.trim();
-  const at =
-    looked === "" ? -1 : title.toLowerCase().indexOf(looked.toLowerCase());
-  return at < 0
+  const at = title.toLowerCase().indexOf(looked.toLowerCase());
+  return looked === "" || at < 0
     ? [title, "", ""]
     : [
         title.slice(0, at),

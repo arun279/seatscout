@@ -12,16 +12,15 @@ const mockLoading = jest.fn<() => [boolean, Error | null]>(() => [true, null]);
 jest.mock("expo-font", () => ({ useFonts: () => mockLoading() }));
 
 jest.mock("./host/source.js", () => ({
-  deviceSeatScout: () =>
-    mockPhone([], {
-      area: "75234",
-      date: "2026-09-19",
-      programme: {
-        theaters: mockNearby("aacbt", "Cinemark Dallas XD and IMAX"),
-        movies: [{ id: "23184", title: "Akira" }],
-        unreached: [],
-      },
-    }).seatscout,
+  seatscout: mockPhone([], {
+    area: "75234",
+    date: "2026-09-19",
+    programme: {
+      theaters: mockNearby("aacbt", "Cinemark Dallas XD and IMAX"),
+      movies: [{ id: "23184", title: "Akira" }],
+      unreached: [],
+    },
+  }).seatscout,
 }));
 
 const opened = (initialUrl = "/") =>

@@ -6,6 +6,32 @@ export interface PlayingStatus {
   readonly unreadable: boolean;
 }
 
+interface AskWords {
+  readonly heading: string;
+  readonly keep: string;
+  readonly area: string;
+  readonly areaDecides: string;
+  readonly film: string;
+  readonly when: string;
+  readonly party: string;
+  readonly fewer: string;
+  readonly more: string;
+  readonly kept: string;
+}
+
+export const ASKING: AskWords = {
+  heading: "What are we seeing?",
+  keep: "Keep as it was",
+  area: "Near, by postal code",
+  areaDecides: "The films and theaters below are the ones playing near it.",
+  film: "Film",
+  when: "When",
+  party: "Party",
+  fewer: "Fewer seats",
+  more: "More seats",
+  kept: "Preferences and history stay on this phone. No account exists.",
+};
+
 const read = (words: string): PlayingStatus => ({ words, unreadable: false });
 
 const missing = (words: string): PlayingStatus => ({
@@ -22,9 +48,9 @@ export const playingStatusOf = (
   date: string,
   today: string,
 ): PlayingStatus => {
-  if (area === undefined || programme.phase === "none")
-    return read("Name an area to see what is playing.");
   switch (programme.phase) {
+    case "none":
+      return read("Name an area to see what is playing.");
     case "reading":
       return read(`Reading what is playing near ${area}`);
     case "unreachable":

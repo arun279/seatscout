@@ -9,13 +9,8 @@ jest.mock("@react-native-async-storage/async-storage", () =>
   ),
 );
 
-const mockPicker = ({
-  testID,
-  onChange,
-}: {
-  readonly testID: string;
-  readonly onChange: unknown;
-}) => createElement("RNDateTimePicker", { onChange, testID });
+const mockPicker = (props: Readonly<Record<string, unknown>>) =>
+  createElement("RNDateTimePicker", props);
 
 jest.mock("@react-native-community/datetimepicker", () => ({
   __esModule: true,

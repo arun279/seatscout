@@ -1,6 +1,11 @@
 import type { Movie } from "@seatscout/client";
 import type { ProgrammeState } from "@seatscout/view-logic";
-import { markedIn, offeredFor, playingStatusOf } from "@seatscout/view-logic";
+import {
+  ASKING,
+  markedIn,
+  offeredFor,
+  playingStatusOf,
+} from "@seatscout/view-logic";
 import type { ReactElement } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Field } from "../design-system/field.js";
@@ -79,9 +84,18 @@ export const Film = ({
   const offered = offeredFor(typed, programme.movies);
 
   return (
-    <Field focused={focused} label="Film" onTyped={onTyped} value={typed}>
+    <Field
+      focused={focused}
+      label={ASKING.film}
+      onTyped={onTyped}
+      value={typed}
+    >
       {offered.length > 0 && (
-        <View style={styles.offered}>
+        <View
+          accessibilityLabel={`Films playing near ${area}`}
+          accessibilityRole="list"
+          style={styles.offered}
+        >
           {offered.map((movie) => (
             <Suggestion
               key={movie.id}

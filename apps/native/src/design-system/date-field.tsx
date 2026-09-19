@@ -1,11 +1,12 @@
 import DateTimePicker, {
   type DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import { twoDigits } from "@seatscout/view-logic";
 import { type ReactElement, useState } from "react";
-import { Platform, TouchableOpacity } from "react-native";
+import { TouchableOpacity } from "react-native";
+import { dateAt, listingDate } from "../host/clock.js";
 import { useTheme } from "../theme.js";
 import { fieldBox, fieldColours, Section } from "./field.js";
+import { ON_ANDROID } from "./platform.js";
 import { Type } from "./type.js";
 
 export interface DateFieldProps {
@@ -14,18 +15,6 @@ export interface DateFieldProps {
   readonly words: string;
   readonly onDate: (date: string) => void;
 }
-
-const onAndroid = Platform.OS === "android";
-
-export const listingDateOf = (at: Date): string =>
-  `${at.getFullYear()}-${twoDigits(at.getMonth() + 1)}-${twoDigits(at.getDate())}`;
-
-export const dateAt = (listing: string): Date =>
-  new Date(
-    Number(listing.slice(0, 4)),
-    Number(listing.slice(5, 7)) - 1,
-    Number(listing.slice(8, 10)),
-  );
 
 export const DateField = ({
   label,
@@ -37,7 +26,7 @@ export const DateField = ({
   const [picking, setPicking] = useState(false);
   const picked = (event: DateTimePickerEvent, at: Date | undefined) => {
     setPicking(false);
-    if (event.type === "set" && at !== undefined) onDate(listingDateOf(at));
+    if (event.type === "set" && at !== undefined) onDate(listingDate(at));
   };
 
   return (
@@ -54,7 +43,7 @@ export const DateField = ({
       </TouchableOpacity>
       {picking && (
         <DateTimePicker
-          display={onAndroid ? "default" : "spinner"}
+          display={ON_ANDROID ? "default" : "spinner"}
           mode="date"
           onChange={picked}
           testID="date-picker"

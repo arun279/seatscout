@@ -2,12 +2,14 @@ import { describe, expect, it, jest } from "@jest/globals";
 
 const mockPush = jest.fn<(to: unknown) => void>();
 const mockReplace = jest.fn<(to: unknown) => void>();
+const mockBack = jest.fn<() => void>();
 const mockParams = jest.fn<() => Readonly<Record<string, unknown>>>(() => ({}));
 
 jest.mock("expo-router", () => ({
   router: {
     push: (to: unknown) => mockPush(to),
     replace: (to: unknown) => mockReplace(to),
+    back: () => mockBack(),
   },
   useLocalSearchParams: () => mockParams(),
 }));
@@ -16,6 +18,7 @@ import {
   askAbout,
   askedIn,
   goTo,
+  keepAsItWas,
   pairsOf,
   runInstead,
   useFocus,
@@ -138,10 +141,12 @@ describe("opening the Ask sheet over the query it is editing", () => {
     });
   });
 
-  it("opens focused on a term the sheet has a field for", () => {
+  it("opens focused on either term the sheet has a field for", () => {
     mockParams.mockReturnValue({ term: "movie" });
-
     expect(useFocus()).toBe("movie");
+
+    mockParams.mockReturnValue({ term: "area" });
+    expect(useFocus()).toBe("area");
   });
 
   it("ignores a term it cannot open focused on, and one nobody named", () => {
@@ -153,6 +158,14 @@ describe("opening the Ask sheet over the query it is editing", () => {
 
     mockParams.mockReturnValue({});
     expect(useFocus()).toBeUndefined();
+  });
+});
+
+describe("keeping the query as it was", () => {
+  it("goes back one entry, which is the screen the sheet was presented over", () => {
+    keepAsItWas();
+
+    expect(mockBack).toHaveBeenCalledTimes(1);
   });
 });
 

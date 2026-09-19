@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
-import { Platform, StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { useTheme } from "../theme.js";
+import { ON_ANDROID } from "./platform.js";
 import { Type } from "./type.js";
 
 export interface StepperProps {
@@ -20,6 +21,8 @@ const styles = StyleSheet.create({
     minHeight: 48,
     minWidth: 48,
   },
+  square: { borderRadius: 12 },
+  round: { borderRadius: 24 },
   count: { minWidth: 40, textAlign: "center" },
 });
 
@@ -31,13 +34,12 @@ export const Stepper = ({
   onCount,
 }: StepperProps): ReactElement => {
   const theme = useTheme();
-  const radius = Platform.OS === "android" ? 24 : 12;
   const step = [
     styles.step,
+    ON_ANDROID ? styles.round : styles.square,
     {
       backgroundColor: theme.colours.raised,
       borderColor: theme.colours.hairline,
-      borderRadius: radius,
     },
   ];
 

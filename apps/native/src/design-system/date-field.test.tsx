@@ -1,12 +1,18 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { fireEvent, render, screen } from "@testing-library/react-native";
+import { Platform } from "react-native";
 import { everyControlReachesTheTouchFloor } from "../../test/floors.js";
-
-import { DateField, dateAt, listingDateOf } from "./date-field.js";
+import { houseLights } from "../../test/lights.js";
+import type { Appearance } from "../theme.js";
+import { DateField } from "./date-field.js";
 
 const FIELD = "When, Sat 26 Sep";
 
-const showing = async (onDate = jest.fn<(date: string) => void>()) => {
+const showing = async (
+  onDate = jest.fn<(date: string) => void>(),
+  appearance: Appearance = "down",
+) => {
+  houseLights(appearance);
   await render(
     <DateField
       date="2026-09-26"
@@ -18,8 +24,11 @@ const showing = async (onDate = jest.fn<(date: string) => void>()) => {
   return onDate;
 };
 
-const picking = async (onDate = jest.fn<(date: string) => void>()) => {
-  await showing(onDate);
+const picking = async (
+  onDate = jest.fn<(date: string) => void>(),
+  appearance: Appearance = "down",
+) => {
+  await showing(onDate, appearance);
   await fireEvent.press(screen.getByRole("button", { name: FIELD }));
   return onDate;
 };
@@ -40,10 +49,31 @@ describe("the date a query is for", () => {
     expect(screen.queryByTestId("date-picker")).toBeNull();
   });
 
-  it("opens the platform's own picker on the day it already holds", async () => {
+  it("opens the platform's own picker on the day it already holds, in the platform's own shape", async () => {
+    await picking();
+    const picker = screen.getByTestId("date-picker");
+
+    expect(picker.props["value"]).toEqual(new Date(2026, 8, 26));
+    expect(picker.props["mode"]).toBe("date");
+    expect(picker.props["display"]).toBe(
+      Platform.OS === "android" ? "default" : "spinner",
+    );
+  });
+
+  it("opens it under the house lights the rest of the app is under", async () => {
+    await picking(undefined, "up");
+
+    expect(screen.getByTestId("date-picker").props["themeVariant"]).toBe(
+      "light",
+    );
+  });
+
+  it("opens it dark with the house lights down", async () => {
     await picking();
 
-    expect(screen.getByTestId("date-picker")).toBeOnTheScreen();
+    expect(screen.getByTestId("date-picker").props["themeVariant"]).toBe(
+      "dark",
+    );
   });
 
   it("takes the day that was picked as the date of the query", async () => {
@@ -70,37 +100,34 @@ describe("the date a query is for", () => {
     expect(screen.queryByTestId("date-picker")).toBeNull();
   });
 
-  it("changes nothing when the picker is dismissed", async () => {
+  it("changes nothing when the picker is dismissed, whatever day it was showing", async () => {
+    const dated = await picking();
+
+    await fireEvent(
+      screen.getByTestId("date-picker"),
+      "change",
+      { type: "dismissed", nativeEvent: {} },
+      new Date(2026, 8, 5),
+    );
+
+    expect(dated).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("date-picker")).toBeNull();
+  });
+
+  it("changes nothing when a day was set but none was carried", async () => {
     const dated = await picking();
 
     await fireEvent(screen.getByTestId("date-picker"), "change", {
-      type: "dismissed",
+      type: "set",
       nativeEvent: {},
     });
 
     expect(dated).not.toHaveBeenCalled();
-    expect(screen.queryByTestId("date-picker")).toBeNull();
   });
 
   it("reaches the platform's touch floor", async () => {
     await showing();
 
     everyControlReachesTheTouchFloor();
-  });
-});
-
-describe("the day a listing is asked for", () => {
-  it("is written the way a listing names a date, padded", () => {
-    expect(listingDateOf(new Date(2026, 0, 2))).toBe("2026-01-02");
-    expect(listingDateOf(new Date(2026, 11, 31))).toBe("2026-12-31");
-  });
-
-  it("is read back as the same day where the person stands", () => {
-    const at = dateAt("2026-09-05");
-
-    expect([at.getFullYear(), at.getMonth(), at.getDate()]).toEqual([
-      2026, 8, 5,
-    ]);
-    expect(listingDateOf(dateAt("2026-03-01"))).toBe("2026-03-01");
   });
 });

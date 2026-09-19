@@ -50,3 +50,7 @@ export const askAbout = (terms: Terms, term: Term): void => {
 export const runInstead = (terms: Terms): void => {
   router.replace({ pathname: "/", params: askedIn(terms) });
 };
+
+export const keepAsItWas = (): void => {
+  router.back();
+};

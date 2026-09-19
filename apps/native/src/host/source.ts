@@ -27,3 +27,5 @@ export const deviceSeatScout = (): SeatScout =>
     random: Math.random,
     store: deviceStore,
   });
+
+export const seatscout: SeatScout = deviceSeatScout();

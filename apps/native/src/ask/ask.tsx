@@ -1,6 +1,7 @@
 import type { SeatScout } from "@seatscout/client";
 import type { Term, Terms } from "@seatscout/view-logic";
 import {
+  ASKING,
   dayOf,
   FIND_SEATS,
   movieOf,
@@ -80,23 +81,23 @@ export const Ask = ({
             }
           />
           <Type set="sentenceSmall" style={styles.privacy} tone="silverFaint">
-            Preferences and history stay on this phone. No account exists.
+            {ASKING.kept}
           </Type>
         </>
       }
-      heading="What are we seeing?"
-      keep="Keep as it was"
+      heading={ASKING.heading}
+      keep={ASKING.keep}
       onKeep={onKeep}
     >
       <Field
         focused={focus === "area"}
-        label="Near, by postal code"
+        label={ASKING.area}
         onSettled={() => follow(draft)}
         onTyped={(area) => patch({ area })}
         value={draft.area ?? ""}
       >
         <Type set="sentenceSmall" tone="silverFaint">
-          The films and theaters below are the ones playing near it.
+          {ASKING.areaDecides}
         </Type>
       </Field>
       <Film
@@ -110,16 +111,16 @@ export const Ask = ({
       />
       <DateField
         date={draft.date}
-        label="When"
+        label={ASKING.when}
         onDate={(date) => follow(patch({ date }))}
         words={dayOf(draft.date, today)}
       />
-      <Section label="Party">
+      <Section label={ASKING.party}>
         <Stepper
           count={draft.partySize}
-          fewer="Fewer seats"
+          fewer={ASKING.fewer}
           least={SMALLEST_PARTY}
-          more="More seats"
+          more={ASKING.more}
           onCount={(partySize) => patch({ partySize })}
         />
       </Section>

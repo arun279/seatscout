@@ -1,6 +1,6 @@
 import type { Movie, Theater } from "@seatscout/client";
 import { describe, expect, it } from "vitest";
-import { playingStatusOf } from "./ask-phrases.js";
+import { ASKING, playingStatusOf } from "./ask-phrases.js";
 import type { ProgrammeState } from "./programme.js";
 import { termsOf } from "./terms.js";
 
@@ -48,12 +48,6 @@ describe("what the film field says about the listing under it", () => {
       words: "Name an area to see what is playing.",
       unreadable: false,
     });
-  });
-
-  it("says the same when an area is typed and nothing has been asked for yet", () => {
-    expect(playingStatusOf(nothingYet, "75006", TODAY, TODAY).words).toBe(
-      "Name an area to see what is playing.",
-    );
   });
 
   it("names the area it is reading", () => {
@@ -116,5 +110,12 @@ describe("what the film field says about the listing under it", () => {
     ).toBe(
       "Films at 1 theater could not be read: Cinemark Dallas XD and IMAX.",
     );
+  });
+});
+
+describe("the words the Ask sheet is asked in", () => {
+  it("says something for every control and every heading it names", () => {
+    for (const [named, words] of Object.entries(ASKING))
+      expect(`${named}: ${words.trim()}`).not.toBe(`${named}: `);
   });
 });

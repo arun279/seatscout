@@ -1,12 +1,8 @@
 import type { ReactElement, ReactNode } from "react";
-import {
-  Platform,
-  StyleSheet,
-  TextInput,
-  View,
-  type ViewStyle,
-} from "react-native";
+import { StyleSheet, TextInput, View, type ViewStyle } from "react-native";
 import { type Theme, useTheme } from "../theme.js";
+import { ON_ANDROID } from "./platform.js";
+import { TOUCH_FLOOR } from "./touch.js";
 import { Type } from "./type.js";
 
 export interface SectionProps {
@@ -18,18 +14,16 @@ export interface FieldProps extends Omit<SectionProps, "children"> {
   readonly value: string;
   readonly onTyped: (typed: string) => void;
   readonly onSettled?: () => void;
-  readonly focused?: boolean;
+  readonly focused: boolean;
   readonly children?: ReactNode;
 }
-
-const onAndroid = Platform.OS === "android";
 
 const styles = StyleSheet.create({
   section: { gap: 9, paddingHorizontal: 18, paddingTop: 14 },
   box: {
     justifyContent: "center",
     minHeight: 48,
-    minWidth: 48,
+    minWidth: TOUCH_FLOOR,
     paddingHorizontal: 14,
   },
   raised: { borderRadius: 12, borderWidth: 1 },
@@ -42,11 +36,11 @@ const styles = StyleSheet.create({
 
 export const fieldBox: readonly ViewStyle[] = [
   styles.box,
-  onAndroid ? styles.underlined : styles.raised,
+  ON_ANDROID ? styles.underlined : styles.raised,
 ];
 
 export const fieldColours = (theme: Theme): ViewStyle =>
-  onAndroid
+  ON_ANDROID
     ? {
         backgroundColor: theme.colours.high,
         borderColor: theme.colours.beamDim,
@@ -80,7 +74,7 @@ export const Field = ({
     <Section label={label}>
       <TextInput
         accessibilityLabel={label}
-        autoFocus={focused === true}
+        autoFocus={focused}
         onBlur={onSettled}
         onChangeText={onTyped}
         style={[

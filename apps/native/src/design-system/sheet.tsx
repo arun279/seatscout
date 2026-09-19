@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../theme.js";
+import { ON_ANDROID } from "./platform.js";
 import { TOUCH_FLOOR } from "./touch.js";
 import { Type } from "./type.js";
 
@@ -27,8 +28,6 @@ export const presentationFor = (
 
 export const SHEET_PRESENTATION: "formSheet" | "fullScreenModal" =
   presentationFor(Platform.OS);
-
-const onAndroid = Platform.OS === "android";
 
 const styles = StyleSheet.create({
   sheet: { flex: 1 },
@@ -112,11 +111,11 @@ export const Sheet = ({
 
   return (
     <KeyboardAvoidingView
-      behavior={onAndroid ? undefined : "padding"}
+      behavior={ON_ANDROID ? undefined : "padding"}
       style={[styles.sheet, { backgroundColor: theme.colours.house }]}
       testID="stage"
     >
-      {onAndroid ? (
+      {ON_ANDROID ? (
         <SafeAreaView
           edges={["top"]}
           style={{ backgroundColor: theme.colours.chrome }}

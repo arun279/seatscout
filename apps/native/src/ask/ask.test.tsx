@@ -32,7 +32,6 @@ const asking = async (
   over: {
     readonly terms?: Terms;
     readonly focus?: Term;
-    readonly onFind?: (terms: Terms) => void;
     readonly onKeep?: () => void;
     readonly playing?: typeof PLAYING;
   } = {},
@@ -42,7 +41,7 @@ const asking = async (
   await render(
     <Ask
       focus={over.focus}
-      onFind={over.onFind ?? found}
+      onFind={found}
       onKeep={over.onKeep ?? (() => undefined)}
       seatscout={carried.seatscout}
       terms={over.terms ?? SHORT}
@@ -164,13 +163,73 @@ describe("the Ask sheet", () => {
     ).toBeOnTheScreen();
   });
 
-  it("opens with the keyboard on the term it was asked to open at, and on no other", async () => {
+  it("opens with the keyboard on the film when that is the term it was asked to open at", async () => {
     await asking({ focus: "movie", terms: NEAR });
 
     expect(screen.getByLabelText("Film")).toHaveProp("autoFocus", true);
     expect(screen.getByLabelText("Near, by postal code")).toHaveProp(
       "autoFocus",
       false,
+    );
+  });
+
+  it("opens with the keyboard on the area when that is the term instead", async () => {
+    await asking({ focus: "area" });
+
+    expect(screen.getByLabelText("Near, by postal code")).toHaveProp(
+      "autoFocus",
+      true,
+    );
+    expect(screen.getByLabelText("Film")).toHaveProp("autoFocus", false);
+  });
+
+  it("opens with no keyboard at all when the term it was opened at has no field", async () => {
+    await asking({ focus: "partySize" });
+
+    expect(screen.getByLabelText("Near, by postal code")).toHaveProp(
+      "autoFocus",
+      false,
+    );
+    expect(screen.getByLabelText("Film")).toHaveProp("autoFocus", false);
+  });
+
+  it("holds an empty area as an empty field, and asks for one", async () => {
+    await asking();
+
+    expect(screen.getByLabelText("Near, by postal code")).toHaveDisplayValue(
+      "",
+    );
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Name an area to see what is playing.",
+    );
+  });
+
+  it("reads the listing for an area typed with space around it", async () => {
+    await asking({ playing: PLAYING });
+    const area = screen.getByLabelText("Near, by postal code");
+
+    await fireEvent.changeText(area, "  75234  ");
+    await fireEvent(area, "blur");
+
+    expect(
+      await screen.findByRole("button", { name: "Akira" }),
+    ).toBeOnTheScreen();
+  });
+
+  it("reads the listing again for the date a person picked, because a listing is dated", async () => {
+    await asking({ terms: NEAR, playing: PLAYING });
+    await screen.findByRole("button", { name: "Akira" });
+
+    await fireEvent.press(screen.getByRole("button", { name: "When, Today" }));
+    await fireEvent(
+      screen.getByTestId("date-picker"),
+      "change",
+      { type: "set", nativeEvent: {} },
+      new Date(2026, 8, 26),
+    );
+
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "What is playing near 75234 could not be read.",
     );
   });
 

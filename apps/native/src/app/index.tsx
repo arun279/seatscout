@@ -2,10 +2,8 @@ import { REFERENCE } from "@seatscout/client";
 import type { ReactElement } from "react";
 import { askAbout, goTo, useTerms } from "../host/address.js";
 import { today } from "../host/clock.js";
-import { deviceSeatScout } from "../host/source.js";
+import { seatscout } from "../host/source.js";
 import { Search } from "../search/search.js";
-
-const seatscout = deviceSeatScout();
 
 export default function Index(): ReactElement {
   const now = today();

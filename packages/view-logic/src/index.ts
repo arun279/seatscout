@@ -1,4 +1,4 @@
-export { playingStatusOf } from "./ask-phrases.js";
+export { ASKING, playingStatusOf } from "./ask-phrases.js";
 export { askedFrom } from "./asked.js";
 export { chosenOf } from "./auditorium-phrases.js";
 export { gridLabelOf } from "./auditorium-phrases.js";

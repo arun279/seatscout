@@ -128,7 +128,7 @@ describe("naming the film in the Ask sheet", () => {
     expect(screen.getByLabelText("Film")).toBeOnTheScreen();
   });
 
-  it("says it is reading, and offers nothing while it is", async () => {
+  it("says it is reading, and offers no listing while it is", async () => {
     await showing({
       programme: { phase: "reading", theaters: [], movies: [] },
     });
@@ -136,7 +136,25 @@ describe("naming the film in the Ask sheet", () => {
     expect(screen.getByRole("status")).toHaveTextContent(
       "Reading what is playing near 75234",
     );
+    expect(screen.queryByLabelText("Films playing near 75234")).toBeNull();
     expect(screen.queryByRole("button")).toBeNull();
+  });
+
+  it("gathers what is playing under a name a screen reader can say", async () => {
+    await showing();
+
+    expect(screen.getByLabelText("Films playing near 75234")).toBeOnTheScreen();
+  });
+
+  it("draws an edge round each film it offers rather than letting the fill end itself", async () => {
+    await showing();
+    const suggestion = StyleSheet.flatten(
+      screen.getByRole("button", { name: "Akira" }).props["style"],
+    );
+
+    expect(String(suggestion.backgroundColor)).toMatch(/^#[0-9a-f]{6}$/);
+    expect(String(suggestion.borderColor)).toMatch(/^#[0-9a-f]{6}$/);
+    expect(suggestion.borderColor).not.toBe(suggestion.backgroundColor);
   });
 
   it("says when the listing could not be read, and blocks nothing", async () => {
@@ -173,9 +191,10 @@ describe("naming the film in the Ask sheet", () => {
         movies: [],
       });
 
+      const house = themeFor(appearance).colours.house;
+
       expect(amiss).not.toBe(calm);
-      expect(
-        contrastOf(themeFor(appearance).colours.house, amiss),
-      ).toBeGreaterThanOrEqual(4.5);
+      expect(contrastOf(house, amiss)).toBeGreaterThanOrEqual(4.5);
+      expect(contrastOf(house, calm)).toBeGreaterThanOrEqual(4.5);
     });
 });

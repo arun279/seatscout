@@ -96,9 +96,28 @@ describe("a sheet the platform presents", () => {
   });
 
   it("leaves the home indicator clear beneath what a thumb presses", async () => {
-    const { dock } = await presented();
+    await presented();
 
-    expect(Number(dock.paddingBottom)).toBeGreaterThanOrEqual(12);
+    expect(screen.getByTestId("dock")).toHaveProp(
+      "edges",
+      expect.objectContaining({ bottom: "additive" }),
+    );
+  });
+
+  it("clears the status bar above it only where the sheet draws its own chrome", async () => {
+    await presented();
+
+    const head = screen.getByTestId("sheet-head").props["edges"];
+
+    expect(String(head?.top)).toBe(
+      Platform.OS === "android" ? "additive" : "undefined",
+    );
+  });
+
+  it("lifts the dock above the keyboard where the platform does not do it itself", async () => {
+    const { stage } = await presented();
+
+    expect(stage.paddingBottom !== undefined).toBe(Platform.OS === "ios");
   });
 
   it("reaches the platform's touch floor with every control it draws", async () => {
