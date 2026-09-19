@@ -17,6 +17,31 @@ once.
 
 Early development. Not yet usable.
 
+## On your phone
+
+The app runs on a phone through [Expo Go](https://expo.dev/go). It opens a published update
+rather than a development server, so it needs nothing running anywhere and works wherever the
+phone has a network. Every merge to `main` that changes the app, or a package it bundles,
+publishes to the `preview` channel, and the phone opens whichever update is newest there.
+
+Install Expo Go for Expo SDK 57 and sign in to it with the Expo account that owns the project.
+Expo's note on SDK 57 says Expo Go asks to be signed in before it opens a project, and being
+signed in is also what lists the project on Expo Go's Home tab, so the QR code stops being the
+only way in.
+
+Then scan this, with Expo Go on Android and with the camera on the iPhone:
+
+<https://qr.expo.dev/eas-update?projectId=bd0a1be7-8d02-4cd8-9a1b-d0431c52d495&runtimeVersion=exposdk:57.0.0&channel=preview>
+
+Or paste the address itself into Expo Go:
+
+```text
+exp://u.expo.dev/bd0a1be7-8d02-4cd8-9a1b-d0431c52d495?channel-name=preview&runtime-version=exposdk:57.0.0
+```
+
+Neither of those changes when an update is published, so they are worth keeping. Each run of
+the publish also prints them in its own summary.
+
 ## What makes it different
 
 **Results are seats, not screenings.** A screening with nothing but front-row singles left
