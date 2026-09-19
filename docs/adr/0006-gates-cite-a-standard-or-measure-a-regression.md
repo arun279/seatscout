@@ -231,19 +231,21 @@ rule and the bundle ratchets. That whole set answers in about seven seconds on t
 which is why it sits in `pnpm test:unit` beside everything else rather than in a job of its
 own. The fixtures live outside `src`, where they are neither product code nor mutated.
 
-Three gates here could carry a planted red and do not, and naming them is better than
-leaving the sentence above to be read as covering them: the Grit plugin that refuses a
-collected response, and the two bans that keep Cache Storage behind one writer.
+Not every gate here has one, and naming what does not is better than leaving the sentence
+above to be read as covering everything. The Grit plugin that refuses a collected response,
+the two bans that keep Cache Storage behind one writer, the two React hook rules and the
+undeclared import rule were each watched failing by hand on the day they landed. Every one
+of them could carry a planted red instead, and none does yet.
 
 **A planted red holds the gate. A pair holds this record's wording, and neither does the
 other's job.** A fixture proves a rule fires. It cannot prove that this document still says
 300 where the tool says 300, because a fixture has no opinion about prose, so each sentence
 here that carries a number or a rule name is also paired with a search of the tree in
-`tools/claims-in-prose.pairs.gates.mjs`. Nineteen are. Seven of the nineteen now sit beside a
-planted red as well, and two sentences that carried neither a number nor a name were dropped
-along with the grep that was their only witness, since the red beside them says everything
-they said. The twelve with no red at all are the ones a fixture cannot reach: the mutation
-gate's break threshold, which nothing can be planted against short of a whole mutation run;
+`tools/claims-in-prose.pairs.gates.mjs`. Seven of those pairs now sit beside a planted red as
+well, and two sentences that carried neither a number nor a name were dropped along with the
+grep that was their only witness, since the red beside them says everything they said. Twelve
+of the rest are sentences no fixture can reach at all: the mutation gate's break threshold,
+which nothing can be planted against short of a whole mutation run;
 the bundle globs and the ratchet each is weighed against; the journey's and the gesture's own
 constants and the command that judges them; the counter this decision picked; and the licence
 flag the `dependencies` job carries, which already has a planted red of its own in that job
