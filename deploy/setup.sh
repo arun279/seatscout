@@ -162,12 +162,11 @@ pause
 
 stage "First deploy"
 step "The worker has to exist before Access can be put in front of it."
-step "From here on every merge to main deploys; this run is the first one."
+step "From here on a merge that changes the version in package.json releases."
 say ""
-if confirm "Dispatch the Deploy workflow now?"; then
-  gh workflow run deploy.yml --ref main
-  note "Watch it with: gh run watch"
-  pause "Press Enter once it has finished"
+if confirm "Nothing released yet? Deploy once from this machine now?"; then
+  pnpm build
+  (cd apps/proxy && pnpm exec wrangler deploy)
 fi
 open_url "https://dash.cloudflare.com/?to=/:account/workers-and-pages"
 step "Open the $WORKER worker. Its workers.dev URL is on the page."
