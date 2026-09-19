@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { BIOME, OXLINT } from "./limits.js";
 import { measuring, recorder } from "./measure.fixtures.js";
-import { RATCHET, STRYKER } from "./measure.js";
+import { RATCHET, STRYKER, STRYKER_NATIVE } from "./measure.js";
 import type { Run } from "./shell.js";
 
 const sizeLimitExitingNonZero = (stdout: string): Run =>
@@ -179,6 +179,14 @@ describe("the mutation report", () => {
   it("refuses a runner configuration that names no json report", () => {
     expect(measured({ [STRYKER]: JSON.stringify({ reporters: [] }) })).toThrow(
       `${STRYKER} names no json report, so no mutation run wrote a score to read.`,
+    );
+  });
+
+  it("refuses the Expo app's runner configuration on the same terms", () => {
+    expect(
+      measured({ [STRYKER_NATIVE]: JSON.stringify({ reporters: [] }) }),
+    ).toThrow(
+      `${STRYKER_NATIVE} names no json report, so no mutation run wrote a score to read.`,
     );
   });
 });

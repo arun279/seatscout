@@ -26,6 +26,15 @@ const SEAT_MAP = "packages/core/src/source/seat-map.ts";
 const VERIFY = "packages/client/src/verify.ts";
 
 const WORKSPACE = "pnpm-workspace.yaml";
+const CI = ".github/workflows/ci.yml";
+const BASELINE = ".github/workflows/baseline.yml";
+
+const seedPaths = (read: Read) =>
+  [CI, BASELINE]
+    .flatMap((workflow) => read(workflow).split("\n"))
+    .filter((line) =>
+      /^ {10}path: reports\/stryker-(native-)?incremental\.json$/.test(line),
+    );
 
 const blockUnder = (read: Read, path: string, heading: string) => {
   const lines = read(path).split("\n");
@@ -38,7 +47,7 @@ const blockUnder = (read: Read, path: string, heading: string) => {
 
 const overridden = (read: Read) =>
   blockUnder(read, WORKSPACE, "overrides:").filter((line) =>
-    /^ {2}[\w@/.-]+:/.test(line),
+    /^ {2}'?[\w@/.-]+'?:/.test(line),
   );
 
 const hookCommands = (read: Read, hook: string) =>
@@ -113,6 +122,12 @@ export const CLAIMS: readonly Claim[] = [
     says: /`push-checks`, which runs (\w+) checks/,
     about: `the commands under push-checks, in ${LEFTHOOK}`,
     count: (read) => hookCommands(read, "push-checks").length,
+  },
+  {
+    document: MUTANTS,
+    says: /(\w+) cache entries across the two workflows name one seed file each/,
+    about: `the cache entries naming one seed file, in ${CI} and ${BASELINE}`,
+    count: (read) => seedPaths(read).length,
   },
   {
     document: GATES,

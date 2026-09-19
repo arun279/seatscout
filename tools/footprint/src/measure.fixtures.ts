@@ -9,6 +9,7 @@ export interface Command {
 }
 
 export const MUTATION_REPORT = "reports/mutation/mutation.json";
+export const NATIVE_MUTATION_REPORT = "reports/mutation/native.json";
 
 const OXLINT_OUTPUT = JSON.stringify({
   diagnostics: [
@@ -55,6 +56,8 @@ const PLAYWRIGHT_OUTPUT = JSON.stringify({
   suites: [{ specs: [{ tests: [{ status: "skipped" }] }] }],
 });
 
+const JEST_OUTPUT = JSON.stringify({ numTotalTests: 3, success: true });
+
 const SIZE_LIMIT_OUTPUT = JSON.stringify([
   { name: "web app", size: 15, sizeLimit: 15, passed: true },
 ]);
@@ -94,6 +97,12 @@ const FROM_PNPM: Record<string, string> = {
   playwright: PLAYWRIGHT_OUTPUT,
 };
 
+const JEST_RUN =
+  "exec jest --config apps/native/jest.config.js --ci --json --maxWorkers 2";
+
+const jestAnswer = (args: readonly string[]) =>
+  args.join(" ") === JEST_RUN ? JEST_OUTPUT : "";
+
 const FILES: Record<string, string> = {
   [RATCHET]: JSON.stringify({ comments: 0, tests: 1 }),
   [OXLINT]: JSON.stringify({
@@ -115,12 +124,17 @@ const FILES: Record<string, string> = {
   }),
   [STRYKER]: JSON.stringify({ jsonReporter: { fileName: MUTATION_REPORT } }),
   [MUTATION_REPORT]: MUTATION_OUTPUT,
+  ["stryker.native.config.json"]: JSON.stringify({
+    jsonReporter: { fileName: NATIVE_MUTATION_REPORT },
+  }),
+  [NATIVE_MUTATION_REPORT]: MUTATION_OUTPUT,
 };
 
 const ANSWERS: Record<string, (args: readonly string[]) => string> = {
   git: (args) => (args[0] === "merge-base" ? "base-sha\n" : "head-sha\n"),
   cloc: (args) => (args[1] === "--diff" ? CLOC_DIFF : CLOC_TREE),
-  pnpm: (args) => FROM_PNPM[args[1] ?? ""] ?? "",
+  pnpm: (args) =>
+    args[1] === "jest" ? jestAnswer(args) : (FROM_PNPM[args[1] ?? ""] ?? ""),
 };
 
 const canned = ({ command, args }: Command): string =>

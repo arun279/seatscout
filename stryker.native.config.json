@@ -1,0 +1,30 @@
+{
+  "$schema": "https://unpkg.com/@stryker-mutator/core@10.0.0/schema/stryker-schema.json",
+  "testRunner": "jest",
+  "plugins": [
+    "@stryker-mutator/jest-runner",
+    "./tools/stryker-style-tables.mjs"
+  ],
+  "ignorers": ["drawn-values"],
+  "coverageAnalysis": "off",
+  "jest": {
+    "projectType": "custom",
+    "configFile": "apps/native/jest.config.js",
+    "enableFindRelatedTests": true
+  },
+  "ignorePatterns": ["/tsconfig.json"],
+  "mutate": [
+    "apps/native/src/**/*.{ts,tsx}",
+    "!**/*.{test,spec}.?(c|m)[jt]s?(x)",
+    "!**/*.fixtures.?(c|m)[jt]s?(x)"
+  ],
+  "incrementalFile": "reports/stryker-native-incremental.json",
+  "cleanTempDir": "always",
+  "reporters": ["clear-text", "json"],
+  "jsonReporter": {
+    "fileName": "reports/mutation/native.json"
+  },
+  "thresholds": {
+    "break": 100
+  }
+}

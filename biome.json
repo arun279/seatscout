@@ -65,6 +65,16 @@
   },
   "overrides": [
     {
+      "includes": [
+        "apps/native/src/**",
+        "reports/planted/colours-*/**",
+        "!apps/native/src/theme.ts",
+        "!apps/native/src/**/*.test.ts",
+        "!apps/native/src/**/*.test.tsx"
+      ],
+      "plugins": ["./tools/lint/no-colour-literals.grit"]
+    },
+    {
       "includes": ["apps/web/src/seat-map.tsx"],
       "linter": {
         "rules": {

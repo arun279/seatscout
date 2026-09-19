@@ -7,6 +7,7 @@
     "runtimeVersion": {
       "policy": "sdkVersion"
     },
+    "userInterfaceStyle": "automatic",
     "updates": {
       "url": "https://u.expo.dev/bd0a1be7-8d02-4cd8-9a1b-d0431c52d495"
     },

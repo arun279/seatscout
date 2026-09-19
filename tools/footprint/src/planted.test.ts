@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { reading, recorder } from "./measure.fixtures.js";
-import { measureWith, STRYKER } from "./measure.js";
+import { measureWith, STRYKER, STRYKER_NATIVE } from "./measure.js";
 
 const PLANTED = "tools/footprint/planted";
 
@@ -12,12 +12,22 @@ const INNOCENT: Record<string, string> = {
   oxlint: "oxlint-one.json",
   biome: "biome-one.json",
   vitest: "vitest-one.json",
+  jest: "jest-one.json",
   playwright: "playwright-one.json",
+};
+
+const reportedAt = (config: string, report: string) => {
+  const where = `${PLANTED}/${report}`;
+  return {
+    [config]: JSON.stringify({ jsonReporter: { fileName: where } }),
+    [where]: planted(report),
+  };
 };
 
 const measuring = (
   swapped: Record<string, string> = {},
   report = "mutation-one.json",
+  nativeReport = "mutation-one.json",
 ) => {
   const named = { ...INNOCENT, ...swapped };
   const { run } = recorder((command) => {
@@ -27,10 +37,9 @@ const measuring = (
       ? undefined
       : { ok: true, stdout: planted(fixture), stderr: "" };
   });
-  const where = `${PLANTED}/${report}`;
   const { read } = reading({
-    [STRYKER]: JSON.stringify({ jsonReporter: { fileName: where } }),
-    [where]: planted(report),
+    ...reportedAt(STRYKER, report),
+    ...reportedAt(STRYKER_NATIVE, nativeReport),
   });
   return () => measureWith(run, read)("origin/main", "HEAD");
 };
@@ -60,6 +69,12 @@ describe("the planted red", () => {
     );
   });
 
+  it("refuses a screen run that collected no test", () => {
+    expect(measuring({ jest: "jest-nothing.json" })).toThrow(
+      "Jest collected no test at all",
+    );
+  });
+
   it("refuses an end to end listing that collected no test", () => {
     expect(measuring({ playwright: "playwright-nothing.json" })).toThrow(
       "Playwright collected no test at all",
@@ -72,13 +87,25 @@ describe("the planted red", () => {
     );
   });
 
+  it("refuses the Expo app's own run when it weighed nothing either", () => {
+    expect(measuring({}, "mutation-one.json", "mutation-nothing.json")).toThrow(
+      "The mutation run weighed no mutant",
+    );
+  });
+
   it("accepts the set that measured something, so it is not refusing everything", () => {
     const measurement = measuring()();
 
     expect(measurement.limits.cyclomatic.value).toBe(9);
     expect(measurement.limits.cognitive.value).toBe(14);
     expect(measurement.limits.longest.value).toBe(297);
-    expect(measurement.suites).toStrictEqual({ unit: 1, endToEnd: 1 });
-    expect(measurement.mutation.weighed).toBe(1);
+    expect(measurement.suites).toStrictEqual({
+      unit: 1,
+      screens: 1,
+      endToEnd: 1,
+    });
+    expect(measurement.mutation.map((run) => run.weighed)).toStrictEqual([
+      1, 1,
+    ]);
   });
 });

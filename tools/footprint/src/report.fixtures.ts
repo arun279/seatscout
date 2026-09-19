@@ -30,14 +30,24 @@ export const LIMITS: Limits = {
   crowding: 9,
 };
 
-export const SUITES: Suites = { unit: 487, endToEnd: 7 };
+export const SUITES: Suites = { unit: 487, screens: 76, endToEnd: 7 };
 
-export const WEIGHED: Mutation = {
-  score: 100,
-  detected: 2174,
-  weighed: 2174,
-  breaksAt: 100,
-};
+export const WEIGHED: readonly Mutation[] = [
+  {
+    over: "The engine, the packages and the tools, by Vitest",
+    score: 100,
+    detected: 2174,
+    weighed: 2174,
+    breaksAt: 100,
+  },
+  {
+    over: "The Expo app, by Jest",
+    score: 100,
+    detected: 180,
+    weighed: 180,
+    breaksAt: 100,
+  },
+];
 
 export const measurement = (over: Partial<Measurement> = {}): Measurement => ({
   base: side("0123456789abcdef0123456789abcdef01234567"),

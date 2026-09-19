@@ -6,6 +6,7 @@ const JOURNEY = "tests/e2e/journey.spec.ts";
 const GESTURE = "tests/e2e/auditorium.spec.ts";
 const DUPLICATION = ".jscpd.json";
 const WORKFLOW = ".github/workflows/ci.yml";
+const COLOURS = "tools/lint/no-colour-literals.grit";
 
 export const GATE_CLAIMS = [
   {
@@ -204,6 +205,22 @@ export const GATE_CLAIMS = [
     holds: "the glob the font ratchet weighs",
     pattern: "dist/fonts/*.woff2",
     paths: [RATCHET],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /gates on a significant regression only below 5 per cent/,
+    holds: "the reading below which the render gate may gate",
+    pattern: "reading < 5",
+    paths: [WORKFLOW],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /one of the CSS Color Module Level 4 named colours/,
+    holds: "the named colours the screen rule refuses",
+    pattern: "rebeccapurple",
+    paths: [COLOURS],
     files: 1,
   },
 ];

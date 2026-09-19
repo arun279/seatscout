@@ -2,12 +2,22 @@
   "$schema": "https://unpkg.com/knip@6.32.3/schema.json",
   "includeEntryExports": true,
   "ignoreDependencies": ["web-vitals"],
-  "vitest": {
-    "config": [
-      "vitest.config.ts",
-      "vitest.live.config.ts",
-      "vitest.related.config.ts",
-      "vitest.stryker.config.ts"
-    ]
+  "workspaces": {
+    ".": {
+      "vitest": {
+        "config": [
+          "vitest.config.ts",
+          "vitest.live.config.ts",
+          "vitest.related.config.ts",
+          "vitest.stryker.config.ts"
+        ]
+      }
+    },
+    "apps/native": {
+      "entry": ["src/app/**/*.tsx", "test/**/*.perf-test.tsx"],
+      "jest": {
+        "config": ["jest.config.js", "jest.perf.config.js"]
+      }
+    }
   }
 }

@@ -190,10 +190,26 @@ export const CLAIMS = [
   },
   {
     adr: "0012-every-mutant-must-die.md",
-    says: /\*\*One thing is carved out: the `\.tsx` files under `apps\/native\/src`\.\*\*/,
-    holds: "the carve-out the mutation configuration declares",
+    says: /\*\*Nothing is carved out, and it takes two runners to say so\.\*\*/,
+    holds: "the directory the run in Node leaves to the other runner",
     pattern: "!apps/native/src",
     paths: [STRYKER],
+    files: 1,
+  },
+  {
+    adr: "0012-every-mutant-must-die.md",
+    says: /sets `coverageAnalysis` to `off`/,
+    holds: "the runner configuration that takes the Expo app",
+    pattern: '"coverageAnalysis": "off"',
+    paths: ["stryker.native.config.json"],
+    files: 1,
+  },
+  {
+    adr: "0012-every-mutant-must-die.md",
+    says: /skips the argument of `StyleSheet\.create`, and a table declared at the top of the three files/,
+    holds: "the plugin that skips a drawn value",
+    pattern: "StyleSheet.create",
+    paths: ["tools/stryker-style-tables.mjs"],
     files: 1,
   },
   {

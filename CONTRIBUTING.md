@@ -33,6 +33,11 @@ pnpm --filter @seatscout/proxy dev
 pnpm --filter @seatscout/native start
 ```
 
+`pnpm test:unit` is Vitest over everything that runs in Node. `pnpm test:native` is Jest over
+the Expo app under the `jest-expo` preset, which is the only runner that renders React Native;
+it runs every test twice, once as iOS and once as Android, so a per-platform floor is asserted
+from the styles each platform resolves.
+
 `pnpm build` runs `tsc --build` across the workspace and then Vite over `apps/web`. The
 proxy serves what that build writes, so build first, then open the URL wrangler prints.
 Nothing configures it: `apps/proxy/wrangler.json` names the upstream it forwards to and the
@@ -63,6 +68,7 @@ pnpm --filter @seatscout/native run doctor
 pnpm counts
 pnpm claims
 pnpm test:unit
+pnpm test:native
 pnpm build
 pnpm --filter @seatscout/proxy exec wrangler deploy --dry-run
 pnpm test:e2e
@@ -76,11 +82,13 @@ how a contributor arrives red on a pull request, which is what this list is for.
 line is the half of the journey gate a checkout can run alone; the job also builds the merge
 base in a worktree, runs its journey, and holds this one to it.
 
-Three further jobs run beside it. `footprint` runs the mutation gate and reports what the
+Four further jobs run beside it. `footprint` runs the mutation gate and reports what the
 change weighs. `secrets` scans the pull request's commits with gitleaks. `dependencies`
 scans the lockfile against the OSV database and fails on any advisory, then reads every
 dependency's licence and fails on any SPDX identifier outside the allowlist that job
-carries, a licence it could not determine included.
+carries, a licence it could not determine included. `performance` measures each screen's
+Testing Library scenario with Reassure on the merge base and on the head, and reads how
+steady the runner is before it judges either.
 
 Two hooks run some of that earlier, and `lefthook.yml` declares both. The pre-commit hook
 runs five checks over staged files. The pre-push hook reads the refs the push carries and
@@ -146,7 +154,18 @@ Each of these has one way through and no exemption to grant.
   the SPDX allowlist written into `.github/workflows/ci.yml`. A licence osv-scanner cannot
   determine reads as `UNKNOWN` and fails like any other identifier that is not on the list.
   Add the identifier to that list in the same diff, where a reviewer sees which dependency
-  brought it.
+  brought it. `UNKNOWN` is the one identifier that may never be added, because the step after
+  it plants an undetermined licence and fails the job if the list took it. Replace the
+  dependency that carries one instead, through `overrides` in `pnpm-workspace.yaml` when it is
+  a transitive one, and say in the pull request which dependency it was.
+- **A render regression.** The `performance` job measures the same code twice before it
+  measures anything else, and the widest random change that reading shows decides what
+  follows. Under 5 per cent the runner is steady and a statistically significant change in a
+  screen's render duration or render count fails the job; at or above it the job reports the
+  comparison and says it did not gate. A reading the job cannot take fails it either way,
+  because a gate that cannot read its subject is not a gate. The comment on the pull request
+  names the scenarios that moved. Make the screen render what it rendered before, or say in
+  the pull request what the change buys.
 - **A reach for Cache Storage.** `pnpm lint` denies the `caches` global under `apps/` with
   Biome's `noRestrictedGlobals`, and the `caches` property everywhere with its
   `noJsRestrictedProperties`, so `self.caches` is refused beside a bare `caches`. There is one
@@ -175,12 +194,22 @@ Each of these has one way through and no exemption to grant.
 - **An export with no written type.** `isolatedDeclarations` asks every export to carry a
   type a declaration emitter can write down without inferring it. Annotate the export. A
   React component that returns markup returns `ReactElement`.
-- **The test count.** `.footprint.json` holds a floor under the tests the two runners collect,
-  by their own listings rather than by a run; the mutation-cache guard separately compares
-  Stryker's initial run to the tests `vitest list` collects over the files
-  `stryker.config.json` mutates, in the related mode `vitest.related.config.ts` turns on from
-  the `RELATED_FILES` the workflow names. Put the tests back, or lower the ratchet in the same
-  diff.
+- **A colour written into a screen.** `pnpm lint` runs a Grit plugin,
+  `tools/lint/no-colour-literals.grit`, over `apps/native/src` except the theme and the tests. It
+  refuses a string that reads as a colour in any notation. Name the colour in
+  `apps/native/src/theme.ts` and read it through the theme, because a token carries both
+  appearances and a literal carries one.
+- **A control a thumb cannot reach.** Every screen test holds each control it finds to the
+  platform's own touch floor, 44 pt on iOS and 48 dp on Android, read from the styles the control
+  resolves to. Give the control the difference as `minHeight` and `minWidth`, which leaves the
+  type untouched.
+- **The test count.** `.footprint.json` holds a floor under the tests the three runners collect,
+  by their own listings rather than by a run, except Jest, which has no listing that counts tests
+  without running them and so reports its run's own total; the mutation-cache guard separately
+  compares each Stryker initial run to the tests its own runner finds over the files its
+  configuration mutates, which for the run in Node is what `vitest list` collects in the related
+  mode `vitest.related.config.ts` turns on from the `RELATED_FILES` the workflow names. Put the
+  tests back, or lower the ratchet in the same diff.
 
 Take a ratchet's new value from the `footprint` comment on the pull request rather than from a
 local run: the job measures the merge of your branch with `main` rather than the branch alone,
@@ -251,8 +280,16 @@ built tree and a mutation report already on disk:
 ```sh
 pnpm build
 pnpm test:mutation
+pnpm test:mutation:native
 pnpm footprint
 ```
+
+The mutation gate is two runs, because Vitest cannot render React Native.
+`stryker.config.json` is everything that runs in Node; `stryker.native.config.json` is
+`apps/native/src` under Stryker's Jest runner. Each writes its own report and its own
+incremental file, each breaks below 100, and the footprint comment prints both.
+[ADR 12](docs/adr/0012-every-mutant-must-die.md) says why the second one sets
+`coverageAnalysis` to `off` and what its ignore-plugin skips.
 
 `--base` and `--head` compare something else, and `--out` writes the Markdown to a file.
 `pnpm test:mutation` inherits nothing and writes nothing to inherit from;
@@ -345,7 +382,12 @@ workspace through Stryker; `uuid` above
 [GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq), which reaches it
 through the Xcode project parser inside Expo's config plugins; and `decode-uri-component`
 above [GHSA-vcc3-ghjq-m6fr](https://github.com/advisories/GHSA-vcc3-ghjq-m6fr), which reaches
-it through the query parser inside Expo Router. `pnpm versions` holds that file and every
+it through the query parser inside Expo Router. Two more entries are there for reasons of
+their own: `exit` is aliased to `exit-x`, because the package Jest's own runner pulls in
+states its licence in npm's pre-SPDX form and so reads as undetermined, and `exit-x` is the
+maintained fork Jest itself moved to; and `@types/jsdom` is held at the version matching the
+`jsdom` this workspace installs, because the older types that arrive with the Jest jsdom
+environment do not type-check. `pnpm versions` holds that file and every
 `package.json` to one version of each dependency, so the React pin and the two apps that name
 `react` cannot drift apart. `uuid` is held at 11.1.1
 rather than at the newest patched release because that parser loads it with `require` and

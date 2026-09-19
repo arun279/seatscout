@@ -11,6 +11,16 @@
     "packages/core/src/corpus/captures.ts"
   ],
   "flagWords": ["ts-nocheck"],
+  "overrides": [
+    {
+      "filename": [
+        "tools/lint/*.grit",
+        "tools/claims-in-prose.pairs.gates.mjs",
+        "tools/planted-red/planted/colours/*"
+      ],
+      "dictionaries": ["css"]
+    }
+  ],
   "words": [
     "aacbt",
     "aawza",
@@ -45,6 +55,7 @@
     "Irumudi",
     "isdesktop",
     "jscpd",
+    "jsdom",
     "KHTML",
     "Lavazza",
     "lede",
@@ -59,17 +70,21 @@
     "ncloc",
     "Noninteractive",
     "Nygard",
+    "oklab",
+    "oklch",
     "oxlint",
     "pastshowtime",
     "pathspec",
     "Perricone",
     "pipefail",
     "precached",
+    "Pressable",
     "ratelimits",
     "rawfile",
     "Referer",
     "REGL",
     "renovatebot",
+    "rgba",
     "Schibsted",
     "seatmaps",
     "seatscout",

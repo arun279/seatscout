@@ -1,6 +1,11 @@
 import { configDefaults, defaultExclude, defineConfig } from "vitest/config";
 
-const exclude = [...defaultExclude, "**/dist/**", "**/*.live.test.ts"];
+const exclude = [
+  ...defaultExclude,
+  "**/dist/**",
+  "**/*.live.test.ts",
+  "apps/native/**",
+];
 const screenSetupFiles = [
   "apps/web/test/dialogs.ts",
   "apps/web/test/strict-console.ts",

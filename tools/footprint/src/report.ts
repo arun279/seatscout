@@ -17,7 +17,7 @@ export interface Measurement {
   readonly gates: Gates;
   readonly limits: Limits;
   readonly suites: Suites;
-  readonly mutation: Mutation;
+  readonly mutation: readonly Mutation[];
   readonly ratchets: Ratchets;
 }
 

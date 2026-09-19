@@ -7,7 +7,11 @@ import {
   labelOf,
   lateralOf,
   noneOf,
+  FIND_SEATS,
+  ledeOf,
+  NOTHING_REMEMBERED,
   partyOf,
+  saidOf,
   seatOf,
   seatSetOf,
   spokenOf,
@@ -183,6 +187,38 @@ describe("the words a card uses", () => {
     expect(seatSetOf(REFERENCE)).toBe("the Reference seat");
     expect(seatSetOf({ ...REFERENCE, targetDepth: 0 })).toBe(
       "your custom seat",
+    );
+  });
+
+  it("opens the prompt with what to name next, then the party, the day and the seat already set", () => {
+    const said = ledeOf(
+      { date: "2026-08-29", partySize: 2 },
+      REFERENCE,
+      "2026-08-28",
+    );
+
+    expect(said.startsWith("Name an area")).toBe(true);
+    expect(said).toContain(partyOf(2));
+    expect(said).toContain(whenOf("2026-08-29", "2026-08-28"));
+    expect(said).toContain(seatSetOf(REFERENCE));
+  });
+
+  it("gives a control and an empty history words of their own, because an empty one names nothing", () => {
+    expect(FIND_SEATS.trim()).not.toHaveLength(0);
+    expect(NOTHING_REMEMBERED.trim()).not.toHaveLength(0);
+  });
+
+  it("says a remembered search as its party, its day in the running text and its area", () => {
+    const search = { movie: "243819", date: "2026-08-29", area: "75234" };
+
+    expect(saidOf({ ...search, partySize: 4 }, "2026-08-28")).toBe(
+      "4 seats · tomorrow · 75234",
+    );
+    expect(saidOf({ ...search, partySize: 1 }, "2026-08-29")).toBe(
+      "1 seat · today · 75234",
+    );
+    expect(saidOf({ ...search, partySize: 2 }, "2026-08-22")).toBe(
+      "2 seats · Sat 29 Aug · 75234",
     );
   });
 });

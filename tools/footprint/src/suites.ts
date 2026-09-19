@@ -2,6 +2,7 @@ import { type Section, table } from "./markdown.js";
 
 export interface Suites {
   readonly unit: number;
+  readonly screens: number;
   readonly endToEnd: number;
 }
 
@@ -27,20 +28,25 @@ const counted = (collected: readonly Collected[]): number =>
   );
 
 const some = (total: number, runner: string): number => {
-  if (total === 0)
+  if (!(total > 0))
     throw new Error(
       `${runner} collected no test at all, so there is no count to hold to a ratchet. A suite that runs nothing passes everything.`,
     );
   return total;
 };
 
-export const suitesFrom = (unit: string, endToEnd: string): Suites => ({
+export const suitesFrom = (
+  unit: string,
+  screens: string,
+  endToEnd: string,
+): Suites => ({
   unit: some(JSON.parse(unit).length, "Vitest"),
+  screens: some(JSON.parse(screens).numTotalTests, "Jest"),
   endToEnd: some(counted(JSON.parse(endToEnd).suites), "Playwright"),
 });
 
 export const suites = (collected: Suites, ratchet: number): Section => {
-  const total = collected.unit + collected.endToEnd;
+  const total = collected.unit + collected.screens + collected.endToEnd;
   const withinRatchet = total >= ratchet;
 
   return {
@@ -49,12 +55,14 @@ export const suites = (collected: Suites, ratchet: number): Section => {
       "### Tests",
       "",
       "Collected rather than run, by each runner's own listing, so the figure is what the",
-      "suites hold rather than what one run happened to reach.",
+      "suites hold rather than what one run happened to reach. Jest is the exception: it has no",
+      "listing that counts tests without running them, so its figure is the run's own total.",
       "",
       ...table(
         ["Suite", "Tests"],
         [
           ["Unit, by Vitest", String(collected.unit)],
+          ["Screens, by Jest", String(collected.screens)],
           ["End to end, by Playwright", String(collected.endToEnd)],
           ["Total", String(total)],
         ],

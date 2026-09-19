@@ -8,6 +8,7 @@
     { "path": "packages/view-logic" },
     { "path": "packages/view-logic/tsconfig.test.json" },
     { "path": "apps/native" },
+    { "path": "apps/native/tsconfig.test.json" },
     { "path": "apps/web" },
     { "path": "apps/web/tsconfig.test.json" },
     { "path": "apps/web/tsconfig.worker.json" },

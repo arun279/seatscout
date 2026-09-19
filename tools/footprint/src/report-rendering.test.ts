@@ -81,15 +81,17 @@ that limit on cost sustained across many files, never to make one file fit.
 ### Tests
 
 Collected rather than run, by each runner's own listing, so the figure is what the
-suites hold rather than what one run happened to reach.
+suites hold rather than what one run happened to reach. Jest is the exception: it has no
+listing that counts tests without running them, so its figure is the run's own total.
 
 | Suite | Tests |
 | --- | ---: |
 | Unit, by Vitest | 487 |
+| Screens, by Jest | 76 |
 | End to end, by Playwright | 7 |
-| Total | 494 |
+| Total | 570 |
 
-The total may not fall below the ratchet in \`.footprint.json\`, which is 494. At or above it.
+The total may not fall below the ratchet in \`.footprint.json\`, which is 570. At or above it.
 
 A count is a weak gate on its own. It notices a suite shrinking and says nothing about
 whether what is left asserts anything, so it is met by a test that cannot fail. The
@@ -98,18 +100,22 @@ mutant alive.
 
 ### Mutation
 
-Stryker's own score over the run that wrote the report, held to the threshold named in
-that same report rather than to one restated here. A run that weighed no mutant is
-refused instead of scored, because such a run scores NaN and NaN is never below a
-threshold. The run is incremental: it starts from what the run on \`main\` last judged,
-and from this branch's own last run after that. Nothing cross-checks the two, so a
-verdict reused here is one that run reached rather than one reached again.
+Stryker's own score over the runs that wrote the reports, each held to the threshold named
+in its own report rather than to one restated here. A run that weighed no mutant is refused
+instead of scored, because such a run scores NaN and NaN is never below a threshold. Two
+runners share the work: Vitest judges everything that runs in Node, and Jest judges the
+Expo app, which Vitest cannot render. Both runs are incremental: they start from what the
+run on \`main\` last judged, and from this branch's own last run after that. Nothing
+cross-checks the two, so a verdict reused here is one that run reached rather than one
+reached again.
 
-| Score | Detected | Weighed | Break |
-| ---: | ---: | ---: | ---: |
-| 100.00 | 2174 | 2174 | 100 |
+| Run | Score | Detected | Weighed | Break |
+| --- | ---: | ---: | ---: | ---: |
+| The engine, the packages and the tools, by Vitest | 100.00 | 2174 | 2174 | 100 |
+| The Expo app, by Jest | 100.00 | 180 | 180 | 100 |
 
-The score may not fall below the threshold, which is 100. At or above it.
+The engine, the packages and the tools, by Vitest: the score may not fall below the threshold, which is 100. At or above it.
+The Expo app, by Jest: the score may not fall below the threshold, which is 100. At or above it.
 `;
 
 const MEASURED: Measurement = {
@@ -149,7 +155,7 @@ const MEASURED: Measurement = {
   limits: LIMITS,
   suites: SUITES,
   mutation: WEIGHED,
-  ratchets: { comments: 2, tests: 494 },
+  ratchets: { comments: 2, tests: 570 },
 };
 
 describe("one measurement, always the same bytes", () => {
