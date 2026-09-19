@@ -659,11 +659,73 @@ the lockfile a second time with that configuration and the same allowlist, expec
 A step after it fails the job when that scan passed. The file is not named `osv-scanner.toml`, so the
 shipped scan cannot pick it up as a configuration of its own.
 
+**The Expo SDK is asked about its own dependencies by the tool that ships with it.** Nothing written
+here knows which versions the installed SDK was built against, and nothing here should: Expo
+publishes that table and `expo install --check` reads it, naming every installed package whose
+version the SDK does not expect. [expo-doctor](https://docs.expo.dev/develop/tools/) runs the same
+check as one of twenty-one, which between them read the app config against its schema, the lock
+file, the Metro configuration, duplicate and overridden dependencies, the peer dependencies the
+native modules require, and the packages React Native Directory knows about. Both run in `quality`
+and neither runs on a hook, because both reach the network and neither answers in the seconds a
+push can afford. The first run failed one check of the twenty-one: `expo`, `expo-constants`,
+`expo-linking` and `expo-router` were each a few patch releases below what the installed SDK
+expects. Those four are moved to the versions it named. Expo documents `expo.install.exclude` as
+the way to hold a package back from that check, and nothing here is in it, because an excluded
+package is a package the SDK is no longer asked about. The check this workspace expected to fight,
+the one that refuses an override breaking a critical dependency chain, passes over all five
+overrides in `pnpm-workspace.yaml`.
+
+**One version of every shared dependency, across every manifest and the override file**, by
+[syncpack](https://syncpack.dev), whose default policy is a single highest-semver group over every
+dependency it finds. It is taken over [manypkg](https://github.com/Thinkmill/manypkg), whose
+`EXTERNAL_MISMATCH` check states the same rule, for the reason that decides it in this workspace:
+syncpack's `pnpmOverrides` dependency type reads `overrides` from `pnpm-workspace.yaml`, which is
+where React is pinned, and manypkg reads `package.json` files alone. The pin and the two manifests
+that name `react` are therefore three instances of one dependency under one policy, so a pin that
+drifts from the apps it exists for is a refusal rather than something to notice. syncpack also
+carries the escape hatch Expo's version floors may one day need, a version group of its own for the
+packages the SDK holds apart; manypkg's answer to the same need is to write a specifier semver
+cannot parse, which turns the gate off for that package rather than giving it a policy. It is a
+compiled binary that answers over this workspace in under a second, so it runs on the pre-push hook
+as `pnpm versions` as well as in `quality`. It carries no configuration file, because the default
+group is the policy this workspace wants and a file restating it would be a second place for that
+policy to drift.
+
+**Watched failing, watched silent.** `react` raised to 19.2.4 in `pnpm-workspace.yaml` alone is
+refused by name, with all three of its instances printed and the two that disagree marked; put
+back, the same command reports no issue.
+
 **A rule reported at a severity the linter exits zero on is no gate at all.** Biome's
 recommended preset reports `useNodejsImportProtocol` as information, and `noOctalEscape` and
 `noUnusedVariables` as warnings; all three are errors here. `biome.json` names them beside
 the rules from outside the preset that this workspace asks for, so one file says everything
 the linter gates on.
+
+**React's two hook rules are named rather than left to detection.** Biome ships
+[`useExhaustiveDependencies`](https://biomejs.dev/linter/rules/use-exhaustive-dependencies/) for
+`react-hooks/exhaustive-deps` and
+[`useHookAtTopLevel`](https://biomejs.dev/linter/rules/use-hook-at-top-level/) for
+`react-hooks/rules-of-hooks`. Both are in the recommended preset and both belong to Biome's `react`
+domain, which is read off the nearest manifest rather than written down, so whether they reached
+`apps/native` at all was a question about detection. `biome.json` names both at error, which
+answers it either way and is the same move the paragraph above makes for three other rules. Neither
+rule has anything to say about the tree as it stands, which is a reading and not a reason to leave
+them unnamed.
+
+**An import of a package the nearest manifest does not declare is refused** by Biome's
+[`noUndeclaredDependencies`](https://biomejs.dev/linter/rules/no-undeclared-dependencies/). In a
+pnpm workspace such an import resolves from the root's `node_modules` in development and fails
+under Metro, which is a defect that cannot appear until the phone runs the code. The rule reads the
+closest `package.json`, and its own documentation says it is not meant to reach a monorepo root, so
+each package declares what its own files import. Switching it on refused 196 imports across twelve
+packages, every one of them a test-time import that the root had been satisfying, and each is
+answered by a line in the package that does the importing.
+
+Declaring a test runner in a package has a second effect worth knowing before it surprises
+somebody: Biome reads its domains off the same manifest, so `apps/web` naming `vitest` switched on
+the `test` domain there and its rules found three more diagnostics. All three were one fixture
+helper named `before`, which `noDuplicateTestHooks` cannot tell from Mocha's hook of that name. The
+helper is now `precedes`, which is what it does and what no test framework calls anything.
 
 **A class no stylesheet rules is refused by Biome's `noUndeclaredClasses`**, which the pinned
 2.5.10 carries in its nursery group, and which replaced a check of this workspace's own:

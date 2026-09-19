@@ -56,7 +56,10 @@
         "noUselessEscapeInString": "error"
       },
       "correctness": {
-        "noUnusedVariables": "error"
+        "noUndeclaredDependencies": "error",
+        "noUnusedVariables": "error",
+        "useExhaustiveDependencies": "error",
+        "useHookAtTopLevel": "error"
       }
     }
   },

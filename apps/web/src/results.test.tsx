@@ -11,9 +11,9 @@ import {
 } from "@testing-library/react";
 import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 import {
-  before,
   cards,
   failing,
+  precedes,
   settledAlone,
   staged,
   TODAY,
@@ -139,7 +139,7 @@ describe("the list on the first screen", () => {
     const rule = screen.getByText(
       `${tied.length} tied · below: measurably further`,
     );
-    const above = cards().filter((card) => before(card, rule));
+    const above = cards().filter((card) => precedes(card, rule));
     expect(above).toHaveLength(tied.length);
     const minutes = above.map((card) =>
       minutesOf(

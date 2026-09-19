@@ -55,6 +55,9 @@ shellcheck deploy/*.sh
 pnpm spell
 pnpm typecheck
 pnpm dead-code
+pnpm versions
+pnpm --filter @seatscout/native run install-check
+pnpm --filter @seatscout/native run doctor
 pnpm counts
 pnpm claims
 pnpm test:unit
@@ -79,11 +82,11 @@ carries, a licence it could not determine included.
 
 Two hooks run some of that earlier, and `lefthook.yml` declares both. The pre-commit hook
 runs five checks over staged files. The pre-push hook reads the refs the push carries and
-hands one that sends commits to `push-checks`, which runs ten checks; a push that only
+hands one that sends commits to `push-checks`, which runs eleven checks; a push that only
 deletes a branch sends none, so it runs none of them. `pnpm exec lefthook run push-checks`
-runs the same ten by hand.
+runs the same eleven by hand.
 
-Those ten are scoped to the change wherever the tool scopes itself. The unit stage runs
+Those eleven are scoped to the change wherever the tool scopes itself. The unit stage runs
 `--changed origin/main`, which is the tests that reach what the branch changed since its merge
 base with `main`. A shared file brings the whole suite back: a Vitest config, `package.json`,
 a `tsconfig*.json`, `pnpm-lock.yaml` or a setup file. Those are `forceRerunTriggers` in
@@ -147,6 +150,21 @@ Each of these has one way through and no exemption to grant.
   through `cachedShell` and write one nowhere.
   [ADR 13](docs/adr/0013-only-the-catalogue-is-cached.md) says why a seat map may never be
   held.
+- **An import the package never asked for.** Biome's `noUndeclaredDependencies` names the
+  package and the manifest that does not declare it. Add it to that manifest, at the version
+  the rest of the workspace already uses. The root's `package.json` does not answer for a
+  package under `apps/`, `packages/` or `tools/`: an import the root satisfies resolves here
+  and fails under Metro, which is the defect the rule exists for.
+- **A version two manifests disagree about.** `pnpm versions` runs syncpack over every
+  `package.json` and over the `overrides` in `pnpm-workspace.yaml`, and prints each instance
+  of the dependency beside the version it names. Make them one version. The override and the
+  manifests it exists for are instances of the same dependency, so raising one alone fails.
+- **The Expo SDK's own two checks.** `pnpm --filter @seatscout/native run install-check` names
+  every package whose version the installed SDK does not expect, and
+  `pnpm --filter @seatscout/native run doctor` runs that check as one of twenty-one.
+  Move the package to the version the SDK named. `expo.install.exclude` in
+  `apps/native/package.json` would hold a package back from the first check and is empty,
+  because a package in it is one the SDK is no longer asked about.
 - **An import cycle.** Biome's `noImportCycles` names the import that closes the loop. Move
   what both modules need into a third, or make the import `import type`, which the compiler
   erases and which the rule ignores.
@@ -171,6 +189,15 @@ video: drive the built tree in a real browser at a phone's size, screenshot each
 change adds or alters, and attach them with `gh pr create --attach`, `gh pr edit --attach` or
 `gh pr comment --attach`, one flag per file with alt text after a `#`, so a reviewer sees the
 screen rather than reads about it. The flag needs GitHub CLI 2.99 or later.
+
+One class of mistake in `apps/native` has no gate here, and it is written down rather than left
+to be found. Raw text outside a `<Text>` element, a `StyleSheet` entry nothing uses, and a
+platform component without a platform-specific filename are React Native mistakes that neither
+Biome nor oxlint carries a rule for. The only published rules for them are in
+[eslint-plugin-react-native](https://github.com/Intellicode/eslint-plugin-react-native), whose
+maintainer states on the project page that activity is low and that new features are not being
+assessed, so taking it would buy a second linter, its parser and a plugin nobody is maintaining.
+It is a real hole. Read for those three by hand until something maintained covers them.
 
 [ADR 6](docs/adr/0006-gates-cite-a-standard-or-measure-a-regression.md) says where each of
 those numbers comes from, and
@@ -281,7 +308,9 @@ workspace through Stryker; `uuid` above
 [GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq), which reaches it
 through the Xcode project parser inside Expo's config plugins; and `decode-uri-component`
 above [GHSA-vcc3-ghjq-m6fr](https://github.com/advisories/GHSA-vcc3-ghjq-m6fr), which reaches
-it through the query parser inside Expo Router. `uuid` is held at 11.1.1
+it through the query parser inside Expo Router. `pnpm versions` holds that file and every
+`package.json` to one version of each dependency, so the React pin and the two apps that name
+`react` cannot drift apart. `uuid` is held at 11.1.1
 rather than at the newest patched release because that parser loads it with `require` and
 uuid dropped its CommonJS entry point after 11. An entry is removable once the package that
 pins it releases a version that does not. `pnpm why --depth=10 react` reports what is

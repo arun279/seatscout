@@ -4,10 +4,10 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   ask,
   atNoTheater,
-  before,
   cards,
   failing,
   LISTING,
+  precedes,
   SEAT_MAP,
   staged,
   TONIGHT,
@@ -35,8 +35,8 @@ describe("what the first screen says when the answer is not a list", () => {
       name: "Retry the two unreached",
     });
     const widen = screen.getByRole("button", { name: /widen/i });
-    expect(before(retry, widen)).toBe(true);
-    expect(before(retry, cards()[0] ?? widen)).toBe(true);
+    expect(precedes(retry, widen)).toBe(true);
+    expect(precedes(retry, cards()[0] ?? widen)).toBe(true);
   });
 
   it("re-checks only the two unreached, reading no listing and no other room, and Coverage says so once they answer", async () => {
@@ -155,7 +155,7 @@ describe("what the first screen says when the answer is not a list", () => {
     expect(screen.queryByText(/anywhere today/)).toBeNull();
     const retry = screen.getByRole("button", { name: /retry the two/i });
     const widen = screen.getByRole("button", { name: /widen/i });
-    expect(before(retry, widen)).toBe(true);
+    expect(precedes(retry, widen)).toBe(true);
   });
 
   it("says the search itself failed when the listing cannot be read, counts nothing, offers the retry first, and re-reads the listing on it", async () => {
@@ -171,7 +171,7 @@ describe("what the first screen says when the answer is not a list", () => {
     expect(screen.queryByRole("button", { name: /ledger/i })).toBeNull();
     const retry = screen.getByRole("button", { name: "Retry the search" });
     const widen = screen.getByRole("button", { name: /widen/i });
-    expect(before(retry, widen)).toBe(true);
+    expect(precedes(retry, widen)).toBe(true);
     expect(screen.queryByText(/candidates/)).toBeNull();
 
     fireEvent.click(retry);

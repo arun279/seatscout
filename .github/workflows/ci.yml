@@ -49,6 +49,9 @@ jobs:
       - run: pnpm spell
       - run: pnpm typecheck
       - run: pnpm dead-code
+      - run: pnpm versions
+      - run: pnpm --filter @seatscout/native run install-check
+      - run: pnpm --filter @seatscout/native run doctor
       - run: pnpm counts
       - run: pnpm claims
       - run: pnpm test:unit

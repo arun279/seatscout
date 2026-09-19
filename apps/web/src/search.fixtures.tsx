@@ -274,7 +274,7 @@ export const failing = (
 
 export const cards = (): HTMLElement[] => screen.queryAllByRole("article");
 
-export const before = (first: Element, second: Element): boolean =>
+export const precedes = (first: Element, second: Element): boolean =>
   (first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING) !==
   0;
 
