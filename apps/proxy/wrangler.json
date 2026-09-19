@@ -3,5 +3,13 @@
   "name": "seatscout",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-28",
-  "assets": { "directory": "../web/dist" }
+  "assets": { "directory": "../web/dist" },
+  "vars": { "UPSTREAM_ORIGIN": "https://www.fandango.com" },
+  "ratelimits": [
+    {
+      "name": "VISITOR_RATE",
+      "namespace_id": "1",
+      "simple": { "limit": 540, "period": 60 }
+    }
+  ]
 }

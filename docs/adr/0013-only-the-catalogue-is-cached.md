@@ -249,8 +249,9 @@ would have to write Cache Storage instead.
 `tests/e2e/shell.spec.ts` drives all of it in a real browser against the built output, served
 by `wrangler dev` from the Playwright configuration's `webServer`: the worker the deployment
 runs, over the asset directory it publishes, so what the suite sees is what a deployment serves
-rather than a stand-in for it. A seat map route therefore reaches the proxy, which answers that
-it is not configured because no secret is set, and the suite asserts that answer. The suite
+rather than a stand-in for it. A seat map route therefore reaches the proxy, and the suite
+asserts that the proxy admits what the shell's own script asks for and refuses the same
+address opened as a page, which is the one thing only a real browser can settle. The suite
 watches the worker take control, reads Cache Storage back and asserts it holds the shell and
 nothing else, requests a seat map route and a published file the shell does not list and
 asserts neither is added, and reloads with the network disabled, still under the worker's

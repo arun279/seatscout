@@ -35,8 +35,8 @@ pnpm --filter @seatscout/native start
 
 `pnpm build` runs `tsc --build` across the workspace and then Vite over `apps/web`. The
 proxy serves what that build writes, so build first, then open the URL wrangler prints.
-`ACCESS_TEAM_DOMAIN`, `ACCESS_AUD` and `UPSTREAM_ORIGIN` configure it, none of them
-committed, and it serves nothing while any of the three is missing.
+Nothing configures it: `apps/proxy/wrangler.json` names the upstream it forwards to and the
+rate limit it holds each visitor to, and nobody signs in.
 
 Expo prints a URL of its own; open that one in Expo Go. `/ios` and `/android` are ignored
 because `expo prebuild` generates them.

@@ -50,10 +50,10 @@ selected. It does not process payments and never stores card details. See
 
 ## Self-hosting
 
-The deployment holds no user data, and every value it needs is one you create in your own
-accounts. Running your own instance means a hosting account and an access allowlist of your
-own; everything else is here. [deploy/README.md](deploy/README.md) is the runbook,
-`deploy/setup.sh` walks it, and `deploy/verify.sh` checks the result.
+The deployment holds no user data, and the only values it needs are the credentials that
+let your own hosting account be deployed to. Running your own instance means that account
+and nothing else; there is no login to set up. [deploy/README.md](deploy/README.md) is the
+runbook, `deploy/setup.sh` walks it, and `deploy/verify.sh` checks the result.
 
 ## Documentation
 

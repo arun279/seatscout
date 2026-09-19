@@ -8,13 +8,12 @@ cd "$REPO_DIR"
 
 ENV_FILE="$HERE/.env"
 REQUIRED_SECRETS=(CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID)
-LOGIN_HOST="cloudflareaccess.com"
 
 if [[ -t 1 ]] && command -v tput >/dev/null 2>&1 && [[ "$(tput colors 2>/dev/null || echo 0)" -ge 8 ]]; then
   BOLD=$(tput bold); DIM=$(tput dim); RESET=$(tput sgr0)
-  GREEN=$(tput setaf 2); RED=$(tput setaf 1); YELLOW=$(tput setaf 3)
+  GREEN=$(tput setaf 2); RED=$(tput setaf 1)
 else
-  BOLD=""; DIM=""; RESET=""; GREEN=""; RED=""; YELLOW=""
+  BOLD=""; DIM=""; RESET=""; GREEN=""; RED=""
 fi
 
 FAILURES=()
@@ -24,7 +23,6 @@ trap 'rm -rf "$WORK"' EXIT
 section() { printf '\n%s%s%s\n' "$BOLD" "$1" "$RESET"; }
 ok()      { printf '  %s✓%s %s\n' "$GREEN" "$RESET" "$1"; }
 note()    { printf '  %s%s%s\n' "$DIM" "$1" "$RESET"; }
-skip()    { printf '  %s·%s %s\n' "$YELLOW" "$RESET" "$1"; }
 bad()     { printf '  %s✗%s %s\n' "$RED" "$RESET" "$1"; FAILURES+=("$2"); }
 
 report_and_exit() {
@@ -47,14 +45,7 @@ remembered() {
 }
 
 request() {
-  curl -sS --max-time 30 -o "$WORK/body" -D "$WORK/head" -w '%{http_code} %{redirect_url}' "$@" || true
-}
-
-status_of() { printf '%s' "${1%% *}"; }
-redirect_of() { printf '%s' "${1#* }"; }
-
-admitted() {
-  request -K "$WORK/token" "$@"
+  curl -sS --max-time 30 -o "$WORK/body" -w '%{http_code}' "$@" || true
 }
 
 printf '\n%s  seatscout deployment%s\n' "$BOLD" "$RESET"
@@ -116,9 +107,9 @@ section "Deploy on merge"
 
 RUN="$(gh run list --workflow deploy.yml --branch main --limit 1 --json conclusion,url --jq '.[] | "\(.conclusion) \(.url)"' 2>/dev/null || true)"
 case "$RUN" in
-  "") bad "the Deploy workflow has never run on main" "Run it: gh workflow run deploy.yml --ref main" ;;
+  "") bad "the Deploy workflow has never run on main" "It releases on a version bump: raise the version in package.json and merge" ;;
   success*) ok "the last deploy of main succeeded" ;;
-  *) bad "the last deploy of main ended $RUN" "Read the run, fix it, and dispatch another" ;;
+  *) bad "the last deploy of main ended $RUN" "Read the run, fix it, and merge another version bump" ;;
 esac
 
 section "Live deployment"
@@ -138,60 +129,47 @@ else
   report_and_exit
 fi
 
-ANONYMOUS="$(request "$SEATSCOUT_URL/")"
-if [[ "$(status_of "$ANONYMOUS")" == "000" ]]; then
+PAGE="$(request "$SEATSCOUT_URL/")"
+if [[ "$PAGE" == "000" ]]; then
   bad "nothing answers at $SEATSCOUT_URL" "Check the URL, and that a deploy has actually run"
   report_and_exit
 fi
 
-if [[ "$(status_of "$ANONYMOUS")" == "302" && "$(redirect_of "$ANONYMOUS")" == *".$LOGIN_HOST/"* ]]; then
-  ok "an anonymous request is sent to your team domain to sign in"
+if [[ "$PAGE" == "200" ]]; then
+  ok "the page loads, with nothing to sign in to"
 else
-  bad "an anonymous request answered $(status_of "$ANONYMOUS") rather than a redirect to $LOGIN_HOST" \
-    "Protect the worker: Workers & Pages > $WORKER > Access > Protect this Worker behind Access"
+  bad "the page answered $PAGE rather than 200" \
+    "Read the last deploy: the worker serves what apps/web builds as static assets"
 fi
 
-section "An admitted identity"
+section "The proxy"
 
-if [[ -z "${SEATSCOUT_ACCESS_CLIENT_ID:-}" || -z "${SEATSCOUT_ACCESS_CLIENT_SECRET:-}" ]]; then
-  skip "no service token in this shell, so nothing past the gate is checked"
-  note "Export SEATSCOUT_ACCESS_CLIENT_ID and SEATSCOUT_ACCESS_CLIENT_SECRET to check it."
-  (( ${#FAILURES[@]} )) && report_and_exit
-  printf '\n%s✓ the deployment is live and Access is in front of it%s\n\n' "$GREEN" "$RESET"
-  exit 0
-fi
+READ="$SEATSCOUT_URL$AREA_ROUTE?zipCode=$AREA&limit=$THEATERS"
 
-( umask 077 && printf 'header = "CF-Access-Client-Id: %s"\nheader = "CF-Access-Client-Secret: %s"\n' \
-  "$SEATSCOUT_ACCESS_CLIENT_ID" "$SEATSCOUT_ACCESS_CLIENT_SECRET" > "$WORK/token" )
-
-ADMITTED_ROOT="$(admitted "$SEATSCOUT_URL/")"
-if [[ "$(status_of "$ADMITTED_ROOT")" == "302" && "$(redirect_of "$ADMITTED_ROOT")" == *".$LOGIN_HOST/"* ]]; then
-  bad "the service token was sent to sign in rather than admitted" \
-    "Add a policy with action Service Auth and an Include rule naming that token"
-  report_and_exit
-fi
-ok "the service token is admitted rather than sent to sign in"
-
-PROXIED="$(admitted "$SEATSCOUT_URL$AREA_ROUTE?zipCode=$AREA&limit=$THEATERS")"
+CARRIED="$(request -H "Sec-Fetch-Site: same-origin" "$READ")"
 BODY="$(cat "$WORK/body")"
-STATUS="$(status_of "$PROXIED")"
 
-if [[ "$BODY" == "The proxy is not configured" ]]; then
-  bad "the worker holds no configuration" \
-    "Set ACCESS_TEAM_DOMAIN, ACCESS_AUD and UPSTREAM_ORIGIN: wrangler secret put <name>"
-elif [[ "$BODY" == "No access assertion" ]]; then
-  bad "Access admitted the request but the worker received no assertion" \
-    "The router in front of a worker serving static assets did not pass Cf-Access-Jwt-Assertion. See deploy/README.md"
-elif [[ "$BODY" == "The access assertion did not verify" ]]; then
-  bad "the assertion arrived and did not verify" \
-    "ACCESS_TEAM_DOMAIN or ACCESS_AUD names a different Access application"
-elif [[ "$STATUS" != 2* ]]; then
-  bad "the proxy carried the read upstream and the upstream answered $STATUS" \
-    "The upstream admits a request on the Referer the proxy sets from UPSTREAM_ORIGIN; check it names the right origin"
+if [[ "$BODY" == "Not a request from this site" ]]; then
+  bad "the proxy refused a request sent the way this site's own page sends one" \
+    "Read apps/proxy/src/index.ts: Sec-Fetch-Site: same-origin is what it carries"
+elif [[ "$CARRIED" == "429" ]]; then
+  bad "the rate limiter refused this read" \
+    "Wait a minute and run this again; the limit is per visitor per minute"
+elif [[ "$CARRIED" != 2* ]]; then
+  bad "the proxy carried the read upstream and the upstream answered $CARRIED" \
+    "The upstream admits a request on the Referer the proxy sets from UPSTREAM_ORIGIN in apps/proxy/wrangler.json"
 else
-  ok "the assertion verifies and the proxy carries an area read upstream"
+  ok "a same-origin read is carried upstream and answered"
+fi
+
+REFUSED="$(request -H "Sec-Fetch-Site: cross-site" "$READ")"
+if [[ "$REFUSED" == "403" ]]; then
+  ok "a cross-site read is refused"
+else
+  bad "a cross-site read answered $REFUSED rather than 403" \
+    "The deployed worker is older than the same-origin guard; release again"
 fi
 
 (( ${#FAILURES[@]} )) && report_and_exit
 
-printf '\n%s✓ the deployment is live, gated, configured and proxying%s\n\n' "$GREEN" "$RESET"
+printf '\n%s✓ the deployment is live, open to its own pages and proxying%s\n\n' "$GREEN" "$RESET"
