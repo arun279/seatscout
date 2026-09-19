@@ -207,18 +207,35 @@ Availability is never held anywhere, so the re-verification
 
 **What the check surrenders and what stays open, stated rather than implied.** Four routes
 remain open, and they are listed rather than implied because an enumeration that is short by
-one is worth less than no enumeration at all. A key spelled with an escape the parser keeps as
-written, `self["\x63aches"]` and `self["\u{63}aches"]`; the plain `self["caches"]` and the
-`\uXXXX` spelling are both refused, so what is open is two spellings rather than the class.
+one is worth less than no enumeration at all. Each was spelled out and linted rather than
+reasoned about.
+
+**An escape, and this one is a loss rather than a route that was always open.** A rule reading
+a syntax tree sees the spelling the parser kept, not the value an engine reads, so
+`self["\x63aches"]`, `self["caches"]` and `self["\u{63}aches"]` pass, and so does the
+identifier `caches`, which is a lawful spelling of the global itself. Plain
+`self["caches"]` and plain `caches` are refused, and the identity escape `self["\caches"]` is
+refused too, by Biome's
+[`noUselessEscapeInString`](https://biomejs.dev/linter/rules/no-useless-escape-in-string/),
+which this decision raises from its recommended warning to an error for that reason. The text
+scan this replaces decoded every escape and closed all of them. Nothing documented replaces
+that half: Biome's two rules read references, oxlint carries no rule for it, and the nearest
+published rules, `unicorn/no-hex-escape` and `unicorn/prefer-unicode-code-point-escapes`,
+rewrite an escape rather than refuse one. Closing it again means a text scan again, which is
+the tool this decision deleted.
+
 A name assembled at run time, `Reflect.get(self, "caches")` among them, which no rule reading
-references can see; the text scan this replaces did refuse that one, and it is the price of no
-longer refusing the word in a comment or in a test's name. A reach written inside the writer
-itself, which is the one file the ban excludes and one a reviewer reads. And an HTML character
-reference in an event handler attribute, `onload="&#99;aches.open('shell')"`, which the HTML
-parser decodes and Biome does not reach, since it lints the contents of a `<script>` and not
-the value of an `on*` attribute; that one is closed by the page having no such attribute and
-no reason to grow one. All four need a deliberate decoy rather than a slip, all four are plain
-in review, and they stand on the same footing as the import ban's own known-open routes.
+references can see; the text scan did refuse that one, and it is the price of no longer
+refusing the word in a comment or in a test's name. A bare `caches` written inside the writer,
+which is the one file the global ban excludes, and one a reviewer reads; a member reach there
+is still refused, because the property rule excludes nothing. And an HTML character reference
+in an event handler attribute, `onload="&#99;aches.open('shell')"`, which the HTML parser
+decodes and Biome does not reach, since it lints the contents of a `<script>` and not the
+value of an `on*` attribute; that one is closed by the page having no such attribute and no
+reason to grow one.
+
+All four need a deliberate decoy rather than a slip, all four are plain in review, and they
+stand on the same footing as the import ban's own known-open routes.
 
 It costs no prose and no test name. The rules read references rather than letters, so a record
 under `apps/` may write the word, and a client test may be named for caching for two hours.

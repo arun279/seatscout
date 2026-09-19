@@ -2,7 +2,7 @@ import type { Answer } from "@seatscout/core/live-context";
 import type { TestProject } from "vitest/node";
 import { UPSTREAM_ORIGIN as HOST } from "./upstream.ts";
 
-interface AmenityGroup {
+interface UpstreamAmenityGroup {
   readonly hasReservedSeating?: boolean;
   readonly showtimes?: readonly {
     readonly id?: string;
@@ -11,9 +11,9 @@ interface AmenityGroup {
   }[];
 }
 
-interface ShowtimeTree {
+interface UpstreamShowtimes {
   readonly variants?: readonly {
-    readonly amenityGroups?: readonly AmenityGroup[];
+    readonly amenityGroups?: readonly UpstreamAmenityGroup[];
   }[];
 }
 
@@ -25,19 +25,19 @@ interface SeatMapTarget {
   readonly soldOut: boolean | undefined;
 }
 
-interface Area {
+interface UpstreamArea {
   readonly theaters: readonly { readonly id: string }[];
 }
 
-interface Schedule {
+interface UpstreamSchedule {
   readonly viewModel: {
-    readonly movies: readonly (ShowtimeTree & { readonly id: string })[];
+    readonly movies: readonly (UpstreamShowtimes & { readonly id: string })[];
   };
 }
 
-interface Grouping {
+interface UpstreamGrouping {
   readonly theaterShowtimes?: {
-    readonly theaters?: readonly (ShowtimeTree & {
+    readonly theaters?: readonly (UpstreamShowtimes & {
       readonly chainCode: string;
     })[];
   };
@@ -49,12 +49,12 @@ const UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36";
 const PAUSE_MS = 500;
 const ATTEMPTS = 3;
-const QUERY = /\?.*$/;
+const FROM_QUESTION_MARK = /\?.*$/;
 
 const sleep = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
-const named = (path: string): string => path.replace(QUERY, "");
+const named = (path: string): string => path.replace(FROM_QUESTION_MARK, "");
 
 async function reach(path: string, init: RequestInit): Promise<Response> {
   try {
@@ -82,12 +82,14 @@ function bodyOf<Body>(found: Answer, path: string): Body {
   return JSON.parse(found.body);
 }
 
-const showtimeCountOf = (movie: ShowtimeTree): number =>
+const showtimeCountOf = (movie: UpstreamShowtimes): number =>
   (movie.variants ?? []).flatMap((variant) =>
     (variant.amenityGroups ?? []).flatMap((group) => group.showtimes ?? []),
   ).length;
 
-const seatMapTargetsIn = (grouping: Grouping): readonly SeatMapTarget[] =>
+const seatMapTargetsIn = (
+  grouping: UpstreamGrouping,
+): readonly SeatMapTarget[] =>
   (grouping.theaterShowtimes?.theaters ?? []).flatMap((theater) =>
     (theater.variants ?? []).flatMap((variant) =>
       (variant.amenityGroups ?? []).flatMap((group) =>
@@ -139,20 +141,24 @@ export default async function readTheLiveSource(
 
   const nearby = `/napi/nearbyTheaters?zipCode=${encodeURIComponent(ANCHOR_THEATER_ZIP)}&limit=25`;
   const area = await answer(nearby);
-  const anchor = bodyOf<Area>(area, nearby).theaters[0];
+  const anchor = bodyOf<UpstreamArea>(area, nearby).theaters[0];
   if (anchor === undefined)
     throw new Error(`${named(nearby)} answered no Theater to anchor on`);
 
   const schedule = `/napi/theaterMovieShowtimes/${anchor.id.toLowerCase()}?startDate=${today}&isdesktop=true&partnerRestrictedTicketing=`;
   const scheduled = await answer(schedule);
-  const movies = bodyOf<Schedule>(scheduled, schedule).viewModel.movies;
+  const movies = bodyOf<UpstreamSchedule>(scheduled, schedule).viewModel.movies;
+  if (movies.length === 0)
+    throw new Error(`${named(schedule)} answered no Movie to read`);
   const widest = movies.reduce((most, movie) =>
     showtimeCountOf(movie) > showtimeCountOf(most) ? movie : most,
   );
 
   const grouping = `/napi/theaterShowtimeGroupings/${widest.id}/${today}?isdesktop=true&isDesktopMOP=true&zip=${encodeURIComponent(ANCHOR_THEATER_ZIP)}&partnerRestrictedTicketing=`;
   const listing = await answer(grouping);
-  const showtimes = seatMapTargetsIn(bodyOf<Grouping>(listing, grouping));
+  const showtimes = seatMapTargetsIn(
+    bodyOf<UpstreamGrouping>(listing, grouping),
+  );
 
   const seatMaps: Answer[] = [];
   for (const showtime of [
@@ -168,7 +174,7 @@ export default async function readTheLiveSource(
   project.provide("liveSearch", {
     origin: HOST,
     area: ANCHOR_THEATER_ZIP,
-    movie: `${widest.id}`,
+    movie: widest.id,
     date: today,
     headers: { "User-Agent": UA, Referer: `${HOST}/` },
   });

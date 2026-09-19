@@ -128,8 +128,13 @@ halves against `ProvidedContext`, so the declaration is written once, in
 A name on neither side of it is a compile error at `pnpm typecheck`, which runs on pre-push
 and in `quality`, so a rebase that drops a name fails the pull request instead of the night.
 What that does not reach is a name declared and provided by nobody: it compiles, and the
-`undefined` it hands the test is found on the night. The declaration sits beside the suite
-that reads it, so a name nothing asks for is a line a reviewer sees go in.
+`undefined` it hands the test is found on the night. Nothing cheap closes it, and the reason
+is structural rather than a missing feature. An exhaustive loop over the declared names needs
+`Object.keys` typed as more than `string[]`, which takes the assertion `noUnsafeTypeAssertion`
+refuses; and deriving the declaration from the setup's own return value, which would close it
+outright, would make `packages/core` import from `tools/`, which the layering forbids. So the
+declaration sits beside the suite that reads it, and a name nothing provides is a line a
+reviewer sees go in.
 
 The same lane carries one more reading of the world, the live search timing in
 [ADR 16](0016-a-search-reports-its-coverage.md). A failure there opens the same issue,

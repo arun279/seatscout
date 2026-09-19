@@ -198,6 +198,22 @@ export const CLAIMS = [
   },
   {
     adr: "0013-only-the-catalogue-is-cached.md",
+    says: /the override that carries it excludes one file/,
+    holds: "the one file the global ban excludes",
+    pattern: '"!apps/web/src/worker/cache.ts"',
+    paths: [BIOME],
+    files: 1,
+  },
+  {
+    adr: "0013-only-the-catalogue-is-cached.md",
+    says: /which this decision raises from its recommended warning to an error/,
+    holds: "the escape rule raised to an error",
+    pattern: '"noUselessEscapeInString": "error"',
+    paths: [BIOME],
+    files: 1,
+  },
+  {
+    adr: "0013-only-the-catalogue-is-cached.md",
     says: /\*\*Every request the adapter makes asks for `no-store`\.\*\*/,
     holds: "modules naming the cache mode a read asks for",
     pattern: "no-store",

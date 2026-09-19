@@ -52,7 +52,8 @@
       "suspicious": {
         "noImportCycles": "error",
         "noOctalEscape": "error",
-        "noTsIgnore": "error"
+        "noTsIgnore": "error",
+        "noUselessEscapeInString": "error"
       },
       "correctness": {
         "noUnusedVariables": "error"
