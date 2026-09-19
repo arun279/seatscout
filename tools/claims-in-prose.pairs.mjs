@@ -182,6 +182,14 @@ export const CLAIMS = [
   },
   {
     adr: "0012-every-mutant-must-die.md",
+    says: /opens an issue labelled `baseline-red`/,
+    holds: "workflows that file the baseline alarm",
+    pattern: "baseline-red",
+    paths: [".github"],
+    files: 1,
+  },
+  {
+    adr: "0012-every-mutant-must-die.md",
     says: /\*\*One thing is carved out: the `\.tsx` files under `apps\/native\/src`\.\*\*/,
     holds: "the carve-out the mutation configuration declares",
     pattern: "!apps/native/src",

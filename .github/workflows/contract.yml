@@ -52,6 +52,7 @@ jobs:
         env:
           FINGERPRINT: ${{ steps.alarm.outputs.fingerprint }}
         run: |
+          set -o pipefail
           gh label create upstream-contract --color B60205 --force \
             --description "The nightly contract check is red, and its comments say what diverged"
           open=$(gh issue list --label upstream-contract --state open --limit 1 \

@@ -6,6 +6,7 @@
     "config": [
       "vitest.config.ts",
       "vitest.live.config.ts",
+      "vitest.related.config.ts",
       "vitest.stryker.config.ts"
     ]
   }

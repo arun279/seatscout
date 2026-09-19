@@ -26,6 +26,7 @@ jobs:
       - name: Read the version this merge states and the one before it
         id: version
         run: |
+          set -o pipefail
           now="$(jq -r .version package.json)"
           before="$(git show HEAD^:package.json | jq -r .version)"
           echo "now=$now" >> "$GITHUB_OUTPUT"
