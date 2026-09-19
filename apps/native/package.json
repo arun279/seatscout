@@ -3,15 +3,21 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "main": "./src/index.ts",
+  "main": "expo-router/entry",
   "scripts": {
     "build": "tsc --build --pretty false",
     "start": "expo start"
   },
   "dependencies": {
+    "@seatscout/client": "workspace:*",
     "expo": "57.0.17",
+    "expo-constants": "57.0.15",
+    "expo-linking": "57.0.8",
+    "expo-router": "57.0.17",
     "react": "19.2.3",
-    "react-native": "0.86.3"
+    "react-native": "0.86.3",
+    "react-native-safe-area-context": "5.7.0",
+    "react-native-screens": "4.26.2"
   },
   "devDependencies": {
     "@types/react": "19.2.18"

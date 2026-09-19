@@ -2,6 +2,7 @@
   "expo": {
     "name": "SeatScout",
     "slug": "seatscout",
+    "scheme": "seatscout",
     "updates": {
       "enabled": false
     }

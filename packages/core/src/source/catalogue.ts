@@ -189,7 +189,7 @@ const labelled = <Named extends string>(
   labels: readonly UpstreamAmenity[],
   known: Readonly<Record<string, Named>>,
 ): readonly Named[] =>
-  labels.flatMap((label) => known[label.name] ?? []).toSorted();
+  labels.flatMap((label) => known[label.name] ?? []).sort();
 
 const presentationOf = (
   theater: UpstreamNamedTheater,

@@ -165,9 +165,10 @@ listing everything under `src`.
 
 ### What the native application's own configuration is for
 
-`apps/native` is an Expo application that renders its own name and carries no product
-behaviour, so nothing in the workspace depends on it. Four lines of its configuration are
-worth a reason, because each of them looks removable and is not.
+`apps/native` is an Expo Router application that reads the Source through the client and
+ranks what comes back, so it depends on `@seatscout/client` and on nothing else in the
+workspace. Seven of its lines are worth a reason, because each of them looks removable and is
+not.
 
 **`lib` is `["ES2024"]`** because React Native is not a DOM host and declares its own `fetch`,
 `URL`, `Blob` and `FormData`. Leaving the compiler's default in place puts `lib.dom.d.ts`
@@ -186,11 +187,34 @@ removed React Native's own declarations check clean.
 would state that the application updates itself through a library it does not have, which is
 the disagreement knip's Expo plugin reports.
 
-**There is no `metro.config.js`, and its absence is the decision.** Expo has configured Metro
-for monorepos since SDK 52 and has resolved autolinked modules against the workspace since SDK
-55, so a file here would be one more thing to keep in step with the SDK. Core and the client
-reach this application with no project reference, no resolver entry and nothing relaxed in the
-ban above. It depends on neither package today, and knip removes a dependency nothing imports.
+**`main` is `expo-router/entry`** because the routes are the entry point. Everything under
+`src/app` is a route and nothing else, so the screens, the adapters and the logic sit beside
+that directory rather than inside it.
+
+**`metro.config.ts` carries one resolver rule and nothing else**, and none of it is about the
+monorepo: Expo has configured Metro for workspaces since SDK 52, so Core and the client reach
+this application with no watch folder, no resolver entry and nothing relaxed in the ban above.
+What it is for is the extension. Both packages spell their own relative imports the way a Node
+ESM emitter needs, `./profile.js` beside `profile.ts`, and Metro appends its source extensions
+rather than substituting the one that is written, so `./profile.js` is a file it cannot find.
+Metro's maintainers hold that substituting is not Metro's job and name `resolveRequest` as the
+workaround: a relative `.js` specifier that no file answers is resolved again without it, and
+the check on disk is what keeps a package that really does ship its `.js` resolving to it.
+**The better end state is to stop writing the extension**, since `moduleResolution` is
+`bundler` across the workspace and that mode never requires one; that is a change to both
+shared packages rather than to this one.
+
+**Nothing under `packages` may reach for an engine feature either**, which is the same rule as
+the globals above and was missed until this application ran. Hermes implements no
+`Array.prototype.toSorted`, so the five calls to it are `[...x].sort()`, which every engine
+has. Each of those arrays was already a copy or is spread into one, so no caller's array is
+sorted under it, and the mutation gate holds the five files it touched.
+
+**The Source's origin is a constant of this application** rather than something it is
+configured with. The proxy takes `UPSTREAM_ORIGIN` from the deployment because a deployment is
+what it is; a phone has no such place to read one from, so `src/source.ts` names the origin
+beside the `Referer` and the user agent that every read carries, which is what the proxy adds
+for a browser and what nobody adds here.
 
 Its versions are not chosen here either. Expo publishes the React and React Native version each
 SDK pins and this application matches its SDK exactly, which is what the `react` entry in

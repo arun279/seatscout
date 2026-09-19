@@ -47,7 +47,7 @@ still checked and still counted; it simply has nothing to offer.
 The room's best is taken by sorting and reading the head rather than by a maximum with a
 comparison, which looks like the long way round and is not. No captured Auditorium holds two
 Seat Groups that score alike, so a `>` there would be a branch the mutation gate cannot judge;
-a comparator has no such branch, and `toSorted` is stable, so the two pick the same Group.
+a comparator has no such branch, and `sort` is stable, so the two pick the same Group.
 
 **The ranking is a total order, so it does not depend on arrival order.** Best score first,
 and where two Showtimes score alike, the lower Showtime. Two Showtimes can score exactly
