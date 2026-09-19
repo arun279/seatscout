@@ -86,9 +86,9 @@ export const CLAIMS: readonly Claim[] = [
   },
   {
     document: CONTRIBUTING,
-    says: /The pre-push hook runs (\w+) over the whole workspace/,
-    about: `the commands under pre-push, in ${LEFTHOOK}`,
-    count: (read) => hookCommands(read, "pre-push").length,
+    says: /`push-checks`, which runs (\w+) checks/,
+    about: `the commands under push-checks, in ${LEFTHOOK}`,
+    count: (read) => hookCommands(read, "push-checks").length,
   },
   {
     document: CONTRIBUTING,
