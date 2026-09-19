@@ -716,6 +716,45 @@ The bundler's determinism is load-bearing for the same reason the counters' is, 
 checked the same way rather than assumed: eight consecutive builds of one tree produced
 eight byte-identical bundles and one size.
 
+**A check on the machine may be scoped to the change; the one that gates a merge may not.**
+The pre-push hook runs the unit tests that reach what the branch changed since its merge base
+with `main`, lets the spell and dead-code checks read a cache, and reuses the build
+information the type check already writes. Each of those is the tool's own documented switch,
+`--changed`, `--cache` and `tsc --build`, rather than a filter written here. None of them
+reaches `quality`, which installs from the lockfile into an empty runner and therefore reads
+every file of every kind with no cache to reuse and nothing scoped. So the fast layer owns
+feedback on the change and the gating layer owns the tree, and a scope that went wrong on
+somebody's machine cannot narrow what a merge is held to. The measurement that made the split
+worth having: on a quiet eight-core machine the whole unit suite takes 87 to 90 seconds on
+three workers, and no other check in the hook takes two seconds once its state is warm.
+
+One property of the scoping is worth knowing before it surprises somebody. `--changed` reads
+the module graph, so a change to a file nothing imports selects nothing, however many tests
+read that file from disk. `stylesheets.test.tsx` reads every sheet under `apps/web/src` and
+the planted pair under `apps/web/tests/planted` with `readFile`. The sheets under
+`apps/web/src` are imports of the modules that draw with them, so a change to one of those is
+reached; the planted pair is imported by nothing, so an edit to it selects no test at all
+locally while the suite fails on it. That is the hole in the fast layer, it is there by
+design, and the gating layer closes it by running the suite whole.
+
+The trigger list is written out rather than left to the tool's default, because the default
+for the tool's own config file does not work. `**/{vitest,vite}.config.*/**` matches no path
+at all, which was measured against the pinned picomatch rather than assumed, so
+`**/vitest*.config.ts/**` is written beside it and the default is kept for the day it is
+fixed. The setup files are written out for a second reason: Vitest appends a project's setup
+files to that project's triggers, and the list this scoping reads is the root's, which has no
+setup files of its own.
+
+**A push that sends no commits runs none of it.** Git names the refs a push carries on the
+hook's standard input and supplies `(delete)` in place of the local ref for one it is
+deleting, so the hook reads those lines and returns when every one of them is a deletion. It
+used to run the whole suite for a branch deletion instead, because lefthook compares against
+`origin/HEAD` when the current branch has no upstream, which is every branch in a fresh
+worktree, and two such pushes at once put a shared eight-core machine under a load average
+above 300. A hook handed no ref at all runs everything rather than nothing, because a pass has
+to entail a measurement here too, and the ten checks are their own hook so that
+`lefthook run push-checks` reaches them without going through the reader at all.
+
 The line counter is [cloc](https://github.com/AlDanial/cloc), pinned to a released version
 and checked against its SHA-256 before use. scc and tokei were the alternatives for that
 job, and both were rejected for the same reason: neither diffs. cloc classifies every

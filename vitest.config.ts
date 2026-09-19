@@ -1,9 +1,21 @@
-import { defaultExclude, defineConfig } from "vitest/config";
+import { configDefaults, defaultExclude, defineConfig } from "vitest/config";
 
 const exclude = [...defaultExclude, "**/dist/**", "**/*.live.test.ts"];
+const screenSetupFiles = [
+  "apps/web/test/dialogs.ts",
+  "apps/web/test/strict-console.ts",
+];
+const anywhere = (name: string) => ["**", name, "**"].join("/");
 
 export default defineConfig({
   test: {
+    forceRerunTriggers: [
+      ...configDefaults.forceRerunTriggers,
+      ...["vitest*.config.ts", "tsconfig*.json", "pnpm-lock.yaml"].map(
+        anywhere,
+      ),
+      ...screenSetupFiles.map(anywhere),
+    ],
     projects: [
       {
         test: {
@@ -17,10 +29,7 @@ export default defineConfig({
           name: "screen",
           environment: "jsdom",
           include: ["apps/web/src/**/*.test.tsx"],
-          setupFiles: [
-            "apps/web/test/dialogs.ts",
-            "apps/web/test/strict-console.ts",
-          ],
+          setupFiles: screenSetupFiles,
           exclude,
         },
       },
