@@ -698,7 +698,7 @@ policy of its own. manypkg's documented answer is to write a specifier semver ca
 takes that package out of the gate instead.
 
 syncpack is a compiled binary and answers over this workspace in 0.9 seconds, measured rather than
-assumed, so it runs on the pre-push hook as `pnpm versions` as well as in `quality`. It carries no
+assumed, so it joins `push-checks` as `pnpm versions` as well as running in `quality`. It carries no
 configuration file. The default group is already the policy this workspace wants, and a file
 restating it would be a second place for that policy to drift.
 
@@ -839,7 +839,7 @@ used to run the whole suite for a branch deletion instead, because lefthook comp
 `origin/HEAD` when the current branch has no upstream, which is every branch in a fresh
 worktree, and two such pushes at once put a shared eight-core machine under a load average
 above 300. A hook handed no ref at all runs everything rather than nothing, because a pass has
-to entail a measurement here too, and the ten checks are their own hook so that
+to entail a measurement here too, and those checks are their own hook so that
 `lefthook run push-checks` reaches them without going through the reader at all.
 
 The line counter is [cloc](https://github.com/AlDanial/cloc), pinned to a released version
