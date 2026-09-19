@@ -140,14 +140,17 @@ jobs:
           pnpm test:mutation:incremental 2>&1 | tee "$RUNNER_TEMP/stryker-mutation.log"
       - name: Check that mutation saw every test file
         id: mutation_test_collection
+        continue-on-error: true
         run: |
           set -o pipefail
           ran_tests="$(sed -n 's/.*Initial test run succeeded\. Ran \([0-9][0-9]*\) tests.*/\1/p' "$RUNNER_TEMP/stryker-mutation.log" | tail -n 1)"
           expected_tests="$(
-            find apps packages tools -path "*/src/*" \( -name "*.ts" -o -name "*.tsx" \) ! -path "apps/native/src/*" ! -name "*.test.*" ! -name "*.spec.*" ! -name "*.fixtures.*" -print0 |
+            find apps packages tools -path "*/src/*" \( -name "*.ts" -o -name "*.tsx" \) ! \( -path "apps/native/src/*" -name "*.tsx" \) ! -name "*.test.*" ! -name "*.spec.*" ! -name "*.fixtures.*" -print0 |
               xargs -0 pnpm exec vitest related --config vitest.config.ts --run --reporter=json |
               jq '.numTotalTests'
           )"
+          echo "ran=${ran_tests:-0}" >> "$GITHUB_OUTPUT"
+          echo "expected=${expected_tests:-0}" >> "$GITHUB_OUTPUT"
           echo "Stryker initial tests: ${ran_tests:-missing}"
           echo "Expected Stryker-related unit tests: $expected_tests"
           if [ -n "$ran_tests" ] && [ "$ran_tests" -eq "$expected_tests" ]; then
@@ -155,11 +158,6 @@ jobs:
           else
             echo "complete=false" >> "$GITHUB_OUTPUT"
             echo "::error::Stryker ran ${ran_tests:-no} tests, but the Stryker-related unit test count is $expected_tests."
-            {
-              echo "### Incomplete mutation test collection"
-              echo
-              echo "Stryker ran ${ran_tests:-no} tests, but the Stryker-related unit test count is $expected_tests. The incremental mutation report was not saved."
-            } >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
       - name: Leave what this run judged for the next push to start from
@@ -185,12 +183,43 @@ jobs:
           path: reports/stryker-incremental.json
           retention-days: 14
       - name: Install the counter
+        if: ${{ !cancelled() }}
         run: |
           curl -fsSL -o "$RUNNER_TEMP/cloc" https://github.com/AlDanial/cloc/releases/download/v2.10/cloc-2.10.pl
           echo "bf59272455172108072a0a106379f7509fd4349bdcfd85203bac038ccd286d83  $RUNNER_TEMP/cloc" | sha256sum --check
           sudo install -m 0755 "$RUNNER_TEMP/cloc" /usr/local/bin/cloc
       - name: Measure the footprint
+        id: footprint
+        if: ${{ !cancelled() }}
+        continue-on-error: true
         run: pnpm footprint --base "$BASE" --head "$HEAD" --out footprint.md
+      - name: Say what every gate did, so a red run reports as fully as a green one
+        if: ${{ !cancelled() }}
+        env:
+          MUTATION: ${{ steps.mutation.outcome }}
+          COLLECTION: ${{ steps.mutation_test_collection.outcome }}
+          MEASURED: ${{ steps.footprint.outcome }}
+          RAN: ${{ steps.mutation_test_collection.outputs.ran }}
+          EXPECTED: ${{ steps.mutation_test_collection.outputs.expected }}
+          SEEDED: ${{ steps.mutation_test_collection.outputs.complete }}
+        run: |
+          {
+            echo "## What the gates did"
+            echo
+            echo "| gate | verdict |"
+            echo "| --- | --- |"
+            echo "| Mutation run | $MUTATION |"
+            echo "| Test collection | $COLLECTION, Stryker ran ${RAN:-no} of ${EXPECTED:-an uncounted number of} related tests |"
+            echo "| Footprint measurement | $MEASURED |"
+            echo "| Incremental report kept | ${SEEDED:-false} |"
+            echo
+          } > verdict.md
+          if [ -s footprint.md ]; then
+            cat footprint.md >> verdict.md
+          else
+            echo "The footprint was not measured on this run, so there are no figures below." >> verdict.md
+          fi
+          mv verdict.md footprint.md
       - name: Add the report to the run summary
         if: ${{ !cancelled() }}
         run: cat footprint.md >> "$GITHUB_STEP_SUMMARY"
@@ -200,6 +229,17 @@ jobs:
         with:
           header: footprint
           path: footprint.md
+      - name: Refuse the change if a gate refused it, now that the report is posted
+        if: ${{ !cancelled() }}
+        env:
+          COLLECTION: ${{ steps.mutation_test_collection.outcome }}
+          MEASURED: ${{ steps.footprint.outcome }}
+        run: |
+          if [ "$COLLECTION" = success ] && [ "$MEASURED" = success ]; then
+            exit 0
+          fi
+          echo "::error::Test collection $COLLECTION, footprint measurement $MEASURED. The report on the pull request says what each one measured."
+          exit 1
 
   secrets:
     runs-on: ubuntu-24.04

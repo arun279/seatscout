@@ -82,6 +82,21 @@ export const CLAIMS = [
   },
   {
     adr: "0003-separate-view-layers-shared-core.md",
+    says: /\*\*Both packages and this application therefore set `lib` to `\["ES2022"\]`\*\*/,
+    holds:
+      "the projects that compile against the edition Hermes implements whole",
+    pattern: '"lib": ["ES2022"]',
+    paths: [
+      "packages/core/tsconfig.json",
+      "packages/client/tsconfig.json",
+      "apps/native/tsconfig.json",
+      "apps/web/tsconfig.json",
+      "tools/footprint/tsconfig.json",
+    ],
+    files: 3,
+  },
+  {
+    adr: "0003-separate-view-layers-shared-core.md",
     says: /`core` and `client` are shared without modification\./,
     holds: "files under apps naming Core's package directly",
     pattern: "@seatscout/core",
@@ -166,7 +181,7 @@ export const CLAIMS = [
   },
   {
     adr: "0012-every-mutant-must-die.md",
-    says: /\*\*One thing is carved out: `apps\/native`\.\*\*/,
+    says: /\*\*One thing is carved out: the `\.tsx` files under `apps\/native\/src`\.\*\*/,
     holds: "the carve-out the mutation configuration declares",
     pattern: "!apps/native/src",
     paths: [STRYKER],

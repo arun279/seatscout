@@ -46,7 +46,7 @@ const playingAt = async (
   });
   return {
     theaters,
-    movies: [...movies.values()].toSorted(byTitle),
+    movies: [...movies.values()].sort(byTitle),
     unreached: theaters.filter((theater) => failed.has(theater.id)),
   };
 };

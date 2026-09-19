@@ -57,7 +57,7 @@ jobs:
           set -o pipefail
           ran_tests="$(sed -n 's/.*Initial test run succeeded\. Ran \([0-9][0-9]*\) tests.*/\1/p' "$RUNNER_TEMP/stryker-mutation.log" | tail -n 1)"
           expected_tests="$(
-            find apps packages tools -path "*/src/*" \( -name "*.ts" -o -name "*.tsx" \) ! -path "apps/native/src/*" ! -name "*.test.*" ! -name "*.spec.*" ! -name "*.fixtures.*" -print0 |
+            find apps packages tools -path "*/src/*" \( -name "*.ts" -o -name "*.tsx" \) ! \( -path "apps/native/src/*" -name "*.tsx" \) ! -name "*.test.*" ! -name "*.spec.*" ! -name "*.fixtures.*" -print0 |
               xargs -0 pnpm exec vitest related --config vitest.config.ts --run --reporter=json |
               jq '.numTotalTests'
           )"

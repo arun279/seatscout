@@ -86,7 +86,7 @@ export const rankingIn = (
   return {
     offered: seatGroupsIn(placed, query)
       .map(rank)
-      .toSorted((left, right) => right.score - left.score),
+      .sort((left, right) => right.score - left.score),
     holding: (group) => {
       const held = group.seats.flatMap((wanted) =>
         placed.filter((seat) => seat.id === wanted.id && seat.bookable),

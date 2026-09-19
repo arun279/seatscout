@@ -102,7 +102,7 @@ export const openSearch = (deps: CatalogueDependencies) => {
 
     const publish = (phase: Phase) => {
       current = {
-        results: results.toSorted(bestFirst),
+        results: [...results].sort(bestFirst),
         coverage: {
           candidates,
           checked,

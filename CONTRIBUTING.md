@@ -259,12 +259,14 @@ own.
 `overrides` in `pnpm-workspace.yaml` is the other half of keeping dependencies honest. It
 holds `react` at one version across the workspace, because a duplicate React surfaces as a
 runtime hook error rather than as a build failure, and it moves with the Expo SDK rather
-than with React's own releases. It also lifts two transitive dependencies past advisories
+than with React's own releases. It also lifts three transitive dependencies past advisories
 their own packages pin below: `qs` above
 [GHSA-q8mj-m7cp-5q26](https://github.com/advisories/GHSA-q8mj-m7cp-5q26), which reaches the
-workspace through Stryker, and `uuid` above
+workspace through Stryker; `uuid` above
 [GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq), which reaches it
-through the Xcode project parser inside Expo's config plugins. `uuid` is held at 11.1.1
+through the Xcode project parser inside Expo's config plugins; and `decode-uri-component`
+above [GHSA-vcc3-ghjq-m6fr](https://github.com/advisories/GHSA-vcc3-ghjq-m6fr), which reaches
+it through the query parser inside Expo Router. `uuid` is held at 11.1.1
 rather than at the newest patched release because that parser loads it with `require` and
 uuid dropped its CommonJS entry point after 11. An entry is removable once the package that
 pins it releases a version that does not. `pnpm why --depth=10 react` reports what is

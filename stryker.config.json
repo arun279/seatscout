@@ -5,7 +5,7 @@
   "ignorePatterns": ["/tsconfig.json"],
   "mutate": [
     "{apps,packages,tools}/*/src/**/*.{ts,tsx}",
-    "!apps/native/src/**",
+    "!apps/native/src/**/*.tsx",
     "!**/*.{test,spec}.?(c|m)[jt]s?(x)",
     "!**/*.fixtures.?(c|m)[jt]s?(x)"
   ],

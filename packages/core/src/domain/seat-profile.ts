@@ -43,8 +43,8 @@ export const REFERENCE: SeatProfile = {
 };
 
 const mean = (values: readonly number[]) =>
-  values
-    .toSorted((lower, higher) => lower - higher)
+  [...values]
+    .sort((lower, higher) => lower - higher)
     .reduce((total, value) => total + value, 0) / values.length;
 
 const centroidOf = (
