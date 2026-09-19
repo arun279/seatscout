@@ -70,12 +70,17 @@ and the verdict belongs where the number is printed.
 [ADR 6](0006-gates-cite-a-standard-or-measure-a-regression.md) carries the guard that makes
 a run weighing no mutant fail.
 
-**One thing is carved out: `apps/native`.** [ADR 3](0003-separate-view-layers-shared-core.md)
-puts everything correctness critical in `packages`, and that application is a shell, so what
-is left in it is screens, and the only test that kills a mutated screen is one that restates
-the screen. That is the tautology this gate exists to detect, so it is excluded rather than
-given tests written to satisfy it. What `apps/native` is for is the end-to-end suite, which a
-mutation run over the unit tests cannot stand in for.
+**One thing is carved out: `apps/native/src/**/*.tsx`.** Those are the files React Native
+renders, and Vitest cannot render React Native, so the runner that judges them is a later
+change rather than a line drawn here. Nothing else in that application is out: `src/source.ts`
+wires the Source's origin, the headers a read carries and the device's own clock and timers
+into the client, which is behaviour, and it is judged like any other adapter.
+
+The carve-out is written the same way in two places, because the gate is two numbers that have
+to agree. `stryker.config.json` says which files are mutated; the `footprint` job counts the
+tests `vitest related` finds over that same set and holds Stryker's own initial run to it. A
+set named one way in one place and another way in the other is a run that judged less than it
+looked like it did, which is what that step exists to catch.
 
 `apps/web` stays inside the gate: it is the view layer that will hold real behaviour, keyboard
 traversal among it, and the platform adapters it already holds are judged there rather than

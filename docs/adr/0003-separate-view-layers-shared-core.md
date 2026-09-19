@@ -170,10 +170,12 @@ ranks what comes back, so it depends on `@seatscout/client` and on nothing else 
 workspace. Seven of its lines are worth a reason, because each of them looks removable and is
 not.
 
-**`lib` is `["ES2024"]`** because React Native is not a DOM host and declares its own `fetch`,
-`URL`, `Blob` and `FormData`. Leaving the compiler's default in place puts `lib.dom.d.ts`
-beside those declarations and produces 69 collisions between the two, across duplicate
-identifiers, mismatched property and variable declarations, and differing modifiers.
+**`lib` is the language alone** because React Native is not a DOM host and declares its own
+`fetch`, `URL`, `Blob` and `FormData`. Leaving the compiler's default in place puts
+`lib.dom.d.ts` beside those declarations and produces 69 collisions between the two, across
+duplicate identifiers, mismatched property and variable declarations, and differing modifiers.
+Which edition of the language it is, `["ES2022"]`, is the Hermes question below, and this is
+the code that most certainly meets Hermes.
 
 **`skipLibCheck` is on** because `expo-asset` ships a declaration file importing a type from
 `@react-native/assets-registry`, which publishes no types before 0.87 and cannot be raised to
@@ -200,15 +202,25 @@ rather than substituting the one that is written, so `./profile.js` is a file it
 Metro's maintainers hold that substituting is not Metro's job and name `resolveRequest` as the
 workaround: a relative `.js` specifier that no file answers is resolved again without it, and
 the check on disk is what keeps a package that really does ship its `.js` resolving to it.
-**The better end state is to stop writing the extension**, since `moduleResolution` is
-`bundler` across the workspace and that mode never requires one; that is a change to both
-shared packages rather than to this one.
+Dropping the extension from the packages instead would move the break rather than close it:
+`tsc --build` emits their ESM with whatever specifier the source wrote, so an extensionless
+one leaves output Node cannot load, and the resolver is the half that costs nothing outside
+this application.
 
 **Nothing under `packages` may reach for an engine feature either**, which is the same rule as
 the globals above and was missed until this application ran. Hermes implements no
 `Array.prototype.toSorted`, so the five calls to it are `[...x].sort()`, which every engine
 has. Each of those arrays was already a copy or is spread into one, so no caller's array is
 sorted under it, and the mutation gate holds the five files it touched.
+
+**Both packages and this application therefore set `lib` to `["ES2022"]`**, which is the
+newest edition Hermes implements whole, so reaching past it is a type error rather than a
+crash on a phone. The edition is the unit because TypeScript's is: Hermes has `findLast`, and
+`toReversed`, `toSpliced` and `with` arrived in 2024, but `toSorted` was split out of that
+work and is still missing, while `lib.es2023.array.d.ts` declares all five together. Holding
+them one edition below is the only line that refuses the missing one without inventing a list
+of names to ban. `types` stays empty beside it in the packages, for the reason above. Nothing
+else moves: `apps/web` and `tools` do not run on Hermes and keep their own.
 
 **The Source's origin is a constant of this application** rather than something it is
 configured with. The proxy takes `UPSTREAM_ORIGIN` from the deployment because a deployment is
