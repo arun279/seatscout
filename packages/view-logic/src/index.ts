@@ -1,3 +1,4 @@
+export { playingStatusOf } from "./ask-phrases.js";
 export { askedFrom } from "./asked.js";
 export { chosenOf } from "./auditorium-phrases.js";
 export { gridLabelOf } from "./auditorium-phrases.js";
@@ -44,7 +45,9 @@ export { marksOf } from "./plan.js";
 export { targetAt } from "./plan.js";
 export type { HeldProgramme } from "./programme.js";
 export type { ProgrammeState } from "./programme.js";
+export { markedIn } from "./programme.js";
 export { movieOf } from "./programme.js";
+export { offeredFor } from "./programme.js";
 export { programmeNear } from "./programme.js";
 export { suggestedFor } from "./programme.js";
 export { titleOf } from "./programme.js";

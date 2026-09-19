@@ -1,0 +1,154 @@
+import type { ReactElement, ReactNode } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "../theme.js";
+import { TOUCH_FLOOR } from "./touch.js";
+import { Type } from "./type.js";
+
+export interface SheetProps {
+  readonly heading: string;
+  readonly keep: string;
+  readonly onKeep: () => void;
+  readonly dock: ReactNode;
+  readonly children: ReactNode;
+}
+
+export const presentationFor = (
+  os: typeof Platform.OS,
+): "formSheet" | "fullScreenModal" =>
+  os === "android" ? "fullScreenModal" : "formSheet";
+
+export const SHEET_PRESENTATION: "formSheet" | "fullScreenModal" =
+  presentationFor(Platform.OS);
+
+const onAndroid = Platform.OS === "android";
+
+const styles = StyleSheet.create({
+  sheet: { flex: 1 },
+  head: { gap: 3, paddingBottom: 6, paddingHorizontal: 18, paddingTop: 10 },
+  keep: {
+    justifyContent: "center",
+    minHeight: TOUCH_FLOOR,
+    minWidth: TOUCH_FLOOR,
+  },
+  bar: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 6,
+    minHeight: 64,
+    paddingRight: 6,
+  },
+  close: {
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 48,
+    minWidth: 48,
+  },
+  body: { flex: 1 },
+  read: { paddingBottom: 18 },
+  dock: {
+    borderTopWidth: 1,
+    gap: 8,
+    paddingBottom: 12,
+    paddingHorizontal: 18,
+    paddingTop: 12,
+  },
+});
+
+type HeadProps = Pick<SheetProps, "heading" | "keep" | "onKeep">;
+
+const AppBar = ({ heading, keep, onKeep }: HeadProps) => (
+  <View style={styles.bar}>
+    <TouchableOpacity
+      accessibilityLabel={keep}
+      accessibilityRole="button"
+      onPress={onKeep}
+      style={styles.close}
+    >
+      <Type set="sentenceStrong" tone="silver">
+        ✕
+      </Type>
+    </TouchableOpacity>
+    <Type set="marqueeRow" tone="silver">
+      {heading}
+    </Type>
+  </View>
+);
+
+const Head = ({ heading, keep, onKeep }: HeadProps) => (
+  <View style={styles.head}>
+    <TouchableOpacity
+      accessibilityLabel={keep}
+      accessibilityRole="button"
+      onPress={onKeep}
+      style={styles.keep}
+    >
+      <Type set="sentence" tone="beam">
+        {`‹ ${keep}`}
+      </Type>
+    </TouchableOpacity>
+    <Type set="marqueeTitle" tone="silver">
+      {heading}
+    </Type>
+  </View>
+);
+
+export const Sheet = ({
+  heading,
+  keep,
+  onKeep,
+  dock,
+  children,
+}: SheetProps): ReactElement => {
+  const theme = useTheme();
+  const above: HeadProps = { heading, keep, onKeep };
+
+  return (
+    <KeyboardAvoidingView
+      behavior={onAndroid ? undefined : "padding"}
+      style={[styles.sheet, { backgroundColor: theme.colours.house }]}
+      testID="stage"
+    >
+      {onAndroid ? (
+        <SafeAreaView
+          edges={["top"]}
+          style={{ backgroundColor: theme.colours.chrome }}
+          testID="sheet-head"
+        >
+          <AppBar {...above} />
+        </SafeAreaView>
+      ) : (
+        <View testID="sheet-head">
+          <Head {...above} />
+        </View>
+      )}
+      <ScrollView
+        contentContainerStyle={styles.read}
+        keyboardShouldPersistTaps="handled"
+        style={styles.body}
+      >
+        {children}
+      </ScrollView>
+      <SafeAreaView
+        edges={["bottom"]}
+        style={[
+          styles.dock,
+          {
+            backgroundColor: theme.colours.house,
+            borderTopColor: theme.colours.hairline,
+          },
+        ]}
+        testID="dock"
+      >
+        {dock}
+      </SafeAreaView>
+    </KeyboardAvoidingView>
+  );
+};
