@@ -2,7 +2,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { REFERENCE } from "@seatscout/client";
-import type { ProgrammeState } from "./programme.js";
+import type { ProgrammeState, Terms } from "@seatscout/view-logic";
 import {
   everything,
   NOTHING_READ,
@@ -10,7 +10,7 @@ import {
   TODAY,
   TONIGHT,
 } from "./search.fixtures.js";
-import { type Terms, termsFrom } from "./terms.js";
+import { termsIn } from "./terms.js";
 import { TitleCard } from "./title-card.js";
 
 let PLAYING: ProgrammeState = NOTHING_READ;
@@ -40,7 +40,7 @@ describe("the title card", () => {
 
   it("draws a Theater the address names twice as one control", () => {
     const { container } = card(
-      termsFrom("?theater=aacbt&theater=aacbt", TODAY),
+      termsIn("?theater=aacbt&theater=aacbt", TODAY),
       PLAYING,
     );
 
@@ -97,7 +97,7 @@ describe("the title card", () => {
     ["until=21:00", "until 9:00p"],
   ])("states the window %s names as %s", (window, words) => {
     const { container } = card(
-      termsFrom(`?movie=245569&date=2026-08-28&area=75006&${window}`, TODAY),
+      termsIn(`?movie=245569&date=2026-08-28&area=75006&${window}`, TODAY),
       PLAYING,
     );
 

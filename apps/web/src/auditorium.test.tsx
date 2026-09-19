@@ -14,7 +14,7 @@ import {
   STRIKE_AND_REEL_1,
   VILLAGE_1,
   WEST_PLANO_28,
-} from "./rooms.fixtures.js";
+} from "@seatscout/view-logic/testing";
 
 const SPACES = "wheelchair or companion, kept out of ordinary results";
 

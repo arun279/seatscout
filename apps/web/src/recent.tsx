@@ -1,8 +1,7 @@
 import "./house.css";
 import type { RecentSearch } from "@seatscout/client";
 import type { ReactElement } from "react";
-import { dayOf } from "./phrases.js";
-import { type Terms, termsOf } from "./terms.js";
+import { dayOf, type Terms, termsOf } from "@seatscout/view-logic";
 
 interface RecentProps {
   readonly recent: readonly RecentSearch[];

@@ -2,7 +2,7 @@ import "./house.css";
 import "./ask.css";
 import type { Theater, TheaterId } from "@seatscout/client";
 import type { ReactElement } from "react";
-import type { Term } from "./title-card-terms.js";
+import type { Term } from "@seatscout/view-logic";
 
 interface ChipsProps<Named extends string> {
   readonly term: Term;

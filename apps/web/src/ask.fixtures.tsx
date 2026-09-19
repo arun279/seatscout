@@ -1,5 +1,5 @@
 import { fireEvent, screen, within } from "@testing-library/react";
-import type { HeldProgramme } from "./programme.js";
+import type { HeldProgramme } from "@seatscout/view-logic";
 import type { Stage } from "./search.fixtures.js";
 import {
   ask,

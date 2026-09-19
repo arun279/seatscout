@@ -11,19 +11,26 @@ import type {
 } from "@seatscout/client";
 import type { ReactElement } from "react";
 import { useState, useSyncExternalStore } from "react";
-import { askedFrom } from "./asked.js";
+import {
+  askedFrom,
+  type HeldProgramme,
+  type HeldSnapshots,
+  heldSnapshots,
+  partyOf,
+  programmeNear,
+  seatSetOf,
+  type Term,
+  type Terms,
+  whenOf,
+} from "@seatscout/view-logic";
 import { Strip } from "./coverage.js";
-import { type HeldSnapshots, heldSnapshots } from "./held.js";
 import { useOnline } from "./online.js";
 import { type Overlays as OverlayState, useOverlays } from "./overlay.js";
 import { Overlays } from "./overlays.js";
-import { partyOf, seatSetOf, whenOf } from "./phrases.js";
 import { Recent } from "./recent.js";
-import { type HeldProgramme, programmeNear } from "./programme.js";
 import { Results } from "./results.js";
-import { queryOf, type Terms } from "./terms.js";
+import { queryOf } from "./terms.js";
 import { TitleCard } from "./title-card.js";
-import type { Term } from "./title-card-terms.js";
 
 export interface Clock {
   readonly now: () => number;

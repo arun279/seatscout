@@ -2,9 +2,8 @@ import "./house.css";
 import "./coverage.css";
 import type { Coverage, Snapshot } from "@seatscout/client";
 import type { ReactElement } from "react";
-import { accountOf } from "./derived.js";
+import { accountOf, clockOf } from "@seatscout/view-logic";
 import { modal } from "./modal.js";
-import { clockOf } from "./phrases.js";
 
 type Named = Coverage["soldOut"][number];
 

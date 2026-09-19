@@ -4,23 +4,27 @@ import "./seat-map.css";
 import type { Search, SeatGroupResult } from "@seatscout/client";
 import type { ReactElement } from "react";
 import { useState } from "react";
-import { chosenOf, groupsOf, refusalOf } from "./auditorium-phrases.js";
-import { modal } from "./modal.js";
 import {
   ageOf,
   capitalised,
+  chosenOf,
   clockOf,
+  type Cursor,
   dayOf,
+  groupsOf,
   labelOf,
   lateralOf,
+  opened,
   partyOf,
   penaltiesOf,
+  type Place,
+  refusalOf,
   spokenOf,
   whyOf,
-} from "./phrases.js";
+} from "@seatscout/view-logic";
+import { modal } from "./modal.js";
 import { RowBar } from "./row-bar.js";
 import { holds, SeatMap } from "./seat-map.js";
-import { type Cursor, opened, type Place } from "./traversal.js";
 
 interface RoomProps {
   readonly result: SeatGroupResult;

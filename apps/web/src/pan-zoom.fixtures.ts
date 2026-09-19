@@ -1,5 +1,5 @@
 import { fireEvent } from "@testing-library/react";
-import type { Point, View } from "./gesture.js";
+import type { Point, View } from "@seatscout/view-logic";
 
 interface OnScreen {
   readonly left: number;

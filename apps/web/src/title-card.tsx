@@ -2,13 +2,13 @@ import "./query.css";
 import type { SeatProfile } from "@seatscout/client";
 import type { ReactElement } from "react";
 import { Fragment } from "react";
-import type { ProgrammeState } from "./programme.js";
-import type { Terms } from "./terms.js";
 import {
+  type ProgrammeState,
   type Term,
   termLinesOf,
+  type Terms,
   type TitleCardEntry,
-} from "./title-card-terms.js";
+} from "@seatscout/view-logic";
 
 interface TitleCardProps {
   readonly terms: Terms;

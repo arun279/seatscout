@@ -127,6 +127,9 @@ importers:
       '@seatscout/client':
         specifier: workspace:*
         version: link:../../packages/client
+      '@seatscout/view-logic':
+        specifier: workspace:*
+        version: link:../../packages/view-logic
       react:
         specifier: 19.2.3
         version: 19.2.3
@@ -155,6 +158,12 @@ importers:
       pure-rand:
         specifier: 8.4.2
         version: 8.4.2
+
+  packages/view-logic:
+    dependencies:
+      '@seatscout/client':
+        specifier: workspace:*
+        version: link:../client
 
   tools/counts-in-prose:
     devDependencies:

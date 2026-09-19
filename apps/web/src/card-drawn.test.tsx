@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { Card } from "./card.js";
-import { labelOf } from "./phrases.js";
+import { labelOf } from "@seatscout/view-logic";
 import { settledAlone } from "./search.fixtures.js";
 
 const drawn = async <T,>(read: () => T): Promise<T> => {

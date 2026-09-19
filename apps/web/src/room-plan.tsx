@@ -3,7 +3,7 @@ import "./results.css";
 import "./hand-off.css";
 import { REFERENCE, type SeatGroupResult } from "@seatscout/client";
 import type { ReactElement } from "react";
-import { marksOf } from "./plan.js";
+import { marksOf } from "@seatscout/view-logic";
 
 interface RoomPlanProps {
   readonly result: SeatGroupResult;

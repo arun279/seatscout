@@ -8,9 +8,9 @@ import {
   STRIKE_AND_REEL_1,
   VILLAGE_1,
   WEST_PLANO_28,
-} from "./rooms.fixtures.js";
+} from "@seatscout/view-logic/testing";
 import { SeatMap } from "./seat-map.js";
-import { opened as openedAt } from "./traversal.js";
+import { opened as openedAt } from "@seatscout/view-logic";
 
 const drawn = (auditorium: Auditorium, result: SeatGroupResult) =>
   render(

@@ -3,8 +3,7 @@ import "./ask.css";
 import { isReference, REFERENCE, type SeatProfile } from "@seatscout/client";
 import type { ReactElement } from "react";
 import { type PointerEvent, useId } from "react";
-import { marksOf, targetAt } from "./plan.js";
-import type { Term } from "./title-card-terms.js";
+import { marksOf, targetAt, type Term } from "@seatscout/view-logic";
 
 interface ProfileProps {
   readonly profile: SeatProfile;

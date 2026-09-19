@@ -2,7 +2,7 @@ import "./house.css";
 import "./ask.css";
 import type { Movie } from "@seatscout/client";
 import type { ReactElement } from "react";
-import { type ProgrammeState, suggestedFor } from "./programme.js";
+import { type ProgrammeState, suggestedFor } from "@seatscout/view-logic";
 
 interface FilmProps {
   readonly area: string | undefined;

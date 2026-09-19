@@ -9,7 +9,7 @@ import {
   lateralOf,
   partyOf,
   spokenOf,
-} from "./phrases.js";
+} from "@seatscout/view-logic";
 import { RoomPlan } from "./room-plan.js";
 
 export const HAND_OFF_TITLE_ID = "hand-off-title";

@@ -11,10 +11,12 @@ import { Ask } from "./ask.js";
 import { Room } from "./auditorium.js";
 import { Ledger } from "./coverage.js";
 import { HandOff } from "./hand-off.js";
-import type { HeldSnapshots } from "./held.js";
+import type {
+  HeldProgramme,
+  HeldSnapshots,
+  Terms,
+} from "@seatscout/view-logic";
 import type { Overlay } from "./overlay.js";
-import type { HeldProgramme } from "./programme.js";
-import type { Terms } from "./terms.js";
 
 interface OverlaysProps {
   readonly stack: readonly Overlay[];

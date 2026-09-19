@@ -15,7 +15,7 @@ import {
   openedRooms,
   searched,
   WEST_PLANO_28,
-} from "./rooms.fixtures.js";
+} from "@seatscout/view-logic/testing";
 
 const room = () => within(screen.getByRole("dialog"));
 

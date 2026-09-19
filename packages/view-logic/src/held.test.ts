@@ -146,4 +146,51 @@ describe("holding a snapshot still under a pointer", () => {
     expect(heard).toEqual([]);
     expect(held.snapshot().phase).toBe("settled");
   });
+
+  it("paints nothing while the ranking is still moving, or when nothing could be reached", () => {
+    const { search, publish } = searching();
+    const held = heldSnapshots(search);
+
+    expect(held.painted()).toBeNull();
+
+    publish("searching");
+
+    expect(held.painted()).toBeNull();
+
+    publish("unreachable");
+
+    expect(held.painted()).toBeNull();
+    expect(held.snapshot().phase).toBe("unreachable");
+  });
+
+  it("paints the snapshot the ranking stopped moving on, and keeps it painted while a retry moves the ranking again", () => {
+    const { search, publish } = searching();
+    const held = heldSnapshots(search);
+
+    publish("settled");
+    const settled = search.snapshot();
+
+    expect(held.painted()).toBe(settled);
+    expect(held.painted()?.phase).toBe("settled");
+
+    publish("searching");
+
+    expect(held.painted()).toBe(settled);
+    expect(held.snapshot().phase).toBe("searching");
+  });
+
+  it("paints nothing new while a pointer is down, and paints the settled snapshot on release", () => {
+    const { search, publish } = searching();
+    const held = heldSnapshots(search);
+
+    held.hold();
+    publish("settled");
+
+    expect(held.painted()).toBeNull();
+
+    held.release();
+
+    expect(held.painted()?.phase).toBe("settled");
+    expect(held.painted()).toBe(search.snapshot());
+  });
 });

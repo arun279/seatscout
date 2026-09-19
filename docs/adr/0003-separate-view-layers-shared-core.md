@@ -44,17 +44,19 @@ exist.
 Split by layer rather than by platform.
 
 ```
-packages/core     domain model, source adapters, seat normalisation, scoring,
-                  filter engine. Plain TypeScript. No DOM, no React, no React Native.
-packages/client   query orchestration, on device cache, streaming fan out.
-                  Depends only on fetch.
-apps/web          React and Vite. The progressive web app.
-apps/proxy        the stateless proxy.
-apps/native       React Native. Imports core and client unchanged.
+packages/core        domain model, source adapters, seat normalisation, scoring,
+                     filter engine. Plain TypeScript. No DOM, no React, no React Native.
+packages/client      query orchestration, on device cache, streaming fan out.
+                     Depends only on fetch.
+packages/view-logic  view state, phrases, query terms, traversal and gesture geometry.
+                     Plain TypeScript. Depends on client. No DOM, no React, no React Native.
+apps/web             React and Vite. The progressive web app.
+apps/proxy           the stateless proxy.
+apps/native          React Native. Imports core and client unchanged.
 ```
 
-`core` and `client` are shared without modification. Only the view layer is written per
-platform.
+`core` and `client` are shared without modification. View logic is shared in `view-logic`; screens
+and platform adapters are written per platform.
 
 ## Consequences
 
@@ -79,12 +81,12 @@ by dependency rules in the build, not by convention.
 
 Everything under `packages/` must stay portable to any runtime, so it may not reach for the
 DOM, React, React Native, or a runtime-specific API. `packages/client` runs unchanged in a
-native runtime that has no Web Storage. Two gates hold that for both packages.
+native runtime that has no Web Storage. Two gates hold that for every package.
 
 Each package's `tsconfig.json` sets `lib` to the language alone and `types` to nothing, so no
 runtime's globals are declared to it. `document`, `window`, `caches`, `process` and everything
 else supplied by a host rather than by the language are undeclared, and using one is a type
-error. Neither package has a `fetch` either: what they need from a host arrives as an injected
+error. No package has a `fetch` either: what they need from a host arrives as an injected
 dependency typed by core itself, which is the shape that keeps them portable.
 
 A Biome override on `packages/**` then covers what the compiler cannot see.
@@ -135,7 +137,8 @@ Neither is reachable by accident, and both are plain in review.
 Tests are compiled by a project of their own in each package. `tsconfig.json` excludes the test
 and fixture suffixes and `tsconfig.test.json` takes them, with the language's default libraries
 and no emit, because the test runner's declaration files reference `setTimeout`, `AbortSignal`
-and other host globals that neither package has and that cannot be checked under its `lib`.
+and other host globals that the product packages do not have and that cannot be checked under
+their `lib`.
 Both projects are referenced from the root, so test code is type checked rather than skipped,
 and the Biome override still covers all of `packages/`: a `document` in a test is a lint error
 where it is no longer a type error. The live tests are why the split matters here rather than
@@ -149,6 +152,13 @@ says about view layers. `apps/web/src/store.ts` is the Web Storage adapter for t
 Core may not reach for `localStorage`, and `packages/client` may not either. The web
 application's entry publishes it alongside the two start functions, and that entry is what the
 bundler is given and what the deployment therefore holds.
+
+`apps/web/src/terms.ts` is the address adapter for a browser, and `URLSearchParams` is the whole
+of it: a query string becomes the address's name and value pairs, and the pairs become a query
+string again. `packages/view-logic/src/terms.ts` holds the term names and the normalisation,
+reading the terms out of those pairs and writing them back. Pairs are what an address carries
+either way, so a native application flattens Expo Router's parameters into them and neither host
+states a term name of its own.
 
 `tsc` type checks `apps/web` twice rather than once, because a service worker and a page cannot
 share a library: one project covers the page under the DOM, and another covers the worker and
@@ -210,10 +220,11 @@ this application.
 **Nothing under `packages` may reach for an engine feature either**, which is the same rule as
 the globals above and was missed until this application ran. Hermes implements no
 `Array.prototype.toSorted`, so the five calls to it are `[...x].sort()`, which every engine
-has. Each of those arrays was already a copy or is spread into one, so no caller's array is
-sorted under it, and the mutation gate holds the five files it touched.
+has, and `packages/view-logic` sorts the array `filter` has just made rather than calling it.
+Each of those arrays was already a copy or is made by the call before, so no caller's array is
+sorted under it, and the mutation gate holds every file it touched.
 
-**Both packages and this application therefore set `lib` to `["ES2022"]`**, which is the
+**All three packages and this application therefore set `lib` to `["ES2022"]`**, which is the
 newest edition Hermes implements whole, so reaching past it is a type error rather than a
 crash on a phone. The edition is the unit because TypeScript's is: Hermes has `findLast`, and
 `toReversed`, `toSpliced` and `with` arrived in 2024, but `toSorted` was split out of that

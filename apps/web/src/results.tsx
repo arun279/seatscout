@@ -6,14 +6,14 @@ import { Card } from "./card.js";
 import {
   accountOf,
   beingReadIn,
+  type HeldSnapshots,
   listed,
+  type Term,
+  type Terms,
   tiedIn,
   unreachedIn,
-} from "./derived.js";
-import type { HeldSnapshots } from "./held.js";
-import { whenOf } from "./phrases.js";
-import type { Terms } from "./terms.js";
-import type { Term } from "./title-card-terms.js";
+  whenOf,
+} from "@seatscout/view-logic";
 import { Empty, Partial, Unreachable } from "./verdicts.js";
 
 interface ResultsProps {
