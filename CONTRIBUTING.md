@@ -161,10 +161,10 @@ Each of these has one way through and no exemption to grant.
   manifests it exists for are instances of the same dependency, so raising one alone fails.
 - **The Expo SDK's own two checks.** `pnpm --filter @seatscout/native run install-check` names
   every package whose version the installed SDK does not expect, and
-  `pnpm --filter @seatscout/native run doctor` runs that check as one of twenty-one.
-  Move the package to the version the SDK named. `expo.install.exclude` in
-  `apps/native/package.json` would hold a package back from the first check and is empty,
-  because a package in it is one the SDK is no longer asked about.
+  `pnpm --filter @seatscout/native run doctor` runs that check beside the rest of its own.
+  Move the package to the version the SDK named. Expo documents an `expo.install.exclude`
+  list that holds a package back from the first check; `apps/native/package.json` carries no
+  such list, because a package in it is one the SDK is no longer asked about.
 - **An import cycle.** Biome's `noImportCycles` names the import that closes the loop. Move
   what both modules need into a third, or make the import `import type`, which the compiler
   erases and which the rule ignores.

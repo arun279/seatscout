@@ -168,7 +168,7 @@ export const GATE_CLAIMS = [
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /`react-hooks\/rules-of-hooks`\. Both are in the recommended preset/,
+    says: /`react-hooks\/rules-of-hooks`\. Each rule page records the rule as recommended/,
     holds: "the rule that gates where a hook is called",
     pattern: '"useHookAtTopLevel": "error"',
     paths: [BIOME],

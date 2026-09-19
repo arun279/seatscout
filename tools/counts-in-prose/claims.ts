@@ -24,16 +24,26 @@ const SEARCH = "packages/client/src/search.ts";
 const SEAT_MAP = "packages/core/src/source/seat-map.ts";
 const VERIFY = "packages/client/src/verify.ts";
 
-const hookCommands = (read: Read, hook: string) => {
-  const lines = read(LEFTHOOK).split("\n");
-  const start = lines.indexOf(`${hook}:`);
-  const rest = lines.slice(start + 1);
-  const under = rest.slice(
+const WORKSPACE = "pnpm-workspace.yaml";
+
+const blockUnder = (read: Read, path: string, heading: string) => {
+  const lines = read(path).split("\n");
+  const rest = lines.slice(lines.indexOf(heading) + 1);
+  return rest.slice(
     0,
     rest.findIndex((line) => /^\S/.test(line)) + 1 || rest.length,
   );
-  return under.filter((line) => /^ {4}[a-z][\w:-]*:$/.test(line));
 };
+
+const overridden = (read: Read) =>
+  blockUnder(read, WORKSPACE, "overrides:").filter((line) =>
+    /^ {2}[\w@/.-]+:/.test(line),
+  );
+
+const hookCommands = (read: Read, hook: string) =>
+  blockUnder(read, LEFTHOOK, `${hook}:`).filter((line) =>
+    /^ {4}[a-z][\w:-]*:$/.test(line),
+  );
 
 const sheetsImported = (read: Read) =>
   [...read(ENTRY).matchAll(/^import "\.\/[\w-]+\.css";$/gm)].length;
@@ -67,6 +77,7 @@ const SEAT_GROUP_BANDS = `the alternatives of Gap, in ${GROUP}`;
 const UNVERIFIED = `the alternatives of Unverified, in ${VERIFY}`;
 
 const BOOKING = "docs/adr/0004-booking-ends-at-a-deep-link.md";
+const GATES = "docs/adr/0006-gates-cite-a-standard-or-measure-a-regression.md";
 const BOUNDARY = "docs/adr/0009-no-upstream-word-crosses-the-boundary.md";
 const CONTEXT = "CONTEXT.md";
 const CONTRIBUTING = "CONTRIBUTING.md";
@@ -89,6 +100,12 @@ export const CLAIMS: readonly Claim[] = [
     says: /`push-checks`, which runs (\w+) checks/,
     about: `the commands under push-checks, in ${LEFTHOOK}`,
     count: (read) => hookCommands(read, "push-checks").length,
+  },
+  {
+    document: GATES,
+    says: /passes over all (\w+) overrides in `pnpm-workspace\.yaml`/,
+    about: `the entries under overrides, in ${WORKSPACE}`,
+    count: (read) => overridden(read).length,
   },
   {
     document: CONTRIBUTING,
