@@ -5,6 +5,7 @@
   "type": "module",
   "main": "./src/index.ts",
   "devDependencies": {
-    "@types/node": "26.6.1"
+    "@types/node": "26.6.1",
+    "vitest": "4.1.11"
   }
 }

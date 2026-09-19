@@ -8,6 +8,7 @@
     "dev": "wrangler dev"
   },
   "devDependencies": {
+    "vitest": "4.1.11",
     "wrangler": "4.132.0"
   }
 }

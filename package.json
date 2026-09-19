@@ -30,7 +30,8 @@
     "test:mutation": "VITEST_MAX_WORKERS=1 stryker run && node tools/no-empty-run/src/index.ts mutation",
     "test:mutation:incremental": "VITEST_MAX_WORKERS=1 stryker run --incremental && node tools/no-empty-run/src/index.ts mutation",
     "test:unit": "vitest run",
-    "typecheck": "tsc --build --pretty false --noEmit"
+    "typecheck": "tsc --build --pretty false --noEmit",
+    "versions": "syncpack lint"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
@@ -40,18 +41,15 @@
     "@size-limit/file": "13.0.3",
     "@stryker-mutator/core": "10.0.0",
     "@stryker-mutator/vitest-runner": "10.0.0",
-    "@testing-library/dom": "10.4.2",
-    "@testing-library/jest-dom": "7.0.1",
-    "@testing-library/react": "16.3.3",
     "@types/node": "26.6.1",
     "cspell": "10.3.2",
-    "fast-check": "4.10.1",
     "jscpd": "5.2.1",
     "jsdom": "30.0.1",
     "knip": "6.35.1",
     "lefthook": "2.1.14",
     "oxlint": "1.83.0",
     "size-limit": "13.0.3",
+    "syncpack": "15.3.3",
     "typescript": "7.0.2",
     "vitest": "4.1.11",
     "web-vitals": "6.2.2"

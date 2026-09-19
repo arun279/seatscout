@@ -13,5 +13,8 @@
   },
   "dependencies": {
     "@seatscout/client": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "4.1.11"
   }
 }
