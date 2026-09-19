@@ -144,14 +144,12 @@ const Range = ({
   const id = useId();
   return (
     <div className="field range">
-      <span className="top">
-        <label className="name" htmlFor={id}>
-          {label}
-        </label>
-        <span className="said" aria-hidden="true">
-          {text}
-        </span>
-      </span>
+      <label className="name" htmlFor={id}>
+        {label}
+      </label>{" "}
+      <output className="said" htmlFor={id} aria-hidden="true">
+        {text}
+      </output>
       <input
         id={id}
         type="range"

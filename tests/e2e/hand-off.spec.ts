@@ -59,6 +59,40 @@ const opened = async (page: Page) => {
   };
 };
 
+const lastAlternative = (page: Page, reached: "dragged" | "brought") =>
+  page.evaluate((how) => {
+    const sheet = document.querySelector("dialog[open]");
+    const chips = [...(sheet?.querySelectorAll(".chips .chip") ?? [])];
+    const last = chips.at(-1);
+    const cta = sheet?.querySelector(".cta") ?? null;
+    if (sheet === null || last === undefined || cta === null)
+      throw new Error("the alternatives screen drew no chips under a dock");
+    sheet.scrollTop = 0;
+    if (how === "dragged") sheet.scrollTop = sheet.scrollHeight;
+    else last.scrollIntoView({ block: "nearest" });
+    const chip = last.getBoundingClientRect();
+    const dock = cta.getBoundingClientRect();
+    const answered = document.elementFromPoint(
+      chip.left + chip.width / 2,
+      chip.top + chip.height / 2,
+    );
+    return {
+      listOutrunsTheSheet: sheet.scrollHeight > sheet.clientHeight,
+      answersItsOwnTap: answered !== null && last.contains(answered),
+      wholeAboveTheDock: chip.bottom <= dock.top,
+      insetByTheDock:
+        Number.parseFloat(getComputedStyle(sheet).scrollPaddingBottom) >=
+        dock.height,
+    };
+  }, reached);
+
+const WHOLE = {
+  listOutrunsTheSheet: true,
+  answersItsOwnTap: true,
+  wholeAboveTheDock: true,
+  insetByTheDock: true,
+};
+
 test("taking a Seat Group re-reads its room first and then navigates to the ticketing URL the Source supplied for that Showtime", {
   tag: "@accessibility",
 }, async ({ page }) => {
@@ -101,6 +135,28 @@ test("a Seat Group taken while deciding yields the alternatives screen, never a 
   await page.waitForURL(TICKETING);
   expect(page.url()).toBe(HOOKY_TICKETING);
   expect(order.slice(-2)).toEqual(["seat map", "ticketing"]);
+});
+
+test("the last of a long list of alternatives is whole above the dock and takes its own tap, scrolled to the end and brought into view, while a check is in flight", async ({
+  page,
+}) => {
+  const { sheet, roomWhere } = await opened(page);
+  await roomWhere({ G6: "X" });
+  await sheet.getByRole("button", { name: "Take G6 and G7" }).click();
+  const gone = page.getByRole("dialog", { name: "G6 and G7 just went." });
+  await expect(gone).toBeVisible();
+  const held = Promise.withResolvers<void>();
+  await page.route(`**${SEAT_MAP}**`, async (route) => {
+    await held.promise;
+    await route.fulfill({ status: 500 });
+  });
+
+  await gone.getByRole("button", { name: /^Take / }).click();
+  await expect(gone.getByText(/^Checking /)).toBeVisible();
+
+  expect(await lastAlternative(page, "dragged")).toEqual(WHOLE);
+  expect(await lastAlternative(page, "brought")).toEqual(WHOLE);
+  held.resolve();
 });
 
 test("a Source that cannot be reached yields the retry and no link, and the retry opens once the Source answers", {

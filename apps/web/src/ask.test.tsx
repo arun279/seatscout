@@ -47,23 +47,22 @@ const rendered = () => {
 describe("the Ask sheet, as the stylesheet it is served with draws it", () => {
   afterEach(cleanup);
 
-  it("puts every control's name and what it says on one line, the value at the end of it", async () => {
+  it("stacks every control's name in the sentence face over the value its own output holds in the ledger", async () => {
     const editor = rendered();
 
     const rows = await drawn("apps/web/src/ask.css", () =>
       editor.getAllByRole("slider").map((slider) => {
-        const top = slider.parentElement?.querySelector(".top");
-        if (top === null || top === undefined)
-          throw new Error("a control draws no name");
-        const [name, said] = [...top.children];
-        if (name === undefined || said === undefined)
-          throw new Error("a control draws no name beside what it says");
-        const row = getComputedStyle(top);
+        const range = slider.parentElement;
+        const name = range?.querySelector("label") ?? null;
+        const said = range?.querySelector("output") ?? null;
+        if (range === null || name === null || said === null)
+          throw new Error("a control draws no name over what it says");
+        const stack = getComputedStyle(range);
         const named = getComputedStyle(name);
         const valued = getComputedStyle(said);
         return {
           name: `${name.textContent} ${named.fontSize} ${named.fontWeight}`,
-          row: `${row.display} ${row.alignItems} ${row.justifyContent} ${row.gap}`,
+          row: `${stack.display} ${stack.flexDirection} ${stack.gap}`,
           said: `${said.textContent} ${valued.fontFamily} ${valued.fontSize}`,
         };
       }),
@@ -80,7 +79,7 @@ describe("the Ask sheet, as the stylesheet it is served with draws it", () => {
         ["A console between seats", "A little"],
       ].map(([name, said]) => ({
         name: `${name} 14px 600`,
-        row: "flex baseline space-between 10px",
+        row: "flex column 4px",
         said: `${said} var(--mono) 11px`,
       })),
     );
