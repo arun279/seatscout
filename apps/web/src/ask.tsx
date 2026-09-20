@@ -14,6 +14,7 @@ import { Film } from "./ask-film.js";
 import { modal } from "./modal.js";
 import { Profile } from "./profile.js";
 import {
+  FIND_SEATS,
   type HeldProgramme,
   movieOf,
   type Term,
@@ -250,7 +251,7 @@ export const Ask = ({
         />
         <div className="cta">
           <button type="submit" className="btn btn-velvet">
-            Find seats
+            {FIND_SEATS}
           </button>
           <p className="micro privacy-note">
             Preferences and history stay on this phone. No account exists.

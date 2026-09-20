@@ -4,6 +4,7 @@ import {
   lines,
   MUTATION_REPORT,
   measuring,
+  NATIVE_MUTATION_REPORT,
   reading,
   recorder,
 } from "./measure.fixtures.js";
@@ -34,19 +35,19 @@ describe("measuring a change", () => {
     ]);
   });
 
-  it("counts each side and the diff between them", () => {
+  it("counts each side and the diff between them, reading a comment marker inside a string as the string it is", () => {
     const { run, commands } = recorder();
 
     measuring(run)("origin/main", "HEAD");
 
     expect(lines(commands)).toContain(
-      "cloc --git base-sha --by-file --json --hide-rate --quiet",
+      "cloc --git base-sha --by-file --json --hide-rate --quiet --strip-str-comments",
     );
     expect(lines(commands)).toContain(
-      "cloc --git head-sha --by-file --json --hide-rate --quiet",
+      "cloc --git head-sha --by-file --json --hide-rate --quiet --strip-str-comments",
     );
     expect(lines(commands)).toContain(
-      "cloc --git --diff base-sha head-sha --by-file --json --hide-rate --quiet",
+      "cloc --git --diff base-sha head-sha --by-file --json --hide-rate --quiet --strip-str-comments",
     );
   });
 
@@ -134,27 +135,42 @@ describe("measuring a change", () => {
     });
   });
 
-  it("carries both test counts and the score of the run that was recorded", () => {
+  it("carries every test count and the score of each run that was recorded", () => {
     const { run } = recorder();
 
     const measurement = measuring(run)("origin/main", "HEAD");
 
-    expect(measurement.suites).toStrictEqual({ unit: 2, endToEnd: 1 });
-    expect(measurement.mutation).toStrictEqual({
-      score: 100,
-      detected: 1,
-      weighed: 1,
-      breaksAt: 100,
+    expect(measurement.suites).toStrictEqual({
+      unit: 2,
+      screens: 3,
+      endToEnd: 1,
     });
+    expect(measurement.mutation).toStrictEqual([
+      {
+        over: "The engine, the packages and the tools, by Vitest",
+        score: 100,
+        detected: 1,
+        weighed: 1,
+        breaksAt: 100,
+      },
+      {
+        over: "The Expo app, by Jest",
+        score: 100,
+        detected: 1,
+        weighed: 1,
+        breaksAt: 100,
+      },
+    ]);
   });
 
-  it("reads the mutation report from wherever the runner was told to write it", () => {
+  it("reads each mutation report from wherever its own runner was told to write it", () => {
     const { run } = recorder();
     const { read, asked } = reading();
 
     measureWith(run, read)("origin/main", "HEAD");
 
     expect(asked).toContain(MUTATION_REPORT);
+    expect(asked).toContain(NATIVE_MUTATION_REPORT);
   });
 
   it("names the command and repeats its complaint when one fails", () => {

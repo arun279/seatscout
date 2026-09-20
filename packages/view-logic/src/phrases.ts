@@ -1,9 +1,11 @@
 import {
   isReference,
+  type RecentSearch,
   type SeatGroupResult,
   type SeatProfile,
 } from "@seatscout/client";
 import { seatsOf } from "./derived.js";
+import type { Terms } from "./terms.js";
 
 type RankReasons = SeatGroupResult["reasons"];
 
@@ -101,11 +103,11 @@ export const dayOf = (date: string, today: string): string => {
   return `${DAYS[day.getUTCDay()]} ${day.getUTCDate()} ${MONTHS[day.getUTCMonth()]}`;
 };
 
+const RELATIVE_DAYS = ["Today", "Tomorrow"];
+
 export const whenOf = (date: string, today: string): string => {
   const day = dayOf(date, today);
-  return day === "Today" || day === "Tomorrow"
-    ? day.toLowerCase()
-    : `on ${day}`;
+  return RELATIVE_DAYS.includes(day) ? day.toLowerCase() : `on ${day}`;
 };
 
 export const seatOf = (profile: SeatProfile): string =>
@@ -113,6 +115,27 @@ export const seatOf = (profile: SeatProfile): string =>
 
 export const seatSetOf = (profile: SeatProfile): string =>
   isReference(profile) ? "the Reference seat" : "your custom seat";
+
+export const saidOf = (search: RecentSearch, today: string): string => {
+  const day = dayOf(search.date, today);
+  return [
+    `${search.partySize} seat${search.partySize === 1 ? "" : "s"}`,
+    RELATIVE_DAYS.includes(day) ? day.toLowerCase() : day,
+    search.area,
+  ].join(" · ");
+};
+
+export const FIND_SEATS = "Find seats";
+
+export const NOTHING_REMEMBERED =
+  "Nothing yet. Searches are kept on this phone once you have run one, and never anywhere else.";
+
+export const ledeOf = (
+  terms: Terms,
+  profile: SeatProfile,
+  today: string,
+): string =>
+  `Name an area, then a movie playing near it. ${partyOf(terms.partySize)}, ${whenOf(terms.date, today)} and ${seatSetOf(profile)} are already set.`;
 
 export const noneOf = (party: number): string =>
   party === 1 ? "No seat" : `No ${wordOf(party)} seats together`;

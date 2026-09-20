@@ -1,7 +1,12 @@
 import "./house.css";
 import type { RecentSearch } from "@seatscout/client";
 import type { ReactElement } from "react";
-import { dayOf, type Terms, termsOf } from "@seatscout/view-logic";
+import {
+  NOTHING_REMEMBERED,
+  saidOf,
+  type Terms,
+  termsOf,
+} from "@seatscout/view-logic";
 
 interface RecentProps {
   readonly recent: readonly RecentSearch[];
@@ -9,13 +14,6 @@ interface RecentProps {
   readonly heading: string;
   readonly onRun: (terms: Terms) => void;
 }
-
-const saidOf = (search: RecentSearch, today: string) =>
-  [
-    `${search.partySize} seat${search.partySize === 1 ? "" : "s"}`,
-    dayOf(search.date, today).toLowerCase(),
-    search.area,
-  ].join(" · ");
 
 export const Recent = ({
   recent,
@@ -30,10 +28,7 @@ export const Recent = ({
         {heading}
       </h2>
       {offered.length === 0 ? (
-        <p className="micro">
-          Nothing yet. Searches are kept on this phone once you have run one,
-          and never anywhere else.
-        </p>
+        <p className="micro">{NOTHING_REMEMBERED}</p>
       ) : (
         <ul className="again">
           {offered.map((search) => (

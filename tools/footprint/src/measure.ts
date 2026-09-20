@@ -15,6 +15,19 @@ import { type Diff, filesOf, type Side, type Tree } from "./volume.js";
 
 export const RATCHET = ".footprint.json";
 export const STRYKER = "stryker.config.json";
+export const STRYKER_NATIVE = "stryker.native.config.json";
+const NATIVE_JEST = "apps/native/jest.config.js";
+
+const NATIVE_JEST_RUN: readonly string[] = [
+  "exec",
+  "jest",
+  "--config",
+  NATIVE_JEST,
+  "--ci",
+  "--json",
+  "--maxWorkers",
+  "2",
+];
 export const OXLINT_REPORT = ".oxlintrc.report.json";
 export const BIOME_REPORT = "biome.report.json";
 
@@ -41,7 +54,14 @@ export const measureWith = (run: Run, read: (path: string) => string) => {
     output("git", args).trim();
 
   const cloc = (...args: readonly string[]): string =>
-    output("cloc", [...args, "--by-file", "--json", "--hide-rate", "--quiet"]);
+    output("cloc", [
+      ...args,
+      "--by-file",
+      "--json",
+      "--hide-rate",
+      "--quiet",
+      "--strip-str-comments",
+    ]);
 
   const treeOf = (ref: string): Tree => filesOf(JSON.parse(cloc("--git", ref)));
 
@@ -77,6 +97,7 @@ export const measureWith = (run: Run, read: (path: string) => string) => {
   const collected = (): Suites =>
     suitesFrom(
       output("pnpm", ["exec", "vitest", "list", "--json"]),
+      output("pnpm", NATIVE_JEST_RUN),
       output("pnpm", [
         "exec",
         "playwright",
@@ -86,13 +107,13 @@ export const measureWith = (run: Run, read: (path: string) => string) => {
       ]),
     );
 
-  const weighed = (): Mutation => {
-    const written = JSON.parse(read(STRYKER)).jsonReporter?.fileName;
+  const weighed = (over: string, config: string): Mutation => {
+    const written = JSON.parse(read(config)).jsonReporter?.fileName;
     if (typeof written !== "string")
       throw new Error(
-        `${STRYKER} names no json report, so no mutation run wrote a score to read.`,
+        `${config} names no json report, so no mutation run wrote a score to read.`,
       );
-    return mutationFrom(read(written));
+    return mutationFrom(over, read(written));
   };
 
   const held = (of: string, ratchets: Record<string, unknown>): number => {
@@ -124,7 +145,10 @@ export const measureWith = (run: Run, read: (path: string) => string) => {
       gates: against,
       limits: observed(against),
       suites: collected(),
-      mutation: weighed(),
+      mutation: [
+        weighed("The engine, the packages and the tools, by Vitest", STRYKER),
+        weighed("The Expo app, by Jest", STRYKER_NATIVE),
+      ],
       ratchets: ratchets(),
     };
   };

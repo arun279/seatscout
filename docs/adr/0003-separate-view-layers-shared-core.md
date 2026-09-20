@@ -176,8 +176,8 @@ listing everything under `src`.
 ### What the native application's own configuration is for
 
 `apps/native` is an Expo Router application that reads the Source through the client and
-ranks what comes back, so it depends on `@seatscout/client` and on nothing else in the
-workspace. Seven of its lines are worth a reason, because each of them looks removable and is
+ranks what comes back, so it depends on `@seatscout/client` and on `@seatscout/view-logic`
+and on nothing else in the workspace. Seven of its lines are worth a reason, because each of them looks removable and is
 not.
 
 **`lib` is the language alone** because React Native is not a DOM host and declares its own
@@ -240,7 +240,7 @@ else moves: `apps/web` and `tools` do not run on Hermes and keep their own.
 
 **The Source's origin is a constant of this application** rather than something it is
 configured with. The proxy takes `UPSTREAM_ORIGIN` from the deployment because a deployment is
-what it is; a phone has no such place to read one from, so `src/source.ts` names the origin
+what it is; a phone has no such place to read one from, so `src/host/source.ts` names the origin
 beside the `Referer` and the user agent that every read carries, which is what the proxy adds
 for a browser and what nobody adds here.
 

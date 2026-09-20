@@ -728,7 +728,7 @@ moved to the versions it named. Expo documents `expo.install.exclude` as
 the way to hold a package back from that check, and `apps/native/package.json` carries no such
 list, because a package in it is a package the SDK is no longer asked about. The check this
 workspace expected to fight, the one that refuses an override breaking a critical dependency
-chain, passes over all five overrides in `pnpm-workspace.yaml`.
+chain, passes over all seven overrides in `pnpm-workspace.yaml`.
 
 Neither is on a hook, and the reason is not only what they cost. Measured over this workspace,
 `expo install --check` answers in 1.7 seconds and `expo-doctor` takes 35, so the first is cheap
@@ -790,6 +790,37 @@ say about the tree as it stands, which is a reading and not a reason to leave th
 the area it does not list, is refused by name with the dependency it missed and the line that uses
 it. The same hook moved inside an `if` is refused as called conditionally. Taken out again, the
 file passes in silence, which is what the whole tree does today.
+
+**A screen's render cost is held to the merge base, and the runner says whether it may hold it.**
+[Reassure](https://github.com/callstack/reassure) renders each screen's Testing Library scenario
+repeatedly, on the base and on the head, and reports a statistically significant change rather than
+a threshold anyone here chose. Callstack publish the two figures the `performance` job reads: a
+runner whose repeated measurement of the same code varies by less than 5 per cent is steady enough
+to gate on, and one at 10 per cent or more is not usable for comparison at all. So the job measures
+the same code twice first, takes the widest change that run reports, and gates on a significant
+regression only below 5 per cent; at or above it the job reports the comparison and says it did not
+gate. `reassure check-stability` is that run's own name upstream, but its command handler hands its
+own name to the test runner as a path pattern, so the job spells out what the handler does, a
+baseline measurement and a comparison over the same commit.
+
+**Watched failing, watched silent.** The first run on the pull request that added the job left no
+reading at all, because the failure was piped into `tee` and lost, and the step that reads the
+figure then took its own no-reading branch and passed. Both were corrected together: the reading is
+taken under `pipefail`, and a missing reading now fails the job. The one absence that reports rather
+than fails is a merge base with no measurement to compare against, which the step that measures the
+base records for the step that judges. With the reading taken, the same runner reads 3.9 per cent
+and the job gates.
+
+**A colour written into a screen is refused** by a Grit plugin, `tools/lint/no-colour-literals.grit`,
+which `biome.json` points at `apps/native/src` except the theme and the tests. It refuses a string
+that is a hex colour, a CSS colour function or one of the CSS Color Module Level 4 named colours,
+because a literal carries one appearance and a token carries both. `silver` is the one named colour
+it passes, because the theme declares a token of that name and reading a token by its name is what
+the rule asks for.
+
+**Watched failing, watched silent.** `tools/planted-red/planted/colours` holds a file per notation,
+and `tools/planted-red/src/colour-literals.test.ts` runs the rule over each: the hex, the
+functional and the named colour are each refused by name, and the token read passes in silence.
 
 **An import of a package the nearest manifest does not declare is refused** by Biome's
 [`noUndeclaredDependencies`](https://biomejs.dev/linter/rules/no-undeclared-dependencies/). In a

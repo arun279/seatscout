@@ -89,6 +89,23 @@ the tests that covered it, and re-runs anything that does not match. That is why
 run on `main` stays. A pull request whose cache is cold pays the whole run, which is the
 honest cost of the first push on a branch that `main`'s seed usually spares it.
 
+**Each report is a seed of its own, and every cache entry names one file.** `actions/cache`
+derives a cache's version from its `path` list, so a job asking for two files cannot read a
+cache saved for one, and a list that grows silently hides every seed saved before it: the run
+that found this judged 4,987 mutants from nothing and was cancelled at its two-hour cap. Both
+workflows therefore write `path: reports/stryker-incremental.json` wherever they carry the run
+in Node and `path: reports/stryker-native-incremental.json` wherever they carry the run over
+the app, and the second lives in a `stryker-native-` key family of its own. Ten cache entries
+across the two workflows name one seed file each, and a list that grows back to two is a count
+that no longer matches this sentence.
+
+**Only a run that passed leaves a seed, under every key it writes.** A mutant that runs while
+the file is loaded is covered by no single test, so the matching above cannot tell that a test
+which kills it has since been added in another file, and a `Survived` verdict saved by a red
+run would be handed to every later push on that branch. A red run therefore caches nothing and
+the next push re-judges its own delta against `main`'s seed, which costs minutes and is the
+price of never inheriting a verdict the tree has already disproved.
+
 **The run's exit status is not what fails the pull request.** Stryker writes its report, the
 footprint report reads the score out of that report and holds it to the break threshold the
 same report names, and the job goes red on that. This is the shape size-limit already has
@@ -97,17 +114,32 @@ and the verdict belongs where the number is printed.
 [ADR 6](0006-gates-cite-a-standard-or-measure-a-regression.md) carries the guard that makes
 a run weighing no mutant fail.
 
-**One thing is carved out: the `.tsx` files under `apps/native/src`.** Those are the files
-React Native renders, and Vitest cannot render React Native, so the runner that judges them
-is a later change rather than a line drawn here. Nothing else in that application is out: `src/source.ts`
-wires the Source's origin, the headers a read carries and the device's own clock and timers
-into the client, which is behaviour, and it is judged like any other adapter.
+**Nothing is carved out, and it takes two runners to say so.** Vitest cannot render React
+Native, so `stryker.config.json` mutates everything that runs in Node and leaves
+`apps/native/src` alone, and `stryker.native.config.json` takes that directory with Stryker's
+Jest runner over the `jest-expo` preset. The second run sets `coverageAnalysis` to `off`,
+because under `perTest` and `all` the runner re-resolves the test environment from a raw,
+un-normalised config and silently replaces a preset's with the Node default
+([stryker-js#6108](https://github.com/stryker-mutator/stryker-js/issues/6108), which names
+`jest-expo`); `off` is unaffected. It filters by related tests, keeps an incremental report of
+its own, and breaks below 100 like the first.
 
-The carve-out is written the same way in two places, because the gate is two numbers that have
-to agree. `stryker.config.json` says which files are mutated; the `footprint` job counts the
-tests the listing finds in related mode over that same set and holds Stryker's own initial run
-to it. A set named one way in one place and another way in the other is a run that judged less
-than it looked like it did, which is what that step exists to catch.
+**One kind of value is ignored, by a plugin rather than by file.** `tools/stryker-style-tables.mjs`
+skips the argument of `StyleSheet.create`, and a table declared at the top of the three files that
+declare one: the theme, whose two appearances, type roles and scales are all table; the router's
+layout, whose screen options are a declaration to the platform; and the screen band, whose table is
+the geometry and the gradient stops of a drawing. It reaches no other file, so the headers a device
+read carries are judged like any other adapter. A drawn or declared value
+is held by the headed pass and its screenshots: the only test that kills a mutant in one restates
+the value, which is a tautological test. Everything that holds behaviour is judged, screens
+included.
+
+Each run's set is written the same way in two places, because each gate is two numbers that have
+to agree. The configuration says which files are mutated; the `footprint` job counts the tests
+each runner finds over that same set, the listing in related mode for one and the Jest suite's
+own total for the other, and holds each Stryker initial run to it. A set named one way in one
+place and another way in the other is a run that judged less than it looked like it did, which is
+what that step exists to catch.
 
 `apps/web` stays inside the gate: it is the view layer that will hold real behaviour, keyboard
 traversal among it, and the platform adapters it already holds are judged there rather than

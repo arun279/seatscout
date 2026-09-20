@@ -2,6 +2,7 @@ import { calculateMutationTestMetrics } from "mutation-testing-metrics";
 import { type Section, table } from "./markdown.js";
 
 export interface Mutation {
+  readonly over: string;
   readonly score: number;
   readonly detected: number;
   readonly weighed: number;
@@ -22,12 +23,13 @@ const threshold = (held: unknown): number => {
   return held;
 };
 
-export const mutationFrom = (report: string): Mutation => {
+export const mutationFrom = (over: string, report: string): Mutation => {
   const written = JSON.parse(report);
   const { mutationScore, totalDetected, totalValid } =
     calculateMutationTestMetrics(written).systemUnderTestMetrics.metrics;
   if (totalValid === 0) throw new Error(WEIGHED_NOTHING);
   return {
+    over,
     score: mutationScore,
     detected: totalDetected,
     weighed: totalValid,
@@ -35,37 +37,39 @@ export const mutationFrom = (report: string): Mutation => {
   };
 };
 
-export const mutation = (weighed: Mutation): Section => {
-  const withinThreshold = weighed.score >= weighed.breaksAt;
+const verdict = (weighed: Mutation) =>
+  `${weighed.over}: the score may not fall below the threshold, which is ${weighed.breaksAt}. ${
+    weighed.score >= weighed.breaksAt
+      ? "At or above it."
+      : `Below it. ${REMEDY}`
+  }`;
 
-  return {
-    passed: withinThreshold,
-    lines: [
-      "### Mutation",
-      "",
-      "Stryker's own score over the run that wrote the report, held to the threshold named in",
-      "that same report rather than to one restated here. A run that weighed no mutant is",
-      "refused instead of scored, because such a run scores NaN and NaN is never below a",
-      "threshold. The run is incremental: it starts from what the run on `main` last judged,",
-      "and from this branch's own last run after that. Nothing cross-checks the two, so a",
-      "verdict reused here is one that run reached rather than one reached again.",
-      "",
-      ...table(
-        ["Score", "Detected", "Weighed", "Break"],
-        [
-          [
-            weighed.score.toFixed(2),
-            String(weighed.detected),
-            String(weighed.weighed),
-            String(weighed.breaksAt),
-          ],
-        ],
-      ),
-      "",
-      `The score may not fall below the threshold, which is ${weighed.breaksAt}. ${
-        withinThreshold ? "At or above it." : `Below it. ${REMEDY}`
-      }`,
-      "",
-    ],
-  };
-};
+export const mutation = (runs: readonly Mutation[]): Section => ({
+  passed: runs.every((run) => run.score >= run.breaksAt),
+  lines: [
+    "### Mutation",
+    "",
+    "Stryker's own score over the runs that wrote the reports, each held to the threshold named",
+    "in its own report rather than to one restated here. A run that weighed no mutant is refused",
+    "instead of scored, because such a run scores NaN and NaN is never below a threshold. Two",
+    "runners share the work: Vitest judges everything that runs in Node, and Jest judges the",
+    "Expo app, which Vitest cannot render. Both runs are incremental: they start from what the",
+    "run on `main` last judged, and from this branch's own last run after that. Nothing",
+    "cross-checks the two, so a verdict reused here is one that run reached rather than one",
+    "reached again.",
+    "",
+    ...table(
+      ["Run", "Score", "Detected", "Weighed", "Break"],
+      runs.map((run) => [
+        run.over,
+        run.score.toFixed(2),
+        String(run.detected),
+        String(run.weighed),
+        String(run.breaksAt),
+      ]),
+    ),
+    "",
+    ...runs.map(verdict),
+    "",
+  ],
+});

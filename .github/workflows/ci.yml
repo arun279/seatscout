@@ -55,6 +55,7 @@ jobs:
       - run: pnpm counts
       - run: pnpm claims
       - run: pnpm test:unit
+      - run: pnpm test:native
       - run: pnpm build
       - name: Check the deployment builds from the repository alone
         working-directory: apps/proxy
@@ -124,6 +125,7 @@ jobs:
           echo "head=$(git rev-parse 'HEAD^{tree}')" >> "$GITHUB_OUTPUT"
           echo "base=$(git rev-parse 'origin/main^{tree}')" >> "$GITHUB_OUTPUT"
       - name: Restore what an earlier run already judged, the merged tree's report first
+        id: seed
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: reports/stryker-incremental.json
@@ -133,70 +135,121 @@ jobs:
             stryker-${{ github.head_ref }}-
             stryker-main-
             stryker-
+      - name: Refuse to judge the whole tree from nothing
+        if: steps.seed.outputs.cache-matched-key == ''
+        run: |
+          echo "::error::No mutation seed could be restored, and a pull request never judges the whole tree from nothing. A cache's version comes from its path list, so a changed path list hides every seed saved before it; an evicted cache does the same. Dispatch the Baseline workflow on main to reseed, then re-run this."
+          exit 1
+      - name: Restore what an earlier run judged of the app, a seed of its own that main cannot hold until this merges
+        id: seed_native
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: reports/stryker-native-incremental.json
+          key: stryker-native-tree-${{ steps.trees.outputs.head }}
+          restore-keys: |
+            stryker-native-tree-${{ steps.trees.outputs.base }}
+            stryker-native-${{ github.head_ref }}-
+            stryker-native-main-
+            stryker-native-
+      - name: Say whether the app's seed was there, which it cannot be before the first Baseline after this merges
+        run: |
+          echo "The app's seed restored from: ${{ steps.seed_native.outputs.cache-matched-key || 'nothing, so its whole set is judged on this run' }}"
       - name: Judge the suite by mutating the code it tests
         id: mutation
         continue-on-error: true
         run: |
           set -o pipefail
           pnpm test:mutation:incremental 2>&1 | tee "$RUNNER_TEMP/stryker-mutation.log"
-      - name: Name the tests the initial run reported failing
-        if: ${{ !cancelled() && steps.mutation.outcome == 'failure' }}
+      - name: Judge the Expo app the same way, with the runner that can render it
+        id: mutation_native
+        continue-on-error: true
         run: |
-          awk '/One or more tests (failed in|resulted in an error)|Initial test run timed out/ { naming = 1; next }
-               naming && /^[[:space:]]/ { print; next }
-               naming { exit }' "$RUNNER_TEMP/stryker-mutation.log" \
-            > "$RUNNER_TEMP/failing-tests.txt"
-          if [ -s "$RUNNER_TEMP/failing-tests.txt" ]; then
-            echo "::error::The initial test run failed. The tests it named:"
-            cat "$RUNNER_TEMP/failing-tests.txt"
-          else
-            echo "The mutation run failed over something other than a failing test, or Stryker no longer names them the way this step reads."
-          fi
+          set -o pipefail
+          pnpm test:mutation:native:incremental 2>&1 | tee "$RUNNER_TEMP/stryker-native.log"
+      - name: Name the tests the initial run reported failing
+        if: ${{ !cancelled() && (steps.mutation.outcome == 'failure' || steps.mutation_native.outcome == 'failure') }}
+        run: |
+          for log in stryker-mutation stryker-native; do
+            [ -f "$RUNNER_TEMP/$log.log" ] || continue
+            awk '/One or more tests (failed in|resulted in an error)|Initial test run timed out/ { naming = 1; next }
+                 naming && /^[[:space:]]/ { print; next }
+                 naming { exit }' "$RUNNER_TEMP/$log.log" > "$RUNNER_TEMP/$log-failing.txt"
+            if [ -s "$RUNNER_TEMP/$log-failing.txt" ]; then
+              echo "::error::The initial test run of $log failed. The tests it named:"
+              cat "$RUNNER_TEMP/$log-failing.txt"
+            fi
+          done
       - name: Check that mutation saw every test file
         id: mutation_test_collection
         continue-on-error: true
         run: |
           set -o pipefail
-          ran_tests="$(sed -n 's/.*Initial test run succeeded\. Ran \([0-9][0-9]*\) tests.*/\1/p' "$RUNNER_TEMP/stryker-mutation.log" | tail -n 1)"
-          echo "ran=${ran_tests:-0}" >> "$GITHUB_OUTPUT"
-          RELATED_FILES="$(find apps packages tools -path "*/src/*" \( -name "*.ts" -o -name "*.tsx" \) ! \( -path "apps/native/src/*" -name "*.tsx" \) ! -name "*.test.*" ! -name "*.spec.*" ! -name "*.fixtures.*")" \
+          initial() {
+            sed -n 's/.*Initial test run succeeded\. Ran \([0-9][0-9]*\) tests.*/\1/p' "$1" | tail -n 1
+          }
+          ran_tests="$(initial "$RUNNER_TEMP/stryker-mutation.log")"
+          ran_screens="$(initial "$RUNNER_TEMP/stryker-native.log")"
+          echo "ran=$(( ${ran_tests:-0} + ${ran_screens:-0} ))" >> "$GITHUB_OUTPUT"
+          RELATED_FILES="$(find apps packages tools -path "*/src/*" \( -name "*.ts" -o -name "*.tsx" \) ! -path "apps/native/src/*" ! -name "*.test.*" ! -name "*.spec.*" ! -name "*.fixtures.*")" \
             pnpm exec vitest list --config vitest.related.config.ts --json="$RUNNER_TEMP/related-tests.json"
           if [ ! -s "$RUNNER_TEMP/related-tests.json" ]; then
             echo "::error::Vitest wrote no listing of the related tests, so there is nothing to hold Stryker's initial run to. Its own errors are above."
             exit 1
           fi
           expected_tests="$(jq 'length' "$RUNNER_TEMP/related-tests.json")"
-          echo "expected=${expected_tests:-0}" >> "$GITHUB_OUTPUT"
-          echo "Stryker initial tests: ${ran_tests:-missing}"
-          echo "Expected Stryker-related unit tests: $expected_tests"
-          if [ -n "$ran_tests" ] && [ "$expected_tests" -gt 0 ] && [ "$ran_tests" -eq "$expected_tests" ]; then
+          pnpm exec jest --config apps/native/jest.config.js --ci --json --maxWorkers 2 \
+            --outputFile="$RUNNER_TEMP/screen-tests.json" > /dev/null
+          if [ ! -s "$RUNNER_TEMP/screen-tests.json" ]; then
+            echo "::error::Jest wrote no report of the screen tests, so there is nothing to hold the run over the app to. Its own errors are above."
+            exit 1
+          fi
+          expected_screens="$(jq '.numTotalTests' "$RUNNER_TEMP/screen-tests.json")"
+          echo "expected=$(( expected_tests + expected_screens ))" >> "$GITHUB_OUTPUT"
+          echo "Stryker initial tests: ${ran_tests:-missing} of $expected_tests in Node, ${ran_screens:-missing} of $expected_screens on screens"
+          if [ -n "$ran_tests" ] && [ -n "$ran_screens" ] && [ "$expected_tests" -gt 0 ] && [ "$expected_screens" -gt 0 ] && [ "$ran_tests" -eq "$expected_tests" ] && [ "$ran_screens" -eq "$expected_screens" ]; then
             echo "complete=true" >> "$GITHUB_OUTPUT"
           else
             echo "complete=false" >> "$GITHUB_OUTPUT"
-            echo "::error::Stryker ran ${ran_tests:-no} tests, but the related listing holds $expected_tests. A listing leaves out a skipped test where Stryker's run counts it, so one skip in the suite reads as a difference of one here; a wider gap is a collection that fell short."
+            echo "::error::Stryker ran ${ran_tests:-no} of $expected_tests related unit tests and ${ran_screens:-no} of $expected_screens screen tests. A listing leaves out a skipped test where Stryker's run counts it, so one skip reads as a difference of one here; a wider gap is a collection that fell short."
             exit 1
           fi
       - name: Leave what this run judged for the next push to start from
-        if: always() && steps.mutation_test_collection.outputs.complete == 'true'
+        if: always() && steps.mutation_test_collection.outputs.complete == 'true' && steps.mutation.outcome == 'success' && steps.mutation_native.outcome == 'success'
         continue-on-error: true
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: reports/stryker-incremental.json
           key: stryker-${{ github.head_ref }}-${{ github.sha }}
+      - name: Leave what it judged of the app for the next push too
+        if: always() && steps.mutation_test_collection.outputs.complete == 'true' && steps.mutation.outcome == 'success' && steps.mutation_native.outcome == 'success'
+        continue-on-error: true
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: reports/stryker-native-incremental.json
+          key: stryker-native-${{ github.head_ref }}-${{ github.sha }}
       - name: Leave it under this tree's name too, for main once this branch merges, only from a run the gate passed
-        if: always() && steps.mutation_test_collection.outputs.complete == 'true' && steps.mutation.outcome == 'success'
+        if: always() && steps.mutation_test_collection.outputs.complete == 'true' && steps.mutation.outcome == 'success' && steps.mutation_native.outcome == 'success'
         continue-on-error: true
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: reports/stryker-incremental.json
           key: stryker-tree-${{ steps.trees.outputs.head }}
+      - name: Leave the app's under this tree's name as well
+        if: always() && steps.mutation_test_collection.outputs.complete == 'true' && steps.mutation.outcome == 'success' && steps.mutation_native.outcome == 'success'
+        continue-on-error: true
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: reports/stryker-native-incremental.json
+          key: stryker-native-tree-${{ steps.trees.outputs.head }}
       - name: Publish it for main to inherit, since a cache saved on a branch is invisible to main
-        if: always() && steps.mutation_test_collection.outputs.complete == 'true' && steps.mutation.outcome == 'success'
+        if: always() && steps.mutation_test_collection.outputs.complete == 'true' && steps.mutation.outcome == 'success' && steps.mutation_native.outcome == 'success'
         continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: stryker-tree-${{ steps.trees.outputs.head }}
-          path: reports/stryker-incremental.json
+          path: |
+            reports/stryker-incremental.json
+            reports/stryker-native-incremental.json
           retention-days: 14
       - name: Install the counter
         if: ${{ !cancelled() }}
@@ -213,6 +266,7 @@ jobs:
         if: ${{ !cancelled() }}
         env:
           MUTATION: ${{ steps.mutation.outcome }}
+          MUTATION_NATIVE: ${{ steps.mutation_native.outcome }}
           COLLECTION: ${{ steps.mutation_test_collection.outcome }}
           MEASURED: ${{ steps.footprint.outcome }}
           RAN: ${{ steps.mutation_test_collection.outputs.ran }}
@@ -225,18 +279,11 @@ jobs:
             echo "| gate | verdict |"
             echo "| --- | --- |"
             echo "| Mutation run | $MUTATION |"
+            echo "| Mutation run over the app | $MUTATION_NATIVE |"
             echo "| Test collection | $COLLECTION, Stryker ran ${RAN:-no} of ${EXPECTED:-an uncounted number of} related tests |"
             echo "| Footprint measurement | $MEASURED |"
             echo "| Incremental report kept | ${SEEDED:-false} |"
             echo
-            if [ -s "$RUNNER_TEMP/failing-tests.txt" ]; then
-              echo "The tests the initial run reported failing:"
-              echo
-              echo '```'
-              cat "$RUNNER_TEMP/failing-tests.txt"
-              echo '```'
-              echo
-            fi
           } > verdict.md
           if [ -s footprint.md ]; then
             cat footprint.md >> verdict.md
@@ -264,6 +311,101 @@ jobs:
           fi
           echo "::error::Test collection $COLLECTION, footprint measurement $MEASURED. The report on the pull request says what each one measured."
           exit 1
+
+  performance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      BASE: ${{ github.event.pull_request.base.sha }}
+      HEAD: ${{ github.event.pull_request.head.sha }}
+      TEST_RUNNER_ARGS: --config jest.perf.config.js --ci --maxWorkers 1
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
+        with:
+          runtime: node@24.20.0
+          cache: true
+          install: false
+      - name: Read how steady this runner is before it judges anything
+        run: |
+          set -o pipefail
+          pnpm install --frozen-lockfile
+          { pnpm reassure --baseline && pnpm reassure; } | tee "$RUNNER_TEMP/stability.md"
+          rm -rf apps/native/.reassure
+      - name: Measure the screens at the merge base
+        run: |
+          git switch --detach "$BASE"
+          pnpm install --frozen-lockfile
+          if [ -f apps/native/jest.perf.config.js ]; then
+            pnpm reassure --baseline
+          else
+            echo "The merge base has no screen to measure."
+            touch "$RUNNER_TEMP/no-base-measurement"
+          fi
+          git switch --detach "$HEAD"
+          pnpm install --frozen-lockfile
+      - name: Measure them on this branch and compare
+        run: pnpm reassure
+      - name: Say what it measured
+        if: ${{ !cancelled() }}
+        run: |
+          {
+            echo "## Render performance"
+            echo
+            echo "### How steady the runner is"
+            echo
+            echo "Reassure's own reading: below 5 per cent is steady, 10 per cent or more is too"
+            echo "high to gate on. The step after it takes that reading and either gates on a"
+            echo "significant regression or reports one."
+            echo
+            echo '```'
+            cat "$RUNNER_TEMP/stability.md"
+            echo '```'
+            echo
+            echo "### This branch against its merge base"
+            echo
+            cat apps/native/.reassure/output.md 2>/dev/null || echo "Nothing was measured."
+          } > performance.md
+          cat performance.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Post it on the pull request
+        if: ${{ !cancelled() && github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
+        with:
+          header: performance
+          path: performance.md
+      - name: Let the reading decide whether a regression fails this
+        run: |
+          steady="$(grep -oE '[0-9]+(\.[0-9]+)?%' "$RUNNER_TEMP/stability.md" | tr -d '%' | sort -rn | head -n 1)"
+          regressed="$(jq '[.significant // [] | .[]] | length' apps/native/.reassure/output.json 2>/dev/null || echo unknown)"
+          echo "Widest random change on this runner: ${steady:-none read} per cent. Significant changes: $regressed."
+          if [ -z "$steady" ]; then
+            echo "::error::The stability run left no reading, so nothing decides whether this gates."
+            exit 1
+          fi
+          if [ "$regressed" = unknown ]; then
+            if [ -f "$RUNNER_TEMP/no-base-measurement" ]; then
+              echo "::notice::The merge base has no screen to measure, so this job reported only."
+              exit 0
+            fi
+            echo "::error::The comparison left no answer although the merge base could be measured."
+            exit 1
+          fi
+          if awk -v reading="$steady" 'BEGIN { exit !(reading < 5) }'; then
+            if [ "$regressed" -gt 0 ]; then
+              echo "::error::The runner is steady at $steady per cent, under the 5 per cent Reassure calls steady, and $regressed scenario(s) changed significantly. The comment on the pull request names them."
+              exit 1
+            fi
+            echo "The runner is steady at $steady per cent and nothing changed significantly."
+          else
+            echo "::warning::The runner read $steady per cent, at or above the 5 per cent Reassure calls steady, so this job reported rather than gated."
+          fi
 
   secrets:
     runs-on: ubuntu-24.04

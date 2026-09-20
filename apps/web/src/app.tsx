@@ -13,15 +13,14 @@ import type { ReactElement } from "react";
 import { useState, useSyncExternalStore } from "react";
 import {
   askedFrom,
+  FIND_SEATS,
   type HeldProgramme,
   type HeldSnapshots,
   heldSnapshots,
-  partyOf,
+  ledeOf,
   programmeNear,
-  seatSetOf,
   type Term,
   type Terms,
-  whenOf,
 } from "@seatscout/view-logic";
 import { Strip } from "./coverage.js";
 import { useOnline } from "./online.js";
@@ -142,16 +141,13 @@ const Prompt = ({
 }) => (
   <>
     <section className="verdict">
-      <p className="lede">
-        Name an area, then a movie playing near it. {partyOf(terms.partySize)},{" "}
-        {whenOf(terms.date, today)} and {seatSetOf(profile)} are already set.
-      </p>
+      <p className="lede">{ledeOf(terms, profile, today)}</p>
       <button
         type="button"
         className="btn btn-velvet"
         onClick={() => onEdit(terms.area === undefined ? "area" : "movie")}
       >
-        Find seats
+        {FIND_SEATS}
       </button>
     </section>
     <Recent recent={recent} today={today} heading="Run again" onRun={onTerms} />

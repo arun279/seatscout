@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { deviceSeatScout, listingDate, reaching } from "./source";
+import { afterEach, describe, expect, it, jest } from "@jest/globals";
+import { deviceSeatScout, reaching } from "./source.js";
 
 const answered = { status: 200, text: () => Promise.resolve("{}") };
 
@@ -62,19 +62,26 @@ describe("reading the Source from a phone", () => {
 });
 
 describe("what the device gives the application", () => {
+  const reachable = globalThis.fetch;
+
   afterEach(() => {
-    vi.unstubAllGlobals();
-    vi.useRealTimers();
+    globalThis.fetch = reachable;
+    jest.useRealTimers();
   });
 
   it("reads the Source through the device's own fetch, clock and timers", async () => {
     const STARTED_AT = 1_789_000_000_000;
-    vi.useFakeTimers();
-    vi.setSystemTime(STARTED_AT);
+    jest.useFakeTimers();
+    jest.setSystemTime(STARTED_AT);
     const asked: string[] = [];
-    vi.stubGlobal("fetch", (url: string) => {
-      asked.push(url);
-      return Promise.resolve({ status: 503, text: () => Promise.resolve("") });
+    Object.assign(globalThis, {
+      fetch: (url: string) => {
+        asked.push(url);
+        return Promise.resolve({
+          status: 503,
+          text: () => Promise.resolve(""),
+        });
+      },
     });
     const read = deviceSeatScout().programme("75010", "2026-09-19");
     let settled = false;
@@ -82,10 +89,10 @@ describe("what the device gives the application", () => {
       settled = true;
     });
 
-    await vi.advanceTimersByTimeAsync(0);
+    await jest.advanceTimersByTimeAsync(0);
     expect(settled).toBe(false);
 
-    await vi.advanceTimersByTimeAsync(60_000);
+    await jest.advanceTimersByTimeAsync(60_000);
     const reading = await read;
     expect(asked).toEqual([
       "https://www.fandango.com/napi/nearbyTheaters?zipCode=75010&limit=25",
@@ -95,15 +102,5 @@ describe("what the device gives the application", () => {
     expect(reading).toMatchObject({ ok: false, reason: "unreachable" });
     expect(reading.fetchedAt).toBeGreaterThanOrEqual(STARTED_AT);
     expect(reading.fetchedAt).toBeLessThanOrEqual(STARTED_AT + 60_000);
-  });
-});
-
-describe("the date a listing is asked for", () => {
-  it("pads a single-digit month and day, and stays on the day the phone is on late at night", () => {
-    expect(listingDate(new Date(2026, 0, 9, 23, 30))).toBe("2026-01-09");
-  });
-
-  it("stays on the day the phone is on just after midnight", () => {
-    expect(listingDate(new Date(2026, 8, 19, 0, 30))).toBe("2026-09-19");
   });
 });

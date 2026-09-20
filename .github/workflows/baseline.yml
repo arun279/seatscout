@@ -59,13 +59,21 @@ jobs:
         run: |
           set -o pipefail
           pnpm test:mutation:incremental 2>&1 | tee "$RUNNER_TEMP/stryker-mutation.log"
-      - name: Name the tests the initial run reported failing
-        if: ${{ !cancelled() && steps.judge.outcome == 'failure' }}
+      - name: Judge the Expo app with the runner that can render it
+        id: judge_native
         run: |
-          awk '/One or more tests (failed in|resulted in an error)|Initial test run timed out/ { naming = 1; next }
-               naming && /^[[:space:]]/ { print; next }
-               naming { exit }' "$RUNNER_TEMP/stryker-mutation.log" \
-            > "$RUNNER_TEMP/failing-tests.txt"
+          set -o pipefail
+          pnpm test:mutation:native:incremental 2>&1 | tee "$RUNNER_TEMP/stryker-native.log"
+      - name: Name the tests the initial run reported failing
+        if: ${{ !cancelled() && (steps.judge.outcome == 'failure' || steps.judge_native.outcome == 'failure') }}
+        run: |
+          : > "$RUNNER_TEMP/failing-tests.txt"
+          for log in stryker-mutation stryker-native; do
+            [ -f "$RUNNER_TEMP/$log.log" ] || continue
+            awk '/One or more tests (failed in|resulted in an error)|Initial test run timed out/ { naming = 1; next }
+                 naming && /^[[:space:]]/ { print; next }
+                 naming { exit }' "$RUNNER_TEMP/$log.log" >> "$RUNNER_TEMP/failing-tests.txt"
+          done
           if [ -s "$RUNNER_TEMP/failing-tests.txt" ]; then
             echo "::error::The initial test run failed. The tests it named:"
             cat "$RUNNER_TEMP/failing-tests.txt"
@@ -76,18 +84,28 @@ jobs:
         id: mutation_test_collection
         run: |
           set -o pipefail
-          ran_tests="$(sed -n 's/.*Initial test run succeeded\. Ran \([0-9][0-9]*\) tests.*/\1/p' "$RUNNER_TEMP/stryker-mutation.log" | tail -n 1)"
-          RELATED_FILES="$(find apps packages tools -path "*/src/*" \( -name "*.ts" -o -name "*.tsx" \) ! \( -path "apps/native/src/*" -name "*.tsx" \) ! -name "*.test.*" ! -name "*.spec.*" ! -name "*.fixtures.*")" \
+          initial() {
+            sed -n 's/.*Initial test run succeeded\. Ran \([0-9][0-9]*\) tests.*/\1/p' "$1" | tail -n 1
+          }
+          ran_tests="$(initial "$RUNNER_TEMP/stryker-mutation.log")"
+          ran_screens="$(initial "$RUNNER_TEMP/stryker-native.log")"
+          RELATED_FILES="$(find apps packages tools -path "*/src/*" \( -name "*.ts" -o -name "*.tsx" \) ! -path "apps/native/src/*" ! -name "*.test.*" ! -name "*.spec.*" ! -name "*.fixtures.*")" \
             pnpm exec vitest list --config vitest.related.config.ts --json="$RUNNER_TEMP/related-tests.json"
           if [ ! -s "$RUNNER_TEMP/related-tests.json" ]; then
             echo "::error::Vitest wrote no listing of the related tests, so there is nothing to hold Stryker's initial run to. Its own errors are above."
             exit 1
           fi
           expected_tests="$(jq 'length' "$RUNNER_TEMP/related-tests.json")"
-          echo "Stryker initial tests: ${ran_tests:-missing}"
-          echo "Expected Stryker-related unit tests: $expected_tests"
-          DIFFERENCE="Stryker ran ${ran_tests:-no} tests, but the related listing holds $expected_tests. A listing leaves out a skipped test where Stryker's run counts it, so one skip in the suite reads as a difference of one here; a wider gap is a collection that fell short."
-          if [ -n "$ran_tests" ] && [ "$expected_tests" -gt 0 ] && [ "$ran_tests" -eq "$expected_tests" ]; then
+          pnpm exec jest --config apps/native/jest.config.js --ci --json --maxWorkers 2 \
+            --outputFile="$RUNNER_TEMP/screen-tests.json" > /dev/null
+          if [ ! -s "$RUNNER_TEMP/screen-tests.json" ]; then
+            echo "::error::Jest wrote no report of the screen tests, so there is nothing to hold the run over the app to. Its own errors are above."
+            exit 1
+          fi
+          expected_screens="$(jq '.numTotalTests' "$RUNNER_TEMP/screen-tests.json")"
+          echo "Stryker initial tests: ${ran_tests:-missing} of $expected_tests in Node, ${ran_screens:-missing} of $expected_screens on screens"
+          DIFFERENCE="Stryker ran ${ran_tests:-no} of $expected_tests related unit tests and ${ran_screens:-no} of $expected_screens screen tests. A listing leaves out a skipped test where Stryker's run counts it, so one skip reads as a difference of one here; a wider gap is a collection that fell short."
+          if [ -n "$ran_tests" ] && [ -n "$ran_screens" ] && [ "$expected_tests" -gt 0 ] && [ "$expected_screens" -gt 0 ] && [ "$ran_tests" -eq "$expected_tests" ] && [ "$ran_screens" -eq "$expected_screens" ]; then
             echo "complete=true" >> "$GITHUB_OUTPUT"
           else
             echo "complete=false" >> "$GITHUB_OUTPUT"
@@ -100,19 +118,33 @@ jobs:
             exit 1
           fi
       - name: Leave what it judged for every branch to start from
-        if: steps.mutation_test_collection.outputs.complete == 'true'
+        if: steps.mutation_test_collection.outputs.complete == 'true' && steps.judge.outcome == 'success' && steps.judge_native.outcome == 'success'
         continue-on-error: true
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: reports/stryker-incremental.json
           key: stryker-main-${{ github.sha }}
+      - name: Leave what it judged of the app for every branch too
+        if: steps.mutation_test_collection.outputs.complete == 'true' && steps.judge.outcome == 'success' && steps.judge_native.outcome == 'success'
+        continue-on-error: true
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: reports/stryker-native-incremental.json
+          key: stryker-native-main-${{ github.sha }}
       - name: Leave it under the tree's name, which the next branch restores by
-        if: steps.mutation_test_collection.outputs.complete == 'true'
+        if: steps.mutation_test_collection.outputs.complete == 'true' && steps.judge.outcome == 'success' && steps.judge_native.outcome == 'success'
         continue-on-error: true
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: reports/stryker-incremental.json
           key: stryker-tree-${{ steps.tree.outputs.main }}
+      - name: Leave the app's under the tree's name as well
+        if: steps.mutation_test_collection.outputs.complete == 'true' && steps.judge.outcome == 'success' && steps.judge_native.outcome == 'success'
+        continue-on-error: true
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: reports/stryker-native-incremental.json
+          key: stryker-native-tree-${{ steps.tree.outputs.main }}
       - name: Say that main's baseline is red, where the maintainer will see it
         if: ${{ failure() && github.event_name != 'workflow_dispatch' }}
         run: |
