@@ -35,19 +35,19 @@ describe("measuring a change", () => {
     ]);
   });
 
-  it("counts each side and the diff between them", () => {
+  it("counts each side and the diff between them, reading a comment marker inside a string as the string it is", () => {
     const { run, commands } = recorder();
 
     measuring(run)("origin/main", "HEAD");
 
     expect(lines(commands)).toContain(
-      "cloc --git base-sha --by-file --json --hide-rate --quiet",
+      "cloc --git base-sha --by-file --json --hide-rate --quiet --strip-str-comments",
     );
     expect(lines(commands)).toContain(
-      "cloc --git head-sha --by-file --json --hide-rate --quiet",
+      "cloc --git head-sha --by-file --json --hide-rate --quiet --strip-str-comments",
     );
     expect(lines(commands)).toContain(
-      "cloc --git --diff base-sha head-sha --by-file --json --hide-rate --quiet",
+      "cloc --git --diff base-sha head-sha --by-file --json --hide-rate --quiet --strip-str-comments",
     );
   });
 

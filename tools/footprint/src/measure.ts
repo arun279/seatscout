@@ -54,7 +54,14 @@ export const measureWith = (run: Run, read: (path: string) => string) => {
     output("git", args).trim();
 
   const cloc = (...args: readonly string[]): string =>
-    output("cloc", [...args, "--by-file", "--json", "--hide-rate", "--quiet"]);
+    output("cloc", [
+      ...args,
+      "--by-file",
+      "--json",
+      "--hide-rate",
+      "--quiet",
+      "--strip-str-comments",
+    ]);
 
   const treeOf = (ref: string): Tree => filesOf(JSON.parse(cloc("--git", ref)));
 
