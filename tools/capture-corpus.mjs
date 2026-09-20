@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { execFileSync } from "node:child_process";
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -281,6 +282,13 @@ if (leaks.length) {
   console.error(`REDACTION FAILED\n${leaks.join("\n")}`);
   process.exit(1);
 }
+
+await import("./corpus-index.mjs");
+execFileSync(
+  "pnpm",
+  ["exec", "biome", "format", "--write", join(config.out, "captures.ts")],
+  { stdio: "inherit" },
+);
 
 const ok = seatMaps.filter((entry) => entry.httpStatus === 200);
 console.log(`
