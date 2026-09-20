@@ -123,6 +123,19 @@ describe("the head of the list", () => {
     expect(headOf(whole, false).said).toBe("Best seats first");
   });
 
+  it("says one showtime as one, while the ranking moves and once it has stopped", async () => {
+    const one = [await angelika()];
+    const whole = reading(covering(176, 176), "settled");
+
+    expect(
+      headOf(
+        { ...reading(covering(176, 84), "searching"), results: one },
+        false,
+      ).count,
+    ).toBe("1 showtime so far");
+    expect(headOf({ ...whole, results: one }, false).count).toBe("1 showtime");
+  });
+
   it("labels the rule of light with how many are tied and what is below it", () => {
     expect(tiedOf(3)).toBe("3 tied");
     expect(BELOW_THE_TIE).toBe("below: measurably further");

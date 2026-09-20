@@ -25,11 +25,14 @@ export interface ListHead {
   readonly count: string | null;
 }
 
+const showtimesIn = ({ results }: Snapshot): string =>
+  `${results.length} ${results.length === 1 ? "showtime" : "showtimes"}`;
+
 export const headOf = (snapshot: Snapshot, tie: boolean): ListHead => {
   if (snapshot.phase !== "settled")
     return {
       said: `Reading ${beingReadIn(snapshot)} seat maps`,
-      count: `${snapshot.results.length} showtimes so far`,
+      count: `${showtimesIn(snapshot)} so far`,
     };
   if (unreachedIn(snapshot) > 0)
     return {
@@ -38,7 +41,7 @@ export const headOf = (snapshot: Snapshot, tie: boolean): ListHead => {
     };
   return {
     said: tie ? "The top of the list is a tie" : "Best seats first",
-    count: `${snapshot.results.length} showtimes`,
+    count: showtimesIn(snapshot),
   };
 };
 
