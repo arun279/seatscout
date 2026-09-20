@@ -46,13 +46,21 @@ const rawly = async (
   paths: readonly string[],
 ) => {
   const queue = paths[Symbol.iterator]();
+  const statuses: number[] = [];
   const at = Date.now();
   await Promise.all(
     Array.from({ length: CONCURRENCY }, async () => {
-      for (const path of queue) await (await reach(path)).text();
+      for (const path of queue) {
+        const response = await reach(path);
+        await response.text();
+        statuses.push(response.status);
+      }
     }),
   );
-  return Date.now() - at;
+  return {
+    ms: Date.now() - at,
+    answered: statuses.filter((status) => status === 200).length,
+  };
 };
 
 describe("a full search against the live Source", () => {
@@ -61,12 +69,26 @@ describe("a full search against the live Source", () => {
   }, async ({ task }) => {
     const live = inject("liveSearch");
     const terms = { movie: live.movie, date: live.date, area: live.area };
-    const warm = reaching(live.origin, live.headers);
+    const reader = reaching(live.origin, live.headers);
+    task.meta.contract = [
+      "the Source did not answer this reader the listing a search starts from",
+    ];
     const listed = payloadOf(
-      await sourceOn(warm).showtimesFor(terms.movie, terms.date, terms.area),
+      await sourceOn(reader).showtimesFor(terms.movie, terms.date, terms.area),
     );
     const maps = listed.bookable.map((showtime) => `${SEAT_MAP}${showtime.id}`);
-    const raw = await rawly(warm, maps);
+    task.meta.contract = [
+      "the listing a search starts from offered no bookable Showtime",
+    ];
+    expect(maps.length).toBeGreaterThan(0);
+
+    const sampled = maps.slice(0, MAPS_MEASURED);
+    const raw = await rawly(reader, sampled);
+
+    task.meta.contract = [
+      `the Source answered this reader none of the ${sampled.length} seat maps it asked for raw, so this run measured no baseline and judged no search`,
+    ];
+    expect(raw.answered).toBeGreaterThan(0);
 
     const marks: number[] = [];
     const started = Date.now();
@@ -81,16 +103,16 @@ describe("a full search against the live Source", () => {
     const fanOut = (marks.at(-1) ?? 0) - (marks[0] ?? 0);
     const allowed = Math.max(
       (AT_TWENTY_FOUR_MS * maps.length) / MAPS_MEASURED,
-      (raw * AT_TWELVE_MS) / AT_TWENTY_FOUR_MS,
+      (raw.ms * maps.length * AT_TWELVE_MS) /
+        (raw.answered * AT_TWENTY_FOUR_MS),
     );
 
     task.meta.contract = [
-      `a full search over ${maps.length} seat maps ${settled.phase} with ${settled.results.length} ranked results, fanning out in ${fanOut} ms and finishing in ${whole} ms, against a fan-out budget of ${Math.round(allowed)} ms`,
+      `a full search over ${maps.length} seat maps ${settled.phase} with ${settled.results.length} ranked results, fanning out in ${fanOut} ms and finishing in ${whole} ms, against a fan-out budget of ${Math.round(allowed)} ms taken from ${raw.answered} of the ${sampled.length} seat maps it read raw`,
     ];
 
     expect(settled.phase).toBe("settled");
     expect(settled.results.length).toBeGreaterThan(0);
-    expect(maps.length).toBeGreaterThan(0);
     expect(fanOut).toBeLessThan(allowed);
     expect(whole).toBeLessThan(LISTING_MS + allowed);
   });
