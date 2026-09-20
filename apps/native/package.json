@@ -6,6 +6,7 @@
   "main": "expo-router/entry",
   "scripts": {
     "build": "tsc --build --pretty false",
+    "bundle": "expo export --platform ios --platform android --output-dir dist",
     "doctor": "expo-doctor",
     "install-check": "expo install --check",
     "start": "expo start",
@@ -32,6 +33,7 @@
     "@jest/globals": "29.7.0",
     "@testing-library/react-native": "14.0.1",
     "@types/react": "19.2.18",
+    "babel-preset-expo": "57.0.12",
     "expo-doctor": "1.20.4",
     "jest": "29.7.0",
     "jest-expo": "57.0.5",
