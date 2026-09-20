@@ -93,4 +93,18 @@ describe("the clock a freshness count is read from", () => {
 
     expect(turned).toHaveBeenCalledTimes(2);
   });
+
+  it("stops turning once the last screen has looked away, so it holds its moment and leaves no timer running", () => {
+    jest.useFakeTimers();
+    const clock = deviceClock();
+
+    const stop = clock.subscribe(() => undefined);
+    jest.advanceTimersByTime(2_000);
+    stop();
+    const heldAt = clock.now();
+    jest.advanceTimersByTime(5_000);
+
+    expect(clock.now()).toBe(heldAt);
+    expect(jest.getTimerCount()).toBe(0);
+  });
 });

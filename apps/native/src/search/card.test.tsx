@@ -63,12 +63,19 @@ describe("a Seat Group's card", () => {
     expect(screen.getByText(labelOf(result))).toBeOnTheScreen();
   });
 
-  it("tags every Format the room is showing in", async () => {
+  it("tags every Format the room is showing in, each in the dim beam's edge", async () => {
+    houseLights("down");
     const result = formatted(await settled());
     await shown(result);
 
-    for (const format of result.showtime.presentation.formats)
+    for (const format of result.showtime.presentation.formats) {
       expect(screen.getByText(format)).toBeOnTheScreen();
+      expect(
+        StyleSheet.flatten(
+          screen.getByTestId(`format-${format}`).props["style"],
+        ),
+      ).toMatchObject({ borderColor: "#82bad5", borderWidth: 1 });
+    }
   });
 
   it("attests the one Source it read and how fresh that reading is", async () => {
@@ -94,6 +101,13 @@ describe("a Seat Group's card", () => {
     await shown({ ...result, removed: { ...result.removed, unavailable: 0 } });
 
     expect(screen.queryByText(/not bookable/)).toBeNull();
+  });
+
+  it("draws no empty line where every Seat was for sale and none carries a Designation", async () => {
+    const result = first(await settled());
+    await shown({ ...result, removed: { ...result.removed, unavailable: 0 } });
+
+    expect(screen.queryAllByText(/^$/)).toHaveLength(0);
   });
 
   it("names the Designation of every Seat of a group that carries one", async () => {

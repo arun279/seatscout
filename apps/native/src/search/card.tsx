@@ -89,7 +89,10 @@ const Tag = ({ format }: { readonly format: Format }) => {
   const theme = useTheme();
 
   return (
-    <View style={[styles.format, { borderColor: theme.colours.beamDim }]}>
+    <View
+      style={[styles.format, { borderColor: theme.colours.beamDim }]}
+      testID={`format-${format}`}
+    >
       <Type set="ledgerTag" tone="beamDim">
         {format}
       </Type>
