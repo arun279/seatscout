@@ -1,7 +1,12 @@
 import { REFERENCE, type SearchTerms } from "@seatscout/client";
 import { beforeAll, describe, expect, it, jest } from "@jest/globals";
 import type { Terms } from "@seatscout/view-logic";
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from "@testing-library/react-native";
 import {
   everyControlReachesTheTouchFloor,
   everyControlSaysWhatItIs,
@@ -14,7 +19,6 @@ import {
   TODAY,
   TONIGHT,
   WARM_UP,
-  warmTheCorpus,
 } from "../../test/rooms.js";
 import type { Clock } from "../host/clock.js";
 import { Results } from "./results.js";
@@ -32,8 +36,6 @@ interface Shown {
   readonly upstream?: Upstream;
   readonly onLedger?: () => void;
 }
-
-beforeAll(warmTheCorpus, WARM_UP);
 
 const nothing = () => undefined;
 
@@ -81,6 +83,12 @@ const asking = (over: Partial<SearchTerms>): SearchTerms => ({
   ...ASKED,
   ...over,
 });
+
+beforeAll(async () => {
+  await shown();
+  await screen.findByText("The top of the list is a tie");
+  await cleanup();
+}, WARM_UP);
 
 describe("the list once the ranking has stopped moving", () => {
   it("puts the best Seat Groups first and totals what it found", async () => {
