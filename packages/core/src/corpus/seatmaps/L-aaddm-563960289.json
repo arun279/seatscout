@@ -1,0 +1,14 @@
+{
+  "capturedAt": "2026-09-19T23:12:09.239Z",
+  "request": {
+    "method": "GET",
+    "path": "/napi/seatMap/563960289"
+  },
+  "status": 400,
+  "body": [
+    {
+      "id": "GeneralAdmissionShowtimeError",
+      "message": "The selected showtime is general admission only, no seat map is available."
+    }
+  ]
+}

@@ -22,19 +22,19 @@ the adapter is judged on.
 ## Decision
 
 **Real answers are captured once and committed.** `packages/core/src/corpus` holds nearby
-theaters, showtime listings, and forty two seat maps across eleven chain codes, forty one
-Auditoriums and rooms of forty six to three hundred and four Seats. A twelfth code sells only
-general admission, and is present as the refusal its seat map request returned, beside the
-two other refusals that capture met. Those are the aggregator's codes rather than domain
-Chains, three of the twelve having no Chain to map onto. Everything that parses, normalises,
-scores or ranks is written against this.
+theaters, showtime listings, and forty two seat maps across eleven chain codes, forty
+Auditoriums and rooms of forty nine to three hundred and sixty eight Seats. A twelfth code
+sells only general admission, and is present as the refusal its seat map request returned,
+beside the one other refusal that capture met. Those are the aggregator's codes rather than
+domain Chains, three of the twelve having no Chain to map onto. Everything that parses,
+normalises, scores or ranks is written against this.
 
 Tests reach it through `captures.ts`, which imports each capture as a JSON module. Nothing
 reads the filesystem, because reading files is a host API and Core does not have one.
 `types.ts` states what may be read from a capture, and omits, among other unused fields, the
 three that must not be read: `chainType`, the chain-specific seat label, which the normalised
-seat type already carries, and the two upstream seat counts, which each disagree with what
-they count in twenty seven of the forty two captured maps.
+seat type already carries, and the two upstream seat counts, which disagree with what they
+count in twenty six and in eleven of the forty two captured maps.
 
 One of those shapes is declared in product code rather than beside the corpus. A captured
 seat is an `UpstreamSeat`, which the seat map adapter owns because it is the thing that

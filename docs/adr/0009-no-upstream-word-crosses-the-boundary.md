@@ -58,16 +58,17 @@ describes what the rest of the application sees, and nothing carries an upstream
 
 **Availability fails closed.** A status is bookable only if it is on an explicit
 known-bookable list, and every other status, recognised or not, is not bookable. The list has
-one entry. Of the four statuses the corpus contains, three are undocumented or unexplained,
-and a fifth that earlier notes claimed meant "available" was never once observed, so guessing
-at any of them would be presenting a seat as free on the strength of a code nobody has
+one entry. Of the five statuses the corpus contains, four are undocumented or unexplained,
+and the one that earlier notes claimed meant "available" is the hold
+[ADR 11](0011-a-nightly-reading-judges-the-world.md) measured as unbookable, so guessing at
+any of them would be presenting a seat as free on the strength of a code nobody has
 established the meaning of.
 
 **Neither seat count is read, and neither can be.** Each disagrees with what it counts:
-`totalSeatCount` against the length of the `seats` array in twenty seven of the forty two
+`totalSeatCount` against the length of the `seats` array in twenty six of the forty two
 captured seat maps, `totalAvailableSeatCount` against the Seats that array reports as
-available in twelve, which are twelve of the same twenty seven, and six report more available
-seats than the whole array holds. The parse narrows the answer to its `seats` array and to
+available in eleven, ten of which are among the same twenty six, and five report more
+available seats than the whole array holds. The parse narrows the answer to its `seats` array and to
 `UpstreamSeat`, neither of which declares a count, so reading one is a compile error rather
 than a convention. The test reads the Auditorium whose count field says twenty five and whose
 array holds three hundred and four.
