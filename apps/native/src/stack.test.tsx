@@ -3,7 +3,7 @@ import { fireEvent, screen, within } from "@testing-library/react-native";
 import { renderRouter } from "expo-router/testing-library";
 import { StyleSheet } from "react-native";
 import { nearby as mockNearby, phone as mockPhone } from "../test/phone.js";
-import Layout from "./app/_layout.js";
+import Layout, { unstable_settings } from "./app/_layout.js";
 import Ask from "./app/ask.js";
 import Index from "./app/index.js";
 
@@ -24,7 +24,10 @@ jest.mock("./host/source.js", () => ({
 }));
 
 const opened = (initialUrl = "/") =>
-  renderRouter({ _layout: Layout, index: Index, ask: Ask }, { initialUrl });
+  renderRouter(
+    { _layout: { default: Layout, unstable_settings }, index: Index, ask: Ask },
+    { initialUrl },
+  );
 
 const asked = async () => {
   const app = opened();
@@ -88,6 +91,21 @@ describe("the stack the app opens on", () => {
       partySize: "3",
       term: "movie",
     });
+  });
+
+  it("keeps the Search screen under the sheet when the sheet itself is the link that was opened", async () => {
+    const app = opened("/ask?term=movie&area=75234");
+    await app;
+    await screen.findByText("What are we seeing?");
+
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Keep as it was" }),
+    );
+
+    expect(app.getPathname()).toBe("/");
+    expect(
+      screen.getByRole("button", { name: "Find seats" }),
+    ).toBeOnTheScreen();
   });
 
   it("stands the sheet on the same ground the screen beneath it uses", async () => {

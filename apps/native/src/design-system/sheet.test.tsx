@@ -1,6 +1,6 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { fireEvent, render, screen } from "@testing-library/react-native";
-import { Platform, StyleSheet } from "react-native";
+import { AccessibilityInfo, Platform, StyleSheet } from "react-native";
 import { contrastOf } from "../../test/contrast.js";
 import { everyControlReachesTheTouchFloor } from "../../test/floors.js";
 import { houseLights } from "../../test/lights.js";
@@ -13,10 +13,12 @@ const APPEARANCES: readonly Appearance[] = ["down", "up"];
 const presented = async (
   appearance: Appearance = "down",
   onKeep: () => void = () => undefined,
+  claimed = false,
 ) => {
   houseLights(appearance);
   await render(
     <Sheet
+      claimed={claimed}
       dock={
         <Type set="sentenceStrong" tone="silver">
           Find seats
@@ -79,6 +81,32 @@ describe("a sheet the platform presents", () => {
     const { head } = await presented();
 
     expect(head?.backgroundColor !== undefined).toBe(Platform.OS === "android");
+  });
+
+  it("says its heading to a screen reader when no field inside it has taken the keyboard", async () => {
+    const said = jest.spyOn(AccessibilityInfo, "announceForAccessibility");
+    said.mockClear();
+
+    await presented();
+
+    expect(said).toHaveBeenCalledWith("What are we seeing?");
+  });
+
+  it("says nothing over the field a person was sent to, when one claimed the keyboard", async () => {
+    const said = jest.spyOn(AccessibilityInfo, "announceForAccessibility");
+    said.mockClear();
+
+    await presented("down", () => undefined, true);
+
+    expect(said).not.toHaveBeenCalled();
+  });
+
+  it("names its heading a heading, so a screen reader can move by them", async () => {
+    await presented();
+
+    expect(
+      screen.getByRole("header", { name: "What are we seeing?" }),
+    ).toBeOnTheScreen();
   });
 
   it("stands on the same ground the screen beneath it uses", async () => {

@@ -6,6 +6,7 @@ import {
   fireEvent,
   render,
   screen,
+  within,
 } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import { contrastOf } from "../../test/contrast.js";
@@ -138,6 +139,24 @@ describe("naming the film in the Ask sheet", () => {
     );
     expect(screen.queryByLabelText("Films playing near 75234")).toBeNull();
     expect(screen.queryByRole("button")).toBeNull();
+  });
+
+  it("keeps the field a person types in out of the list beneath it, so it cannot scroll away", async () => {
+    await showing();
+    const offered = screen.getByTestId("offered");
+
+    expect(within(offered).queryByLabelText("Film")).toBeNull();
+    expect(screen.getByLabelText("Film")).toBeOnTheScreen();
+  });
+
+  it("scrolls the listing inside its own height rather than down the sheet", async () => {
+    await showing();
+    const offered = screen.getByTestId("offered");
+
+    expect(
+      Number(StyleSheet.flatten(offered.props["style"]).maxHeight),
+    ).toBeGreaterThan(0);
+    expect(offered).toHaveProp("keyboardShouldPersistTaps", "handled");
   });
 
   it("gathers what is playing under a name a screen reader can say", async () => {

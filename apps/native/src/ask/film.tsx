@@ -7,7 +7,7 @@ import {
   playingStatusOf,
 } from "@seatscout/view-logic";
 import type { ReactElement } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, TouchableOpacity } from "react-native";
 import { Field } from "../design-system/field.js";
 import { Type } from "../design-system/type.js";
 import { useTheme } from "../theme.js";
@@ -23,7 +23,8 @@ export interface FilmProps {
 }
 
 const styles = StyleSheet.create({
-  offered: { gap: 8 },
+  offered: { maxHeight: 3 * 48 + 2 * 8 },
+  listed: { gap: 8 },
   suggestion: {
     borderRadius: 12,
     borderWidth: 1,
@@ -91,10 +92,14 @@ export const Film = ({
       value={typed}
     >
       {offered.length > 0 && (
-        <View
+        <ScrollView
           accessibilityLabel={`Films playing near ${area}`}
           accessibilityRole="list"
+          contentContainerStyle={styles.listed}
+          keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled
           style={styles.offered}
+          testID="offered"
         >
           {offered.map((movie) => (
             <Suggestion
@@ -104,7 +109,7 @@ export const Film = ({
               typed={typed}
             />
           ))}
-        </View>
+        </ScrollView>
       )}
       <Type
         accessibilityLiveRegion="polite"

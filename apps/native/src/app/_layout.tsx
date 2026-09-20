@@ -4,6 +4,10 @@ import type { ReactElement } from "react";
 import { SHEET_PRESENTATION } from "../design-system/sheet.js";
 import { FACES } from "../theme.js";
 
+export const unstable_settings: { readonly anchor: string } = {
+  anchor: "index",
+};
+
 const STAGE: NativeStackNavigationOptions = { headerShown: false };
 
 const ASK: NativeStackNavigationOptions = {

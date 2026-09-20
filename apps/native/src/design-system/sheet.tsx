@@ -1,5 +1,6 @@
-import type { ReactElement, ReactNode } from "react";
+import { type ReactElement, type ReactNode, useEffect } from "react";
 import {
+  AccessibilityInfo,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -17,6 +18,7 @@ export interface SheetProps {
   readonly heading: string;
   readonly keep: string;
   readonly onKeep: () => void;
+  readonly claimed: boolean;
   readonly dock: ReactNode;
   readonly children: ReactNode;
 }
@@ -75,7 +77,7 @@ const AppBar = ({ heading, keep, onKeep }: HeadProps) => (
         ✕
       </Type>
     </TouchableOpacity>
-    <Type set="marqueeRow" tone="silver">
+    <Type accessibilityRole="header" set="marqueeRow" tone="silver">
       {heading}
     </Type>
   </View>
@@ -93,7 +95,7 @@ const Head = ({ heading, keep, onKeep }: HeadProps) => (
         {`‹ ${keep}`}
       </Type>
     </TouchableOpacity>
-    <Type set="marqueeTitle" tone="silver">
+    <Type accessibilityRole="header" set="marqueeTitle" tone="silver">
       {heading}
     </Type>
   </View>
@@ -103,11 +105,16 @@ export const Sheet = ({
   heading,
   keep,
   onKeep,
+  claimed,
   dock,
   children,
 }: SheetProps): ReactElement => {
   const theme = useTheme();
   const above: HeadProps = { heading, keep, onKeep };
+
+  useEffect(() => {
+    if (!claimed) AccessibilityInfo.announceForAccessibility(heading);
+  }, [claimed, heading]);
 
   return (
     <KeyboardAvoidingView
