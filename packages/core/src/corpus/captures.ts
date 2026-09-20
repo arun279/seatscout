@@ -1,160 +1,3 @@
-import manifest from "./manifest.json" with { type: "json" };
-import afcAapoy559055311 from "./seatmaps/AFC-aapoy-559055311.json" with {
-  type: "json",
-};
-import afcAapoy561230736 from "./seatmaps/AFC-aapoy-561230736.json" with {
-  type: "json",
-};
-import alamAawym561478479 from "./seatmaps/ALAM-aawym-561478479.json" with {
-  type: "json",
-};
-import alamAaxtr561609773 from "./seatmaps/ALAM-aaxtr-561609773.json" with {
-  type: "json",
-};
-import alamAaygw561457969 from "./seatmaps/ALAM-aaygw-561457969.json" with {
-  type: "json",
-};
-import alamAayhw561505814 from "./seatmaps/ALAM-aayhw-561505814.json" with {
-  type: "json",
-};
-import amcAacrp561748075 from "./seatmaps/AMC-aacrp-561748075.json" with {
-  type: "json",
-};
-import amcAaego561882799 from "./seatmaps/AMC-aaego-561882799.json" with {
-  type: "json",
-};
-import amcAaoxj561549583 from "./seatmaps/AMC-aaoxj-561549583.json" with {
-  type: "json",
-};
-import amcAatzh561565820 from "./seatmaps/AMC-aatzh-561565820.json" with {
-  type: "json",
-};
-import amcAaxju561462741 from "./seatmaps/AMC-aaxju-561462741.json" with {
-  type: "json",
-};
-import cnmkAacbt561682781 from "./seatmaps/CNMK-aacbt-561682781.json" with {
-  type: "json",
-};
-import cnmkAacbt561682851 from "./seatmaps/CNMK-aacbt-561682851.json" with {
-  type: "json",
-};
-import cnmkAacbz561774053 from "./seatmaps/CNMK-aacbz-561774053.json" with {
-  type: "json",
-};
-import cnmkAacut561865199 from "./seatmaps/CNMK-aacut-561865199.json" with {
-  type: "json",
-};
-import cnmkAaudu561740133 from "./seatmaps/CNMK-aaudu-561740133.json" with {
-  type: "json",
-};
-import cplsAaxpp561562293 from "./seatmaps/CPLS-aaxpp-561562293.json" with {
-  type: "json",
-};
-import cplsAaxpp561562311 from "./seatmaps/CPLS-aaxpp-561562311.json" with {
-  type: "json",
-};
-import cplsAayfm561755033 from "./seatmaps/CPLS-aayfm-561755033.json" with {
-  type: "json",
-};
-import cplsAaykn561527779 from "./seatmaps/CPLS-aaykn-561527779.json" with {
-  type: "json",
-};
-import flixAayja561409686 from "./seatmaps/FLIX-aayja-561409686.json" with {
-  type: "json",
-};
-import flixAayja561409722 from "./seatmaps/FLIX-aayja-561409722.json" with {
-  type: "json",
-};
-import flixAayja561409762 from "./seatmaps/FLIX-aayja-561409762.json" with {
-  type: "json",
-};
-import flixAayja561409765 from "./seatmaps/FLIX-aayja-561409765.json" with {
-  type: "json",
-};
-import glxyAayyj558983758 from "./seatmaps/GLXY-aayyj-558983758.json" with {
-  type: "json",
-};
-import glxyAayyj561641004 from "./seatmaps/GLXY-aayyj-561641004.json" with {
-  type: "json",
-};
-import glxyAayyj561641328 from "./seatmaps/GLXY-aayyj-561641328.json" with {
-  type: "json",
-};
-import glxyAayyj561641342 from "./seatmaps/GLXY-aayyj-561641342.json" with {
-  type: "json",
-};
-import hookAaqfm561633859 from "./seatmaps/HOOK-aaqfm-561633859.json" with {
-  type: "json",
-};
-import hookAauac561644741 from "./seatmaps/HOOK-aauac-561644741.json" with {
-  type: "json",
-};
-import hookAawza561527971 from "./seatmaps/HOOK-aawza-561527971.json" with {
-  type: "json",
-};
-import hookAawza561527997 from "./seatmaps/HOOK-aawza-561527997.json" with {
-  type: "json",
-};
-import lAaddm561442975 from "./seatmaps/L-aaddm-561442975.json" with {
-  type: "json",
-};
-import reglAacaw558585360 from "./seatmaps/REGL-aacaw-558585360.json" with {
-  type: "json",
-};
-import reglAacaw561898204 from "./seatmaps/REGL-aacaw-561898204.json" with {
-  type: "json",
-};
-import reglAacaw561898208 from "./seatmaps/REGL-aacaw-561898208.json" with {
-  type: "json",
-};
-import reglAacaw561898261 from "./seatmaps/REGL-aacaw-561898261.json" with {
-  type: "json",
-};
-import smgAabed562032831 from "./seatmaps/SMG-aabed-562032831.json" with {
-  type: "json",
-};
-import smgAautc562120610 from "./seatmaps/SMG-aautc-562120610.json" with {
-  type: "json",
-};
-import smgAawup561783660 from "./seatmaps/SMG-aawup-561783660.json" with {
-  type: "json",
-};
-import smgAaxps561728326 from "./seatmaps/SMG-aaxps-561728326.json" with {
-  type: "json",
-};
-import vzAaysq561443345 from "./seatmaps/VZ-aaysq-561443345.json" with {
-  type: "json",
-};
-import vzAaysq561443380 from "./seatmaps/VZ-aaysq-561443380.json" with {
-  type: "json",
-};
-import vzAaysq561443492 from "./seatmaps/VZ-aaysq-561443492.json" with {
-  type: "json",
-};
-import vzAaysq561443587 from "./seatmaps/VZ-aaysq-561443587.json" with {
-  type: "json",
-};
-import grouping24381920260828 from "./showtimes/grouping-243819-2026-08-28.json" with {
-  type: "json",
-};
-import grouping24556920260827 from "./showtimes/grouping-245569-2026-08-27.json" with {
-  type: "json",
-};
-import grouping24556920260828 from "./showtimes/grouping-245569-2026-08-28.json" with {
-  type: "json",
-};
-import grouping24632920260828 from "./showtimes/grouping-246329-2026-08-28.json" with {
-  type: "json",
-};
-import grouping24642720260828 from "./showtimes/grouping-246427-2026-08-28.json" with {
-  type: "json",
-};
-import theaterShowtimesAacbt20260828 from "./showtimes/theater-showtimes-aacbt-2026-08-28.json" with {
-  type: "json",
-};
-import nearbyTheaters from "./theaters/nearby-theaters.json" with {
-  type: "json",
-};
 import type {
   Capture,
   CapturedNearbyTheaters,
@@ -164,6 +7,160 @@ import type {
   CapturedUpstreamError,
   CorpusManifest,
 } from "./types.js";
+import manifest from "./manifest.json" with { type: "json" };
+import afcAapoy564402231 from "./seatmaps/AFC-aapoy-564402231.json" with {
+  type: "json",
+};
+import afcAapoy564402238 from "./seatmaps/AFC-aapoy-564402238.json" with {
+  type: "json",
+};
+import alamAawym562697591 from "./seatmaps/ALAM-aawym-562697591.json" with {
+  type: "json",
+};
+import alamAaxtr564216396 from "./seatmaps/ALAM-aaxtr-564216396.json" with {
+  type: "json",
+};
+import alamAaygw562695784 from "./seatmaps/ALAM-aaygw-562695784.json" with {
+  type: "json",
+};
+import alamAayhw564186789 from "./seatmaps/ALAM-aayhw-564186789.json" with {
+  type: "json",
+};
+import amcAacrp562185322 from "./seatmaps/AMC-aacrp-562185322.json" with {
+  type: "json",
+};
+import amcAaego561432171 from "./seatmaps/AMC-aaego-561432171.json" with {
+  type: "json",
+};
+import amcAatzh564755702 from "./seatmaps/AMC-aatzh-564755702.json" with {
+  type: "json",
+};
+import amcAaxju562247516 from "./seatmaps/AMC-aaxju-562247516.json" with {
+  type: "json",
+};
+import cnmkAacbt564335359 from "./seatmaps/CNMK-aacbt-564335359.json" with {
+  type: "json",
+};
+import cnmkAacbt564335424 from "./seatmaps/CNMK-aacbt-564335424.json" with {
+  type: "json",
+};
+import cnmkAacbz564614760 from "./seatmaps/CNMK-aacbz-564614760.json" with {
+  type: "json",
+};
+import cnmkAacut562212808 from "./seatmaps/CNMK-aacut-562212808.json" with {
+  type: "json",
+};
+import cnmkAaudu562433543 from "./seatmaps/CNMK-aaudu-562433543.json" with {
+  type: "json",
+};
+import cplsAaxpp564442282 from "./seatmaps/CPLS-aaxpp-564442282.json" with {
+  type: "json",
+};
+import cplsAaxpp564442283 from "./seatmaps/CPLS-aaxpp-564442283.json" with {
+  type: "json",
+};
+import cplsAayfm564435732 from "./seatmaps/CPLS-aayfm-564435732.json" with {
+  type: "json",
+};
+import cplsAaykn564430998 from "./seatmaps/CPLS-aaykn-564430998.json" with {
+  type: "json",
+};
+import flixAayja564235339 from "./seatmaps/FLIX-aayja-564235339.json" with {
+  type: "json",
+};
+import flixAayja564235466 from "./seatmaps/FLIX-aayja-564235466.json" with {
+  type: "json",
+};
+import flixAayja564235483 from "./seatmaps/FLIX-aayja-564235483.json" with {
+  type: "json",
+};
+import flixAayja565020193 from "./seatmaps/FLIX-aayja-565020193.json" with {
+  type: "json",
+};
+import glxyAayyj562206728 from "./seatmaps/GLXY-aayyj-562206728.json" with {
+  type: "json",
+};
+import glxyAayyj564402749 from "./seatmaps/GLXY-aayyj-564402749.json" with {
+  type: "json",
+};
+import glxyAayyj564402776 from "./seatmaps/GLXY-aayyj-564402776.json" with {
+  type: "json",
+};
+import glxyAayyj564402869 from "./seatmaps/GLXY-aayyj-564402869.json" with {
+  type: "json",
+};
+import hookAaqfm562494552 from "./seatmaps/HOOK-aaqfm-562494552.json" with {
+  type: "json",
+};
+import hookAauac564445998 from "./seatmaps/HOOK-aauac-564445998.json" with {
+  type: "json",
+};
+import hookAawza564424799 from "./seatmaps/HOOK-aawza-564424799.json" with {
+  type: "json",
+};
+import hookAawza564424818 from "./seatmaps/HOOK-aawza-564424818.json" with {
+  type: "json",
+};
+import lAaddm563960289 from "./seatmaps/L-aaddm-563960289.json" with {
+  type: "json",
+};
+import reglAacaw562432170 from "./seatmaps/REGL-aacaw-562432170.json" with {
+  type: "json",
+};
+import reglAacaw564679715 from "./seatmaps/REGL-aacaw-564679715.json" with {
+  type: "json",
+};
+import reglAacaw564679720 from "./seatmaps/REGL-aacaw-564679720.json" with {
+  type: "json",
+};
+import reglAacaw564679794 from "./seatmaps/REGL-aacaw-564679794.json" with {
+  type: "json",
+};
+import smgAabed562224145 from "./seatmaps/SMG-aabed-562224145.json" with {
+  type: "json",
+};
+import smgAautc564877473 from "./seatmaps/SMG-aautc-564877473.json" with {
+  type: "json",
+};
+import smgAaxps564270324 from "./seatmaps/SMG-aaxps-564270324.json" with {
+  type: "json",
+};
+import smgAaxps564270326 from "./seatmaps/SMG-aaxps-564270326.json" with {
+  type: "json",
+};
+import vzAaysq559982630 from "./seatmaps/VZ-aaysq-559982630.json" with {
+  type: "json",
+};
+import vzAaysq562687836 from "./seatmaps/VZ-aaysq-562687836.json" with {
+  type: "json",
+};
+import vzAaysq562687878 from "./seatmaps/VZ-aaysq-562687878.json" with {
+  type: "json",
+};
+import vzAaysq564236170 from "./seatmaps/VZ-aaysq-564236170.json" with {
+  type: "json",
+};
+import grouping24381920260920 from "./showtimes/grouping-243819-2026-09-20.json" with {
+  type: "json",
+};
+import grouping24569920260920 from "./showtimes/grouping-245699-2026-09-20.json" with {
+  type: "json",
+};
+import grouping24589320260919 from "./showtimes/grouping-245893-2026-09-19.json" with {
+  type: "json",
+};
+import grouping24589320260920 from "./showtimes/grouping-245893-2026-09-20.json" with {
+  type: "json",
+};
+import grouping24647320260920 from "./showtimes/grouping-246473-2026-09-20.json" with {
+  type: "json",
+};
+import theaterShowtimesAacbt20260920 from "./showtimes/theater-showtimes-aacbt-2026-09-20.json" with {
+  type: "json",
+};
+import nearbyTheaters from "./theaters/nearby-theaters.json" with {
+  type: "json",
+};
 
 export const corpusManifest: CorpusManifest = manifest;
 
@@ -171,68 +168,67 @@ export const seatMapCaptures: ReadonlyMap<
   string,
   Capture<CapturedSeatMap>
 > = new Map([
-  ["seatmaps/AFC-aapoy-559055311.json", afcAapoy559055311],
-  ["seatmaps/AFC-aapoy-561230736.json", afcAapoy561230736],
-  ["seatmaps/ALAM-aawym-561478479.json", alamAawym561478479],
-  ["seatmaps/ALAM-aaxtr-561609773.json", alamAaxtr561609773],
-  ["seatmaps/ALAM-aaygw-561457969.json", alamAaygw561457969],
-  ["seatmaps/ALAM-aayhw-561505814.json", alamAayhw561505814],
-  ["seatmaps/AMC-aacrp-561748075.json", amcAacrp561748075],
-  ["seatmaps/AMC-aaego-561882799.json", amcAaego561882799],
-  ["seatmaps/AMC-aatzh-561565820.json", amcAatzh561565820],
-  ["seatmaps/AMC-aaxju-561462741.json", amcAaxju561462741],
-  ["seatmaps/CNMK-aacbt-561682851.json", cnmkAacbt561682851],
-  ["seatmaps/CNMK-aacbz-561774053.json", cnmkAacbz561774053],
-  ["seatmaps/CNMK-aacut-561865199.json", cnmkAacut561865199],
-  ["seatmaps/CNMK-aaudu-561740133.json", cnmkAaudu561740133],
-  ["seatmaps/CPLS-aaxpp-561562293.json", cplsAaxpp561562293],
-  ["seatmaps/CPLS-aaxpp-561562311.json", cplsAaxpp561562311],
-  ["seatmaps/CPLS-aayfm-561755033.json", cplsAayfm561755033],
-  ["seatmaps/CPLS-aaykn-561527779.json", cplsAaykn561527779],
-  ["seatmaps/FLIX-aayja-561409686.json", flixAayja561409686],
-  ["seatmaps/FLIX-aayja-561409722.json", flixAayja561409722],
-  ["seatmaps/FLIX-aayja-561409762.json", flixAayja561409762],
-  ["seatmaps/FLIX-aayja-561409765.json", flixAayja561409765],
-  ["seatmaps/GLXY-aayyj-558983758.json", glxyAayyj558983758],
-  ["seatmaps/GLXY-aayyj-561641004.json", glxyAayyj561641004],
-  ["seatmaps/GLXY-aayyj-561641328.json", glxyAayyj561641328],
-  ["seatmaps/GLXY-aayyj-561641342.json", glxyAayyj561641342],
-  ["seatmaps/HOOK-aaqfm-561633859.json", hookAaqfm561633859],
-  ["seatmaps/HOOK-aauac-561644741.json", hookAauac561644741],
-  ["seatmaps/HOOK-aawza-561527971.json", hookAawza561527971],
-  ["seatmaps/HOOK-aawza-561527997.json", hookAawza561527997],
-  ["seatmaps/REGL-aacaw-558585360.json", reglAacaw558585360],
-  ["seatmaps/REGL-aacaw-561898204.json", reglAacaw561898204],
-  ["seatmaps/REGL-aacaw-561898208.json", reglAacaw561898208],
-  ["seatmaps/REGL-aacaw-561898261.json", reglAacaw561898261],
-  ["seatmaps/SMG-aabed-562032831.json", smgAabed562032831],
-  ["seatmaps/SMG-aautc-562120610.json", smgAautc562120610],
-  ["seatmaps/SMG-aawup-561783660.json", smgAawup561783660],
-  ["seatmaps/SMG-aaxps-561728326.json", smgAaxps561728326],
-  ["seatmaps/VZ-aaysq-561443345.json", vzAaysq561443345],
-  ["seatmaps/VZ-aaysq-561443380.json", vzAaysq561443380],
-  ["seatmaps/VZ-aaysq-561443492.json", vzAaysq561443492],
-  ["seatmaps/VZ-aaysq-561443587.json", vzAaysq561443587],
+  ["seatmaps/AFC-aapoy-564402231.json", afcAapoy564402231],
+  ["seatmaps/AFC-aapoy-564402238.json", afcAapoy564402238],
+  ["seatmaps/ALAM-aawym-562697591.json", alamAawym562697591],
+  ["seatmaps/ALAM-aaxtr-564216396.json", alamAaxtr564216396],
+  ["seatmaps/ALAM-aaygw-562695784.json", alamAaygw562695784],
+  ["seatmaps/ALAM-aayhw-564186789.json", alamAayhw564186789],
+  ["seatmaps/AMC-aacrp-562185322.json", amcAacrp562185322],
+  ["seatmaps/AMC-aaego-561432171.json", amcAaego561432171],
+  ["seatmaps/AMC-aatzh-564755702.json", amcAatzh564755702],
+  ["seatmaps/AMC-aaxju-562247516.json", amcAaxju562247516],
+  ["seatmaps/CNMK-aacbt-564335424.json", cnmkAacbt564335424],
+  ["seatmaps/CNMK-aacbz-564614760.json", cnmkAacbz564614760],
+  ["seatmaps/CNMK-aacut-562212808.json", cnmkAacut562212808],
+  ["seatmaps/CNMK-aaudu-562433543.json", cnmkAaudu562433543],
+  ["seatmaps/CPLS-aaxpp-564442282.json", cplsAaxpp564442282],
+  ["seatmaps/CPLS-aaxpp-564442283.json", cplsAaxpp564442283],
+  ["seatmaps/CPLS-aayfm-564435732.json", cplsAayfm564435732],
+  ["seatmaps/CPLS-aaykn-564430998.json", cplsAaykn564430998],
+  ["seatmaps/FLIX-aayja-564235339.json", flixAayja564235339],
+  ["seatmaps/FLIX-aayja-564235466.json", flixAayja564235466],
+  ["seatmaps/FLIX-aayja-564235483.json", flixAayja564235483],
+  ["seatmaps/FLIX-aayja-565020193.json", flixAayja565020193],
+  ["seatmaps/GLXY-aayyj-562206728.json", glxyAayyj562206728],
+  ["seatmaps/GLXY-aayyj-564402749.json", glxyAayyj564402749],
+  ["seatmaps/GLXY-aayyj-564402776.json", glxyAayyj564402776],
+  ["seatmaps/GLXY-aayyj-564402869.json", glxyAayyj564402869],
+  ["seatmaps/HOOK-aaqfm-562494552.json", hookAaqfm562494552],
+  ["seatmaps/HOOK-aauac-564445998.json", hookAauac564445998],
+  ["seatmaps/HOOK-aawza-564424799.json", hookAawza564424799],
+  ["seatmaps/HOOK-aawza-564424818.json", hookAawza564424818],
+  ["seatmaps/REGL-aacaw-562432170.json", reglAacaw562432170],
+  ["seatmaps/REGL-aacaw-564679715.json", reglAacaw564679715],
+  ["seatmaps/REGL-aacaw-564679720.json", reglAacaw564679720],
+  ["seatmaps/REGL-aacaw-564679794.json", reglAacaw564679794],
+  ["seatmaps/SMG-aabed-562224145.json", smgAabed562224145],
+  ["seatmaps/SMG-aautc-564877473.json", smgAautc564877473],
+  ["seatmaps/SMG-aaxps-564270324.json", smgAaxps564270324],
+  ["seatmaps/SMG-aaxps-564270326.json", smgAaxps564270326],
+  ["seatmaps/VZ-aaysq-559982630.json", vzAaysq559982630],
+  ["seatmaps/VZ-aaysq-562687836.json", vzAaysq562687836],
+  ["seatmaps/VZ-aaysq-562687878.json", vzAaysq562687878],
+  ["seatmaps/VZ-aaysq-564236170.json", vzAaysq564236170],
 ]);
 
 export const seatMapFailureCaptures: ReadonlyMap<
   string,
   Capture<readonly CapturedUpstreamError[]>
 > = new Map([
-  ["seatmaps/AMC-aaoxj-561549583.json", amcAaoxj561549583],
-  ["seatmaps/CNMK-aacbt-561682781.json", cnmkAacbt561682781],
-  ["seatmaps/L-aaddm-561442975.json", lAaddm561442975],
+  ["seatmaps/CNMK-aacbt-564335359.json", cnmkAacbt564335359],
+  ["seatmaps/L-aaddm-563960289.json", lAaddm563960289],
 ]);
 
 export const showtimeGroupingCaptures: ReadonlyMap<
   string,
   Capture<CapturedShowtimeGrouping>
 > = new Map([
-  ["showtimes/grouping-243819-2026-08-28.json", grouping24381920260828],
-  ["showtimes/grouping-245569-2026-08-27.json", grouping24556920260827],
-  ["showtimes/grouping-245569-2026-08-28.json", grouping24556920260828],
-  ["showtimes/grouping-246329-2026-08-28.json", grouping24632920260828],
-  ["showtimes/grouping-246427-2026-08-28.json", grouping24642720260828],
+  ["showtimes/grouping-243819-2026-09-20.json", grouping24381920260920],
+  ["showtimes/grouping-245699-2026-09-20.json", grouping24569920260920],
+  ["showtimes/grouping-245893-2026-09-19.json", grouping24589320260919],
+  ["showtimes/grouping-245893-2026-09-20.json", grouping24589320260920],
+  ["showtimes/grouping-246473-2026-09-20.json", grouping24647320260920],
 ]);
 
 export const theaterMovieShowtimesCaptures: ReadonlyMap<
@@ -240,8 +236,8 @@ export const theaterMovieShowtimesCaptures: ReadonlyMap<
   Capture<CapturedTheaterMovieShowtimes>
 > = new Map([
   [
-    "showtimes/theater-showtimes-aacbt-2026-08-28.json",
-    theaterShowtimesAacbt20260828,
+    "showtimes/theater-showtimes-aacbt-2026-09-20.json",
+    theaterShowtimesAacbt20260920,
   ],
 ]);
 

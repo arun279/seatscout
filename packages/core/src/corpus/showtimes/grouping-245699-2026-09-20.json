@@ -1,0 +1,2277 @@
+{
+  "capturedAt": "2026-09-19T23:11:27.653Z",
+  "request": {
+    "method": "GET",
+    "path": "/napi/theaterShowtimeGroupings/245699/2026-09-20?isdesktop=true&isDesktopMOP=true&zip=[REDACTED]&partnerRestrictedTicketing="
+  },
+  "status": 200,
+  "body": {
+    "hasShowtimes": true,
+    "error": null,
+    "markup": null,
+    "date": "2026-09-20",
+    "filterAttempted": false,
+    "filteredShowtimes": null,
+    "theaterShowtimes": {
+      "date": "2026-09-20",
+      "theaters": [
+        {
+          "id": "aacbt",
+          "name": "Cinemark Dallas XD and IMAX",
+          "theaterPageUrl": "/cinemark-dallas-xd-and-imax-aacbt/theater-page",
+          "distance": null,
+          "isTicketing": true,
+          "variants": [
+            {
+              "filmFormatHeader": "Standard",
+              "amenityGroups": [
+                {
+                  "amenities": [
+                    {
+                      "description": "This showtime allows you to reserve your seats ahead of time.",
+                      "id": 2011,
+                      "imageUrl": null,
+                      "name": "Reserved seating"
+                    },
+                    {
+                      "description": "Cinemark’s new plush, electric powered recliners featuring footrests and cupholders.",
+                      "id": 1164,
+                      "imageUrl": null,
+                      "name": "Luxury Lounge Recliners"
+                    }
+                  ],
+                  "hasReservedSeating": true,
+                  "lateNightMsg": "",
+                  "movieID": "245699",
+                  "movieVariantId": 245699,
+                  "showtimes": [
+                    {
+                      "date": "9:50a",
+                      "dateLocal": "2026-09-20T09:50:00-05:00",
+                      "dateUtc": "2026-09-20T14:50:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-99053a236bc295ec1b4f814787f1b457fb5cd4d54e8fe4bd9513c8fc3d1a78dd",
+                      "id": 564335404,
+                      "isSoldOut": false,
+                      "screenReaderTime": "9:50 AM",
+                      "ticketingDate": "2026-09-20+09:50",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B09%3A50&from=mov_det_showtimes&source=desktop&mid=245699&tid=aacbt&dfam=webbrowser&showtimehashcode=v2-99053a236bc295ec1b4f814787f1b457fb5cd4d54e8fe4bd9513c8fc3d1a78dd",
+                      "type": "available"
+                    },
+                    {
+                      "date": "11:05a",
+                      "dateLocal": "2026-09-20T11:05:00-05:00",
+                      "dateUtc": "2026-09-20T16:05:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-a80adcf9d1922e8830a8a89bb3c3233996315f8cd6ee7eaa9d702d9b0a4c7735",
+                      "id": 564335405,
+                      "isSoldOut": false,
+                      "screenReaderTime": "11:05 AM",
+                      "ticketingDate": "2026-09-20+11:05",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B11%3A05&from=mov_det_showtimes&source=desktop&mid=245699&tid=aacbt&dfam=webbrowser&showtimehashcode=v2-a80adcf9d1922e8830a8a89bb3c3233996315f8cd6ee7eaa9d702d9b0a4c7735",
+                      "type": "available"
+                    },
+                    {
+                      "date": "1:35p",
+                      "dateLocal": "2026-09-20T13:35:00-05:00",
+                      "dateUtc": "2026-09-20T18:35:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-55916d4f142d60c2e000f2e2766fe48599a3666d3073388ae771b627ab677e6b",
+                      "id": 564335403,
+                      "isSoldOut": false,
+                      "screenReaderTime": "1:35 PM",
+                      "ticketingDate": "2026-09-20+13:35",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B13%3A35&from=mov_det_showtimes&source=desktop&mid=245699&tid=aacbt&dfam=webbrowser&showtimehashcode=v2-55916d4f142d60c2e000f2e2766fe48599a3666d3073388ae771b627ab677e6b",
+                      "type": "available"
+                    },
+                    {
+                      "date": "4:15p",
+                      "dateLocal": "2026-09-20T16:15:00-05:00",
+                      "dateUtc": "2026-09-20T21:15:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-3b124e0e7a0be1ba63c702b6151c833d0fa9174e34f402e225c05b254be8947d",
+                      "id": 564335408,
+                      "isSoldOut": false,
+                      "screenReaderTime": "4:15 PM",
+                      "ticketingDate": "2026-09-20+16:15",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B16%3A15&from=mov_det_showtimes&source=desktop&mid=245699&tid=aacbt&dfam=webbrowser&showtimehashcode=v2-3b124e0e7a0be1ba63c702b6151c833d0fa9174e34f402e225c05b254be8947d",
+                      "type": "available"
+                    },
+                    {
+                      "date": "9:10p",
+                      "dateLocal": "2026-09-20T21:10:00-05:00",
+                      "dateUtc": "2026-09-21T02:10:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-23184382f4affd6fb3cf8c9d377c926514a03ba02a1861833808c7b3957de6e1",
+                      "id": 564335407,
+                      "isSoldOut": false,
+                      "screenReaderTime": "9:10 PM",
+                      "ticketingDate": "2026-09-20+21:10",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B21%3A10&from=mov_det_showtimes&source=desktop&mid=245699&tid=aacbt&dfam=webbrowser&showtimehashcode=v2-23184382f4affd6fb3cf8c9d377c926514a03ba02a1861833808c7b3957de6e1",
+                      "type": "available"
+                    },
+                    {
+                      "date": "11:20p",
+                      "dateLocal": "2026-09-20T23:20:00-05:00",
+                      "dateUtc": "2026-09-21T04:20:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-4ab0d1cd7ca8397b66f7fd8114781d41c82c7c568c252d8fa0bd059deba765a2",
+                      "id": 564335402,
+                      "isSoldOut": false,
+                      "screenReaderTime": "11:20 PM",
+                      "ticketingDate": "2026-09-20+23:20",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B23%3A20&from=mov_det_showtimes&source=desktop&mid=245699&tid=aacbt&dfam=webbrowser&showtimehashcode=v2-4ab0d1cd7ca8397b66f7fd8114781d41c82c7c568c252d8fa0bd059deba765a2",
+                      "type": "available"
+                    },
+                    {
+                      "date": "11:45p",
+                      "dateLocal": "2026-09-20T23:45:00-05:00",
+                      "dateUtc": "2026-09-21T04:45:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-d8048188d0e204c779e01f5a338fae41ee56a708a9b1249958b5b9430a741924",
+                      "id": 564335406,
+                      "isSoldOut": false,
+                      "screenReaderTime": "11:45 PM",
+                      "ticketingDate": "2026-09-20+23:45",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B23%3A45&from=mov_det_showtimes&source=desktop&mid=245699&tid=aacbt&dfam=webbrowser&showtimehashcode=v2-d8048188d0e204c779e01f5a338fae41ee56a708a9b1249958b5b9430a741924",
+                      "type": "available"
+                    }
+                  ],
+                  "amenityString": "Reserved seating, Luxury Lounge Recliners",
+                  "amenitiesWithImage": []
+                }
+              ],
+              "amenityGroupClassName": "shared-showtimes__amenity-group-card--standard",
+              "filmFormatHeaderClassName": "shared-showtimes__title-header--standard"
+            }
+          ],
+          "address1": "11819 Webb Chapel",
+          "address2": "",
+          "city": "Dallas",
+          "state": "TX",
+          "zip": "75234",
+          "amenities": [
+            {
+              "id": 1,
+              "name": "Stadium Seating",
+              "promotedAmenity": false
+            },
+            {
+              "id": 2,
+              "name": "Café",
+              "promotedAmenity": false
+            },
+            {
+              "id": 6,
+              "name": "Game Room",
+              "promotedAmenity": false
+            },
+            {
+              "id": 7,
+              "name": "IMAX",
+              "promotedAmenity": false
+            },
+            {
+              "id": 10,
+              "name": "Ticket Kiosk",
+              "promotedAmenity": {
+                "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--ticket-kiosk--white"
+              }
+            },
+            {
+              "id": 13,
+              "name": "Mobile Tickets",
+              "promotedAmenity": {
+                "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--mobile-ticketing--white"
+              }
+            },
+            {
+              "id": 18,
+              "name": "Reserved Seating",
+              "promotedAmenity": false
+            },
+            {
+              "id": 22,
+              "name": "Wheelchair Accessible",
+              "promotedAmenity": false
+            },
+            {
+              "id": 23,
+              "name": "Print at Home Tickets",
+              "promotedAmenity": {
+                "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--print-at-home--white"
+              }
+            }
+          ],
+          "mapURI": "https://www.google.com/maps/search/?api=1&query=11819%20Webb%20Chapel%2C%20Dallas%2C%20TX%2075234",
+          "chainCode": "CNMK",
+          "concessionAmenity": [],
+          "formattedID": "aacbt",
+          "hasConcessions": false,
+          "isFavorite": false
+        },
+        {
+          "id": "aaxju",
+          "name": "AMC Village on the Parkway 9",
+          "theaterPageUrl": "/amc-village-on-the-parkway-9-aaxju/theater-page",
+          "distance": null,
+          "isTicketing": true,
+          "variants": [
+            {
+              "filmFormatHeader": "Standard",
+              "amenityGroups": [
+                {
+                  "amenities": [
+                    {
+                      "description": "Experience movies with even more brilliant brightness, dynamic detail, and crystal-clear contrast with Laser at AMC. It’s a new era in cinema quality!",
+                      "id": 1478,
+                      "imageUrl": null,
+                      "name": "Laser at AMC"
+                    },
+                    {
+                      "description": "This showtime allows you to reserve your seats ahead of time.",
+                      "id": 2011,
+                      "imageUrl": null,
+                      "name": "Reserved seating"
+                    },
+                    {
+                      "description": "Closed Captioning devices display a movie's dialogue and sound effects as text; captions are not shown on the main screen.  Devices available by request.",
+                      "id": 1012,
+                      "imageUrl": null,
+                      "name": "Closed caption"
+                    },
+                    {
+                      "description": "Descriptive Video devices provide audio descriptions of the movie to accommodate the needs of visually impaired guests. Devices available by request.",
+                      "id": 1029,
+                      "imageUrl": null,
+                      "name": "Accessibility devices available"
+                    },
+                    {
+                      "description": "Kick back in an extra-comfy recliner and enjoy the show.",
+                      "id": 1150,
+                      "imageUrl": null,
+                      "name": "Recliner Seats"
+                    }
+                  ],
+                  "hasReservedSeating": true,
+                  "lateNightMsg": "",
+                  "movieID": "245699",
+                  "movieVariantId": 245699,
+                  "showtimes": [
+                    {
+                      "date": "12:30p",
+                      "dateLocal": "2026-09-20T12:30:00-05:00",
+                      "dateUtc": "2026-09-20T17:30:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-3bb83f0f3aa08ed6748bdf5c105e4b2e622a7ef4636632d352d6152ca6744c04",
+                      "id": 564278299,
+                      "isSoldOut": false,
+                      "screenReaderTime": "12:30 PM",
+                      "ticketingDate": "2026-09-20+12:30",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B12%3A30&from=mov_det_showtimes&source=desktop&mid=245699&tid=aaxju&dfam=webbrowser&showtimehashcode=v2-3bb83f0f3aa08ed6748bdf5c105e4b2e622a7ef4636632d352d6152ca6744c04",
+                      "type": "available"
+                    },
+                    {
+                      "date": "7:45p",
+                      "dateLocal": "2026-09-20T19:45:00-05:00",
+                      "dateUtc": "2026-09-21T00:45:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-dbf4fac7e9a22add16e87d95c216023f12c7e06a18816c1c0044c5dce1114d73",
+                      "id": 564278319,
+                      "isSoldOut": false,
+                      "screenReaderTime": "7:45 PM",
+                      "ticketingDate": "2026-09-20+19:45",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B19%3A45&from=mov_det_showtimes&source=desktop&mid=245699&tid=aaxju&dfam=webbrowser&showtimehashcode=v2-dbf4fac7e9a22add16e87d95c216023f12c7e06a18816c1c0044c5dce1114d73",
+                      "type": "available"
+                    },
+                    {
+                      "date": "10:00p",
+                      "dateLocal": "2026-09-20T22:00:00-05:00",
+                      "dateUtc": "2026-09-21T03:00:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-fc539fc04b6eecc2a28342ff75e19b1934f153f2bd25ddd3dbb8de3e6f4e5740",
+                      "id": 564278306,
+                      "isSoldOut": false,
+                      "screenReaderTime": "10 o'clock PM",
+                      "ticketingDate": "2026-09-20+22:00",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B22%3A00&from=mov_det_showtimes&source=desktop&mid=245699&tid=aaxju&dfam=webbrowser&showtimehashcode=v2-fc539fc04b6eecc2a28342ff75e19b1934f153f2bd25ddd3dbb8de3e6f4e5740",
+                      "type": "available"
+                    }
+                  ],
+                  "amenityString": "Laser at AMC, Reserved seating, Closed caption, Accessibility devices available, Recliner Seats",
+                  "amenitiesWithImage": []
+                }
+              ],
+              "amenityGroupClassName": "shared-showtimes__amenity-group-card--standard",
+              "filmFormatHeaderClassName": "shared-showtimes__title-header--standard"
+            }
+          ],
+          "address1": "5100 Belt Line Road",
+          "address2": "",
+          "city": "Addison",
+          "state": "TX",
+          "zip": "75254",
+          "amenities": [
+            {
+              "id": 4,
+              "name": "Digital Projection",
+              "promotedAmenity": false
+            },
+            {
+              "id": 10,
+              "name": "Ticket Kiosk",
+              "promotedAmenity": {
+                "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--ticket-kiosk--white"
+              }
+            },
+            {
+              "id": 13,
+              "name": "Mobile Tickets",
+              "promotedAmenity": {
+                "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--mobile-ticketing--white"
+              }
+            },
+            {
+              "id": 18,
+              "name": "Reserved Seating",
+              "promotedAmenity": false
+            },
+            {
+              "id": 23,
+              "name": "Print at Home Tickets",
+              "promotedAmenity": {
+                "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--print-at-home--white"
+              }
+            },
+            {
+              "id": 33,
+              "name": "Concession Pickup",
+              "promotedAmenity": false
+            }
+          ],
+          "mapURI": "https://www.google.com/maps/search/?api=1&query=5100%20Belt%20Line%20Road%2C%20Addison%2C%20TX%2075254",
+          "chainCode": "AMC",
+          "concessionAmenity": [
+            {
+              "name": "Concession Pickup",
+              "overlayDescription": "Buy your movie ticket, then order popcorn, candy, soda, and more for pickup at the concession area."
+            }
+          ],
+          "formattedID": "aaxju",
+          "hasConcessions": true,
+          "isFavorite": false
+        },
+        {
+          "id": "aacut",
+          "name": "Cinemark West Plano and XD",
+          "theaterPageUrl": "/cinemark-west-plano-and-xd-aacut/theater-page",
+          "distance": null,
+          "isTicketing": true,
+          "variants": [
+            {
+              "filmFormatHeader": "Standard",
+              "amenityGroups": [
+                {
+                  "amenities": [
+                    {
+                      "description": "This showtime allows you to reserve your seats ahead of time.",
+                      "id": 2011,
+                      "imageUrl": null,
+                      "name": "Reserved seating"
+                    },
+                    {
+                      "description": "Cinemark’s new plush, electric powered recliners featuring footrests and cupholders.",
+                      "id": 1164,
+                      "imageUrl": null,
+                      "name": "Luxury Lounge Recliners"
+                    }
+                  ],
+                  "hasReservedSeating": true,
+                  "lateNightMsg": "",
+                  "movieID": "245699",
+                  "movieVariantId": 245699,
+                  "showtimes": [
+                    {
+                      "date": "9:40a",
+                      "dateLocal": "2026-09-20T09:40:00-05:00",
+                      "dateUtc": "2026-09-20T14:40:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-bd5226f4134aad83130a9f01b6990f6dd12897fc78fce7ba672fea3845af280a",
+                      "id": 564614203,
+                      "isSoldOut": false,
+                      "screenReaderTime": "9:40 AM",
+                      "ticketingDate": "2026-09-20+09:40",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B09%3A40&from=mov_det_showtimes&source=desktop&mid=245699&tid=aacut&dfam=webbrowser&showtimehashcode=v2-bd5226f4134aad83130a9f01b6990f6dd12897fc78fce7ba672fea3845af280a",
+                      "type": "available"
+                    }
+                  ],
+                  "amenityString": "Reserved seating, Luxury Lounge Recliners",
+                  "amenitiesWithImage": []
+                }
+              ],
+              "amenityGroupClassName": "shared-showtimes__amenity-group-card--standard",
+              "filmFormatHeaderClassName": "shared-showtimes__title-header--standard"
+            }
+          ],
+          "address1": "3800 Dallas Parkway",
+          "address2": "",
+          "city": "Plano",
+          "state": "TX",
+          "zip": "75093",
+          "amenities": [
+            {
+              "id": 1,
+              "name": "Stadium Seating",
+              "promotedAmenity": false
+            },
+            {
+              "id": 2,
+              "name": "Café",
+              "promotedAmenity": false
+            },
+            {
+              "id": 10,
+              "name": "Ticket Kiosk",
+              "promotedAmenity": {
+                "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--ticket-kiosk--white"
+              }
+            },
+            {
+              "id": 11,
+              "name": "Listening Devices",
+              "promotedAmenity": false
+            },
+            {
+              "id": 13,
+              "name": "Mobile Tickets",
+              "promotedAmenity": {
+                "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--mobile-ticketing--white"
+              }
+            },
+            {
+              "id": 15,
+              "name": "Party Room",
+              "promotedAmenity": false
+            },
+            {
+              "id": 18,
+              "name": "Reserved Seating",
+              "promotedAmenity": false
+            },
+            {
+              "id": 22,
+              "name": "Wheelchair Accessible",
+              "promotedAmenity": false
+            },
+            {
+              "id": 23,
+              "name": "Print at Home Tickets",
+              "promotedAmenity": {
+                "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--print-at-home--white"
+              }
+            }
+          ],
+          "mapURI": "https://www.google.com/maps/search/?api=1&query=3800%20Dallas%20Parkway%2C%20Plano%2C%20TX%2075093",
+          "chainCode": "CNMK",
+          "concessionAmenity": [],
+          "formattedID": "aacut",
+          "hasConcessions": false,
+          "isFavorite": false
+        },
+        {
+          "id": "aaego",
+          "name": "AMC Grapevine Mills 24",
+          "theaterPageUrl": "/amc-grapevine-mills-24-aaego/theater-page",
+          "distance": null,
+          "isTicketing": true,
+          "variants": [
+            {
+              "filmFormatHeader": "Standard",
+              "amenityGroups": [
+                {
+                  "amenities": [
+                    {
+                      "description": "Experience movies with even more brilliant brightness, dynamic detail, and crystal-clear contrast with Laser at AMC. It’s a new era in cinema quality!",
+                      "id": 1478,
+                      "imageUrl": null,
+                      "name": "Laser at AMC"
+                    },
+                    {
+                      "description": "This showtime allows you to reserve your seats ahead of time.",
+                      "id": 2011,
+                      "imageUrl": null,
+                      "name": "Reserved seating"
+                    },
+                    {
+                      "description": "Closed Captioning devices display a movie's dialogue and sound effects as text; captions are not shown on the main screen.  Devices available by request.",
+                      "id": 1012,
+                      "imageUrl": null,
+                      "name": "Closed caption"
+                    },
+                    {
+                      "description": "Descriptive Video devices provide audio descriptions of the movie to accommodate the needs of visually impaired guests. Devices available by request.",
+                      "id": 1029,
+                      "imageUrl": null,
+                      "name": "Accessibility devices available"
+                    },
+                    {
+                      "description": "Kick back in an extra-comfy recliner and enjoy the show.",
+                      "id": 1150,
+                      "imageUrl": null,
+                      "name": "Recliner Seats"
+                    }
+                  ],
+                  "hasReservedSeating": true,
+                  "lateNightMsg": "",
+                  "movieID": "245699",
+                  "movieVariantId": 245699,
+                  "showtimes": [
+                    {
+                      "date": "1:15p",
+                      "dateLocal": "2026-09-20T13:15:00-05:00",
+                      "dateUtc": "2026-09-20T18:15:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-4dde8c952320b308beb6aeadb650741a4be98dc44d914837ff5973be64b4b81d",
+                      "id": 564606264,
+                      "isSoldOut": false,
+                      "screenReaderTime": "1:15 PM",
+                      "ticketingDate": "2026-09-20+13:15",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B13%3A15&from=mov_det_showtimes&source=desktop&mid=245699&tid=aaego&dfam=webbrowser&showtimehashcode=v2-4dde8c952320b308beb6aeadb650741a4be98dc44d914837ff5973be64b4b81d",
+                      "type": "available"
+                    }
+                  ],
+                  "amenityString": "Laser at AMC, Reserved seating, Closed caption, Accessibility devices available, Recliner Seats",
+                  "amenitiesWithImage": []
+                },
+                {
+                  "amenities": [
+                    {
+                      "description": "Experience movies with even more brilliant brightness, dynamic detail, and crystal-clear contrast with Laser at AMC. It’s a new era in cinema quality!",
+                      "id": 1478,
+                      "imageUrl": null,
+                      "name": "Laser at AMC"
+                    },
+                    {
+                      "description": "This showtime allows you to reserve your seats ahead of time.",
+                      "id": 2011,
+                      "imageUrl": null,
+                      "name": "Reserved seating"
+                    },
+                    {
+                      "description": "Closed Captioning devices display a movie's dialogue and sound effects as text; captions are not shown on the main screen.  Devices available by request.",
+                      "id": 1012,
+                      "imageUrl": null,
+                      "name": "Closed caption"
+                    },
+                    {
+                      "description": "Descriptive Video devices provide audio descriptions of the movie to accommodate the needs of visually impaired guests. Devices available by request.",
+                      "id": 1029,
+                      "imageUrl": null,
+                      "name": "Accessibility devices available"
+                    }
+                  ],
+                  "hasReservedSeating": true,
+                  "lateNightMsg": "",
+                  "movieID": "245699",
+                  "movieVariantId": 245699,
+                  "showtimes": [
+                    {
+                      "date": "2:35p",
+                      "dateLocal": "2026-09-20T14:35:00-05:00",
+                      "dateUtc": "2026-09-20T19:35:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-0214b5d6fe11fa51d7bd5058bf102a8859a1c86f833cb00b4800d0fbb93f3c02",
+                      "id": 564606239,
+                      "isSoldOut": false,
+                      "screenReaderTime": "2:35 PM",
+                      "ticketingDate": "2026-09-20+14:35",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B14%3A35&from=mov_det_showtimes&source=desktop&mid=245699&tid=aaego&dfam=webbrowser&showtimehashcode=v2-0214b5d6fe11fa51d7bd5058bf102a8859a1c86f833cb00b4800d0fbb93f3c02",
+                      "type": "available"
+                    },
+                    {
+                      "date": "6:25p",
+                      "dateLocal": "2026-09-20T18:25:00-05:00",
+                      "dateUtc": "2026-09-20T23:25:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-6d68c799794ce38a6abee33d6ed7b78dceea563b147c768f43fd596f234869dc",
+                      "id": 564606282,
+                      "isSoldOut": false,
+                      "screenReaderTime": "6:25 PM",
+                      "ticketingDate": "2026-09-20+18:25",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B18%3A25&from=mov_det_showtimes&source=desktop&mid=245699&tid=aaego&dfam=webbrowser&showtimehashcode=v2-6d68c799794ce38a6abee33d6ed7b78dceea563b147c768f43fd596f234869dc",
+                      "type": "available"
+                    },
+                    {
+                      "date": "9:00p",
+                      "dateLocal": "2026-09-20T21:00:00-05:00",
+                      "dateUtc": "2026-09-21T02:00:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-091086457cacba9dc540596120e319b073e2d66211da929e7e32180cbdc8629d",
+                      "id": 564606241,
+                      "isSoldOut": false,
+                      "screenReaderTime": "9 o'clock PM",
+                      "ticketingDate": "2026-09-20+21:00",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B21%3A00&from=mov_det_showtimes&source=desktop&mid=245699&tid=aaego&dfam=webbrowser&showtimehashcode=v2-091086457cacba9dc540596120e319b073e2d66211da929e7e32180cbdc8629d",
+                      "type": "available"
+                    },
+                    {
+                      "date": "9:30p",
+                      "dateLocal": "2026-09-20T21:30:00-05:00",
+                      "dateUtc": "2026-09-21T02:30:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-f1f45594482e7bc99a70be7711ae48d81aae567b5e9c3278e8e7e50cedf35712",
+                      "id": 564606296,
+                      "isSoldOut": false,
+                      "screenReaderTime": "9:30 PM",
+                      "ticketingDate": "2026-09-20+21:30",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B21%3A30&from=mov_det_showtimes&source=desktop&mid=245699&tid=aaego&dfam=webbrowser&showtimehashcode=v2-f1f45594482e7bc99a70be7711ae48d81aae567b5e9c3278e8e7e50cedf35712",
+                      "type": "available"
+                    }
+                  ],
+                  "amenityString": "Laser at AMC, Reserved seating, Closed caption, Accessibility devices available",
+                  "amenitiesWithImage": []
+                }
+              ],
+              "amenityGroupClassName": "shared-showtimes__amenity-group-card--standard",
+              "filmFormatHeaderClassName": "shared-showtimes__title-header--standard"
+            }
+          ],
+          "address1": "3150 Grapevine Mills Parkway",
+          "address2": "",
+          "city": "Grapevine",
+          "state": "TX",
+          "zip": "76051",
+          "amenities": [
+            {
+              "id": 4,
+              "name": "Digital Projection",
+              "promotedAmenity": false
+            },
+            {
+              "id": 7,
+              "name": "IMAX",
+              "promotedAmenity": false
+            },
+            {
+              "id": 10,
+              "name": "Ticket Kiosk",
+              "promotedAmenity": {
+                "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--ticket-kiosk--white"
+              }
+            },
+            {
+              "id": 13,
+              "name": "Mobile Tickets",
+              "promotedAmenity": {
+                "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--mobile-ticketing--white"
+              }
+            },
+            {
+              "id": 18,
+              "name": "Reserved Seating",
+              "promotedAmenity": false
+            },
+            {
+              "id": 23,
+              "name": "Print at Home Tickets",
+              "promotedAmenity": {
+                "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--print-at-home--white"
+              }
+            },
+            {
+              "id": 33,
+              "name": "Concession Pickup",
+              "promotedAmenity": false
+            }
+          ],
+          "mapURI": "https://www.google.com/maps/search/?api=1&query=3150%20Grapevine%20Mills%20Parkway%2C%20Grapevine%2C%20TX%2076051",
+          "chainCode": "AMC",
+          "concessionAmenity": [
+            {
+              "name": "Concession Pickup",
+              "overlayDescription": "Buy your movie ticket, then order popcorn, candy, soda, and more for pickup at the concession area."
+            }
+          ],
+          "formattedID": "aaego",
+          "hasConcessions": true,
+          "isFavorite": false
+        },
+        {
+          "id": "aacbz",
+          "name": "Cinemark Central Plano",
+          "theaterPageUrl": "/cinemark-central-plano-aacbz/theater-page",
+          "distance": null,
+          "isTicketing": true,
+          "variants": [
+            {
+              "filmFormatHeader": "Standard",
+              "amenityGroups": [
+                {
+                  "amenities": [
+                    {
+                      "description": "This showtime allows you to reserve your seats ahead of time.",
+                      "id": 2011,
+                      "imageUrl": null,
+                      "name": "Reserved seating"
+                    },
+                    {
+                      "description": "Cinemark’s new plush, electric powered recliners featuring footrests and cupholders.",
+                      "id": 1164,
+                      "imageUrl": null,
+                      "name": "Luxury Lounge Recliners"
+                    }
+                  ],
+                  "hasReservedSeating": true,
+                  "lateNightMsg": "",
+                  "movieID": "245699",
+                  "movieVariantId": 245699,
+                  "showtimes": [
+                    {
+                      "date": "7:20p",
+                      "dateLocal": "2026-09-20T19:20:00-05:00",
+                      "dateUtc": "2026-09-21T00:20:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-d422c057df84a654131952338eae12bf62405e27f883ada4ad90cfc291c9991f",
+                      "id": 564614775,
+                      "isSoldOut": false,
+                      "screenReaderTime": "7:20 PM",
+                      "ticketingDate": "2026-09-20+19:20",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B19%3A20&from=mov_det_showtimes&source=desktop&mid=245699&tid=aacbz&dfam=webbrowser&showtimehashcode=v2-d422c057df84a654131952338eae12bf62405e27f883ada4ad90cfc291c9991f",
+                      "type": "available"
+                    }
+                  ],
+                  "amenityString": "Reserved seating, Luxury Lounge Recliners",
+                  "amenitiesWithImage": []
+                }
+              ],
+              "amenityGroupClassName": "shared-showtimes__amenity-group-card--standard",
+              "filmFormatHeaderClassName": "shared-showtimes__title-header--standard"
+            }
+          ],
+          "address1": "1818 Coit Road",
+          "address2": "",
+          "city": "Plano",
+          "state": "TX",
+          "zip": "75075",
+          "amenities": [
+            {
+              "id": 10,
+              "name": "Ticket Kiosk",
+              "promotedAmenity": {
+                "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--ticket-kiosk--white"
+              }
+            },
+            {
+              "id": 13,
+              "name": "Mobile Tickets",
+              "promotedAmenity": {
+                "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--mobile-ticketing--white"
+              }
+            },
+            {
+              "id": 18,
+              "name": "Reserved Seating",
+              "promotedAmenity": false
+            },
+            {
+              "id": 23,
+              "name": "Print at Home Tickets",
+              "promotedAmenity": {
+                "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--print-at-home--white"
+              }
+            }
+          ],
+          "mapURI": "https://www.google.com/maps/search/?api=1&query=1818%20Coit%20Road%2C%20Plano%2C%20TX%2075075",
+          "chainCode": "CNMK",
+          "concessionAmenity": [],
+          "formattedID": "aacbz",
+          "hasConcessions": false,
+          "isFavorite": false
+        },
+        {
+          "id": "aatzh",
+          "name": "AMC NorthPark 15",
+          "theaterPageUrl": "/amc-northpark-15-aatzh/theater-page",
+          "distance": null,
+          "isTicketing": true,
+          "variants": [
+            {
+              "filmFormatHeader": "Standard",
+              "amenityGroups": [
+                {
+                  "amenities": [
+                    {
+                      "description": "Experience movies with even more brilliant brightness, dynamic detail, and crystal-clear contrast with Laser at AMC. It’s a new era in cinema quality!",
+                      "id": 1478,
+                      "imageUrl": null,
+                      "name": "Laser at AMC"
+                    },
+                    {
+                      "description": "This showtime allows you to reserve your seats ahead of time.",
+                      "id": 2011,
+                      "imageUrl": null,
+                      "name": "Reserved seating"
+                    },
+                    {
+                      "description": "Closed Captioning devices display a movie's dialogue and sound effects as text; captions are not shown on the main screen.  Devices available by request.",
+                      "id": 1012,
+                      "imageUrl": null,
+                      "name": "Closed caption"
+                    },
+                    {
+                      "description": "Descriptive Video devices provide audio descriptions of the movie to accommodate the needs of visually impaired guests. Devices available by request.",
+                      "id": 1029,
+                      "imageUrl": null,
+                      "name": "Accessibility devices available"
+                    }
+                  ],
+                  "hasReservedSeating": true,
+                  "lateNightMsg": "",
+                  "movieID": "245699",
+                  "movieVariantId": 245699,
+                  "showtimes": [
+                    {
+                      "date": "2:30p",
+                      "dateLocal": "2026-09-20T14:30:00-05:00",
+                      "dateUtc": "2026-09-20T19:30:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-faaf093ad8c311c1e8c8a31c5b8905186b1aa96997db67f9ae2cc30ed8bb6da5",
+                      "id": 564755684,
+                      "isSoldOut": false,
+                      "screenReaderTime": "2:30 PM",
+                      "ticketingDate": "2026-09-20+14:30",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B14%3A30&from=mov_det_showtimes&source=desktop&mid=245699&tid=aatzh&dfam=webbrowser&showtimehashcode=v2-faaf093ad8c311c1e8c8a31c5b8905186b1aa96997db67f9ae2cc30ed8bb6da5",
+                      "type": "available"
+                    },
+                    {
+                      "date": "9:30p",
+                      "dateLocal": "2026-09-20T21:30:00-05:00",
+                      "dateUtc": "2026-09-21T02:30:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-96d06a46e83f1dbc886920f2c1980fb982fd3b64204710edbda29c5e87b37822",
+                      "id": 564755708,
+                      "isSoldOut": false,
+                      "screenReaderTime": "9:30 PM",
+                      "ticketingDate": "2026-09-20+21:30",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B21%3A30&from=mov_det_showtimes&source=desktop&mid=245699&tid=aatzh&dfam=webbrowser&showtimehashcode=v2-96d06a46e83f1dbc886920f2c1980fb982fd3b64204710edbda29c5e87b37822",
+                      "type": "available"
+                    }
+                  ],
+                  "amenityString": "Laser at AMC, Reserved seating, Closed caption, Accessibility devices available",
+                  "amenitiesWithImage": []
+                }
+              ],
+              "amenityGroupClassName": "shared-showtimes__amenity-group-card--standard",
+              "filmFormatHeaderClassName": "shared-showtimes__title-header--standard"
+            }
+          ],
+          "address1": "8687 North Central Expressway",
+          "address2": "",
+          "city": "Dallas",
+          "state": "TX",
+          "zip": "75225",
+          "amenities": [
+            {
+              "id": 4,
+              "name": "Digital Projection",
+              "promotedAmenity": false
+            },
+            {
+              "id": 7,
+              "name": "IMAX",
+              "promotedAmenity": false
+            },
+            {
+              "id": 13,
+              "name": "Mobile Tickets",
+              "promotedAmenity": {
+                "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--mobile-ticketing--white"
+              }
+            },
+            {
+              "id": 18,
+              "name": "Reserved Seating",
+              "promotedAmenity": false
+            },
+            {
+              "id": 23,
+              "name": "Print at Home Tickets",
+              "promotedAmenity": {
+                "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--print-at-home--white"
+              }
+            },
+            {
+              "id": 33,
+              "name": "Concession Pickup",
+              "promotedAmenity": false
+            }
+          ],
+          "mapURI": "https://www.google.com/maps/search/?api=1&query=8687%20North%20Central%20Expressway%2C%20Dallas%2C%20TX%2075225",
+          "chainCode": "AMC",
+          "concessionAmenity": [
+            {
+              "name": "Concession Pickup",
+              "overlayDescription": "Buy your movie ticket, then order popcorn, candy, soda, and more for pickup at the concession area."
+            }
+          ],
+          "formattedID": "aatzh",
+          "hasConcessions": true,
+          "isFavorite": false
+        },
+        {
+          "id": "aacrp",
+          "name": "AMC Irving Mall 14",
+          "theaterPageUrl": "/amc-irving-mall-14-aacrp/theater-page",
+          "distance": null,
+          "isTicketing": true,
+          "variants": [
+            {
+              "filmFormatHeader": "Standard",
+              "amenityGroups": [
+                {
+                  "amenities": [
+                    {
+                      "description": "Experience movies with even more brilliant brightness, dynamic detail, and crystal-clear contrast with Laser at AMC. It’s a new era in cinema quality!",
+                      "id": 1478,
+                      "imageUrl": null,
+                      "name": "Laser at AMC"
+                    },
+                    {
+                      "description": "This showtime allows you to reserve your seats ahead of time.",
+                      "id": 2011,
+                      "imageUrl": null,
+                      "name": "Reserved seating"
+                    },
+                    {
+                      "description": "Closed Captioning devices display a movie's dialogue and sound effects as text; captions are not shown on the main screen.  Devices available by request.",
+                      "id": 1012,
+                      "imageUrl": null,
+                      "name": "Closed caption"
+                    },
+                    {
+                      "description": "Descriptive Video devices provide audio descriptions of the movie to accommodate the needs of visually impaired guests. Devices available by request.",
+                      "id": 1029,
+                      "imageUrl": null,
+                      "name": "Accessibility devices available"
+                    },
+                    {
+                      "description": "Kick back in an extra-comfy recliner and enjoy the show.",
+                      "id": 1150,
+                      "imageUrl": null,
+                      "name": "Recliner Seats"
+                    }
+                  ],
+                  "hasReservedSeating": true,
+                  "lateNightMsg": "",
+                  "movieID": "245699",
+                  "movieVariantId": 245699,
+                  "showtimes": [
+                    {
+                      "date": "12:30p",
+                      "dateLocal": "2026-09-20T12:30:00-05:00",
+                      "dateUtc": "2026-09-20T17:30:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-dbf5d0e9d66752a2b2b1532022d7d9568a36ccd586533755fbc03503d88d7ec9",
+                      "id": 564609924,
+                      "isSoldOut": false,
+                      "screenReaderTime": "12:30 PM",
+                      "ticketingDate": "2026-09-20+12:30",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B12%3A30&from=mov_det_showtimes&source=desktop&mid=245699&tid=aacrp&dfam=webbrowser&showtimehashcode=v2-dbf5d0e9d66752a2b2b1532022d7d9568a36ccd586533755fbc03503d88d7ec9",
+                      "type": "available"
+                    },
+                    {
+                      "date": "2:45p",
+                      "dateLocal": "2026-09-20T14:45:00-05:00",
+                      "dateUtc": "2026-09-20T19:45:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-980624d80d46a407414eebcf4089cd43523a780bec6b078fd7bb85b7702a434c",
+                      "id": 564609910,
+                      "isSoldOut": false,
+                      "screenReaderTime": "2:45 PM",
+                      "ticketingDate": "2026-09-20+14:45",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B14%3A45&from=mov_det_showtimes&source=desktop&mid=245699&tid=aacrp&dfam=webbrowser&showtimehashcode=v2-980624d80d46a407414eebcf4089cd43523a780bec6b078fd7bb85b7702a434c",
+                      "type": "available"
+                    },
+                    {
+                      "date": "5:25p",
+                      "dateLocal": "2026-09-20T17:25:00-05:00",
+                      "dateUtc": "2026-09-20T22:25:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-5440a5a8123c3e19a204a86ff58ec2eb65e1dc71c34779257708e2981e316667",
+                      "id": 564609909,
+                      "isSoldOut": false,
+                      "screenReaderTime": "5:25 PM",
+                      "ticketingDate": "2026-09-20+17:25",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B17%3A25&from=mov_det_showtimes&source=desktop&mid=245699&tid=aacrp&dfam=webbrowser&showtimehashcode=v2-5440a5a8123c3e19a204a86ff58ec2eb65e1dc71c34779257708e2981e316667",
+                      "type": "available"
+                    },
+                    {
+                      "date": "8:05p",
+                      "dateLocal": "2026-09-20T20:05:00-05:00",
+                      "dateUtc": "2026-09-21T01:05:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-a75149cd1293093a825e393a6f4b69360bc5094610bb9088b738f3d612955593",
+                      "id": 564609911,
+                      "isSoldOut": false,
+                      "screenReaderTime": "8:05 PM",
+                      "ticketingDate": "2026-09-20+20:05",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B20%3A05&from=mov_det_showtimes&source=desktop&mid=245699&tid=aacrp&dfam=webbrowser&showtimehashcode=v2-a75149cd1293093a825e393a6f4b69360bc5094610bb9088b738f3d612955593",
+                      "type": "available"
+                    },
+                    {
+                      "date": "10:40p",
+                      "dateLocal": "2026-09-20T22:40:00-05:00",
+                      "dateUtc": "2026-09-21T03:40:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-80782dbcd72acf232a6eca54662f7e4986d638812b36c092f117928063739ef5",
+                      "id": 564609912,
+                      "isSoldOut": false,
+                      "screenReaderTime": "10:40 PM",
+                      "ticketingDate": "2026-09-20+22:40",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B22%3A40&from=mov_det_showtimes&source=desktop&mid=245699&tid=aacrp&dfam=webbrowser&showtimehashcode=v2-80782dbcd72acf232a6eca54662f7e4986d638812b36c092f117928063739ef5",
+                      "type": "available"
+                    }
+                  ],
+                  "amenityString": "Laser at AMC, Reserved seating, Closed caption, Accessibility devices available, Recliner Seats",
+                  "amenitiesWithImage": []
+                }
+              ],
+              "amenityGroupClassName": "shared-showtimes__amenity-group-card--standard",
+              "filmFormatHeaderClassName": "shared-showtimes__title-header--standard"
+            }
+          ],
+          "address1": "2433 Irving Mall",
+          "address2": "- (hwy 183 & Beltline)",
+          "city": "Irving",
+          "state": "TX",
+          "zip": "75062",
+          "amenities": [
+            {
+              "id": 4,
+              "name": "Digital Projection",
+              "promotedAmenity": false
+            },
+            {
+              "id": 13,
+              "name": "Mobile Tickets",
+              "promotedAmenity": {
+                "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--mobile-ticketing--white"
+              }
+            },
+            {
+              "id": 18,
+              "name": "Reserved Seating",
+              "promotedAmenity": false
+            },
+            {
+              "id": 23,
+              "name": "Print at Home Tickets",
+              "promotedAmenity": {
+                "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--print-at-home--white"
+              }
+            },
+            {
+              "id": 33,
+              "name": "Concession Pickup",
+              "promotedAmenity": false
+            }
+          ],
+          "mapURI": "https://www.google.com/maps/search/?api=1&query=2433%20Irving%20Mall%2C%20Irving%2C%20TX%2075062",
+          "chainCode": "AMC",
+          "concessionAmenity": [
+            {
+              "name": "Concession Pickup",
+              "overlayDescription": "Buy your movie ticket, then order popcorn, candy, soda, and more for pickup at the concession area."
+            }
+          ],
+          "formattedID": "aacrp",
+          "hasConcessions": true,
+          "isFavorite": false
+        },
+        {
+          "id": "aacbr",
+          "name": "Cinemark Tinseltown Grapevine and XD",
+          "theaterPageUrl": "/cinemark-tinseltown-grapevine-and-xd-aacbr/theater-page",
+          "distance": null,
+          "isTicketing": true,
+          "variants": [
+            {
+              "filmFormatHeader": "Standard",
+              "amenityGroups": [
+                {
+                  "amenities": [
+                    {
+                      "description": "This showtime allows you to reserve your seats ahead of time.",
+                      "id": 2011,
+                      "imageUrl": null,
+                      "name": "Reserved seating"
+                    },
+                    {
+                      "description": "Cinemark’s new plush, electric powered recliners featuring footrests and cupholders.",
+                      "id": 1164,
+                      "imageUrl": null,
+                      "name": "Luxury Lounge Recliners"
+                    }
+                  ],
+                  "hasReservedSeating": true,
+                  "lateNightMsg": "",
+                  "movieID": "245699",
+                  "movieVariantId": 245699,
+                  "showtimes": [
+                    {
+                      "date": "10:20a",
+                      "dateLocal": "2026-09-20T10:20:00-05:00",
+                      "dateUtc": "2026-09-20T15:20:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-0563f77380955181cf615b8d652e6a3bc115927205dc6ab4ae5f85280b968f7e",
+                      "id": 564641079,
+                      "isSoldOut": false,
+                      "screenReaderTime": "10:20 AM",
+                      "ticketingDate": "2026-09-20+10:20",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B10%3A20&from=mov_det_showtimes&source=desktop&mid=245699&tid=aacbr&dfam=webbrowser&showtimehashcode=v2-0563f77380955181cf615b8d652e6a3bc115927205dc6ab4ae5f85280b968f7e",
+                      "type": "available"
+                    },
+                    {
+                      "date": "12:55p",
+                      "dateLocal": "2026-09-20T12:55:00-05:00",
+                      "dateUtc": "2026-09-20T17:55:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-a9abb56f134ab8919cf92958233a66bec5bc463e419904b34b73196dd8f5a8b6",
+                      "id": 564641078,
+                      "isSoldOut": false,
+                      "screenReaderTime": "12:55 PM",
+                      "ticketingDate": "2026-09-20+12:55",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B12%3A55&from=mov_det_showtimes&source=desktop&mid=245699&tid=aacbr&dfam=webbrowser&showtimehashcode=v2-a9abb56f134ab8919cf92958233a66bec5bc463e419904b34b73196dd8f5a8b6",
+                      "type": "available"
+                    },
+                    {
+                      "date": "6:15p",
+                      "dateLocal": "2026-09-20T18:15:00-05:00",
+                      "dateUtc": "2026-09-20T23:15:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-071c29dc26db46f7ef1d8c4a235b425f3378cc1453c2f41a3fb4d36c38903530",
+                      "id": 564641077,
+                      "isSoldOut": false,
+                      "screenReaderTime": "6:15 PM",
+                      "ticketingDate": "2026-09-20+18:15",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B18%3A15&from=mov_det_showtimes&source=desktop&mid=245699&tid=aacbr&dfam=webbrowser&showtimehashcode=v2-071c29dc26db46f7ef1d8c4a235b425f3378cc1453c2f41a3fb4d36c38903530",
+                      "type": "available"
+                    },
+                    {
+                      "date": "8:50p",
+                      "dateLocal": "2026-09-20T20:50:00-05:00",
+                      "dateUtc": "2026-09-21T01:50:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-af44ecf870ee95bf638918f275bb4a11248c172dd1474986d1fdf47e48c558ff",
+                      "id": 564641080,
+                      "isSoldOut": false,
+                      "screenReaderTime": "8:50 PM",
+                      "ticketingDate": "2026-09-20+20:50",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B20%3A50&from=mov_det_showtimes&source=desktop&mid=245699&tid=aacbr&dfam=webbrowser&showtimehashcode=v2-af44ecf870ee95bf638918f275bb4a11248c172dd1474986d1fdf47e48c558ff",
+                      "type": "available"
+                    }
+                  ],
+                  "amenityString": "Reserved seating, Luxury Lounge Recliners",
+                  "amenitiesWithImage": []
+                }
+              ],
+              "amenityGroupClassName": "shared-showtimes__amenity-group-card--standard",
+              "filmFormatHeaderClassName": "shared-showtimes__title-header--standard"
+            }
+          ],
+          "address1": "911 State Hwy 114 West",
+          "address2": "",
+          "city": "Grapevine",
+          "state": "TX",
+          "zip": "76051",
+          "amenities": [
+            {
+              "id": 10,
+              "name": "Ticket Kiosk",
+              "promotedAmenity": {
+                "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--ticket-kiosk--white"
+              }
+            },
+            {
+              "id": 13,
+              "name": "Mobile Tickets",
+              "promotedAmenity": {
+                "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--mobile-ticketing--white"
+              }
+            },
+            {
+              "id": 18,
+              "name": "Reserved Seating",
+              "promotedAmenity": false
+            },
+            {
+              "id": 23,
+              "name": "Print at Home Tickets",
+              "promotedAmenity": {
+                "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--print-at-home--white"
+              }
+            }
+          ],
+          "mapURI": "https://www.google.com/maps/search/?api=1&query=911%20State%20Hwy%20114%20West%2C%20Grapevine%2C%20TX%2076051",
+          "chainCode": "CNMK",
+          "concessionAmenity": [],
+          "formattedID": "aacbr",
+          "hasConcessions": false,
+          "isFavorite": false
+        },
+        {
+          "id": "aayhw",
+          "name": "Alamo Drafthouse Lake Highlands",
+          "theaterPageUrl": "/alamo-drafthouse-lake-highlands-aayhw/theater-page",
+          "distance": null,
+          "isTicketing": true,
+          "variants": [
+            {
+              "filmFormatHeader": "Standard",
+              "amenityGroups": [
+                {
+                  "amenities": [
+                    {
+                      "description": "This showtime allows you to reserve your seats ahead of time.",
+                      "id": 2011,
+                      "imageUrl": null,
+                      "name": "Reserved seating"
+                    },
+                    {
+                      "description": "Added comfort is available with Recliner Seats adjustable to multiple positions and with padded footrests.",
+                      "id": 1071,
+                      "imageUrl": null,
+                      "name": "Recliner Seats"
+                    },
+                    {
+                      "description": "Assisted Listening Devices for the hearing impaired are available for this theater.",
+                      "id": 1088,
+                      "imageUrl": null,
+                      "name": "Accessibility devices available"
+                    },
+                    {
+                      "description": "Choose from a selection of our chef’s handcrafted favorites. Order at concessions, then head to your reserved seat. We’ll deliver right to your table.",
+                      "id": 1219,
+                      "imageUrl": null,
+                      "name": "Dine-In Delivery to Seat"
+                    },
+                    {
+                      "description": "We skip the ads and go straight to the good stuff—original pre-show content made just for movie lovers.",
+                      "id": 1590,
+                      "imageUrl": null,
+                      "name": "Ad Free Preshow"
+                    }
+                  ],
+                  "hasReservedSeating": true,
+                  "lateNightMsg": "",
+                  "movieID": "245699",
+                  "movieVariantId": 245699,
+                  "showtimes": [
+                    {
+                      "date": "6:30p",
+                      "dateLocal": "2026-09-20T18:30:00-05:00",
+                      "dateUtc": "2026-09-20T23:30:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-126f3db661e6b522b2bbe4ba8849bb7e94493c944adb3b4ccac8f5fa05278bcc",
+                      "id": 564186718,
+                      "isSoldOut": false,
+                      "screenReaderTime": "6:30 PM",
+                      "ticketingDate": "2026-09-20+18:30",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B18%3A30&from=mov_det_showtimes&source=desktop&mid=245699&tid=aayhw&dfam=webbrowser&showtimehashcode=v2-126f3db661e6b522b2bbe4ba8849bb7e94493c944adb3b4ccac8f5fa05278bcc",
+                      "type": "available"
+                    }
+                  ],
+                  "amenityString": "Reserved seating, Recliner Seats, Accessibility devices available, Dine-In Delivery to Seat, Ad Free Preshow",
+                  "amenitiesWithImage": []
+                }
+              ],
+              "amenityGroupClassName": "shared-showtimes__amenity-group-card--standard",
+              "filmFormatHeaderClassName": "shared-showtimes__title-header--standard"
+            }
+          ],
+          "address1": "6770 Abrams Rd",
+          "address2": "",
+          "city": "Dallas",
+          "state": "TX",
+          "zip": "75231",
+          "amenities": [
+            {
+              "id": 1,
+              "name": "Stadium Seating",
+              "promotedAmenity": false
+            },
+            {
+              "id": 2,
+              "name": "Café",
+              "promotedAmenity": false
+            },
+            {
+              "id": 4,
+              "name": "Digital Projection",
+              "promotedAmenity": false
+            },
+            {
+              "id": 10,
+              "name": "Ticket Kiosk",
+              "promotedAmenity": {
+                "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--ticket-kiosk--white"
+              }
+            },
+            {
+              "id": 11,
+              "name": "Listening Devices",
+              "promotedAmenity": false
+            },
+            {
+              "id": 13,
+              "name": "Mobile Tickets",
+              "promotedAmenity": {
+                "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--mobile-ticketing--white"
+              }
+            },
+            {
+              "id": 15,
+              "name": "Party Room",
+              "promotedAmenity": false
+            },
+            {
+              "id": 18,
+              "name": "Reserved Seating",
+              "promotedAmenity": false
+            },
+            {
+              "id": 22,
+              "name": "Wheelchair Accessible",
+              "promotedAmenity": false
+            },
+            {
+              "id": 23,
+              "name": "Print at Home Tickets",
+              "promotedAmenity": {
+                "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--print-at-home--white"
+              }
+            }
+          ],
+          "mapURI": "https://www.google.com/maps/search/?api=1&query=6770%20Abrams%20Rd%2C%20Dallas%2C%20TX%2075231",
+          "chainCode": "ALAM",
+          "concessionAmenity": [],
+          "formattedID": "aayhw",
+          "hasConcessions": false,
+          "isFavorite": false
+        },
+        {
+          "id": "aaoxj",
+          "name": "AMC Stonebriar 24",
+          "theaterPageUrl": "/amc-stonebriar-24-aaoxj/theater-page",
+          "distance": null,
+          "isTicketing": true,
+          "variants": [
+            {
+              "filmFormatHeader": "Standard",
+              "amenityGroups": [
+                {
+                  "amenities": [
+                    {
+                      "description": "Experience movies with even more brilliant brightness, dynamic detail, and crystal-clear contrast with Laser at AMC. It’s a new era in cinema quality!",
+                      "id": 1478,
+                      "imageUrl": null,
+                      "name": "Laser at AMC"
+                    },
+                    {
+                      "description": "This showtime allows you to reserve your seats ahead of time.",
+                      "id": 2011,
+                      "imageUrl": null,
+                      "name": "Reserved seating"
+                    },
+                    {
+                      "description": "Closed Captioning devices display a movie's dialogue and sound effects as text; captions are not shown on the main screen.  Devices available by request.",
+                      "id": 1012,
+                      "imageUrl": null,
+                      "name": "Closed caption"
+                    },
+                    {
+                      "description": "Descriptive Video devices provide audio descriptions of the movie to accommodate the needs of visually impaired guests. Devices available by request.",
+                      "id": 1029,
+                      "imageUrl": null,
+                      "name": "Accessibility devices available"
+                    },
+                    {
+                      "description": "Kick back in an extra-comfy recliner and enjoy the show.",
+                      "id": 1150,
+                      "imageUrl": null,
+                      "name": "Recliner Seats"
+                    }
+                  ],
+                  "hasReservedSeating": true,
+                  "lateNightMsg": "",
+                  "movieID": "245699",
+                  "movieVariantId": 245699,
+                  "showtimes": [
+                    {
+                      "date": "5:20p",
+                      "dateLocal": "2026-09-20T17:20:00-05:00",
+                      "dateUtc": "2026-09-20T22:20:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-eace82f94b9a6539f7aec547dc33d250d185a36533064c499834437983bf9842",
+                      "id": 564362550,
+                      "isSoldOut": false,
+                      "screenReaderTime": "5:20 PM",
+                      "ticketingDate": "2026-09-20+17:20",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B17%3A20&from=mov_det_showtimes&source=desktop&mid=245699&tid=aaoxj&dfam=webbrowser&showtimehashcode=v2-eace82f94b9a6539f7aec547dc33d250d185a36533064c499834437983bf9842",
+                      "type": "available"
+                    },
+                    {
+                      "date": "8:00p",
+                      "dateLocal": "2026-09-20T20:00:00-05:00",
+                      "dateUtc": "2026-09-21T01:00:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-379400280dbe0e52357f0d96c9e69b5aa0c902a2ca214177a9020a79dcd203d8",
+                      "id": 564362548,
+                      "isSoldOut": false,
+                      "screenReaderTime": "8 o'clock PM",
+                      "ticketingDate": "2026-09-20+20:00",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B20%3A00&from=mov_det_showtimes&source=desktop&mid=245699&tid=aaoxj&dfam=webbrowser&showtimehashcode=v2-379400280dbe0e52357f0d96c9e69b5aa0c902a2ca214177a9020a79dcd203d8",
+                      "type": "available"
+                    },
+                    {
+                      "date": "10:30p",
+                      "dateLocal": "2026-09-20T22:30:00-05:00",
+                      "dateUtc": "2026-09-21T03:30:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-8899cf786183bbafaa467274ad96803513b89bece3699a3f38a259ef900979b9",
+                      "id": 564362549,
+                      "isSoldOut": false,
+                      "screenReaderTime": "10:30 PM",
+                      "ticketingDate": "2026-09-20+22:30",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B22%3A30&from=mov_det_showtimes&source=desktop&mid=245699&tid=aaoxj&dfam=webbrowser&showtimehashcode=v2-8899cf786183bbafaa467274ad96803513b89bece3699a3f38a259ef900979b9",
+                      "type": "available"
+                    }
+                  ],
+                  "amenityString": "Laser at AMC, Reserved seating, Closed caption, Accessibility devices available, Recliner Seats",
+                  "amenitiesWithImage": []
+                }
+              ],
+              "amenityGroupClassName": "shared-showtimes__amenity-group-card--standard",
+              "filmFormatHeaderClassName": "shared-showtimes__title-header--standard"
+            }
+          ],
+          "address1": "2601 Preston Road",
+          "address2": "",
+          "city": "Frisco",
+          "state": "TX",
+          "zip": "75034",
+          "amenities": [
+            {
+              "id": 7,
+              "name": "IMAX",
+              "promotedAmenity": false
+            },
+            {
+              "id": 10,
+              "name": "Ticket Kiosk",
+              "promotedAmenity": {
+                "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--ticket-kiosk--white"
+              }
+            },
+            {
+              "id": 13,
+              "name": "Mobile Tickets",
+              "promotedAmenity": {
+                "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--mobile-ticketing--white"
+              }
+            },
+            {
+              "id": 18,
+              "name": "Reserved Seating",
+              "promotedAmenity": false
+            },
+            {
+              "id": 23,
+              "name": "Print at Home Tickets",
+              "promotedAmenity": {
+                "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--print-at-home--white"
+              }
+            },
+            {
+              "id": 33,
+              "name": "Concession Pickup",
+              "promotedAmenity": false
+            }
+          ],
+          "mapURI": "https://www.google.com/maps/search/?api=1&query=2601%20Preston%20Road%2C%20Frisco%2C%20TX%2075034",
+          "chainCode": "AMC",
+          "concessionAmenity": [
+            {
+              "name": "Concession Pickup",
+              "overlayDescription": "Buy your movie ticket, then order popcorn, candy, soda, and more for pickup at the concession area."
+            }
+          ],
+          "formattedID": "aaoxj",
+          "hasConcessions": true,
+          "isFavorite": false
+        },
+        {
+          "id": "aausf",
+          "name": "AMC Highland Village 12",
+          "theaterPageUrl": "/amc-highland-village-12-aausf/theater-page",
+          "distance": null,
+          "isTicketing": true,
+          "variants": [
+            {
+              "filmFormatHeader": "Standard",
+              "amenityGroups": [
+                {
+                  "amenities": [
+                    {
+                      "description": "Experience movies with even more brilliant brightness, dynamic detail, and crystal-clear contrast with Laser at AMC. It’s a new era in cinema quality!",
+                      "id": 1478,
+                      "imageUrl": null,
+                      "name": "Laser at AMC"
+                    },
+                    {
+                      "description": "This showtime allows you to reserve your seats ahead of time.",
+                      "id": 2011,
+                      "imageUrl": null,
+                      "name": "Reserved seating"
+                    },
+                    {
+                      "description": "Closed Captioning devices display a movie's dialogue and sound effects as text; captions are not shown on the main screen.  Devices available by request.",
+                      "id": 1012,
+                      "imageUrl": null,
+                      "name": "Closed caption"
+                    },
+                    {
+                      "description": "Descriptive Video devices provide audio descriptions of the movie to accommodate the needs of visually impaired guests. Devices available by request.",
+                      "id": 1029,
+                      "imageUrl": null,
+                      "name": "Accessibility devices available"
+                    }
+                  ],
+                  "hasReservedSeating": true,
+                  "lateNightMsg": "",
+                  "movieID": "245699",
+                  "movieVariantId": 245699,
+                  "showtimes": [
+                    {
+                      "date": "12:45p",
+                      "dateLocal": "2026-09-20T12:45:00-05:00",
+                      "dateUtc": "2026-09-20T17:45:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-ac9a40d7545f1c84bac4c1fbf98c65ad1900b0d0df18dec2bd58901a91d5d807",
+                      "id": 564305362,
+                      "isSoldOut": false,
+                      "screenReaderTime": "12:45 PM",
+                      "ticketingDate": "2026-09-20+12:45",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B12%3A45&from=mov_det_showtimes&source=desktop&mid=245699&tid=aausf&dfam=webbrowser&showtimehashcode=v2-ac9a40d7545f1c84bac4c1fbf98c65ad1900b0d0df18dec2bd58901a91d5d807",
+                      "type": "available"
+                    }
+                  ],
+                  "amenityString": "Laser at AMC, Reserved seating, Closed caption, Accessibility devices available",
+                  "amenitiesWithImage": []
+                }
+              ],
+              "amenityGroupClassName": "shared-showtimes__amenity-group-card--standard",
+              "filmFormatHeaderClassName": "shared-showtimes__title-header--standard"
+            }
+          ],
+          "address1": "4090 Barton Creek",
+          "address2": "",
+          "city": "Highland Village",
+          "state": "TX",
+          "zip": "75077",
+          "amenities": [
+            {
+              "id": 4,
+              "name": "Digital Projection",
+              "promotedAmenity": false
+            },
+            {
+              "id": 7,
+              "name": "IMAX",
+              "promotedAmenity": false
+            },
+            {
+              "id": 13,
+              "name": "Mobile Tickets",
+              "promotedAmenity": {
+                "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--mobile-ticketing--white"
+              }
+            },
+            {
+              "id": 18,
+              "name": "Reserved Seating",
+              "promotedAmenity": false
+            },
+            {
+              "id": 23,
+              "name": "Print at Home Tickets",
+              "promotedAmenity": {
+                "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--print-at-home--white"
+              }
+            },
+            {
+              "id": 33,
+              "name": "Concession Pickup",
+              "promotedAmenity": false
+            }
+          ],
+          "mapURI": "https://www.google.com/maps/search/?api=1&query=4090%20Barton%20Creek%2C%20Highland%20Village%2C%20TX%2075077",
+          "chainCode": "AMC",
+          "concessionAmenity": [
+            {
+              "name": "Concession Pickup",
+              "overlayDescription": "Buy your movie ticket, then order popcorn, candy, soda, and more for pickup at the concession area."
+            }
+          ],
+          "formattedID": "aausf",
+          "hasConcessions": true,
+          "isFavorite": false
+        },
+        {
+          "id": "aayja",
+          "name": "Flix Brewhouse Little Elm",
+          "theaterPageUrl": "/flix-brewhouse-little-elm-aayja/theater-page",
+          "distance": null,
+          "isTicketing": true,
+          "variants": [
+            {
+              "filmFormatHeader": "Standard",
+              "amenityGroups": [
+                {
+                  "amenities": [
+                    {
+                      "description": "This showtime allows you to reserve your seats ahead of time.",
+                      "id": 2011,
+                      "imageUrl": null,
+                      "name": "Reserved seating"
+                    },
+                    {
+                      "description": "Closed caption\r\nClosed Captioning devices display a movie's dialogue and sound effects as text; captions are not shown on the main screen. Devices available by request.\r\n\r\nDV\r\nDescriptive Audio devices provide audio descriptions of the movie to accommodate the needs of visually impaired guests. Devices available by request.",
+                      "id": 1102,
+                      "imageUrl": null,
+                      "name": "Accessibility devices available"
+                    }
+                  ],
+                  "hasReservedSeating": true,
+                  "lateNightMsg": "",
+                  "movieID": "245699",
+                  "movieVariantId": 245699,
+                  "showtimes": [
+                    {
+                      "date": "10:15p",
+                      "dateLocal": "2026-09-20T22:15:00-05:00",
+                      "dateUtc": "2026-09-21T03:15:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-6eeafc545c1d92cf7e1ce4c78882024d5e1bead3169e69010ab38defb54e334c",
+                      "id": 564235466,
+                      "isSoldOut": false,
+                      "screenReaderTime": "10:15 PM",
+                      "ticketingDate": "2026-09-20+22:15",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B22%3A15&from=mov_det_showtimes&source=desktop&mid=245699&tid=aayja&dfam=webbrowser&showtimehashcode=v2-6eeafc545c1d92cf7e1ce4c78882024d5e1bead3169e69010ab38defb54e334c",
+                      "type": "available"
+                    }
+                  ],
+                  "amenityString": "Reserved seating, Accessibility devices available",
+                  "amenitiesWithImage": []
+                }
+              ],
+              "amenityGroupClassName": "shared-showtimes__amenity-group-card--standard",
+              "filmFormatHeaderClassName": "shared-showtimes__title-header--standard"
+            }
+          ],
+          "address1": "1660 FM 423",
+          "address2": "",
+          "city": "Frisco",
+          "state": "TX",
+          "zip": "75033",
+          "amenities": [
+            {
+              "id": 1,
+              "name": "Stadium Seating",
+              "promotedAmenity": false
+            },
+            {
+              "id": 2,
+              "name": "Café",
+              "promotedAmenity": false
+            },
+            {
+              "id": 4,
+              "name": "Digital Projection",
+              "promotedAmenity": false
+            },
+            {
+              "id": 10,
+              "name": "Ticket Kiosk",
+              "promotedAmenity": {
+                "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--ticket-kiosk--white"
+              }
+            },
+            {
+              "id": 11,
+              "name": "Listening Devices",
+              "promotedAmenity": false
+            },
+            {
+              "id": 13,
+              "name": "Mobile Tickets",
+              "promotedAmenity": {
+                "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--mobile-ticketing--white"
+              }
+            },
+            {
+              "id": 15,
+              "name": "Party Room",
+              "promotedAmenity": false
+            },
+            {
+              "id": 18,
+              "name": "Reserved Seating",
+              "promotedAmenity": false
+            },
+            {
+              "id": 22,
+              "name": "Wheelchair Accessible",
+              "promotedAmenity": false
+            },
+            {
+              "id": 23,
+              "name": "Print at Home Tickets",
+              "promotedAmenity": {
+                "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--print-at-home--white"
+              }
+            }
+          ],
+          "mapURI": "https://www.google.com/maps/search/?api=1&query=1660%20FM%20423%2C%20Frisco%2C%20TX%2075033",
+          "chainCode": "FLIX",
+          "concessionAmenity": [],
+          "formattedID": "aayja",
+          "hasConcessions": false,
+          "isFavorite": false
+        },
+        {
+          "id": "aawfx",
+          "name": "Cinemark Frisco Square and XD",
+          "theaterPageUrl": "/cinemark-frisco-square-and-xd-aawfx/theater-page",
+          "distance": null,
+          "isTicketing": true,
+          "variants": [
+            {
+              "filmFormatHeader": "Standard",
+              "amenityGroups": [
+                {
+                  "amenities": [
+                    {
+                      "description": "This showtime allows you to reserve your seats ahead of time.",
+                      "id": 2011,
+                      "imageUrl": null,
+                      "name": "Reserved seating"
+                    }
+                  ],
+                  "hasReservedSeating": true,
+                  "lateNightMsg": "",
+                  "movieID": "245699",
+                  "movieVariantId": 245699,
+                  "showtimes": [
+                    {
+                      "date": "7:55p",
+                      "dateLocal": "2026-09-20T19:55:00-05:00",
+                      "dateUtc": "2026-09-21T00:55:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-6b30341cb94cb71de497200c9d80652b25607e511f682f6a21d56167ccb6f2f5",
+                      "id": 564644942,
+                      "isSoldOut": false,
+                      "screenReaderTime": "7:55 PM",
+                      "ticketingDate": "2026-09-20+19:55",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B19%3A55&from=mov_det_showtimes&source=desktop&mid=245699&tid=aawfx&dfam=webbrowser&showtimehashcode=v2-6b30341cb94cb71de497200c9d80652b25607e511f682f6a21d56167ccb6f2f5",
+                      "type": "available"
+                    }
+                  ],
+                  "amenityString": "Reserved seating",
+                  "amenitiesWithImage": []
+                }
+              ],
+              "amenityGroupClassName": "shared-showtimes__amenity-group-card--standard",
+              "filmFormatHeaderClassName": "shared-showtimes__title-header--standard"
+            }
+          ],
+          "address1": "5655 Frisco Square Blvd",
+          "address2": "",
+          "city": "Frisco",
+          "state": "TX",
+          "zip": "75034",
+          "amenities": [
+            {
+              "id": 1,
+              "name": "Stadium Seating",
+              "promotedAmenity": false
+            },
+            {
+              "id": 2,
+              "name": "Café",
+              "promotedAmenity": false
+            },
+            {
+              "id": 6,
+              "name": "Game Room",
+              "promotedAmenity": false
+            },
+            {
+              "id": 10,
+              "name": "Ticket Kiosk",
+              "promotedAmenity": {
+                "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--ticket-kiosk--white"
+              }
+            },
+            {
+              "id": 11,
+              "name": "Listening Devices",
+              "promotedAmenity": false
+            },
+            {
+              "id": 13,
+              "name": "Mobile Tickets",
+              "promotedAmenity": {
+                "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--mobile-ticketing--white"
+              }
+            },
+            {
+              "id": 15,
+              "name": "Party Room",
+              "promotedAmenity": false
+            },
+            {
+              "id": 18,
+              "name": "Reserved Seating",
+              "promotedAmenity": false
+            },
+            {
+              "id": 22,
+              "name": "Wheelchair Accessible",
+              "promotedAmenity": false
+            },
+            {
+              "id": 23,
+              "name": "Print at Home Tickets",
+              "promotedAmenity": {
+                "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--print-at-home--white"
+              }
+            }
+          ],
+          "mapURI": "https://www.google.com/maps/search/?api=1&query=5655%20Frisco%20Square%20Blvd%2C%20Frisco%2C%20TX%2075034",
+          "chainCode": "CNMK",
+          "concessionAmenity": [],
+          "formattedID": "aawfx",
+          "hasConcessions": false,
+          "isFavorite": false
+        },
+        {
+          "id": "aaysq",
+          "name": "Strike + Reel Luxury Dine-In and XD",
+          "theaterPageUrl": "/strike-reel-luxury-dine-in-and-xd-aaysq/theater-page",
+          "distance": null,
+          "isTicketing": true,
+          "variants": [
+            {
+              "filmFormatHeader": "Standard",
+              "amenityGroups": [
+                {
+                  "amenities": [
+                    {
+                      "description": "This showtime allows you to reserve your seats ahead of time.",
+                      "id": 2011,
+                      "imageUrl": null,
+                      "name": "Reserved seating"
+                    }
+                  ],
+                  "hasReservedSeating": true,
+                  "lateNightMsg": "",
+                  "movieID": "245699",
+                  "movieVariantId": 245699,
+                  "showtimes": [
+                    {
+                      "date": "6:45p",
+                      "dateLocal": "2026-09-20T18:45:00-05:00",
+                      "dateUtc": "2026-09-20T23:45:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-050b2ee0af8eae6fdb4a96a2553ac7b48d537f0e0f1707f564c9174f84b30d62",
+                      "id": 564236069,
+                      "isSoldOut": false,
+                      "screenReaderTime": "6:45 PM",
+                      "ticketingDate": "2026-09-20+18:45",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B18%3A45&from=mov_det_showtimes&source=desktop&mid=245699&tid=aaysq&dfam=webbrowser&showtimehashcode=v2-050b2ee0af8eae6fdb4a96a2553ac7b48d537f0e0f1707f564c9174f84b30d62",
+                      "type": "available"
+                    },
+                    {
+                      "date": "9:00p",
+                      "dateLocal": "2026-09-20T21:00:00-05:00",
+                      "dateUtc": "2026-09-21T02:00:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-5dadeadb88934a7ed76ab836e2f1436fb988b3ef24dbbf5afa4912e8385ca86b",
+                      "id": 564236070,
+                      "isSoldOut": false,
+                      "screenReaderTime": "9 o'clock PM",
+                      "ticketingDate": "2026-09-20+21:00",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B21%3A00&from=mov_det_showtimes&source=desktop&mid=245699&tid=aaysq&dfam=webbrowser&showtimehashcode=v2-5dadeadb88934a7ed76ab836e2f1436fb988b3ef24dbbf5afa4912e8385ca86b",
+                      "type": "available"
+                    },
+                    {
+                      "date": "11:15p",
+                      "dateLocal": "2026-09-20T23:15:00-05:00",
+                      "dateUtc": "2026-09-21T04:15:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-9f32c873dc2a1e1baca0494a0f1113fff095f947f3736b5130fbac88eed92906",
+                      "id": 564236071,
+                      "isSoldOut": false,
+                      "screenReaderTime": "11:15 PM",
+                      "ticketingDate": "2026-09-20+23:15",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B23%3A15&from=mov_det_showtimes&source=desktop&mid=245699&tid=aaysq&dfam=webbrowser&showtimehashcode=v2-9f32c873dc2a1e1baca0494a0f1113fff095f947f3736b5130fbac88eed92906",
+                      "type": "available"
+                    }
+                  ],
+                  "amenityString": "Reserved seating",
+                  "amenitiesWithImage": []
+                }
+              ],
+              "amenityGroupClassName": "shared-showtimes__amenity-group-card--standard",
+              "filmFormatHeaderClassName": "shared-showtimes__title-header--standard"
+            }
+          ],
+          "address1": "5902 N. President George Bush Hwy",
+          "address2": "",
+          "city": "Garland",
+          "state": "TX",
+          "zip": "75044",
+          "amenities": [
+            {
+              "id": 2,
+              "name": "Café",
+              "promotedAmenity": false
+            },
+            {
+              "id": 4,
+              "name": "Digital Projection",
+              "promotedAmenity": false
+            },
+            {
+              "id": 6,
+              "name": "Game Room",
+              "promotedAmenity": false
+            },
+            {
+              "id": 11,
+              "name": "Listening Devices",
+              "promotedAmenity": false
+            },
+            {
+              "id": 13,
+              "name": "Mobile Tickets",
+              "promotedAmenity": {
+                "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--mobile-ticketing--white"
+              }
+            },
+            {
+              "id": 15,
+              "name": "Party Room",
+              "promotedAmenity": false
+            },
+            {
+              "id": 18,
+              "name": "Reserved Seating",
+              "promotedAmenity": false
+            },
+            {
+              "id": 22,
+              "name": "Wheelchair Accessible",
+              "promotedAmenity": false
+            },
+            {
+              "id": 23,
+              "name": "Print at Home Tickets",
+              "promotedAmenity": {
+                "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--print-at-home--white"
+              }
+            },
+            {
+              "id": 28,
+              "name": "Dine In",
+              "promotedAmenity": false
+            },
+            {
+              "id": 30,
+              "name": "Full Bar",
+              "promotedAmenity": false
+            },
+            {
+              "id": 31,
+              "name": "Beer and Wine",
+              "promotedAmenity": false
+            }
+          ],
+          "mapURI": "https://www.google.com/maps/search/?api=1&query=5902%20N.%20President%20George%20Bush%20Hwy%2C%20Garland%2C%20TX%2075044",
+          "chainCode": "VZ",
+          "concessionAmenity": [],
+          "formattedID": "aaysq",
+          "hasConcessions": false,
+          "isFavorite": false
+        },
+        {
+          "id": "aanhh",
+          "name": "Cinemark Legacy and XD",
+          "theaterPageUrl": "/cinemark-legacy-and-xd-aanhh/theater-page",
+          "distance": null,
+          "isTicketing": true,
+          "variants": [
+            {
+              "filmFormatHeader": "Standard",
+              "amenityGroups": [
+                {
+                  "amenities": [
+                    {
+                      "description": "This showtime allows you to reserve your seats ahead of time.",
+                      "id": 2011,
+                      "imageUrl": null,
+                      "name": "Reserved seating"
+                    },
+                    {
+                      "description": "Cinemark’s new plush, electric powered recliners featuring footrests and cupholders.",
+                      "id": 1164,
+                      "imageUrl": null,
+                      "name": "Luxury Lounge Recliners"
+                    }
+                  ],
+                  "hasReservedSeating": true,
+                  "lateNightMsg": "",
+                  "movieID": "245699",
+                  "movieVariantId": 245699,
+                  "showtimes": [
+                    {
+                      "date": "5:45p",
+                      "dateLocal": "2026-09-20T17:45:00-05:00",
+                      "dateUtc": "2026-09-20T22:45:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-81e943a15847a75e46f1c861c8df9362068a8fa0198f00a2468f6e5be23fbe15",
+                      "id": 564717593,
+                      "isSoldOut": false,
+                      "screenReaderTime": "5:45 PM",
+                      "ticketingDate": "2026-09-20+17:45",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B17%3A45&from=mov_det_showtimes&source=desktop&mid=245699&tid=aanhh&dfam=webbrowser&showtimehashcode=v2-81e943a15847a75e46f1c861c8df9362068a8fa0198f00a2468f6e5be23fbe15",
+                      "type": "available"
+                    },
+                    {
+                      "date": "8:20p",
+                      "dateLocal": "2026-09-20T20:20:00-05:00",
+                      "dateUtc": "2026-09-21T01:20:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-f681d3f9548444a8d7112e03d0afb0b56dde9015d6484c0967f92da2ea737c4c",
+                      "id": 564717592,
+                      "isSoldOut": false,
+                      "screenReaderTime": "8:20 PM",
+                      "ticketingDate": "2026-09-20+20:20",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B20%3A20&from=mov_det_showtimes&source=desktop&mid=245699&tid=aanhh&dfam=webbrowser&showtimehashcode=v2-f681d3f9548444a8d7112e03d0afb0b56dde9015d6484c0967f92da2ea737c4c",
+                      "type": "available"
+                    },
+                    {
+                      "date": "11:00p",
+                      "dateLocal": "2026-09-20T23:00:00-05:00",
+                      "dateUtc": "2026-09-21T04:00:00Z",
+                      "expired": false,
+                      "filmFormat": [],
+                      "showtimeHashCode": "v2-d6d35bd146f42d78215d721fd806945c3971f96b4182084e361dc2f51463e8cf",
+                      "id": 564717591,
+                      "isSoldOut": false,
+                      "screenReaderTime": "11 o'clock PM",
+                      "ticketingDate": "2026-09-20+23:00",
+                      "ticketingJumpPageURL": "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B23%3A00&from=mov_det_showtimes&source=desktop&mid=245699&tid=aanhh&dfam=webbrowser&showtimehashcode=v2-d6d35bd146f42d78215d721fd806945c3971f96b4182084e361dc2f51463e8cf",
+                      "type": "available"
+                    }
+                  ],
+                  "amenityString": "Reserved seating, Luxury Lounge Recliners",
+                  "amenitiesWithImage": []
+                }
+              ],
+              "amenityGroupClassName": "shared-showtimes__amenity-group-card--standard",
+              "filmFormatHeaderClassName": "shared-showtimes__title-header--standard"
+            }
+          ],
+          "address1": "7201 N Central Expy Suite #100",
+          "address2": "",
+          "city": "Plano",
+          "state": "TX",
+          "zip": "75025",
+          "amenities": [
+            {
+              "id": 1,
+              "name": "Stadium Seating",
+              "promotedAmenity": false
+            },
+            {
+              "id": 2,
+              "name": "Café",
+              "promotedAmenity": false
+            },
+            {
+              "id": 6,
+              "name": "Game Room",
+              "promotedAmenity": false
+            },
+            {
+              "id": 10,
+              "name": "Ticket Kiosk",
+              "promotedAmenity": {
+                "description": "Pick up your tickets at the self-service kiosk and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--ticket-kiosk--white"
+              }
+            },
+            {
+              "id": 11,
+              "name": "Listening Devices",
+              "promotedAmenity": false
+            },
+            {
+              "id": 13,
+              "name": "Mobile Tickets",
+              "promotedAmenity": {
+                "description": "Send your ticket to your mobile device, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--mobile-ticketing--white"
+              }
+            },
+            {
+              "id": 18,
+              "name": "Reserved Seating",
+              "promotedAmenity": false
+            },
+            {
+              "id": 22,
+              "name": "Wheelchair Accessible",
+              "promotedAmenity": false
+            },
+            {
+              "id": 23,
+              "name": "Print at Home Tickets",
+              "promotedAmenity": {
+                "description": "Print your tickets, go directly to the ticket taker and skip the box office line at many theaters.",
+                "icon": "icon icon-theater-amenity--print-at-home--white"
+              }
+            }
+          ],
+          "mapURI": "https://www.google.com/maps/search/?api=1&query=7201%20N%20Central%20Expy%20Suite%20%23100%2C%20Plano%2C%20TX%2075025",
+          "chainCode": "CNMK",
+          "concessionAmenity": [],
+          "formattedID": "aanhh",
+          "hasConcessions": false,
+          "isFavorite": false
+        }
+      ],
+      "formats": {
+        "availableFormats": [],
+        "all": [
+          "imax",
+          "3d",
+          "standard",
+          "70mm",
+          "hfr"
+        ]
+      },
+      "hasShowtimes": true,
+      "concessionsEnabled": true,
+      "paginated": {
+        "buttons": {
+          "moreBtn": {
+            "show": false,
+            "pageToGet": 2
+          },
+          "backBtn": {
+            "show": false,
+            "pageToGet": 0
+          }
+        },
+        "totalPages": 1,
+        "pagination": [
+          {
+            "pageNumber": 1,
+            "isSelected": true
+          }
+        ]
+      }
+    }
+  }
+}
