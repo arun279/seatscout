@@ -1,5 +1,5 @@
 import { OFFLINE } from "@seatscout/view-logic";
-import { type ReactElement, useEffect } from "react";
+import type { ReactElement } from "react";
 import { AccessibilityInfo, Platform, StyleSheet, View } from "react-native";
 import { useTheme } from "../theme.js";
 import { Type } from "./type.js";
@@ -17,16 +17,18 @@ const styles = StyleSheet.create({
   said: { flexShrink: 1 },
 });
 
+const announcedOnceDrawn = (drawn: View | null): void => {
+  if (drawn !== null && Platform.OS !== "android")
+    AccessibilityInfo.announceForAccessibility(OFFLINE);
+};
+
 export const Banner = (): ReactElement => {
   const theme = useTheme();
 
-  useEffect(() => {
-    if (Platform.OS !== "android")
-      AccessibilityInfo.announceForAccessibility(OFFLINE);
-  }, []);
-
   return (
     <View
+      ref={announcedOnceDrawn}
+      testID="offline-banner"
       style={[
         styles.banner,
         {
@@ -37,6 +39,7 @@ export const Banner = (): ReactElement => {
     >
       <View
         style={[styles.dot, { backgroundColor: theme.colours.velvetLit }]}
+        testID="offline-dot"
       />
       <Type
         aria-live="polite"
