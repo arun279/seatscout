@@ -52,6 +52,8 @@ jobs:
       - run: pnpm versions
       - run: pnpm --filter @seatscout/native run install-check
       - run: pnpm --filter @seatscout/native run doctor
+      - name: Check the app bundles for both phones on a machine that has only what the lockfile installs
+        run: pnpm --filter @seatscout/native run bundle
       - run: pnpm counts
       - run: pnpm claims
       - run: pnpm test:unit

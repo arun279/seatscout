@@ -141,6 +141,9 @@ importers:
       '@types/react':
         specifier: 19.2.18
         version: 19.2.18
+      babel-preset-expo:
+        specifier: 57.0.12
+        version: 57.0.12(@babel/core@7.29.7(supports-color@10.2.2))(@babel/runtime@7.29.7)(expo@57.0.24)(react-refresh@0.14.2)(supports-color@10.2.2)
       expo-doctor:
         specifier: 1.20.4
         version: 1.20.4
