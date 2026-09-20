@@ -1,4 +1,5 @@
 import { createSeatScout, type SeatScout } from "@seatscout/client";
+import { deviceStore } from "./store.js";
 
 type Fetch = Parameters<typeof createSeatScout>[0]["fetch"];
 
@@ -24,4 +25,5 @@ export const deviceSeatScout = (): SeatScout =>
     now: Date.now,
     wait: (ms) => new Promise((done) => setTimeout(done, ms)),
     random: Math.random,
+    store: deviceStore,
   });

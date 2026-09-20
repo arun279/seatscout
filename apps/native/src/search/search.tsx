@@ -40,7 +40,7 @@ export const Search = ({
     programmeNear(seatscout, terms.area, terms.date),
   );
   const programme = useSyncExternalStore(playing.subscribe, playing.snapshot);
-  const remembered = useRemembered(seatscout);
+  const remembered = useRemembered(seatscout, terms);
 
   return (
     <SafeAreaView
