@@ -1,5 +1,12 @@
 import { REFERENCE } from "@seatscout/client";
-import { beforeAll, describe, expect, it, jest } from "@jest/globals";
+import {
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  jest,
+} from "@jest/globals";
 import type { Term, Terms } from "@seatscout/view-logic";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
@@ -16,6 +23,7 @@ import {
   warmTheCorpus,
 } from "../../test/rooms.js";
 import type { Clock } from "../host/clock.js";
+import { listDrawn } from "../../test/lists.js";
 import { Search } from "./search.js";
 
 const PROMPT_DAY = "2026-09-19";
@@ -55,6 +63,8 @@ const showing = async (
   );
   return carried;
 };
+
+afterEach(listDrawn);
 
 describe("the Search screen's prompt face", () => {
   it("announces the party on the title card's first line, and it can be pressed", async () => {

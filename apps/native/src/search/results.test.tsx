@@ -1,5 +1,12 @@
 import { REFERENCE, type SearchTerms } from "@seatscout/client";
-import { beforeAll, describe, expect, it, jest } from "@jest/globals";
+import {
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  jest,
+} from "@jest/globals";
 import type { Terms } from "@seatscout/view-logic";
 import {
   cleanup,
@@ -24,6 +31,7 @@ import type { Clock } from "../host/clock.js";
 import { StyleSheet } from "react-native";
 import { houseLights } from "../../test/lights.js";
 import { themeFor } from "../theme.js";
+import { listDrawn } from "../../test/lists.js";
 import { Results } from "./results.js";
 
 const SEAT_MAP = "/napi/seatMap/";
@@ -92,6 +100,8 @@ beforeAll(async () => {
   await screen.findByText("The top of the list is a tie");
   await cleanup();
 }, WARM_UP);
+
+afterEach(listDrawn);
 
 describe("the list once the ranking has stopped moving", () => {
   it("puts the best Seat Groups first and totals what it found", async () => {
