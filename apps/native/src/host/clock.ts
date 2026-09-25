@@ -1,5 +1,12 @@
 import { twoDigits } from "@seatscout/view-logic";
 
+export interface Clock {
+  readonly now: () => number;
+  readonly subscribe: (tick: () => void) => () => void;
+}
+
+const SECOND = 1000;
+
 export const listingDate = (at: Date): string =>
   `${at.getFullYear()}-${twoDigits(at.getMonth() + 1)}-${twoDigits(at.getDate())}`;
 
@@ -11,3 +18,26 @@ export const dateAt = (listing: string): Date =>
   );
 
 export const today = (): string => listingDate(new Date());
+
+export const deviceClock = (): Clock => {
+  const watching = new Set<() => void>();
+  let at = Date.now();
+  let ticking: ReturnType<typeof setInterval> | undefined;
+
+  return {
+    now: () => at,
+    subscribe: (tick) => {
+      watching.add(tick);
+      ticking ??= setInterval(() => {
+        at = Date.now();
+        for (const watcher of watching) watcher();
+      }, SECOND);
+      return () => {
+        watching.delete(tick);
+        if (watching.size > 0) return;
+        clearInterval(ticking);
+        ticking = undefined;
+      };
+    },
+  };
+};

@@ -17,15 +17,17 @@ test("the Ask sheet, opened over a query that names an area", async () => {
       onKeep={() => undefined}
       seatscout={
         phone([], {
-          area: "75234",
-          date: TODAY,
-          programme: {
-            theaters: nearby("aacbt", "Cinemark Dallas XD and IMAX"),
-            movies: [
-              { id: "23184", title: "Akira" },
-              { id: "246329", title: "Coyote vs. Acme" },
-            ],
-            unreached: [],
+          playing: {
+            area: "75234",
+            date: TODAY,
+            programme: {
+              theaters: nearby("aacbt", "Cinemark Dallas XD and IMAX"),
+              movies: [
+                { id: "23184", title: "Akira" },
+                { id: "246329", title: "Coyote vs. Acme" },
+              ],
+              unreached: [],
+            },
           },
         }).seatscout
       }

@@ -37,7 +37,7 @@ const asking = async (
     readonly playing?: typeof PLAYING;
   } = {},
 ) => {
-  const carried = phone([], over.playing);
+  const carried = phone([], { playing: over.playing });
   const found = jest.fn<(terms: Terms) => void>();
   await render(
     <Ask

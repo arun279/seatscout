@@ -4,8 +4,8 @@ import { Platform, StyleSheet } from "react-native";
 import { contrastOf } from "../../test/contrast.js";
 import { everyControlReachesTheTouchFloor } from "../../test/floors.js";
 import { houseLights } from "../../test/lights.js";
-import type { Appearance } from "../theme.js";
-import { Velvet } from "./button.js";
+import { type Appearance, themeFor } from "../theme.js";
+import { Ghost, Velvet } from "./button.js";
 
 const APPEARANCES: readonly Appearance[] = ["down", "up"];
 
@@ -85,5 +85,30 @@ describe("the velvet control", () => {
     expect(Number(control.borderRadius) >= half).toBe(
       Platform.OS === "android",
     );
+  });
+});
+
+describe("the ghost control", () => {
+  it.each(APPEARANCES)(
+    "is drawn by its hairline edge on the platform's own corner, lights %s",
+    async (appearance) => {
+      houseLights(appearance);
+      await render(
+        <Ghost label="Widen the search" onPress={() => undefined} />,
+      );
+      const drawn = StyleSheet.flatten(
+        screen.getByRole("button", { name: "Widen the search" }).props["style"],
+      );
+
+      expect(drawn.borderColor).toBe(themeFor(appearance).colours.hairline);
+      expect(Number(drawn.borderRadius)).toBeGreaterThan(0);
+    },
+  );
+
+  it("is not a control while it has nothing to do", async () => {
+    await render(<Ghost label="Waiting" />);
+
+    expect(screen.queryByRole("button")).toBeNull();
+    expect(screen.getByTestId("waiting")).toHaveTextContent("Waiting");
   });
 });

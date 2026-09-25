@@ -127,6 +127,9 @@ export const saidOf = (search: RecentSearch, today: string): string => {
 
 export const FIND_SEATS = "Find seats";
 
+export const OFFLINE =
+  "Offline. Seats are never cached, so nothing here is refreshed until the connection returns.";
+
 export const NOTHING_REMEMBERED =
   "Nothing yet. Searches are kept on this phone once you have run one, and never anywhere else.";
 

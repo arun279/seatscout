@@ -4,13 +4,14 @@ import type { ReactElement } from "react";
 import { Fragment } from "react";
 import { Card } from "./card.js";
 import {
-  accountOf,
-  beingReadIn,
+  BELOW_THE_TIE,
+  headOf,
   type HeldSnapshots,
   listed,
   type Term,
   type Terms,
   tiedIn,
+  tiedOf,
   unreachedIn,
   whenOf,
 } from "@seatscout/view-logic";
@@ -37,32 +38,22 @@ const ListHead = ({
   readonly snapshot: Snapshot;
   readonly tie: boolean;
 }) => {
-  const account = accountOf(snapshot.coverage);
-  if (snapshot.phase !== "settled")
+  const head = headOf(snapshot, tie);
+  const said = <span className="eyebrow">{head.said}</span>;
+  const count = head.count !== null && (
+    <span className="eyebrow count">{head.count}</span>
+  );
+  if (snapshot.phase !== "settled" || unreachedIn(snapshot) > 0)
     return (
       <p className="list-head">
-        <span className="eyebrow">
-          Reading {beingReadIn(snapshot)} seat maps
-        </span>
-        <span className="eyebrow count">
-          {snapshot.results.length} showtimes so far
-        </span>
-      </p>
-    );
-  if (unreachedIn(snapshot) > 0)
-    return (
-      <p className="list-head">
-        <span className="eyebrow">
-          From the {account.checked} rooms that answered
-        </span>
+        {said}
+        {count}
       </p>
     );
   return (
     <h2 className="list-head">
-      <span className="eyebrow">
-        {tie ? "The top of the list is a tie" : "Best seats first"}
-      </span>
-      <span className="eyebrow count">{snapshot.results.length} showtimes</span>
+      {said}
+      {count}
     </h2>
   );
 };
@@ -112,9 +103,7 @@ export const Results = ({
             {tie && at === tied && (
               <li className="tie-rule">
                 <span className="beam-line" />
-                <span className="lbl">
-                  {tied} tied · below: measurably further
-                </span>
+                <span className="lbl">{`${tiedOf(tied)} · ${BELOW_THE_TIE}`}</span>
                 <span className="beam-line" />
               </li>
             )}

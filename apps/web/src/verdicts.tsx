@@ -2,23 +2,26 @@ import "./house.css";
 import "./results.css";
 import type { Snapshot } from "@seatscout/client";
 import type { ReactElement } from "react";
-import { nameOf } from "./coverage.js";
 import {
-  accountOf,
-  noneOf,
+  CHANGE_THE_QUERY,
+  emptyOf,
+  nameOf,
+  notAnAnswerAbout,
+  partialOf,
+  RETRY_THE_SEARCH,
+  retryOf,
+  talliesOf,
   type Term,
   type Terms,
-  unreachedIn,
-  wordOf,
+  UNREACHED,
+  UNREADABLE,
+  WIDEN,
 } from "@seatscout/view-logic";
 
 interface RemedyProps {
   readonly onRetry: () => void;
   readonly onEdit: (term: Term) => void;
 }
-
-const retryOf = (unreached: number): string =>
-  `Retry the ${wordOf(unreached)} unreached`;
 
 const Remedy = ({
   retry,
@@ -34,7 +37,7 @@ const Remedy = ({
       className="btn btn-ghost"
       onClick={() => onEdit("movie")}
     >
-      Widen instead: change the query
+      {WIDEN}
     </button>
   </>
 );
@@ -44,12 +47,10 @@ export const Unreachable = ({
   ...remedy
 }: RemedyProps & { readonly when: string }): ReactElement => (
   <section className="verdict">
-    <h2 className="display">The listing could not be read.</h2>
-    <p className="lede">
-      Nothing was looked at, so this is not an answer about {when}.
-    </p>
+    <h2 className="display">{UNREADABLE}</h2>
+    <p className="lede">{notAnAnswerAbout(when)}</p>
     <div className="fail-box">
-      <Remedy {...remedy} retry="Retry the search" />
+      <Remedy {...remedy} retry={RETRY_THE_SEARCH} />
     </div>
   </section>
 );
@@ -57,40 +58,30 @@ export const Unreachable = ({
 export const Partial = ({
   snapshot,
   ...remedy
-}: RemedyProps & { readonly snapshot: Snapshot }): ReactElement => {
-  const account = accountOf(snapshot.coverage);
-  return (
-    <section className="verdict">
-      <h2 className="display">
-        {snapshot.results.length === 0
-          ? `Nothing yet, out of the ${account.checked} rooms that answered.`
-          : "Not everywhere yet."}
-      </h2>
-      <p className="count-line">
-        <span>
-          <b>{account.candidates}</b>candidates
+}: RemedyProps & { readonly snapshot: Snapshot }): ReactElement => (
+  <section className="verdict">
+    <h2 className="display">{partialOf(snapshot)}</h2>
+    <p className="count-line">
+      {talliesOf(snapshot).map((tally) => (
+        <span data-unreached={tally.unreached} key={tally.word}>
+          <b>{tally.figure}</b>
+          {tally.word}
         </span>
-        <span>
-          <b>{account.checked}</b>answered
-        </span>
-        <span className="unr">
-          <b>{unreachedIn(snapshot)}</b>unreached
-        </span>
-      </p>
-      <div className="fail-box">
-        <p className="eyebrow unr">Could not be reached</p>
-        <ul className="named">
-          {snapshot.coverage.failed.map((showtime) => (
-            <li key={showtime.id}>
-              <span>{nameOf(showtime)}</span>
-            </li>
-          ))}
-        </ul>
-        <Remedy {...remedy} retry={retryOf(snapshot.coverage.failed.length)} />
-      </div>
-    </section>
-  );
-};
+      ))}
+    </p>
+    <div className="fail-box">
+      <p className="eyebrow unr">{UNREACHED}</p>
+      <ul className="named">
+        {snapshot.coverage.failed.map((showtime) => (
+          <li key={showtime.id}>
+            <span>{nameOf(showtime)}</span>
+          </li>
+        ))}
+      </ul>
+      <Remedy {...remedy} retry={retryOf(snapshot.coverage.failed.length)} />
+    </div>
+  </section>
+);
 
 interface EmptyProps {
   readonly snapshot: Snapshot;
@@ -99,48 +90,30 @@ interface EmptyProps {
   readonly onEdit: (term: Term) => void;
 }
 
-const NoneAnywhere = ({ snapshot, terms, when, onEdit }: EmptyProps) => (
-  <section className="verdict">
-    <h2 className="display">
-      {noneOf(terms.partySize)}, anywhere {when}.
-    </h2>
-    <p className="lede">
-      Every one of the {snapshot.coverage.candidates} candidates has an answer,
-      and none of them can seat {terms.partySize} of you in one unbroken run.
-    </p>
-    <p className="lede">
-      Fewer seats together, another day or a wider area would change it.
-    </p>
-    <button
-      type="button"
-      className="btn btn-ghost"
-      onClick={() => onEdit("partySize")}
-    >
-      Change the query
-    </button>
-  </section>
-);
+export const Empty = ({
+  snapshot,
+  terms,
+  when,
+  onEdit,
+}: EmptyProps): ReactElement => {
+  const nothingListed = snapshot.coverage.candidates === 0;
+  const verdict = emptyOf(snapshot, terms, when);
 
-const NoneListed = ({ terms, when, onEdit }: EmptyProps) => (
-  <section className="verdict">
-    <h2 className="display">No showtime matches this query {when}.</h2>
-    <p className="lede">
-      Nothing listed near {terms.area} carries every term at once, so nothing
-      was checked. Fewer terms would change it.
-    </p>
-    <button
-      type="button"
-      className="btn btn-ghost"
-      onClick={() => onEdit("formats")}
-    >
-      Change the query
-    </button>
-  </section>
-);
-
-export const Empty = (props: EmptyProps): ReactElement =>
-  props.snapshot.coverage.candidates === 0 ? (
-    <NoneListed {...props} />
-  ) : (
-    <NoneAnywhere {...props} />
+  return (
+    <section className="verdict">
+      <h2 className="display">{verdict.said}</h2>
+      {verdict.ledes.map((lede) => (
+        <p className="lede" key={lede}>
+          {lede}
+        </p>
+      ))}
+      <button
+        type="button"
+        className="btn btn-ghost"
+        onClick={() => onEdit(nothingListed ? "formats" : "partySize")}
+      >
+        {CHANGE_THE_QUERY}
+      </button>
+    </section>
   );
+};

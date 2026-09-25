@@ -187,10 +187,10 @@ naming the files turns off the related-test filter the Jest runner applies to ev
 every mutant would run every test.
 
 **One kind of value is ignored, by a plugin rather than by file.** `tools/stryker-style-tables.mjs`
-skips the argument of `StyleSheet.create`, and a table declared at the top of the three files that
+skips the argument of `StyleSheet.create`, and a table declared at the top of the four files that
 declare one: the theme, whose two appearances, type roles and scales are all table; the router's
-layout, whose screen options are a declaration to the platform; and the screen band, whose table is
-the geometry and the gradient stops of a drawing. It reaches no other file, so the headers a device
+layout, whose screen options are a declaration to the platform; and the screen band and the room
+plan, whose tables are the geometry, the stops and the strokes of a drawing. It reaches no other file, so the headers a device
 read carries are judged like any other adapter. A drawn or declared value
 is held by the headed pass and its screenshots: the only test that kills a mutant in one restates
 the value, which is a tautological test. Everything that holds behaviour is judged, screens

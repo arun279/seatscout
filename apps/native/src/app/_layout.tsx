@@ -16,6 +16,12 @@ const ASK: NativeStackNavigationOptions = {
   sheetGrabberVisible: false,
 };
 
+const RESTING: NativeStackNavigationOptions = {
+  presentation: "formSheet",
+  sheetAllowedDetents: [0.5, 1],
+  sheetGrabberVisible: true,
+};
+
 export default function Layout(): ReactElement | null {
   const [loaded, unreadable] = useFonts(FACES);
 
@@ -24,7 +30,10 @@ export default function Layout(): ReactElement | null {
   return (
     <Stack screenOptions={STAGE}>
       <Stack.Screen name="index" />
+      <Stack.Screen name="room" />
       <Stack.Screen name="ask" options={ASK} />
+      <Stack.Screen name="hand-off" options={RESTING} />
+      <Stack.Screen name="ledger" options={RESTING} />
     </Stack>
   );
 }

@@ -4,6 +4,7 @@ const DECLARED_IN = [
   "apps/native/src/theme.ts",
   "apps/native/src/app/_layout.tsx",
   "apps/native/src/design-system/screen-band.tsx",
+  "apps/native/src/design-system/room-plan.tsx",
 ];
 
 const DRAWN =

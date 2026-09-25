@@ -3,9 +3,13 @@ import type { SeatGroupResult } from "@seatscout/client";
 import type { ReactElement } from "react";
 import {
   ageOf,
+  cardNameOf,
   clockOf,
+  designationsOf,
   labelOf,
-  spokenOf,
+  notBookableOf,
+  ONE_SOURCE,
+  roomNameOf,
   whyOf,
 } from "@seatscout/view-logic";
 import { RoomPlan } from "./room-plan.js";
@@ -26,19 +30,17 @@ export const Card = ({
   onHandOff,
 }: CardProps): ReactElement => {
   const { theater, formats } = result.showtime.presentation;
-  const clock = clockOf(result.showtime.startsAt);
+  const notBookable = notBookableOf(result);
+  const designations = designationsOf(result);
   return (
     <li>
-      <article
-        className="card"
-        aria-label={[theater.name, clock, ...formats].join(", ")}
-      >
+      <article className="card" aria-label={cardNameOf(result)}>
         <RoomPlan result={result} scale={1} />
         <div className="mid">
           <button
             type="button"
             className="open place"
-            aria-label={`See ${spokenOf(result)} in the room at ${theater.name}, ${clock}`}
+            aria-label={roomNameOf(result)}
             onClick={() => onRoom(result)}
           >
             {theater.name}
@@ -49,21 +51,15 @@ export const Card = ({
             ))}
           </button>
           <p className="why">
-            <span>{clock}</span>
+            <span>{clockOf(result.showtime.startsAt)}</span>
             {" · "}
             <span>{whyOf(result.reasons, result.podDividers)}</span>
-            {result.removed.unavailable > 0 && (
-              <span className="warn-note">
-                {` · ${result.removed.unavailable} of ${result.seatCount} not bookable`}
-              </span>
+            {notBookable !== null && (
+              <span className="warn-note">{` · ${notBookable}`}</span>
             )}
           </p>
-          {result.seats.some((seat) => seat.designation !== "standard") && (
-            <p className="designations">
-              {result.seats
-                .map((seat) => `${seat.id} ${seat.designation}`)
-                .join(" · ")}
-            </p>
+          {designations !== null && (
+            <p className="designations">{designations}</p>
           )}
         </div>
         <div className="side">
@@ -78,7 +74,7 @@ export const Card = ({
           ) : (
             <span className="seats">{labelOf(result)}</span>
           )}
-          <span className="prov">1 source</span>
+          <span className="prov">{ONE_SOURCE}</span>
           <time
             className="age"
             dateTime={new Date(result.fetchedAt).toISOString()}

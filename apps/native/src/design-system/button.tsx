@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
-import { Platform, StyleSheet, TouchableOpacity } from "react-native";
+import { Platform, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
-import type { Appearance, Palette } from "../theme.js";
+import type { Appearance, Palette, Theme } from "../theme.js";
 import { useTheme } from "../theme.js";
 import { TOUCH_FLOOR } from "./touch.js";
 import { Type } from "./type.js";
@@ -14,12 +14,25 @@ export interface VelvetProps {
 const labelTone = (appearance: Appearance): keyof Palette =>
   appearance === "down" ? "silver" : "raised";
 
+export interface GhostProps {
+  readonly label: string;
+  readonly onPress?: (() => void) | undefined;
+}
+
 const styles = StyleSheet.create({
   control: {
     alignItems: "center",
     borderWidth: 1,
     justifyContent: "center",
     minHeight: 52,
+    minWidth: TOUCH_FLOOR,
+    paddingHorizontal: 16,
+  },
+  ghost: {
+    alignItems: "center",
+    borderWidth: 1,
+    justifyContent: "center",
+    minHeight: 48,
     minWidth: TOUCH_FLOOR,
     paddingHorizontal: 16,
   },
@@ -43,11 +56,13 @@ const Curtain = ({
   </Svg>
 );
 
+const radiusOf = (radius: Theme["radius"]) =>
+  Platform.OS === "android" ? radius.pill : radius.control;
+
 export const Velvet = ({ label, onPress }: VelvetProps): ReactElement => {
   const theme = useTheme();
   const lit = theme.appearance === "down";
-  const radius =
-    Platform.OS === "android" ? theme.radius.pill : theme.radius.control;
+  const radius = radiusOf(theme.radius);
 
   return (
     <TouchableOpacity
@@ -70,6 +85,37 @@ export const Velvet = ({ label, onPress }: VelvetProps): ReactElement => {
       <Type set="sentenceStrong" tone={labelTone(theme.appearance)}>
         {label}
       </Type>
+    </TouchableOpacity>
+  );
+};
+
+export const Ghost = ({ label, onPress }: GhostProps): ReactElement => {
+  const theme = useTheme();
+  const drawn = [
+    styles.ghost,
+    {
+      borderColor: theme.colours.hairline,
+      borderRadius: radiusOf(theme.radius),
+    },
+  ];
+  const said = (
+    <Type set="sentence" tone="silverDim">
+      {label}
+    </Type>
+  );
+
+  return onPress === undefined ? (
+    <View style={drawn} testID="waiting">
+      {said}
+    </View>
+  ) : (
+    <TouchableOpacity
+      accessibilityRole="button"
+      onPress={onPress}
+      style={drawn}
+      testID="ghost"
+    >
+      {said}
     </TouchableOpacity>
   );
 };

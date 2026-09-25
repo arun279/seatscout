@@ -207,7 +207,7 @@ export const CLAIMS = [
   },
   {
     adr: "0012-every-mutant-must-die.md",
-    says: /skips the argument of `StyleSheet\.create`, and a table declared at the top of the three files/,
+    says: /skips the argument of `StyleSheet\.create`, and a table declared at the top of the four files/,
     holds: "the plugin that skips a drawn value",
     pattern: "StyleSheet.create",
     paths: ["tools/stryker-style-tables.mjs"],

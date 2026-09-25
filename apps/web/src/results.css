@@ -185,7 +185,8 @@
 }
 
 .unr,
-.count-line .unr b {
+.count-line [data-unreached="true"],
+.count-line [data-unreached="true"] b {
   color: var(--velvet-lit);
 }
 

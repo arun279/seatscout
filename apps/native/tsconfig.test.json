@@ -5,7 +5,6 @@
     "noEmit": true,
     "skipLibCheck": true,
     "tsBuildInfoFile": "dist/tsconfig.test.tsbuildinfo",
-    "lib": ["ES2022"],
     "types": []
   },
   "include": ["src", "test"]
