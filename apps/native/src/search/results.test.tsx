@@ -148,6 +148,9 @@ describe("the list while the ranking is still moving", () => {
     ).toBeOnTheScreen();
     expect(screen.getByText(/^\d+ showtimes so far$/)).toBeOnTheScreen();
     expect(screen.getByTestId("progress")).toBeOnTheScreen();
+
+    gate.release();
+    await screen.findByText("The top of the list is a tie");
   });
 
   it("passes no verdict on an empty list until the ranking has stopped moving", async () => {
@@ -157,6 +160,9 @@ describe("the list while the ranking is still moving", () => {
 
     expect(screen.queryByTestId("verdict")).toBeNull();
     expect(screen.queryByText(/rooms that answered/)).toBeNull();
+
+    gate.release();
+    await screen.findByText("The top of the list is a tie");
   });
 
   it("holds the list still while a finger is on it, and lets it move again on release", async () => {
