@@ -47,9 +47,8 @@ export const main = (
   out: Writer,
   err: Writer,
 ): number => {
-  const given = argv.slice(2);
-  const startupPath = argumentAfter(given, "--startup");
-  const journeyPath = argumentAfter(given, "--journey");
+  const startupPath = argumentAfter(argv, "--startup");
+  const journeyPath = argumentAfter(argv, "--journey");
   if (startupPath === undefined || journeyPath === undefined) {
     err.write(USAGE);
     return 2;

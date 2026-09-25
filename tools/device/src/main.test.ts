@@ -44,6 +44,11 @@ const FILES: Readonly<Record<string, string>> = {
   }),
   "no-iteration.json": run(),
   "no-measure.json": run({ time: 900, status: "SUCCESS", measures: [] }),
+  "one-unmeasured.json": run(iteration(900, 60, 100), {
+    time: 900,
+    status: "SUCCESS",
+    measures: [],
+  }),
   "no-frame.json": run({
     time: 900,
     status: "SUCCESS",
@@ -136,6 +141,7 @@ describe("what the emulator measured", () => {
     ["failed.json", "failed.json records a Flashlight run that failed"],
     ["no-iteration.json", "no-iteration.json measured no iteration"],
     ["no-measure.json", "no-measure.json measured no iteration"],
+    ["one-unmeasured.json", "one-unmeasured.json measured no iteration"],
     ["no-frame.json", "no-frame.json read no frame rate or memory"],
     ["no-ram.json", "no-ram.json read no frame rate or memory"],
     ["no-fps.json", "no-fps.json read no frame rate or memory"],

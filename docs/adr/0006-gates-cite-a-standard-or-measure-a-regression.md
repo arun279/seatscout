@@ -811,6 +811,40 @@ than fails is a merge base with no measurement to compare against, which the ste
 base records for the step that judges. With the reading taken, the same runner reads 3.9 per cent
 and the job gates.
 
+**The app is walked end to end on an emulator, and the walk gates.** The `device` job builds a
+release of the app for Android, with the Source answered in the build from the corpus, and Maestro
+walks it from the Ask sheet through the ranked Seat Groups and the hand-off to the Room
+(`apps/native/e2e/journey.yaml`). A step that finds nothing fails the job, and `footprint`, which is
+required, needs it. The corpus stands in through Metro: `SEATSCOUT_UPSTREAM=corpus` swaps
+`src/host/upstream.ts` for `e2e/upstream.ts`, which answers from the same `fakeUpstream` the browser
+suite uses, so the bundle a phone runs never carries the corpus. Any other value is refused, and
+`app.config.ts` turns updates off in such a build so a published update cannot replace the stand-in.
+It is Android on an ubuntu runner rather than iOS on a macOS one because the only maintained
+open-source frame-rate reader, [Flashlight](https://github.com/bamlab/flashlight), reads Android
+only, so one build serves both the walk and the reading, and published prior art for an Expo app on
+a macOS runner puts one run at 15 to 25 minutes. [Lanterna](https://github.com/rogerfuentes/lanterna)
+was read and not taken: it is at 0.0.x, and its iOS frame rate needs a native module Expo Go does
+not bundle.
+
+**What the emulator reads is reported beside the walk.** Flashlight runs `am start -W` and then the
+walk itself, each for its default ten iterations with the app's data cleared before each, and
+`tools/device` prints the mean over iterations and the spread across them. A reading that measured
+nothing, failed, or carried no frame rate or memory is refused rather than printed.
+
+**The app's web build is held to the same accessibility standard and the same journey as the web
+app.** `tests/app` runs as a Playwright project of its own over `expo serve`: axe scans every screen
+from the Ask sheet to the Room against WCAG 2.2 at A and AA, and the Core Web Vitals journey runs
+under the same mobile emulation and network profile as `tests/e2e`, held to Google's thresholds and
+to its merge base by `pnpm journey --no-gesture`. The flag says the journey makes no gesture, as
+`--no-baseline` says there is no merge base; leaving both out is refused, so a dropped gesture file
+cannot quietly skip the gesture gate. Its first run found a real violation: the film list in the Ask
+sheet was a list with no items in it (axe's `aria-required-children`), so each film is now a list item.
+
+**The app's bundles are four more ratchets.** The Hermes bytecode for iOS and for Android, the web
+build's scripts, and the faces and images every platform ships, each against its own figure in
+`.size-limit.json`. Each went in at 1 B, and the `footprint` job refused all four, naming each and
+printing its size; those sizes are the ratchets.
+
 **A colour written into a screen is refused** by a Grit plugin, `tools/lint/no-colour-literals.grit`,
 which `biome.json` points at `apps/native/src` except the theme and the tests. It refuses a string
 that is a hex colour, a CSS colour function or one of the CSS Color Module Level 4 named colours,
