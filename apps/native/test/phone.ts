@@ -9,7 +9,7 @@ import {
 import { fakeUpstream, type UpstreamScript } from "@seatscout/client/testing";
 import { termsOf } from "@seatscout/view-logic";
 
-export interface Playing {
+interface Playing {
   readonly area: string;
   readonly date: string;
   readonly programme: Programme;
