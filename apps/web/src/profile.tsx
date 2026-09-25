@@ -3,85 +3,49 @@ import "./ask.css";
 import { isReference, REFERENCE, type SeatProfile } from "@seatscout/client";
 import type { ReactElement } from "react";
 import { type PointerEvent, useId } from "react";
-import { marksOf, targetAt, type Term } from "@seatscout/view-logic";
+import {
+  aimAt,
+  aimOf,
+  DEPTH,
+  depthOf,
+  LATERAL,
+  marksOf,
+  mindOf,
+  type Scale,
+  SEAT_PICKER,
+  SITTING,
+  type Term,
+  WEIGHT,
+  WEIGHTS,
+} from "@seatscout/view-logic";
 
 interface ProfileProps {
   readonly profile: SeatProfile;
   readonly onChange: (profile: SeatProfile) => void;
 }
 
-interface Span {
-  readonly min: number;
-  readonly max: number;
-  readonly step: number;
-}
-
 interface RangeProps {
   readonly label: string;
   readonly ends?: readonly [string, string];
-  readonly span: Span;
+  readonly span: Scale;
   readonly value: number;
   readonly text?: string;
   readonly term?: Term;
   readonly onChange: (value: number) => void;
 }
 
-type Weight =
-  | "depthWeight"
-  | "offAxisWeight"
-  | "frontBandWeight"
-  | "wallBandWeight"
-  | "podDividerWeight";
-
-const WEIGHTS: readonly { readonly field: Weight; readonly label: string }[] = [
-  { field: "depthWeight", label: "Missing your spot" },
-  { field: "offAxisWeight", label: "Watching at an angle" },
-  { field: "frontBandWeight", label: "The front rows" },
-  { field: "wallBandWeight", label: "A wall, or the back row" },
-  { field: "podDividerWeight", label: "A console between seats" },
-];
-
 const WIDTH = 64;
 const HEIGHT = 46;
-
-const WEIGHT: Span = { min: 0, max: 2, step: 0.05 };
-const DEPTH: Span = { min: 0, max: 1, step: 0.01 };
-const LATERAL: Span = { min: -1, max: 1, step: 0.01 };
-const ROWS = 10;
-
-const SEAT_PICKER = Array.from({ length: ROWS }, (_, row) => {
-  const reach = 0.66 + (0.34 * row) / (ROWS - 1);
-  return { depth: row / (ROWS - 1), runs: [{ from: -reach, to: reach }] };
-});
-
-const percent = (fraction: number) => `${Math.round(fraction * 100)}%`;
-
-const depthText = (depth: number) => `${percent(depth)} of the way back`;
-
-const mindText = (weight: number) => {
-  if (weight === 0) return "Don't mind";
-  return weight < 1 ? "A little" : "Avoid";
-};
-
-const lateralText = (lateral: number) =>
-  lateral === 0
-    ? "on the centreline"
-    : `${percent(Math.abs(lateral))} of the way to house ${Math.sign(lateral) === -1 ? "left" : "right"}`;
-
-const held = (value: number, low: number, high: number) =>
-  Math.round(Math.min(high, Math.max(low, value)) * 100) / 100;
 
 const SeatPicker = ({ profile, onChange }: ProfileProps) => {
   const place = (event: PointerEvent<SVGSVGElement>) => {
     const box = event.currentTarget.getBoundingClientRect();
-    const at = targetAt({
-      cx: ((event.clientX - box.left) / box.width) * WIDTH,
-      cy: ((event.clientY - box.top) / box.height) * HEIGHT,
-    });
     onChange({
       ...profile,
-      targetDepth: held(at.targetDepth, 0, 1),
-      targetLateral: held(at.targetLateral, -1, 1),
+      ...aimAt({
+        cx: ((event.clientX - box.left) / box.width) * WIDTH,
+        cy: ((event.clientY - box.top) / box.height) * HEIGHT,
+      }),
     });
   };
   const sitting = {
@@ -174,27 +138,24 @@ const Range = ({
 export const Profile = ({ profile, onChange }: ProfileProps): ReactElement => (
   <>
     <fieldset className="field">
-      <legend className="eyebrow">Where you sit</legend>
+      <legend className="eyebrow">{SITTING.heading}</legend>
       <SeatPicker profile={profile} onChange={onChange} />
-      <p className="micro">
-        Drag the dot, or use the two ranges below. The faint circle is
-        Reference, where it was.
-      </p>
+      <p className="micro">{SITTING.drag}</p>
       <Range
-        label="How far back"
-        ends={["Front row", "Back row"]}
+        label={SITTING.depth}
+        ends={SITTING.depthEnds}
         span={DEPTH}
         value={profile.targetDepth}
-        text={depthText(profile.targetDepth)}
+        text={depthOf(profile.targetDepth)}
         term="profile"
         onChange={(targetDepth) => onChange({ ...profile, targetDepth })}
       />
       <Range
-        label="Left or right"
-        ends={["House left", "House right"]}
+        label={SITTING.lateral}
+        ends={SITTING.lateralEnds}
         span={LATERAL}
         value={profile.targetLateral}
-        text={lateralText(profile.targetLateral)}
+        text={aimOf(profile.targetLateral)}
         onChange={(targetLateral) => onChange({ ...profile, targetLateral })}
       />
       <button
@@ -203,30 +164,25 @@ export const Profile = ({ profile, onChange }: ProfileProps): ReactElement => (
         disabled={isReference(profile)}
         onClick={() => onChange(REFERENCE)}
       >
-        Back to Reference
+        {SITTING.reference}
       </button>
-      <p className="micro">
-        Reference aims two thirds back on the centreline, where cinema standards
-        tune the room. Saved on this phone once you move it, and sent nowhere.
-        Changing it runs the search again against live availability, because
-        seats are never re-ranked from a reading that has aged.
-      </p>
+      <p className="micro">{SITTING.referenceSaid}</p>
     </fieldset>
     <fieldset className="field">
-      <legend className="eyebrow">And what you mind</legend>
+      <legend className="eyebrow">{SITTING.minding}</legend>
       {WEIGHTS.map(({ field, label }) => (
         <Range
           key={field}
           label={label}
           span={WEIGHT}
           value={profile[field]}
-          text={mindText(profile[field])}
+          text={mindOf(profile[field])}
           onChange={(weight) => onChange({ ...profile, [field]: weight })}
         />
       ))}
       <span className="ends" aria-hidden="true">
-        <span>Don't mind</span>
-        <span>Avoid</span>
+        <span>{SITTING.mindEnds[0]}</span>
+        <span>{SITTING.mindEnds[1]}</span>
       </span>
     </fieldset>
   </>

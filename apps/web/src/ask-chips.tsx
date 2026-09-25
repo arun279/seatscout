@@ -2,7 +2,7 @@ import "./house.css";
 import "./ask.css";
 import type { Theater, TheaterId } from "@seatscout/client";
 import type { ReactElement } from "react";
-import type { Term } from "@seatscout/view-logic";
+import { ASKING, type Term, toggled } from "@seatscout/view-logic";
 
 interface ChipsProps<Named extends string> {
   readonly term: Term;
@@ -30,17 +30,6 @@ interface ChipGroupProps<Named extends string> {
   readonly chosen: readonly Named[] | undefined;
   readonly onChosen: (chosen: readonly Named[]) => void;
 }
-
-const toggled = <Named extends string>(
-  every: readonly Named[],
-  chosen: readonly Named[] | undefined,
-  value: Named,
-): readonly Named[] => {
-  const pressed = new Set(chosen);
-  if (pressed.has(value)) pressed.delete(value);
-  else pressed.add(value);
-  return every.filter((named) => pressed.has(named));
-};
 
 const ChipGroup = <Named extends string>({
   term,
@@ -91,7 +80,7 @@ export const TheaterChips = ({
 }: TheaterChipsProps): ReactElement => (
   <ChipGroup
     term="theaters"
-    legend="Theater"
+    legend={ASKING.theater}
     chips={theaters.map((theater) => ({
       value: theater.id,
       text: theater.name,

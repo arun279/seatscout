@@ -7,12 +7,14 @@ import {
   type Format,
   type TheaterId,
 } from "@seatscout/client";
+import { spanOf, valuesOf, type When } from "./when.js";
 
 export type Parameter = [name: string, value: string];
 
 export interface Terms {
   readonly movie?: string;
   readonly date: string;
+  readonly when?: When;
   readonly area?: string;
   readonly partySize: number;
   readonly accessibleSeating?: boolean;
@@ -26,7 +28,8 @@ export interface Terms {
 
 interface RawTerms {
   readonly movie?: string | undefined;
-  readonly date?: string | undefined;
+  readonly date?: string | readonly string[] | undefined;
+  readonly when?: When | undefined;
   readonly area?: string | undefined;
   readonly partySize?: string | number | undefined;
   readonly accessibleSeating?: boolean | string | undefined;
@@ -38,7 +41,6 @@ interface RawTerms {
   readonly until?: string | undefined;
 }
 
-const LISTING_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const CLOCK = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
 const DEFAULT_PARTY_SIZE = 2;
 
@@ -75,13 +77,17 @@ const clockOf = (value: string | undefined) => {
   return CLOCK.test(clock) ? clock : undefined;
 };
 
+const datesOf = ({ date, when }: RawTerms) => {
+  if (when !== undefined) return valuesOf({ date: "", when });
+  return typeof date === "string" ? [given(date)] : (date ?? []).map(given);
+};
+
 const identityOf = (raw: RawTerms, today: string) => {
   const movie = given(raw.movie);
-  const date = given(raw.date);
   const area = given(raw.area);
   return {
     ...(movie && { movie }),
-    date: LISTING_DATE.test(date) ? date : today,
+    ...spanOf(datesOf(raw), today),
     ...(area && { area }),
     partySize: partySizeOf(raw.partySize),
   };
@@ -131,7 +137,7 @@ export const termsFrom = (
   termsOf(
     {
       movie: valueIn(parameters, "movie"),
-      date: valueIn(parameters, "date"),
+      date: valuesIn(parameters, "date"),
       area: valueIn(parameters, "area"),
       partySize: valueIn(parameters, "partySize"),
       accessibleSeating: valueIn(parameters, "accessibleSeating"),
@@ -155,6 +161,17 @@ const LISTS: readonly (readonly [
   ["amenity", (terms) => terms.amenities],
 ];
 
+export const toggled = <Named extends string>(
+  every: readonly Named[],
+  chosen: readonly Named[] | undefined,
+  value: Named,
+): readonly Named[] => {
+  const pressed = new Set(chosen);
+  if (pressed.has(value)) pressed.delete(value);
+  else pressed.add(value);
+  return every.filter((named) => pressed.has(named));
+};
+
 export const windowIn = (
   terms: Terms,
 ): { readonly from: string; readonly until: string } => ({
@@ -165,7 +182,7 @@ export const windowIn = (
 export const parametersOf = (terms: Terms): readonly Parameter[] => {
   const parameters: Parameter[] = [];
   if (terms.movie !== undefined) parameters.push(["movie", terms.movie]);
-  parameters.push(["date", terms.date]);
+  for (const date of valuesOf(terms)) parameters.push(["date", date]);
   if (terms.area !== undefined) parameters.push(["area", terms.area]);
   parameters.push(["partySize", `${terms.partySize}`]);
   for (const [name, listOf] of LISTS)

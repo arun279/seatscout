@@ -95,12 +95,22 @@ export const partyOf = (party: number): string =>
 
 const utcOf = (date: string) => Date.parse(`${date}T00:00:00Z`);
 
+export const calendarOf = (
+  date: string,
+): { readonly weekday: string; readonly month: string } => {
+  const day = new Date(utcOf(date));
+  return {
+    weekday: `${DAYS[day.getUTCDay()]} ${day.getUTCDate()}`,
+    month: `${MONTHS[day.getUTCMonth()]}`,
+  };
+};
+
 export const dayOf = (date: string, today: string): string => {
   const ahead = (utcOf(date) - utcOf(today)) / DAY_MS;
   if (ahead === 0) return "Today";
   if (ahead === 1) return "Tomorrow";
-  const day = new Date(utcOf(date));
-  return `${DAYS[day.getUTCDay()]} ${day.getUTCDate()} ${MONTHS[day.getUTCMonth()]}`;
+  const { weekday, month } = calendarOf(date);
+  return `${weekday} ${month}`;
 };
 
 const RELATIVE_DAYS = ["Today", "Tomorrow"];

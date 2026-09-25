@@ -14,6 +14,7 @@ import { Film } from "./ask-film.js";
 import { modal } from "./modal.js";
 import { Profile } from "./profile.js";
 import {
+  ASKING,
   FIND_SEATS,
   type HeldProgramme,
   movieOf,
@@ -67,7 +68,7 @@ const When = ({ draft, patch, onDate }: WhenProps) => {
         />
       </label>
       <label className="field">
-        <span className="eyebrow">From</span>
+        <span className="eyebrow">{ASKING.from}</span>
         <input
           className="input"
           type="time"
@@ -77,7 +78,7 @@ const When = ({ draft, patch, onDate }: WhenProps) => {
         />
       </label>
       <label className="field">
-        <span className="eyebrow">Until</span>
+        <span className="eyebrow">{ASKING.until}</span>
         <input
           className="input"
           type="time"
@@ -120,12 +121,9 @@ const Party = ({ draft, patch }: Patch) => (
         checked={draft.accessibleSeating === true}
         onChange={(event) => patch({ accessibleSeating: event.target.checked })}
       />
-      <span>Accessible seating</span>
+      <span>{ASKING.accessible}</span>
     </label>
-    <p className="micro">
-      Wheelchair and companion seats stay out of ordinary results. Turning this
-      on searches for them deliberately.
-    </p>
+    <p className="micro">{ASKING.accessibleSaid}</p>
   </>
 );
 
@@ -211,21 +209,21 @@ export const Ask = ({
         <Party draft={draft} patch={patch} />
         <Chips
           term="formats"
-          legend="Format"
+          legend={ASKING.format}
           every={EVERY_FORMAT}
           chosen={draft.formats}
           onChosen={(formats) => patch({ formats })}
         />
         <Chips
           term="amenities"
-          legend="Comfort"
+          legend={ASKING.comfort}
           every={EVERY_AMENITY}
           chosen={draft.amenities}
           onChosen={(amenities) => patch({ amenities })}
         />
         <Chips
           term="chains"
-          legend="Chain"
+          legend={ASKING.chain}
           every={EVERY_CHAIN}
           chosen={draft.chains}
           onChosen={(chains) => patch({ chains })}

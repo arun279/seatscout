@@ -1,7 +1,8 @@
 import type { SeatProfile } from "@seatscout/client";
-import { dayOf, partyOf, seatOf, timeOf } from "./phrases.js";
+import { partyOf, seatOf, timeOf } from "./phrases.js";
 import { type ProgrammeState, theaterNamed, titleOf } from "./programme.js";
 import type { Terms } from "./terms.js";
+import { whenWordsOf } from "./when-phrases.js";
 
 export type Term =
   | "partySize"
@@ -85,7 +86,7 @@ export const termLinesOf = (
       },
     ],
     [
-      { term: "date", words: dayOf(terms.date, today) },
+      { term: "date", words: whenWordsOf(terms, today) },
       ...(window === undefined
         ? []
         : [{ term: "window" as const, words: window }]),

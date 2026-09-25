@@ -126,9 +126,29 @@ describe("the words the Ask sheet is asked in", () => {
       "fewer",
       "more",
       "kept",
+      "addDay",
+      "from",
+      "until",
+      "anyTime",
+      "clear",
+      "accessible",
+      "accessibleSaid",
+      "format",
+      "comfort",
+      "chain",
+      "theater",
     ] as const;
 
     for (const line of named)
       expect([line, ASKING[line].trim()]).not.toEqual([line, ""]);
+  });
+
+  it("names the four readings of the when term in the order the control shows them", () => {
+    expect(ASKING.readings).toEqual([
+      "One day",
+      "Some days",
+      "A range",
+      "Any day",
+    ]);
   });
 });

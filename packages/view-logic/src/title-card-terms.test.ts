@@ -264,4 +264,15 @@ describe("the lines a title card states a Query in", () => {
       })[2].at(-1),
     ).toEqual({ term: "profile", words: "Custom seat" });
   });
+
+  it("states the days a Query spans as the when term", () => {
+    expect(
+      termLinesOf(
+        termsFrom([["date", "2026-08-29..2026-09-02"]], TODAY),
+        NOTHING_READ,
+        TODAY,
+        REFERENCE,
+      )[2][0],
+    ).toEqual({ term: "date", words: "Sat 29 Aug to Wed 2 Sep" });
+  });
 });
