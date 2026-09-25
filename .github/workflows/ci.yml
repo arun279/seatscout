@@ -295,6 +295,7 @@ jobs:
             ${{ env.OUT }}/journey.xml
             ${{ env.OUT }}/maestro/
           if-no-files-found: ignore
+          include-hidden-files: true
 
   footprint:
     needs: [mutation, device]
