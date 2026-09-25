@@ -12,6 +12,8 @@ const screenSetupFiles = [
 ];
 const anywhere = (name: string) => ["**", name, "**"].join("/");
 
+const WEB = "apps/web";
+
 export const configFor = (tests = "{apps,packages,tools}/*") =>
   defineConfig({
     test: {
@@ -36,7 +38,9 @@ export const configFor = (tests = "{apps,packages,tools}/*") =>
           test: {
             name: "screen",
             environment: "jsdom",
-            include: [`${tests}/**/*.test.tsx`],
+            include: ["{apps,packages,tools}/*", WEB].includes(tests)
+              ? [`${WEB}/src/**/*.test.tsx`]
+              : [],
             setupFiles: screenSetupFiles,
             exclude,
           },

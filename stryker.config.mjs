@@ -46,7 +46,6 @@ if (shard === undefined) {
   );
 }
 
-/** @type {import("@stryker-mutator/api/core").PartialStrykerOptions} */
 export default {
   ...RUNNERS[shard.runner](),
   plugins: [

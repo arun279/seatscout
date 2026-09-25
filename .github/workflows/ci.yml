@@ -270,7 +270,7 @@ jobs:
             exit 1
           fi
           held=$(( $(jq 'length' "$RUNNER_TEMP/unit.json") + $(jq '.numTotalTests' "$RUNNER_TEMP/screens.json") ))
-          counted="$(jq -s '[.[].expected] | add // 0' reports/mutation/*.counted.json)"
+          counted="$(jq -s '[.[].ran] | add // 0' reports/mutation/*.counted.json)"
           {
             echo "counted=$counted"
             echo "held=$held"
