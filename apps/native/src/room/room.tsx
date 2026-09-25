@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
   return: {
     alignItems: "center",
     borderRadius: DRAWN.map.radius,
-    borderWidth: 1,
+    borderWidth: DRAWN.map.edge,
     justifyContent: "center",
     marginHorizontal: DRAWN.across,
     marginTop: DRAWN.gap.head,
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     rowGap: DRAWN.gap.line,
   },
   prov: {
-    borderTopWidth: 1,
+    borderTopWidth: DRAWN.map.edge,
     gap: DRAWN.gap.line,
     marginTop: DRAWN.gap.section,
     paddingHorizontal: DRAWN.across,

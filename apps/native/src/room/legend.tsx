@@ -45,11 +45,13 @@ const styles = StyleSheet.create({
 
 const tonesOf = (
   colours: Palette,
-  lit: boolean,
+  lightsDown: boolean,
 ): Readonly<Record<Mark, ViewStyle>> => ({
   lit: {
     backgroundColor: colours.beam,
-    ...(lit && { boxShadow: `0 0 ${DRAWN.glow.blur}px ${colours.beam}` }),
+    ...(lightsDown && {
+      boxShadow: `0 0 ${DRAWN.glow.blur}px ${colours.beam}`,
+    }),
   },
   forSale: { backgroundColor: colours.seatFree },
   notBookable: { borderColor: colours.seatGone },

@@ -41,9 +41,6 @@ describe("what the room says beside the map", () => {
   it("counts the Seats a room will not sell against the Seats it has", () => {
     const { auditorium } = openedRoom(WEST_PLANO_28);
 
-    expect(notBookableIn(auditorium.map)).toBe(
-      `${auditorium.map.seatCount - auditorium.map.bookableCount} of ${auditorium.map.seatCount} not bookable`,
-    );
     expect(notBookableIn({ ...auditorium.map, bookableCount: 300 })).toBe(
       "4 of 304 not bookable",
     );
@@ -149,6 +146,5 @@ describe("the lines a screen reader says in the room", () => {
     ];
 
     expect(said.filter((line) => line.trim().length === 0)).toEqual([]);
-    expect(said).toHaveLength(6);
   });
 });

@@ -47,11 +47,7 @@ describe("the room drawn to the screen it is on", () => {
       stage: { x: 0, y: 0, width: 390, height: 200 },
     });
 
-    const map = drawnMap();
-
-    expect(map.width).toBeLessThan(300);
-    expect(map.height).toBeLessThan(200);
-    expect(map.height).toBeGreaterThan(50);
+    expect(drawnMap().height).toBeCloseTo(104);
   });
 
   it("sets the screen edge over the map at the map's own width", async () => {

@@ -18,62 +18,54 @@ beforeAll(async () => {
   [room] = await openedRooms(undefined, [WEST_PLANO_28]);
 });
 
+const aimedWith = (targetDepth: number) => {
+  const { result } = opened();
+  return {
+    ...result,
+    terms: {
+      ...result.terms,
+      profile: { ...(result.terms.profile ?? REFERENCE), targetDepth },
+    },
+  };
+};
+
+const rowNamed = (label: string) => {
+  const row = opened().auditorium.map.rows.find((held) => held.label === label);
+  if (row === undefined) throw new Error(`the room has no row ${label}`);
+  return row;
+};
+
 describe("where the Seat Profile aims in the room", () => {
-  it("aims inside the room, neither the front row nor the back, for a depth part way back", () => {
-    const { auditorium, result } = opened();
-    const rows = auditorium.map.rows.map((row) => row.seats[0]?.y);
-    const partWay = {
-      ...result,
-      terms: {
-        ...result.terms,
-        profile: { ...(result.terms.profile ?? REFERENCE), targetDepth: 0.4 },
-      },
-    };
+  it("aims at the sixth row of fourteen for a depth two fifths of the way back", () => {
+    const aimed = aimedAt(aimedWith(0.4), opened().auditorium.map);
 
-    const aimed = aimedAt(partWay, auditorium.map).y;
-
-    expect(aimed).toBeGreaterThan(rows[0] ?? Number.NaN);
-    expect(aimed).toBeLessThan(rows.at(-1) ?? Number.NaN);
+    expect(rowNamed("F").seats.map((seat) => seat.y)).toContain(aimed.y);
   });
 
   it("aims at the row in front when two rows are equally near the depth the profile asks for", () => {
-    const { auditorium, result } = opened();
-    const [front, , back] = auditorium.map.rows;
-    if (front === undefined || back === undefined)
-      throw new Error("the room has fewer than three rows");
+    const front = rowNamed("A");
+    const back = rowNamed("C");
     const map = {
-      ...auditorium.map,
+      ...opened().auditorium.map,
       rows: [
         { ...front, depth: 0 },
         { ...back, depth: 1 },
       ],
     };
-    const halfway = {
-      ...result,
-      terms: {
-        ...result.terms,
-        profile: { ...(result.terms.profile ?? REFERENCE), targetDepth: 0.5 },
-      },
-    };
 
-    expect(aimedAt(halfway, map).y).toBe(front.seats[0]?.y);
+    expect(front.seats.map((seat) => seat.y)).toContain(
+      aimedAt(aimedWith(0.5), map).y,
+    );
   });
 
-  it("aims at the room the profile names rather than at the group that was chosen", () => {
-    const { auditorium, result } = opened();
-    const lower = { ...(result.terms.profile ?? REFERENCE), targetDepth: 0 };
-    const deeper = { ...lower, targetDepth: 1 };
+  it("aims at the front row for no depth and the back row for all of it", () => {
+    const { map } = opened().auditorium;
 
-    expect(
-      aimedAt(
-        { ...result, terms: { ...result.terms, profile: lower } },
-        auditorium.map,
-      ).y,
-    ).toBeLessThan(
-      aimedAt(
-        { ...result, terms: { ...result.terms, profile: deeper } },
-        auditorium.map,
-      ).y,
+    expect(rowNamed("A").seats.map((seat) => seat.y)).toContain(
+      aimedAt(aimedWith(0), map).y,
+    );
+    expect(map.rows.at(-1)?.seats.map((seat) => seat.y)).toContain(
+      aimedAt(aimedWith(1), map).y,
     );
   });
 });

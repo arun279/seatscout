@@ -53,27 +53,14 @@ beforeAll(async () => {
 describe("the frame the whole room is drawn in", () => {
   it("leaves a gutter of 1.6 seats on the left for the row labels and half a seat elsewhere", () => {
     const { auditorium } = openedRoom(WEST_PLANO_28);
-    const seats = auditorium.map.rows.flatMap((row) => row.seats);
-    const frame = frameOf(auditorium);
-    const widest = Math.max(...seats.map((seat) => seat.width));
 
-    expect(frame.seatWidth).toBe(widest);
-    expect(frame.x).toBeCloseTo(
-      Math.min(...seats.map((seat) => seat.x)) - 1.6 * widest,
-      6,
-    );
-    expect(frame.y).toBeCloseTo(
-      Math.min(...seats.map((seat) => seat.y)) - 0.5 * widest,
-      6,
-    );
-    expect(frame.x + frame.width).toBeCloseTo(
-      Math.max(...seats.map((seat) => seat.x + seat.width)) + 0.5 * widest,
-      6,
-    );
-    expect(frame.y + frame.height).toBeCloseTo(
-      Math.max(...seats.map((seat) => seat.y + seat.height)) + 0.5 * widest,
-      6,
-    );
+    expect(frameOf(auditorium)).toEqual({
+      x: expect.closeTo(-28.8, 6),
+      y: expect.closeTo(-9, 6),
+      width: expect.closeTo(555.8, 6),
+      height: expect.closeTo(336, 6),
+      seatWidth: 18,
+    });
   });
 
   it("takes its scale from the widest Seat in the room", () => {
@@ -151,17 +138,13 @@ describe("what a Seat is drawn as", () => {
 describe("which Seats a person may choose from the map", () => {
   it("names every Seat any offered group holds, and no other", () => {
     const { auditorium } = openedRoom(WEST_PLANO_28);
-    const offered = offeredIn(auditorium);
 
-    expect(offered.size).toBe(
-      new Set(
-        auditorium.offered.flatMap((group) =>
-          group.seats.map((seat) => seat.id),
-        ),
-      ).size,
-    );
-    for (const group of auditorium.offered)
-      for (const seat of group.seats) expect(offered.has(seat.id)).toBe(true);
+    expect([...offeredIn(auditorium)].sort()).toEqual([
+      "G13",
+      "G14",
+      "H13",
+      "H14",
+    ]);
   });
 
   it("finds the group a Seat belongs to, and nothing for a Seat no group offers", () => {
@@ -231,20 +214,17 @@ describe("the console dividers a row carries", () => {
       held.gapAfter.includes("pod"),
     );
     if (row === undefined) throw new Error("no row has a console");
-    const at = row.gapAfter.indexOf("pod");
-    const left = row.seats.at(at);
-    const right = row.seats.at(at + 1);
-    if (left === undefined || right === undefined)
-      throw new Error("the pod gap has no Seats beside it");
 
-    expect(dividersIn(row)).toContainEqual({
-      x: (left.x + left.width + right.x) / 2,
-      y1: left.y + 0.2 * left.height,
-      y2: left.y + 0.8 * left.height,
-    });
-    expect(dividersIn(row)).toHaveLength(
-      row.gapAfter.filter((gap) => gap === "pod").length,
+    expect(row.label).toBe("E");
+    expect(dividersIn(row).map((divider) => divider.x)).toEqual(
+      [128.6, 230.8, 494, 596.15, 698.35, 800.55, 1067.4, 1169.6].map((x) =>
+        expect.closeTo(x, 6),
+      ),
     );
+    expect(dividersIn(row)[0]).toMatchObject({
+      y1: expect.closeTo(388.64, 6),
+      y2: expect.closeTo(408.56, 6),
+    });
   });
 
   it("draws none in a row whose Seats only meet or part at an aisle", () => {
