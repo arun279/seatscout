@@ -1,7 +1,6 @@
 appId: ${APP_ID}
 name: Ask, the ranked Seat Groups, the hand-off and the Room, with the Source answered from the corpus
 ---
-- launchApp
 - openLink: ${LINK}
 - extendedWaitUntil:
     visible: Find seats
