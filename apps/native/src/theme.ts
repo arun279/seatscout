@@ -25,6 +25,8 @@ export interface Palette {
   readonly beamDim: string;
   readonly seatFree: string;
   readonly seatGone: string;
+  readonly chosen: string;
+  readonly onChosen: string;
 }
 
 const DOWN: Palette = {
@@ -44,6 +46,8 @@ const DOWN: Palette = {
   beamDim: "#82bad5",
   seatFree: "#8b9aab",
   seatGone: "#697187",
+  chosen: "#e6ecf2",
+  onChosen: "#06070e",
 };
 
 const UP: Palette = {
@@ -63,6 +67,8 @@ const UP: Palette = {
   beamDim: "#3d556d",
   seatFree: "#745e4e",
   seatGone: "#8e7c6b",
+  chosen: "#231e17",
+  onChosen: "#f3ece0",
 };
 
 const DISPLAY = "BigShouldersDisplay-SemiBold";

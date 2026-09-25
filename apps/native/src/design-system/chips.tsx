@@ -57,21 +57,21 @@ export const Chips = <Named extends string>({
               ON_ANDROID ? styles.filter : styles.square,
               pressed
                 ? {
-                    backgroundColor: colours.silver,
-                    borderColor: colours.silver,
+                    backgroundColor: colours.chosen,
+                    borderColor: colours.chosen,
                   }
                 : {
                     backgroundColor: colours.raised,
-                    borderColor: colours.hairline,
+                    borderColor: colours.silverFaint,
                   },
             ]}
           >
             {pressed && ON_ANDROID && (
-              <Type set="sentence" tone="houseDeep">
+              <Type set="sentence" tone="onChosen">
                 ✓
               </Type>
             )}
-            <Type set="sentence" tone={pressed ? "houseDeep" : "silver"}>
+            <Type set="sentence" tone={pressed ? "onChosen" : "silver"}>
               {text}
             </Type>
           </TouchableOpacity>

@@ -5,6 +5,7 @@ import {
   everyControlReachesTheTouchFloor,
   everyControlSaysWhatItIs,
 } from "../../test/floors.js";
+import { contrastOf } from "../../test/contrast.js";
 import { houseLights } from "../../test/lights.js";
 import { themeFor } from "../theme.js";
 import { Segments } from "./segments.js";
@@ -54,23 +55,29 @@ describe("a segmented control, exactly one segment chosen", () => {
     everyControlSaysWhatItIs();
   });
 
-  it("lifts the chosen segment off the track", async () => {
-    houseLights("up");
-    await segmenting("day");
+  for (const appearance of ["down", "up"] as const)
+    it(`sets the chosen segment apart from its track at 3:1 or more with the house lights ${appearance}`, async () => {
+      houseLights(appearance);
+      await segmenting("day");
+      const { colours } = themeFor(appearance);
+      const track =
+        StyleSheet.flatten(segment("One day").parent?.props["style"])
+          .backgroundColor ?? colours.house;
 
-    expect(styleOf("One day").backgroundColor).toBe(
-      Platform.OS === "android" ? "#e2d8c6" : "#fefaf1",
-    );
-    expect(styleOf("Some days").backgroundColor).toBeUndefined();
-  });
+      expect(styleOf("One day").backgroundColor).toBe(colours.silver);
+      expect(styleOf("Some days").backgroundColor).toBeUndefined();
+      expect(
+        contrastOf(String(styleOf("One day").backgroundColor), String(track)),
+      ).toBeGreaterThanOrEqual(3);
+    });
 
-  it("sets the chosen segment's words brighter than the rest", async () => {
+  it("sets the chosen segment's words in the ground's colour on its ink", async () => {
     houseLights("down");
     await segmenting("day");
     const colour = (name: string) =>
       StyleSheet.flatten(screen.getByText(name).props["style"]).color;
 
-    expect(colour("One day")).toBe("#e6ecf2");
+    expect(colour("One day")).toBe("#06070e");
     expect(colour("A range")).toBe("#aab2bd");
   });
 
@@ -81,7 +88,7 @@ describe("a segmented control, exactly one segment chosen", () => {
 
     expect(track).toMatchObject(
       Platform.OS === "android"
-        ? { borderColor: "#323748", borderWidth: 1 }
+        ? { borderColor: "#a0a8b5", borderWidth: 1 }
         : { backgroundColor: "#161926", padding: 3 },
     );
   });
@@ -93,7 +100,9 @@ describe("a segmented control, exactly one segment chosen", () => {
     expect(styleOf("One day").borderLeftWidth).toBeUndefined();
     expect(styleOf("Some days").borderLeftWidth).toBe(divided);
     expect(styleOf("Some days").borderColor).toBe(
-      Platform.OS === "android" ? themeFor("down").colours.hairline : undefined,
+      Platform.OS === "android"
+        ? themeFor("down").colours.silverFaint
+        : undefined,
     );
     expect(styleOf("A range").borderLeftWidth).toBe(divided);
   });

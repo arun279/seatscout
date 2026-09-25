@@ -61,7 +61,7 @@ describe("a group of chips, any number of them chosen", () => {
     everyControlSaysWhatItIs();
   });
 
-  it("fills a chosen chip and leaves the rest raised on a hairline", async () => {
+  it("fills a chosen chip with the chosen ink and leaves the rest raised on an edge that reads", async () => {
     houseLights("down");
     await chipping(["IMAX"]);
     const style = (name: string) =>
@@ -76,7 +76,7 @@ describe("a group of chips, any number of them chosen", () => {
     ).toBe("#e6ecf2");
     expect(style("3D")).toMatchObject({
       backgroundColor: "#161926",
-      borderColor: "#323748",
+      borderColor: "#a0a8b5",
     });
   });
 

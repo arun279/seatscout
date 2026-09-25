@@ -64,6 +64,16 @@ describe("every appearance carries its own room past the standard", () => {
       ).toBeGreaterThanOrEqual(3);
     });
 
+    it(`fills a chosen control apart from the ground and the raised controls beside it at 3 to 1, and reads its words at 4.5 to 1, with the lights ${appearance}`, () => {
+      const { colours } = themeFor(appearance);
+
+      for (const around of [colours.house, colours.raised])
+        expect(contrastOf(colours.chosen, around)).toBeGreaterThanOrEqual(3);
+      expect(
+        contrastOf(colours.onChosen, colours.chosen),
+      ).toBeGreaterThanOrEqual(4.5);
+    });
+
     it(`keeps seats for sale the more present mark with the lights ${appearance}`, () => {
       const { colours } = themeFor(appearance);
 

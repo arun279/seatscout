@@ -185,6 +185,14 @@ describe("a sheet the platform presents", () => {
     },
   );
 
+  it("scrolls what it holds when nothing asks it to hold still", async () => {
+    await presented();
+
+    expect(screen.getByTestId("sheet-scroll").props["scrollEnabled"]).toBe(
+      true,
+    );
+  });
+
   it("rules the dock off from the scroll above it", async () => {
     const { dock } = await presented();
 

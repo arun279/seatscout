@@ -121,6 +121,7 @@ describe("where you sit, in the Ask sheet", () => {
     await asking({ terms: NEAR });
     const scrolls = () =>
       screen.getByTestId("sheet-scroll").props["scrollEnabled"];
+    expect(scrolls()).toBe(true);
 
     await laidOut(320);
     await respond("onResponderGrant", touched(160, 152));

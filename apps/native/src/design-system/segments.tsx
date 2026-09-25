@@ -40,7 +40,7 @@ export const Segments = <Named extends string>({
       style={[
         styles.track,
         ON_ANDROID
-          ? [styles.outlined, { borderColor: colours.hairline }]
+          ? [styles.outlined, { borderColor: colours.silverFaint }]
           : [styles.sunk, { backgroundColor: colours.raised }],
       ]}
     >
@@ -56,14 +56,17 @@ export const Segments = <Named extends string>({
             style={[
               styles.segment,
               ON_ANDROID
-                ? at > 0 && [styles.divided, { borderColor: colours.hairline }]
+                ? at > 0 && [
+                    styles.divided,
+                    { borderColor: colours.silverFaint },
+                  ]
                 : styles.lifted,
               picked && {
-                backgroundColor: ON_ANDROID ? colours.high : colours.chrome,
+                backgroundColor: colours.chosen,
               },
             ]}
           >
-            <Type set="sentenceSmall" tone={picked ? "silver" : "silverDim"}>
+            <Type set="sentenceSmall" tone={picked ? "onChosen" : "silverDim"}>
               {text}
             </Type>
           </TouchableOpacity>
