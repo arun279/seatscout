@@ -98,15 +98,129 @@ jobs:
           pnpm journey --head reports/journey/samples.json \
             --head-gesture reports/journey/gesture.json "${held[@]}"
 
-  footprint:
+  shards:
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
+    timeout-minutes: 5
+    outputs:
+      ids: ${{ steps.list.outputs.ids }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Name the workspaces the mutation gate is divided into
+        id: list
+        run: echo "ids=$(jq -c '[.[].id]' stryker.shards.json)" >> "$GITHUB_OUTPUT"
+
+  mutation:
+    needs: shards
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.shards.outputs.ids) }}
+    env:
+      SHARD: ${{ matrix.shard }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
+        with:
+          runtime: node@24.20.0
+          cache: true
+          install: false
+      - run: pnpm install --frozen-lockfile
+      - name: Name this tree and main's, since a merged branch's tree is main's next tree, and the file this shard's seed lives in
+        id: trees
+        run: |
+          git fetch --no-tags --depth=1 origin main
+          {
+            echo "head=$(git rev-parse 'HEAD^{tree}')"
+            echo "base=$(git rev-parse 'origin/main^{tree}')"
+            echo "seed=$(MUTATION_SHARD="$SHARD" node --input-type=module --eval 'const { default: config } = await import("./stryker.config.mjs"); console.log(config.incrementalFile)')"
+          } >> "$GITHUB_OUTPUT"
+      - name: Restore what an earlier run already judged of this workspace
+        id: seed
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.trees.outputs.seed }}
+          key: stryker-shard-${{ matrix.shard }}-tree-${{ steps.trees.outputs.head }}
+          restore-keys: |
+            stryker-shard-${{ matrix.shard }}-tree-${{ steps.trees.outputs.base }}
+            stryker-shard-${{ matrix.shard }}-branch-${{ github.head_ref }}-
+            stryker-shard-${{ matrix.shard }}-main-
+            stryker-main-
+            stryker-native-main-
+      - name: Refuse to judge the whole workspace from nothing
+        if: steps.seed.outputs.cache-matched-key == ''
+        run: |
+          echo "::error::No mutation seed could be restored for the $SHARD shard, and a pull request never judges a workspace from nothing. A cache's version comes from its path list, so a changed path list hides every seed saved before it; an evicted cache does the same. Dispatch the Baseline workflow on main to reseed, then re-run this."
+          exit 1
+      - name: Judge this workspace by mutating it and running its own tests
+        id: mutation
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          pnpm test:mutation:shard "$SHARD" 2>&1 | tee "$RUNNER_TEMP/stryker.log"
+      - name: Hold this shard to the tests its own workspace holds
+        id: collection
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        uses: ./.github/actions/hold-shard
+        with:
+          shard: ${{ matrix.shard }}
+          judged: ${{ steps.mutation.outcome }}
+          log: ${{ runner.temp }}/stryker.log
+      - name: Leave what this shard judged for the next push to start from
+        if: always() && steps.mutation.outcome == 'success' && steps.collection.outcome == 'success'
+        continue-on-error: true
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.trees.outputs.seed }}
+          key: stryker-shard-${{ matrix.shard }}-branch-${{ github.head_ref }}-${{ github.sha }}
+      - name: Leave it under this tree's name too, for main once this branch merges
+        if: always() && steps.mutation.outcome == 'success' && steps.collection.outcome == 'success'
+        continue-on-error: true
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.trees.outputs.seed }}
+          key: stryker-shard-${{ matrix.shard }}-tree-${{ steps.trees.outputs.head }}
+      - name: Publish it for main to inherit, since a cache saved on a branch is invisible to main
+        if: always() && steps.mutation.outcome == 'success' && steps.collection.outcome == 'success'
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: stryker-shard-${{ matrix.shard }}-tree-${{ steps.trees.outputs.head }}
+          path: ${{ steps.trees.outputs.seed }}
+          retention-days: 14
+      - name: Hand this shard's score to the job that reports every shard
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: mutation-${{ matrix.shard }}
+          path: reports/mutation/
+          if-no-files-found: ignore
+      - name: Refuse this shard if it fell below its threshold or judged less than its workspace holds
+        if: ${{ !cancelled() && (steps.mutation.outcome != 'success' || steps.collection.outcome != 'success') }}
+        env:
+          JUDGED: ${{ steps.mutation.outcome }}
+          COLLECTED: ${{ steps.collection.outcome }}
+        run: |
+          echo "::error::The $SHARD shard's mutation run came back $JUDGED and its test collection $COLLECTED. The steps above say why."
+          exit 1
+
+  footprint:
+    needs: mutation
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
     permissions:
       contents: read
       pull-requests: write
     env:
       BASE: ${{ github.event.pull_request.base.sha }}
       HEAD: ${{ github.event.pull_request.head.sha }}
+      JUDGED: ${{ needs.mutation.result }}
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -120,139 +234,53 @@ jobs:
           install: false
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - name: Name this tree and main's, since a merged branch's tree is main's next tree
-        id: trees
-        run: |
-          git fetch --no-tags --depth=1 origin main
-          echo "head=$(git rev-parse 'HEAD^{tree}')" >> "$GITHUB_OUTPUT"
-          echo "base=$(git rev-parse 'origin/main^{tree}')" >> "$GITHUB_OUTPUT"
-      - name: Restore what an earlier run already judged, the merged tree's report first
-        id: seed
-        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      - name: Collect what every shard judged
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
-          path: reports/stryker-incremental.json
-          key: stryker-tree-${{ steps.trees.outputs.head }}
-          restore-keys: |
-            stryker-tree-${{ steps.trees.outputs.base }}
-            stryker-${{ github.head_ref }}-
-            stryker-main-
-            stryker-
-      - name: Refuse to judge the whole tree from nothing
-        if: steps.seed.outputs.cache-matched-key == ''
-        run: |
-          echo "::error::No mutation seed could be restored, and a pull request never judges the whole tree from nothing. A cache's version comes from its path list, so a changed path list hides every seed saved before it; an evicted cache does the same. Dispatch the Baseline workflow on main to reseed, then re-run this."
-          exit 1
-      - name: Restore what an earlier run judged of the app, a seed of its own that main cannot hold until this merges
-        id: seed_native
-        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: reports/stryker-native-incremental.json
-          key: stryker-native-tree-${{ steps.trees.outputs.head }}
-          restore-keys: |
-            stryker-native-tree-${{ steps.trees.outputs.base }}
-            stryker-native-${{ github.head_ref }}-
-            stryker-native-main-
-            stryker-native-
-      - name: Say whether the app's seed was there, which it cannot be before the first Baseline after this merges
-        run: |
-          echo "The app's seed restored from: ${{ steps.seed_native.outputs.cache-matched-key || 'nothing, so its whole set is judged on this run' }}"
-      - name: Judge the suite by mutating the code it tests
-        id: mutation
+          pattern: mutation-*
+          merge-multiple: true
+          path: reports/mutation
+      - name: Hold every shard to a report that weighed something
+        id: reports
         continue-on-error: true
         run: |
-          set -o pipefail
-          pnpm test:mutation:incremental 2>&1 | tee "$RUNNER_TEMP/stryker-mutation.log"
-      - name: Judge the Expo app the same way, with the runner that can render it
-        id: mutation_native
-        continue-on-error: true
-        run: |
-          set -o pipefail
-          pnpm test:mutation:native:incremental 2>&1 | tee "$RUNNER_TEMP/stryker-native.log"
-      - name: Name the tests the initial run reported failing
-        if: ${{ !cancelled() && (steps.mutation.outcome == 'failure' || steps.mutation_native.outcome == 'failure') }}
-        run: |
-          for log in stryker-mutation stryker-native; do
-            [ -f "$RUNNER_TEMP/$log.log" ] || continue
-            awk '/One or more tests (failed in|resulted in an error)|Initial test run timed out/ { naming = 1; next }
-                 naming && /^[[:space:]]/ { print; next }
-                 naming { exit }' "$RUNNER_TEMP/$log.log" > "$RUNNER_TEMP/$log-failing.txt"
-            if [ -s "$RUNNER_TEMP/$log-failing.txt" ]; then
-              echo "::error::The initial test run of $log failed. The tests it named:"
-              cat "$RUNNER_TEMP/$log-failing.txt"
-            fi
+          refused=0
+          for report in $(jq -r '.[].report' stryker.shards.json); do
+            node tools/no-empty-run/src/index.ts mutation "$report" || refused=1
           done
-      - name: Check that mutation saw every test file
-        id: mutation_test_collection
+          exit "$refused"
+      - name: Check that the shards between them saw every test file
+        id: collection
         continue-on-error: true
         run: |
           set -o pipefail
-          initial() {
-            sed -n 's/.*Initial test run succeeded\. Ran \([0-9][0-9]*\) tests.*/\1/p' "$1" | tail -n 1
-          }
-          ran_tests="$(initial "$RUNNER_TEMP/stryker-mutation.log")"
-          ran_screens="$(initial "$RUNNER_TEMP/stryker-native.log")"
-          echo "ran=$(( ${ran_tests:-0} + ${ran_screens:-0} ))" >> "$GITHUB_OUTPUT"
-          RELATED_FILES="$(find apps packages tools -path "*/src/*" \( -name "*.ts" -o -name "*.tsx" \) ! -path "apps/native/src/*" ! -name "*.test.*" ! -name "*.spec.*" ! -name "*.fixtures.*")" \
-            pnpm exec vitest list --config vitest.related.config.ts --json="$RUNNER_TEMP/related-tests.json"
-          if [ ! -s "$RUNNER_TEMP/related-tests.json" ]; then
-            echo "::error::Vitest wrote no listing of the related tests, so there is nothing to hold Stryker's initial run to. Its own errors are above."
+          uncounted=""
+          for id in $(jq -r '.[].id' stryker.shards.json); do
+            [ -s "reports/mutation/$id.counted.json" ] || uncounted="$uncounted $id"
+          done
+          if [ -n "$uncounted" ]; then
+            echo "::error::These shards published no count of the tests they ran:$uncounted. The sum over the shards can be held to nothing, and a shard that did not report is a red verdict rather than a smaller number."
             exit 1
           fi
-          expected_tests="$(jq 'length' "$RUNNER_TEMP/related-tests.json")"
+          pnpm exec vitest list --json="$RUNNER_TEMP/unit.json"
           pnpm exec jest --config apps/native/jest.config.js --ci --json --maxWorkers 2 \
-            --outputFile="$RUNNER_TEMP/screen-tests.json" > /dev/null
-          if [ ! -s "$RUNNER_TEMP/screen-tests.json" ]; then
-            echo "::error::Jest wrote no report of the screen tests, so there is nothing to hold the run over the app to. Its own errors are above."
+            --outputFile="$RUNNER_TEMP/screens.json" > /dev/null
+          if [ ! -s "$RUNNER_TEMP/unit.json" ] || [ ! -s "$RUNNER_TEMP/screens.json" ]; then
+            echo "::error::A runner wrote no listing of its tests, so there is nothing to hold the sum over the shards to. Its own errors are above."
             exit 1
           fi
-          expected_screens="$(jq '.numTotalTests' "$RUNNER_TEMP/screen-tests.json")"
-          echo "expected=$(( expected_tests + expected_screens ))" >> "$GITHUB_OUTPUT"
-          echo "Stryker initial tests: ${ran_tests:-missing} of $expected_tests in Node, ${ran_screens:-missing} of $expected_screens on screens"
-          if [ -n "$ran_tests" ] && [ -n "$ran_screens" ] && [ "$expected_tests" -gt 0 ] && [ "$expected_screens" -gt 0 ] && [ "$ran_tests" -eq "$expected_tests" ] && [ "$ran_screens" -eq "$expected_screens" ]; then
-            echo "complete=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "complete=false" >> "$GITHUB_OUTPUT"
-            echo "::error::Stryker ran ${ran_tests:-no} of $expected_tests related unit tests and ${ran_screens:-no} of $expected_screens screen tests. A listing leaves out a skipped test where Stryker's run counts it, so one skip reads as a difference of one here; a wider gap is a collection that fell short."
-            exit 1
+          held=$(( $(jq 'length' "$RUNNER_TEMP/unit.json") + $(jq '.numTotalTests' "$RUNNER_TEMP/screens.json") ))
+          counted="$(jq -s '[.[].ran] | add // 0' reports/mutation/*.counted.json)"
+          {
+            echo "counted=$counted"
+            echo "held=$held"
+          } >> "$GITHUB_OUTPUT"
+          echo "The shards judged $counted tests of the $held the runners collect."
+          if [ "$counted" -eq "$held" ]; then
+            exit 0
           fi
-      - name: Leave what this run judged for the next push to start from
-        if: always() && steps.mutation_test_collection.outputs.complete == 'true' && steps.mutation.outcome == 'success' && steps.mutation_native.outcome == 'success'
-        continue-on-error: true
-        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: reports/stryker-incremental.json
-          key: stryker-${{ github.head_ref }}-${{ github.sha }}
-      - name: Leave what it judged of the app for the next push too
-        if: always() && steps.mutation_test_collection.outputs.complete == 'true' && steps.mutation.outcome == 'success' && steps.mutation_native.outcome == 'success'
-        continue-on-error: true
-        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: reports/stryker-native-incremental.json
-          key: stryker-native-${{ github.head_ref }}-${{ github.sha }}
-      - name: Leave it under this tree's name too, for main once this branch merges, only from a run the gate passed
-        if: always() && steps.mutation_test_collection.outputs.complete == 'true' && steps.mutation.outcome == 'success' && steps.mutation_native.outcome == 'success'
-        continue-on-error: true
-        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: reports/stryker-incremental.json
-          key: stryker-tree-${{ steps.trees.outputs.head }}
-      - name: Leave the app's under this tree's name as well
-        if: always() && steps.mutation_test_collection.outputs.complete == 'true' && steps.mutation.outcome == 'success' && steps.mutation_native.outcome == 'success'
-        continue-on-error: true
-        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: reports/stryker-native-incremental.json
-          key: stryker-native-tree-${{ steps.trees.outputs.head }}
-      - name: Publish it for main to inherit, since a cache saved on a branch is invisible to main
-        if: always() && steps.mutation_test_collection.outputs.complete == 'true' && steps.mutation.outcome == 'success' && steps.mutation_native.outcome == 'success'
-        continue-on-error: true
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: stryker-tree-${{ steps.trees.outputs.head }}
-          path: |
-            reports/stryker-incremental.json
-            reports/stryker-native-incremental.json
-          retention-days: 14
+          echo "::error::The shards judged $counted tests between them and the runners collect $held. A test file under no shard's workspace falls between them and is judged by nothing, so stryker.shards.json is short of a workspace."
+          exit 1
       - name: Install the counter
         if: ${{ !cancelled() }}
         run: |
@@ -267,24 +295,21 @@ jobs:
       - name: Say what every gate did, so a red run reports as fully as a green one
         if: ${{ !cancelled() }}
         env:
-          MUTATION: ${{ steps.mutation.outcome }}
-          MUTATION_NATIVE: ${{ steps.mutation_native.outcome }}
-          COLLECTION: ${{ steps.mutation_test_collection.outcome }}
+          REPORTED: ${{ steps.reports.outcome }}
+          COLLECTION: ${{ steps.collection.outcome }}
           MEASURED: ${{ steps.footprint.outcome }}
-          RAN: ${{ steps.mutation_test_collection.outputs.ran }}
-          EXPECTED: ${{ steps.mutation_test_collection.outputs.expected }}
-          SEEDED: ${{ steps.mutation_test_collection.outputs.complete }}
+          COUNTED: ${{ steps.collection.outputs.counted }}
+          HELD: ${{ steps.collection.outputs.held }}
         run: |
           {
             echo "## What the gates did"
             echo
             echo "| gate | verdict |"
             echo "| --- | --- |"
-            echo "| Mutation run | $MUTATION |"
-            echo "| Mutation run over the app | $MUTATION_NATIVE |"
-            echo "| Test collection | $COLLECTION, Stryker ran ${RAN:-no} of ${EXPECTED:-an uncounted number of} related tests |"
+            echo "| Mutation runs, one per workspace | $JUDGED |"
+            echo "| Every shard left a report | $REPORTED |"
+            echo "| Test collection | $COLLECTION, the shards held ${COUNTED:-an uncounted number of} tests between them, and the runners collect ${HELD:-an uncounted number} |"
             echo "| Footprint measurement | $MEASURED |"
-            echo "| Incremental report kept | ${SEEDED:-false} |"
             echo
           } > verdict.md
           if [ -s footprint.md ]; then
@@ -305,13 +330,14 @@ jobs:
       - name: Refuse the change if a gate refused it, now that the report is posted
         if: ${{ !cancelled() }}
         env:
-          COLLECTION: ${{ steps.mutation_test_collection.outcome }}
+          REPORTED: ${{ steps.reports.outcome }}
+          COLLECTION: ${{ steps.collection.outcome }}
           MEASURED: ${{ steps.footprint.outcome }}
         run: |
-          if [ "$COLLECTION" = success ] && [ "$MEASURED" = success ]; then
+          if [ "$JUDGED" = success ] && [ "$REPORTED" = success ] && [ "$COLLECTION" = success ] && [ "$MEASURED" = success ]; then
             exit 0
           fi
-          echo "::error::Test collection $COLLECTION, footprint measurement $MEASURED. The report on the pull request says what each one measured."
+          echo "::error::Mutation runs $JUDGED, every shard reported $REPORTED, test collection $COLLECTION, footprint measurement $MEASURED. The report on the pull request says what each one measured."
           exit 1
 
   performance:

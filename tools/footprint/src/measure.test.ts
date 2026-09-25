@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { BIOME, OXLINT } from "./limits.js";
 import {
+  CORE_MUTATION_REPORT,
   lines,
-  MUTATION_REPORT,
   measuring,
   NATIVE_MUTATION_REPORT,
   reading,
@@ -13,13 +13,13 @@ import {
   measureWith,
   OXLINT_REPORT,
   RATCHET,
-  STRYKER,
+  SHARDS,
 } from "./measure.js";
 
 describe("measuring a change", () => {
   it("names every file it reads a number or a path out of", () => {
     expect(RATCHET).toBe(".footprint.json");
-    expect(STRYKER).toBe("stryker.config.json");
+    expect(SHARDS).toBe("stryker.shards.json");
     expect(OXLINT_REPORT).toBe(".oxlintrc.report.json");
     expect(BIOME_REPORT).toBe("biome.report.json");
   });
@@ -147,14 +147,14 @@ describe("measuring a change", () => {
     });
     expect(measurement.mutation).toStrictEqual([
       {
-        over: "The engine, the packages and the tools, by Vitest",
+        over: "packages/core",
         score: 100,
         detected: 1,
         weighed: 1,
         breaksAt: 100,
       },
       {
-        over: "The Expo app, by Jest",
+        over: "apps/native",
         score: 100,
         detected: 1,
         weighed: 1,
@@ -163,13 +163,13 @@ describe("measuring a change", () => {
     ]);
   });
 
-  it("reads each mutation report from wherever its own runner was told to write it", () => {
+  it("reads one mutation report for every shard the list names", () => {
     const { run } = recorder();
     const { read, asked } = reading();
 
     measureWith(run, read)("origin/main", "HEAD");
 
-    expect(asked).toContain(MUTATION_REPORT);
+    expect(asked).toContain(CORE_MUTATION_REPORT);
     expect(asked).toContain(NATIVE_MUTATION_REPORT);
   });
 

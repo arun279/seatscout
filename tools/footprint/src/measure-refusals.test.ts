@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { BIOME, OXLINT } from "./limits.js";
 import { measuring, recorder } from "./measure.fixtures.js";
-import { RATCHET, STRYKER, STRYKER_NATIVE } from "./measure.js";
+import { RATCHET, SHARDS } from "./measure.js";
 import type { Run } from "./shell.js";
 
 const sizeLimitExitingNonZero = (stdout: string): Run =>
@@ -175,18 +175,32 @@ describe("the limits the report stands its figures beside", () => {
   });
 });
 
-describe("the mutation report", () => {
-  it("refuses a runner configuration that names no json report", () => {
-    expect(measured({ [STRYKER]: JSON.stringify({ reporters: [] }) })).toThrow(
-      `${STRYKER} names no json report, so no mutation run wrote a score to read.`,
+describe("the mutation reports the shards wrote", () => {
+  it("refuses a list that names no shard, whose score would be a verdict over nothing", () => {
+    expect(measured({ [SHARDS]: "[]" })).toThrow(
+      `${SHARDS} names no shard, so no mutation run was asked for and a score over nothing would pass.`,
     );
   });
 
-  it("refuses the Expo app's runner configuration on the same terms", () => {
+  it("refuses a shard that names no report, rather than reading a path that is not there", () => {
     expect(
-      measured({ [STRYKER_NATIVE]: JSON.stringify({ reporters: [] }) }),
+      measured({
+        [SHARDS]: JSON.stringify([{ id: "core", workspace: "packages/core" }]),
+      }),
     ).toThrow(
-      `${STRYKER_NATIVE} names no json report, so no mutation run wrote a score to read.`,
+      `${SHARDS} holds a shard without a workspace and a report, so there is no score of it to read:\n{"workspace":"packages/core"}`,
+    );
+  });
+
+  it("refuses a shard that names no workspace, whose score would be a row about nothing", () => {
+    expect(
+      measured({
+        [SHARDS]: JSON.stringify([
+          { id: "core", report: "reports/mutation/core.json" },
+        ]),
+      }),
+    ).toThrow(
+      `${SHARDS} holds a shard without a workspace and a report, so there is no score of it to read:\n{"report":"reports/mutation/core.json"}`,
     );
   });
 });

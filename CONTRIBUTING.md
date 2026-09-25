@@ -82,8 +82,10 @@ how a contributor arrives red on a pull request, which is what this list is for.
 line is the half of the journey gate a checkout can run alone; the job also builds the merge
 base in a worktree, runs its journey, and holds this one to it.
 
-Four further jobs run beside it. `footprint` runs the mutation gate and reports what the
-change weighs. `secrets` scans the pull request's commits with gitleaks. `dependencies`
+Six further jobs run beside it. `shards` reads the workspaces the mutation gate is divided
+into out of `stryker.shards.json`, and `mutation` judges one of them per runner, in parallel.
+`footprint` gathers what they wrote and reports what the change weighs. `secrets` scans the
+pull request's commits with gitleaks. `dependencies`
 scans the lockfile against the OSV database and fails on any advisory, then reads every
 dependency's licence and fails on any SPDX identifier outside the allowlist that job
 carries, a licence it could not determine included. `performance` measures each screen's
@@ -206,10 +208,10 @@ Each of these has one way through and no exemption to grant.
 - **The test count.** `.footprint.json` holds a floor under the tests the three runners collect,
   by their own listings rather than by a run, except Jest, which has no listing that counts tests
   without running them and so reports its run's own total; the mutation-cache guard separately
-  compares each Stryker initial run to the tests its own runner finds over the files its
-  configuration mutates, which for the run in Node is what `vitest list` collects in the related
-  mode `vitest.related.config.ts` turns on from the `RELATED_FILES` the workflow names. Put the
-  tests back, or lower the ratchet in the same diff.
+  compares each shard's Stryker initial run to the tests its own workspace holds, which is what
+  `vitest list` collects under that directory, or the Jest suite's own total for the Expo app,
+  and the `footprint` job holds the sum over the shards to what the two runners collect over the
+  whole tree. Put the tests back, or lower the ratchet in the same diff.
 
 Take a ratchet's new value from the `footprint` comment on the pull request rather than from a
 local run: the job measures the merge of your branch with `main` rather than the branch alone,
@@ -280,34 +282,39 @@ built tree and a mutation report already on disk:
 ```sh
 pnpm build
 pnpm test:mutation
-pnpm test:mutation:native
 pnpm footprint
 ```
 
-The mutation gate is two runs, because Vitest cannot render React Native.
-`stryker.config.json` is everything that runs in Node; `stryker.native.config.json` is
-`apps/native/src` under Stryker's Jest runner. Each writes its own report and its own
-incremental file, each breaks below 100, and the footprint comment prints both.
-[ADR 12](docs/adr/0012-every-mutant-must-die.md) says why the second one sets
-`coverageAnalysis` to `off` and what its ignore-plugin skips.
+The mutation gate is one run per workspace. `stryker.shards.json` names them, and
+`stryker.config.mjs` takes the one `MUTATION_SHARD` names out of that list and mutates that
+workspace, and `vitest.stryker.config.ts` limits Vitest to that workspace's own tests, so a
+mutant is killed by the tests that own it or by nothing. Each shard writes its own report under `reports/mutation`, each
+breaks below 100, and the footprint comment prints every one of them. Vitest runs all of them
+but `apps/native`, which Vitest cannot render and Stryker's Jest runner takes instead.
+[ADR 12](docs/adr/0012-every-mutant-must-die.md) says why the division is by workspace, why
+that shard sets `coverageAnalysis` to `off`, and what its ignore-plugin skips.
 
-`--base` and `--head` compare something else, and `--out` writes the Markdown to a file.
-`pnpm test:mutation` inherits nothing and writes nothing to inherit from;
-`pnpm test:mutation:incremental` is what both jobs run, and is what writes and reuses
-`reports/stryker-incremental.json`.
+`pnpm test:mutation` judges every shard in turn, inheriting nothing and writing nothing to
+inherit from, and names every shard it refused. Both scripts first refuse a list that leaves a
+source file under `{apps,packages,tools}/*/src` to no shard. `pnpm test:mutation:shard <id>`
+judges one incrementally, which is what each runner in CI runs. `--base` and `--head` make `pnpm footprint` compare something else, and
+`--out` writes its Markdown to a file.
 
 Both scripts run Vitest on one worker under Stryker (`VITEST_MAX_WORKERS=1`): with more, Stryker
 activates a mutant in one worker while its tests run in another, and the run reports survivors
-that a hand-planted mutant refutes. A scoped run by hand needs the same prefix:
-`VITEST_MAX_WORKERS=1 pnpm exec stryker run --incremental --force --mutate <files>`.
+that a hand-planted mutant refutes. A scoped run by hand needs the same prefix and the shard the
+files sit in: `VITEST_MAX_WORKERS=1 MUTATION_SHARD=<id> pnpm exec stryker run --incremental
+--force --mutate <files>`.
 
-Each report is saved under two names, the branch's and the tree's. A pull request merged up to
-date has exactly the tree main gets, so the next branch restores the merged branch's report by
-main's tree hash and judges only what it changed. A cache saved on a branch is invisible to main,
-so a passing run also publishes its report as an artifact named by the tree; the baseline job on a
-push downloads that artifact for main's tree, judges the nothing that changed, and saves the seed
-under main, where every branch can restore it. Its nightly schedule judges main from nothing, which
-is the one full run.
+Each shard's report is saved under two names, the branch's and the tree's, both carrying the
+shard. A pull request merged up to date has exactly the tree main gets, so the next branch
+restores the merged branch's report by main's tree hash and judges only what it changed. A cache
+saved on a branch is invisible to main, so a passing shard also publishes its report as an
+artifact named by the shard and the tree; the baseline job on a push downloads that artifact for
+main's tree, judges the nothing that changed, and saves the seed under main, where every branch
+can restore it. Its nightly schedule judges main from nothing, which is the one full run. A
+pull request's shard that restores no seed at all is refused rather than left to do the same;
+dispatching the Baseline on main reseeds it.
 
 A Baseline that fails saves no seed, so it opens an issue labelled `baseline-red`, and any
 green Baseline closes it. See [ADR 12](docs/adr/0012-every-mutant-must-die.md).

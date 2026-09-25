@@ -1,6 +1,6 @@
 const BIOME = "biome.json";
 const RATCHET = ".size-limit.json";
-const STRYKER = "stryker.config.json";
+const STRYKER = "stryker.config.mjs";
 const CYCLOMATIC = ".oxlintrc.json";
 const JOURNEY = "tests/e2e/journey.spec.ts";
 const GESTURE = "tests/e2e/auditorium.spec.ts";
@@ -59,7 +59,24 @@ export const GATE_CLAIMS = [
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
     says: /calls it greater than or equal to a break threshold of 100, and exits/,
     holds: "the mutation gate's breaking threshold",
-    pattern: '"break": 100',
+    pattern: "break: 100",
+    paths: [STRYKER],
+    files: 1,
+  },
+  {
+    adr: "0012-every-mutant-must-die.md",
+    says: /includes that workspace's test files and no others/,
+    holds:
+      "the configuration that limits a shard to the tests its workspace holds",
+    pattern: "configFor(shard?.workspace)",
+    paths: ["vitest.stryker.config.ts"],
+    files: 1,
+  },
+  {
+    adr: "0012-every-mutant-must-die.md",
+    says: /The Vitest runner's `vitest\.related` is turned off for the/,
+    holds: "the setting that keeps related mode off a shard's static mutants",
+    pattern: "related: false",
     paths: [STRYKER],
     files: 1,
   },

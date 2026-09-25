@@ -14,9 +14,13 @@ import { type Suites, suitesFrom } from "./suites.js";
 import { type Diff, filesOf, type Side, type Tree } from "./volume.js";
 
 export const RATCHET = ".footprint.json";
-export const STRYKER = "stryker.config.json";
-export const STRYKER_NATIVE = "stryker.native.config.json";
+export const SHARDS = "stryker.shards.json";
 const NATIVE_JEST = "apps/native/jest.config.js";
+
+interface Shard {
+  readonly workspace?: unknown;
+  readonly report?: unknown;
+}
 
 const NATIVE_JEST_RUN: readonly string[] = [
   "exec",
@@ -107,13 +111,19 @@ export const measureWith = (run: Run, read: (path: string) => string) => {
       ]),
     );
 
-  const weighed = (over: string, config: string): Mutation => {
-    const written = JSON.parse(read(config)).jsonReporter?.fileName;
-    if (typeof written !== "string")
+  const weighed = (): readonly Mutation[] => {
+    const shards: readonly Shard[] = JSON.parse(read(SHARDS));
+    if (shards.length === 0)
       throw new Error(
-        `${config} names no json report, so no mutation run wrote a score to read.`,
+        `${SHARDS} names no shard, so no mutation run was asked for and a score over nothing would pass.`,
       );
-    return mutationFrom(over, read(written));
+    return shards.map(({ workspace, report }) => {
+      if (typeof workspace !== "string" || typeof report !== "string")
+        throw new Error(
+          `${SHARDS} holds a shard without a workspace and a report, so there is no score of it to read:\n${JSON.stringify({ workspace, report })}`,
+        );
+      return mutationFrom(workspace, read(report));
+    });
   };
 
   const held = (of: string, ratchets: Record<string, unknown>): number => {
@@ -145,10 +155,7 @@ export const measureWith = (run: Run, read: (path: string) => string) => {
       gates: against,
       limits: observed(against),
       suites: collected(),
-      mutation: [
-        weighed("The engine, the packages and the tools, by Vitest", STRYKER),
-        weighed("The Expo app, by Jest", STRYKER_NATIVE),
-      ],
+      mutation: weighed(),
       ratchets: ratchets(),
     };
   };

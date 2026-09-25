@@ -1,0 +1,81 @@
+name: Hold a mutation shard to its workspace
+description: Names the tests a failed initial run reported, then holds Stryker's initial run to the tests the shard's own workspace holds and writes both counts for the job that sums the shards.
+inputs:
+  shard:
+    description: The shard's id in stryker.shards.json.
+    required: true
+  judged:
+    description: The outcome of the step that ran Stryker over the shard.
+    required: true
+  log:
+    description: The file that step wrote Stryker's output to.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Name the tests the initial run reported failing
+      if: inputs.judged == 'failure'
+      shell: bash
+      env:
+        SHARD: ${{ inputs.shard }}
+        LOG: ${{ inputs.log }}
+      run: |
+        [ -f "$LOG" ] || exit 0
+        awk '/One or more tests (failed in|resulted in an error)|Initial test run timed out/ { naming = 1; next }
+             naming && /^[[:space:]]/ { print; next }
+             naming { exit }' "$LOG" > "$RUNNER_TEMP/failing-tests.txt"
+        if [ ! -s "$RUNNER_TEMP/failing-tests.txt" ]; then
+          echo "The run failed over something other than a failing test, or Stryker no longer names them the way this step reads."
+          exit 0
+        fi
+        {
+          echo "### The tests the initial run of the $SHARD shard reported failing"
+          echo
+          echo '```'
+          cat "$RUNNER_TEMP/failing-tests.txt"
+          echo '```'
+        } >> "$GITHUB_STEP_SUMMARY"
+        echo "::error::The initial test run of the $SHARD shard failed. The tests it named:"
+        cat "$RUNNER_TEMP/failing-tests.txt"
+    - name: Check that this shard saw every test its own workspace holds
+      shell: bash
+      env:
+        SHARD: ${{ inputs.shard }}
+        LOG: ${{ inputs.log }}
+      run: |
+        set -o pipefail
+        named="$(jq -r --arg id "$SHARD" '.[] | select(.id == $id)' stryker.shards.json)"
+        workspace="$(printf '%s' "$named" | jq -r .workspace)"
+        collected="$RUNNER_TEMP/collected.json"
+        if [ "$(printf '%s' "$named" | jq -r .runner)" = jest ]; then
+          pnpm exec jest --config apps/native/jest.config.js --ci --json --maxWorkers 2 \
+            --outputFile="$collected" > /dev/null
+          reads='.numTotalTests'
+        else
+          pnpm exec vitest list --json="$collected" "$workspace/"
+          reads="[.[] | select(.file | index(\"$GITHUB_WORKSPACE/$workspace/\") == 0)] | length"
+        fi
+        if [ ! -s "$collected" ]; then
+          echo "::error::The runner wrote no listing of the tests in $workspace, so there is nothing to hold Stryker's initial run to. Its own errors are above."
+          exit 1
+        fi
+        expected="$(jq "$reads" "$collected")"
+        ran=""
+        if [ -f "$LOG" ]; then
+          ran="$(sed -n 's/.*Initial test run succeeded\. Ran \([0-9][0-9]*\) tests.*/\1/p' "$LOG" | tail -n 1)"
+        fi
+        mkdir -p reports/mutation
+        printf '{"id":"%s","ran":%s,"expected":%s}\n' "$SHARD" "${ran:-0}" "$expected" \
+          > "reports/mutation/$SHARD.counted.json"
+        echo "Stryker initial tests in $SHARD: ${ran:-missing} of $expected"
+        if [ -n "$ran" ] && [ "$expected" -gt 0 ] && [ "$ran" -eq "$expected" ]; then
+          exit 0
+        fi
+        difference="The $SHARD shard ran ${ran:-no} of $expected tests. A listing leaves out a skipped test where Stryker's run counts it, so one skip reads as a difference of one here; a wider gap is a collection that fell short."
+        echo "::error::$difference"
+        {
+          echo "### Incomplete mutation test collection in $SHARD"
+          echo
+          echo "$difference Its incremental mutation report was not saved."
+        } >> "$GITHUB_STEP_SUMMARY"
+        exit 1

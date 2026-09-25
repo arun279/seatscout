@@ -29,11 +29,17 @@ const WORKSPACE = "pnpm-workspace.yaml";
 const CI = ".github/workflows/ci.yml";
 const BASELINE = ".github/workflows/baseline.yml";
 
-const seedPaths = (read: Read) =>
+const seedCaches = (read: Read) =>
   [CI, BASELINE]
-    .flatMap((workflow) => read(workflow).split("\n"))
-    .filter((line) =>
-      /^ {10}path: reports\/stryker-(native-)?incremental\.json$/.test(line),
+    .map((workflow) => read(workflow).split("\n"))
+    .flatMap((lines) =>
+      lines.filter(
+        (line, at) =>
+          /uses: actions\/cache\//.test(line) &&
+          /^ {10}path: \$\{\{ steps\.\w+\.outputs\.seed \}\}$/.test(
+            lines[at + 2] ?? "",
+          ),
+      ),
     );
 
 const blockUnder = (read: Read, path: string, heading: string) => {
@@ -60,8 +66,8 @@ const sheetsImported = (read: Read) =>
 
 const projectsExtending = (read: Read) => {
   const config = read(VITEST);
-  const projects = [...config.matchAll(/^ {10}name: "/gm)];
-  const extending = [...config.matchAll(/^ {8}extends: true,$/gm)];
+  const projects = [...config.matchAll(/^ +name: "/gm)];
+  const extending = [...config.matchAll(/^ +extends: true,$/gm)];
   if (projects.length !== extending.length)
     throw new Error(
       `a project in ${VITEST} does not extend the root configuration, so the dry run's timeout never reaches its tests`,
@@ -127,7 +133,7 @@ export const CLAIMS: readonly Claim[] = [
     document: MUTANTS,
     says: /(\w+) cache entries across the two workflows name one seed file each/,
     about: `the cache entries naming one seed file, in ${CI} and ${BASELINE}`,
-    count: (read) => seedPaths(read).length,
+    count: (read) => seedCaches(read).length,
   },
   {
     document: GATES,

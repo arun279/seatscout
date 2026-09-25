@@ -34,14 +34,14 @@ export const SUITES: Suites = { unit: 487, screens: 76, endToEnd: 7 };
 
 export const WEIGHED: readonly Mutation[] = [
   {
-    over: "The engine, the packages and the tools, by Vitest",
+    over: "packages/core",
     score: 100,
     detected: 2174,
     weighed: 2174,
     breaksAt: 100,
   },
   {
-    over: "The Expo app, by Jest",
+    over: "apps/native",
     score: 100,
     detected: 180,
     weighed: 180,

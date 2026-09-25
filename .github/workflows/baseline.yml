@@ -22,13 +22,28 @@ env:
   RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
 jobs:
-  mutation:
+  shards:
     runs-on: ubuntu-24.04
-    timeout-minutes: 240
-    permissions:
-      contents: read
-      actions: read
-      issues: write
+    timeout-minutes: 5
+    outputs:
+      ids: ${{ steps.list.outputs.ids }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Name the workspaces the mutation gate is divided into
+        id: list
+        run: echo "ids=$(jq -c '[.[].id]' stryker.shards.json)" >> "$GITHUB_OUTPUT"
+
+  mutation:
+    needs: shards
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.shards.outputs.ids) }}
+    env:
+      SHARD: ${{ matrix.shard }}
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -39,128 +54,76 @@ jobs:
           cache: true
           install: false
       - run: pnpm install --frozen-lockfile
-      - name: Name main's tree, which the branch that merged already judged
+      - name: Name main's tree, which the branch that merged already judged, and the file this shard's seed lives in
         id: tree
-        run: echo "main=$(git rev-parse 'HEAD^{tree}')" >> "$GITHUB_OUTPUT"
-      - name: On a push, inherit the merged branch's report from the artifact its own run published; the schedule starts from nothing
-        if: github.event_name == 'push'
         run: |
-          id="$(gh api "repos/${{ github.repository }}/actions/artifacts?name=stryker-tree-${{ steps.tree.outputs.main }}&per_page=1" --jq '.artifacts[0].id // empty')"
+          {
+            echo "main=$(git rev-parse 'HEAD^{tree}')"
+            echo "seed=$(MUTATION_SHARD="$SHARD" node --input-type=module --eval 'const { default: config } = await import("./stryker.config.mjs"); console.log(config.incrementalFile)')"
+          } >> "$GITHUB_OUTPUT"
+      - name: On a push, inherit this shard's report from the artifact its own run published; the schedule starts from nothing
+        if: github.event_name == 'push'
+        env:
+          NAMED: stryker-shard-${{ matrix.shard }}-tree-${{ steps.tree.outputs.main }}
+        run: |
+          id="$(gh api "repos/$GH_REPO/actions/artifacts?name=$NAMED&per_page=1" --jq '.artifacts[0].id // empty')"
           if [ -n "$id" ]; then
             mkdir -p reports
-            gh api "repos/${{ github.repository }}/actions/artifacts/$id/zip" > "$RUNNER_TEMP/seed.zip"
+            gh api "repos/$GH_REPO/actions/artifacts/$id/zip" > "$RUNNER_TEMP/seed.zip"
             unzip -o "$RUNNER_TEMP/seed.zip" -d reports
-            echo "Inherited the report of tree ${{ steps.tree.outputs.main }} from artifact $id."
+            echo "Inherited $NAMED from artifact $id."
           else
-            echo "No branch published a report for tree ${{ steps.tree.outputs.main }}; judging main from nothing."
+            echo "No branch published $NAMED; judging this workspace from nothing."
           fi
-      - name: Judge main
+      - name: Judge this workspace on main
         id: judge
         run: |
           set -o pipefail
-          pnpm test:mutation:incremental 2>&1 | tee "$RUNNER_TEMP/stryker-mutation.log"
-      - name: Judge the Expo app with the runner that can render it
-        id: judge_native
-        run: |
-          set -o pipefail
-          pnpm test:mutation:native:incremental 2>&1 | tee "$RUNNER_TEMP/stryker-native.log"
-      - name: Name the tests the initial run reported failing
-        if: ${{ !cancelled() && (steps.judge.outcome == 'failure' || steps.judge_native.outcome == 'failure') }}
-        run: |
-          : > "$RUNNER_TEMP/failing-tests.txt"
-          for log in stryker-mutation stryker-native; do
-            [ -f "$RUNNER_TEMP/$log.log" ] || continue
-            awk '/One or more tests (failed in|resulted in an error)|Initial test run timed out/ { naming = 1; next }
-                 naming && /^[[:space:]]/ { print; next }
-                 naming { exit }' "$RUNNER_TEMP/$log.log" >> "$RUNNER_TEMP/failing-tests.txt"
-          done
-          if [ -s "$RUNNER_TEMP/failing-tests.txt" ]; then
-            echo "::error::The initial test run failed. The tests it named:"
-            cat "$RUNNER_TEMP/failing-tests.txt"
-          else
-            echo "The mutation run failed over something other than a failing test, or Stryker no longer names them the way this step reads."
-          fi
-      - name: Check that mutation saw every test file
-        id: mutation_test_collection
-        run: |
-          set -o pipefail
-          initial() {
-            sed -n 's/.*Initial test run succeeded\. Ran \([0-9][0-9]*\) tests.*/\1/p' "$1" | tail -n 1
-          }
-          ran_tests="$(initial "$RUNNER_TEMP/stryker-mutation.log")"
-          ran_screens="$(initial "$RUNNER_TEMP/stryker-native.log")"
-          RELATED_FILES="$(find apps packages tools -path "*/src/*" \( -name "*.ts" -o -name "*.tsx" \) ! -path "apps/native/src/*" ! -name "*.test.*" ! -name "*.spec.*" ! -name "*.fixtures.*")" \
-            pnpm exec vitest list --config vitest.related.config.ts --json="$RUNNER_TEMP/related-tests.json"
-          if [ ! -s "$RUNNER_TEMP/related-tests.json" ]; then
-            echo "::error::Vitest wrote no listing of the related tests, so there is nothing to hold Stryker's initial run to. Its own errors are above."
-            exit 1
-          fi
-          expected_tests="$(jq 'length' "$RUNNER_TEMP/related-tests.json")"
-          pnpm exec jest --config apps/native/jest.config.js --ci --json --maxWorkers 2 \
-            --outputFile="$RUNNER_TEMP/screen-tests.json" > /dev/null
-          if [ ! -s "$RUNNER_TEMP/screen-tests.json" ]; then
-            echo "::error::Jest wrote no report of the screen tests, so there is nothing to hold the run over the app to. Its own errors are above."
-            exit 1
-          fi
-          expected_screens="$(jq '.numTotalTests' "$RUNNER_TEMP/screen-tests.json")"
-          echo "Stryker initial tests: ${ran_tests:-missing} of $expected_tests in Node, ${ran_screens:-missing} of $expected_screens on screens"
-          DIFFERENCE="Stryker ran ${ran_tests:-no} of $expected_tests related unit tests and ${ran_screens:-no} of $expected_screens screen tests. A listing leaves out a skipped test where Stryker's run counts it, so one skip reads as a difference of one here; a wider gap is a collection that fell short."
-          if [ -n "$ran_tests" ] && [ -n "$ran_screens" ] && [ "$expected_tests" -gt 0 ] && [ "$expected_screens" -gt 0 ] && [ "$ran_tests" -eq "$expected_tests" ] && [ "$ran_screens" -eq "$expected_screens" ]; then
-            echo "complete=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "complete=false" >> "$GITHUB_OUTPUT"
-            echo "::error::$DIFFERENCE"
-            {
-              echo "### Incomplete mutation test collection"
-              echo
-              echo "$DIFFERENCE The incremental mutation report was not saved."
-            } >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
+          pnpm test:mutation:shard "$SHARD" 2>&1 | tee "$RUNNER_TEMP/stryker.log"
+      - name: Hold this shard to the tests its own workspace holds
+        if: ${{ !cancelled() }}
+        uses: ./.github/actions/hold-shard
+        with:
+          shard: ${{ matrix.shard }}
+          judged: ${{ steps.judge.outcome }}
+          log: ${{ runner.temp }}/stryker.log
       - name: Leave what it judged for every branch to start from
-        if: steps.mutation_test_collection.outputs.complete == 'true' && steps.judge.outcome == 'success' && steps.judge_native.outcome == 'success'
+        if: success()
         continue-on-error: true
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: reports/stryker-incremental.json
-          key: stryker-main-${{ github.sha }}
-      - name: Leave what it judged of the app for every branch too
-        if: steps.mutation_test_collection.outputs.complete == 'true' && steps.judge.outcome == 'success' && steps.judge_native.outcome == 'success'
-        continue-on-error: true
-        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: reports/stryker-native-incremental.json
-          key: stryker-native-main-${{ github.sha }}
+          path: ${{ steps.tree.outputs.seed }}
+          key: stryker-shard-${{ matrix.shard }}-main-${{ github.sha }}
       - name: Leave it under the tree's name, which the next branch restores by
-        if: steps.mutation_test_collection.outputs.complete == 'true' && steps.judge.outcome == 'success' && steps.judge_native.outcome == 'success'
+        if: success()
         continue-on-error: true
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: reports/stryker-incremental.json
-          key: stryker-tree-${{ steps.tree.outputs.main }}
-      - name: Leave the app's under the tree's name as well
-        if: steps.mutation_test_collection.outputs.complete == 'true' && steps.judge.outcome == 'success' && steps.judge_native.outcome == 'success'
-        continue-on-error: true
-        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: reports/stryker-native-incremental.json
-          key: stryker-native-tree-${{ steps.tree.outputs.main }}
+          path: ${{ steps.tree.outputs.seed }}
+          key: stryker-shard-${{ matrix.shard }}-tree-${{ steps.tree.outputs.main }}
+
+  alarm:
+    needs: mutation
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+      issues: write
+    env:
+      JUDGED: ${{ needs.mutation.result }}
+    steps:
       - name: Say that main's baseline is red, where the maintainer will see it
-        if: ${{ failure() && github.event_name != 'workflow_dispatch' }}
+        if: ${{ needs.mutation.result != 'success' && github.event_name != 'workflow_dispatch' }}
         run: |
-          step=$(gh api "repos/$GH_REPO/actions/runs/$GITHUB_RUN_ID/jobs" \
-            --jq '[.jobs[].steps[] | select(.conclusion == "failure") | .name] | first // empty')
+          shards=$(gh api "repos/$GH_REPO/actions/runs/$GITHUB_RUN_ID/jobs" --paginate \
+            --jq '.jobs[] | select(.conclusion == "failure") | .name' | paste -sd , - | sed 's/,/, /g')
           {
-            echo "The Baseline run on main failed at \`${step:-a step the run does not name}\`, so main's tree was not judged and no seed was saved for the next branch to start from."
+            echo "The Baseline run on main came back $JUDGED, so main's tree was not judged in full and the shards that failed saved no seed for the next branch to start from."
             echo
-            if [ -s "$RUNNER_TEMP/failing-tests.txt" ]; then
-              echo "The tests the initial run reported failing:"
-              echo
-              echo '```'
-              cat "$RUNNER_TEMP/failing-tests.txt"
-              echo '```'
-              echo
-            fi
+            echo "The shards that failed: ${shards:-none the run names}. Each one's summary names the tests its initial run reported failing."
+            echo
             echo "$RUN"
           } > baseline.md
           cat baseline.md >> "$GITHUB_STEP_SUMMARY"
@@ -175,12 +138,17 @@ jobs:
               --title "The Baseline run on main failed"
           fi
       - name: Close what a green baseline answers
-        if: success()
+        if: ${{ needs.mutation.result == 'success' }}
         run: |
           open=$(gh issue list --label baseline-red --state open --limit 1 \
             --json number --jq '.[0].number // empty')
           if [ -n "$open" ]; then
             gh issue comment "$open" --body \
-              "A later Baseline judged main's whole tree and passed. $RUN"
+              "A later Baseline judged every workspace of main's tree and passed. $RUN"
             gh issue close "$open" --reason completed
           fi
+      - name: Refuse the run if a shard refused main's tree
+        if: ${{ needs.mutation.result != 'success' }}
+        run: |
+          echo "::error::The mutation shards came back $JUDGED. The issue labelled baseline-red says which ones."
+          exit 1
