@@ -2,7 +2,9 @@ import { createSeatScout, type Movie } from "@seatscout/client";
 import { fakeUpstream, type UpstreamScript } from "@seatscout/client/testing";
 import { describe, expect, it } from "vitest";
 import {
+  markedIn,
   movieOf,
+  offeredFor,
   programmeNear,
   suggestedFor,
   theaterNamed,
@@ -83,6 +85,37 @@ describe("the films playing near an area", () => {
     expect(suggestedFor("   ", PLAYING)).toEqual([]);
     expect(suggestedFor("Akira", PLAYING)).toEqual([]);
     expect(suggestedFor("Akira 4", PLAYING)).toHaveLength(1);
+  });
+
+  it("offers everything playing while nothing is typed, so a film is picked rather than remembered", () => {
+    expect(offeredFor("", PLAYING)).toEqual(PLAYING);
+    expect(offeredFor("   ", PLAYING)).toEqual(PLAYING);
+  });
+
+  it("narrows to what was typed the moment a letter is", () => {
+    expect(offeredFor("acme", PLAYING).map((movie) => movie.title)).toEqual([
+      "Coyote vs. Acme",
+    ]);
+    expect(offeredFor("Akira", PLAYING)).toEqual([]);
+  });
+
+  it("marks the typed letters where they sit in a title", () => {
+    expect(markedIn("Coyote vs. Acme", "acme")).toEqual([
+      "Coyote vs. ",
+      "Acme",
+      "",
+    ]);
+    expect(markedIn("Coyote vs. Acme", "  Coyote ")).toEqual([
+      "",
+      "Coyote",
+      " vs. Acme",
+    ]);
+  });
+
+  it("marks nothing where nothing was typed or the letters are not there", () => {
+    expect(markedIn("Akira", "")).toEqual(["Akira", "", ""]);
+    expect(markedIn("Akira", "   ")).toEqual(["Akira", "", ""]);
+    expect(markedIn("Akira", "zz")).toEqual(["Akira", "", ""]);
   });
 });
 

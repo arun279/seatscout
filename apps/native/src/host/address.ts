@@ -1,5 +1,12 @@
-import { parametersOf, type Terms, termsFrom } from "@seatscout/view-logic";
+import {
+  parametersOf,
+  type Term,
+  type Terms,
+  termsFrom,
+} from "@seatscout/view-logic";
 import { router, useLocalSearchParams } from "expo-router";
+
+const FOCUSED: readonly Term[] = ["area", "movie"];
 
 type Given = Readonly<Record<string, string | readonly string[] | undefined>>;
 
@@ -27,6 +34,23 @@ export const askedIn = (
 export const useTerms = (today: string): Terms =>
   termsFrom(pairsOf(useLocalSearchParams()), today);
 
+export const useFocus = (): Term | undefined => {
+  const term = useLocalSearchParams()["term"];
+  return FOCUSED.find((named) => named === term);
+};
+
 export const goTo = (terms: Terms): void => {
   router.push({ pathname: "/", params: askedIn(terms) });
+};
+
+export const askAbout = (terms: Terms, term: Term): void => {
+  router.push({ pathname: "/ask", params: { ...askedIn(terms), term } });
+};
+
+export const runInstead = (terms: Terms): void => {
+  router.replace({ pathname: "/", params: askedIn(terms) });
+};
+
+export const keepAsItWas = (): void => {
+  router.back();
 };

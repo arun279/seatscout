@@ -1,12 +1,17 @@
 import { useFonts } from "expo-font";
 import { type NativeStackNavigationOptions, Stack } from "expo-router";
 import type { ReactElement } from "react";
+import { SHEET_PRESENTATION } from "../design-system/sheet.js";
 import { FACES } from "../theme.js";
+
+export const unstable_settings: { readonly anchor: string } = {
+  anchor: "index",
+};
 
 const STAGE: NativeStackNavigationOptions = { headerShown: false };
 
 const ASK: NativeStackNavigationOptions = {
-  presentation: "formSheet",
+  presentation: SHEET_PRESENTATION,
   sheetAllowedDetents: [1],
   sheetGrabberVisible: false,
 };

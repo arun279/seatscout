@@ -11,6 +11,7 @@ import splineSansMonoRegular from "../assets/fonts/SplineSansMono-Regular.ttf";
 export interface Palette {
   readonly houseDeep: string;
   readonly house: string;
+  readonly chrome: string;
   readonly raised: string;
   readonly high: string;
   readonly hairline: string;
@@ -29,6 +30,7 @@ export interface Palette {
 const DOWN: Palette = {
   houseDeep: "#06070e",
   house: "#0d0f19",
+  chrome: "#0a0c15",
   raised: "#161926",
   high: "#202333",
   hairline: "#323748",
@@ -47,6 +49,7 @@ const DOWN: Palette = {
 const UP: Palette = {
   houseDeep: "#f3ece0",
   house: "#f9f4e9",
+  chrome: "#fefaf1",
   raised: "#fffdf9",
   high: "#e2d8c6",
   hairline: "#cabdaa",
@@ -90,6 +93,7 @@ export type Role =
   | "sentenceStrong"
   | "sentence"
   | "sentenceSmall"
+  | "ledgerField"
   | "ledger"
   | "ledgerRow"
   | "ledgerLabel"
@@ -138,6 +142,13 @@ const TYPE: Readonly<Record<Role, TypeRole>> = {
     size: 12,
     tracking: 0,
     leading: 1.5,
+    transform: "none",
+  },
+  ledgerField: {
+    family: MONO,
+    size: 16,
+    tracking: 0,
+    leading: 1.25,
     transform: "none",
   },
   ledger: {

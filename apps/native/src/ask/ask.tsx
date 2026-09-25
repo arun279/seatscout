@@ -1,26 +1,130 @@
-import type { ReactElement } from "react";
-import { StyleSheet, View } from "react-native";
+import type { SeatScout } from "@seatscout/client";
+import type { Term, Terms } from "@seatscout/view-logic";
+import {
+  ASKING,
+  dayOf,
+  FIND_SEATS,
+  movieOf,
+  programmeNear,
+  termsOf,
+  titleOf,
+} from "@seatscout/view-logic";
+import { type ReactElement, useState, useSyncExternalStore } from "react";
+import { StyleSheet } from "react-native";
+import { Velvet } from "../design-system/button.js";
+import { DateField } from "../design-system/date-field.js";
+import { Field, Section } from "../design-system/field.js";
+import { Sheet } from "../design-system/sheet.js";
+import { Stepper } from "../design-system/stepper.js";
 import { Type } from "../design-system/type.js";
-import { useTheme } from "../theme.js";
+import { Film } from "./film.js";
+
+export interface AskProps {
+  readonly seatscout: SeatScout;
+  readonly terms: Terms;
+  readonly today: string;
+  readonly focus: Term | undefined;
+  readonly onKeep: () => void;
+  readonly onFind: (terms: Terms) => void;
+}
+
+const SMALLEST_PARTY = 1;
 
 const styles = StyleSheet.create({
-  sheet: { flex: 1, gap: 9, padding: 18 },
+  privacy: { textAlign: "center" },
 });
 
-export const Ask = (): ReactElement => {
-  const theme = useTheme();
+const areaOf = ({ area = "" }: Terms) => area.trim() || undefined;
+
+export const Ask = ({
+  seatscout,
+  terms,
+  today,
+  focus,
+  onKeep,
+  onFind,
+}: AskProps): ReactElement => {
+  const [draft, setDraft] = useState(terms);
+  const [held, setHeld] = useState(() =>
+    programmeNear(seatscout, areaOf(terms), terms.date),
+  );
+  const playing = useSyncExternalStore(held.subscribe, held.snapshot);
+  const [typed, setTyped] = useState<string>();
+  const film =
+    typed ?? titleOf(playing.movies, terms.movie) ?? terms.movie ?? "";
+
+  const patch = (change: Partial<Terms>) => {
+    const next = { ...draft, ...change };
+    setDraft(next);
+    return next;
+  };
+
+  const follow = (next: Terms) => {
+    const area = areaOf(next);
+    if (held.area !== area || held.date !== next.date)
+      setHeld(programmeNear(seatscout, area, next.date));
+  };
 
   return (
-    <View
-      style={[styles.sheet, { backgroundColor: theme.colours.house }]}
-      testID="stage"
+    <Sheet
+      dock={
+        <>
+          <Velvet
+            label={FIND_SEATS}
+            onPress={() =>
+              onFind(
+                termsOf(
+                  { ...draft, movie: movieOf(film, playing.movies) },
+                  today,
+                ),
+              )
+            }
+          />
+          <Type set="sentenceSmall" style={styles.privacy} tone="silverFaint">
+            {ASKING.kept}
+          </Type>
+        </>
+      }
+      claimed={focus === "area" || focus === "movie"}
+      heading={ASKING.heading}
+      keep={ASKING.keep}
+      onKeep={onKeep}
     >
-      <Type set="marqueeTitle" tone="silver">
-        What are we seeing?
-      </Type>
-      <Type set="sentence" tone="silverDim">
-        This sheet is a placeholder. Close it to go back to your query.
-      </Type>
-    </View>
+      <Field
+        focused={focus === "area"}
+        label={ASKING.area}
+        onSettled={() => follow(draft)}
+        onTyped={(area) => patch({ area })}
+        value={draft.area ?? ""}
+      >
+        <Type set="sentenceSmall" tone="silverFaint">
+          {ASKING.areaDecides}
+        </Type>
+      </Field>
+      <Film
+        area={held.area}
+        date={held.date}
+        focused={focus === "movie"}
+        onTyped={setTyped}
+        programme={playing}
+        today={today}
+        typed={film}
+      />
+      <DateField
+        date={draft.date}
+        label={ASKING.when}
+        onDate={(date) => follow(patch({ date }))}
+        words={dayOf(draft.date, today)}
+      />
+      <Section label={ASKING.party}>
+        <Stepper
+          count={draft.partySize}
+          fewer={ASKING.fewer}
+          least={SMALLEST_PARTY}
+          more={ASKING.more}
+          onCount={(partySize) => patch({ partySize })}
+        />
+      </Section>
+    </Sheet>
   );
 };

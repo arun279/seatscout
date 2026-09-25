@@ -1,12 +1,9 @@
 import { REFERENCE } from "@seatscout/client";
-import { router } from "expo-router";
 import type { ReactElement } from "react";
-import { goTo, useTerms } from "../host/address.js";
+import { askAbout, goTo, useTerms } from "../host/address.js";
 import { today } from "../host/clock.js";
-import { deviceSeatScout } from "../host/source.js";
+import { seatscout } from "../host/source.js";
 import { Search } from "../search/search.js";
-
-const seatscout = deviceSeatScout();
 
 export default function Index(): ReactElement {
   const now = today();
@@ -14,7 +11,7 @@ export default function Index(): ReactElement {
 
   return (
     <Search
-      onAsk={(term) => router.push({ pathname: "/ask", params: { term } })}
+      onAsk={(term) => askAbout(terms, term)}
       onRun={goTo}
       profile={REFERENCE}
       seatscout={seatscout}

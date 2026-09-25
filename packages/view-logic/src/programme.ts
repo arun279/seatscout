@@ -82,3 +82,24 @@ export const suggestedFor = (
     ? []
     : matching;
 };
+
+export const offeredFor = (
+  typed: string,
+  movies: readonly Movie[],
+): readonly Movie[] =>
+  typed.trim() === "" ? movies : suggestedFor(typed, movies);
+
+export const markedIn = (
+  title: string,
+  typed: string,
+): readonly [string, string, string] => {
+  const looked = typed.trim();
+  const at = title.toLowerCase().indexOf(looked.toLowerCase());
+  return looked === "" || at < 0
+    ? [title, "", ""]
+    : [
+        title.slice(0, at),
+        title.slice(at, at + looked.length),
+        title.slice(at + looked.length),
+      ];
+};

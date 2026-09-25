@@ -1,13 +1,28 @@
 import { describe, expect, it, jest } from "@jest/globals";
 
 const mockPush = jest.fn<(to: unknown) => void>();
+const mockReplace = jest.fn<(to: unknown) => void>();
+const mockBack = jest.fn<() => void>();
+const mockParams = jest.fn<() => Readonly<Record<string, unknown>>>(() => ({}));
 
 jest.mock("expo-router", () => ({
-  router: { push: (to: unknown) => mockPush(to) },
-  useLocalSearchParams: () => ({}),
+  router: {
+    push: (to: unknown) => mockPush(to),
+    replace: (to: unknown) => mockReplace(to),
+    back: () => mockBack(),
+  },
+  useLocalSearchParams: () => mockParams(),
 }));
 
-import { askedIn, goTo, pairsOf } from "./address.js";
+import {
+  askAbout,
+  askedIn,
+  goTo,
+  keepAsItWas,
+  pairsOf,
+  runInstead,
+  useFocus,
+} from "./address.js";
 
 describe("the route's parameters read as a list of pairs", () => {
   it("reads a parameter given once", () => {
@@ -107,6 +122,60 @@ describe("running a search the phone remembers", () => {
         area: "75234",
         partySize: "4",
       },
+    });
+  });
+});
+
+describe("opening the Ask sheet over the query it is editing", () => {
+  it("carries the Query the sheet edits, and the term it opens at", () => {
+    askAbout({ date: "2026-09-19", area: "75234", partySize: 2 }, "movie");
+
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: "/ask",
+      params: {
+        date: "2026-09-19",
+        area: "75234",
+        partySize: "2",
+        term: "movie",
+      },
+    });
+  });
+
+  it("opens focused on either term the sheet has a field for", () => {
+    mockParams.mockReturnValue({ term: "movie" });
+    expect(useFocus()).toBe("movie");
+
+    mockParams.mockReturnValue({ term: "area" });
+    expect(useFocus()).toBe("area");
+  });
+
+  it("ignores a term it cannot open focused on, and one nobody named", () => {
+    mockParams.mockReturnValue({ term: "profile" });
+    expect(useFocus()).toBeUndefined();
+
+    mockParams.mockReturnValue({ term: "nonsense" });
+    expect(useFocus()).toBeUndefined();
+
+    mockParams.mockReturnValue({});
+    expect(useFocus()).toBeUndefined();
+  });
+});
+
+describe("keeping the query as it was", () => {
+  it("goes back one entry, which is the screen the sheet was presented over", () => {
+    keepAsItWas();
+
+    expect(mockBack).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("the search a Query stated in the sheet runs", () => {
+  it("replaces the sheet with the Search screen under the new Query, so back is the query before it", () => {
+    runInstead({ movie: "218678", date: "2026-09-19", partySize: 2 });
+
+    expect(mockReplace).toHaveBeenCalledWith({
+      pathname: "/",
+      params: { movie: "218678", date: "2026-09-19", partySize: "2" },
     });
   });
 });
