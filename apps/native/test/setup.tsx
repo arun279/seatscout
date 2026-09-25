@@ -1,7 +1,8 @@
 import { beforeAll, jest } from "@jest/globals";
 import { cleanup, render } from "@testing-library/react-native";
 import { createElement } from "react";
-import { View } from "react-native";
+import { ScrollView, Text, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 jest.mock("@react-native-async-storage/async-storage", () =>
   jest.requireActual(
@@ -20,7 +21,15 @@ jest.mock("@react-native-community/datetimepicker", () => ({
 const INITIALISATION = 30_000;
 
 beforeAll(async () => {
-  await render(<View />);
+  await render(
+    <SafeAreaView>
+      <ScrollView>
+        <TouchableOpacity>
+          <Text>.</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>,
+  );
   await cleanup();
 }, INITIALISATION);
 
