@@ -110,9 +110,12 @@ describe("a sheet the platform presents", () => {
   });
 
   it("wears the platform's own chrome above it only where the platform draws one", async () => {
+    houseLights("down");
     const { head } = await presented();
 
-    expect(head?.backgroundColor !== undefined).toBe(Platform.OS === "android");
+    expect(head?.backgroundColor).toBe(
+      Platform.OS === "android" ? "#0a0c15" : "#0d0f19",
+    );
   });
 
   it("says its heading to a screen reader when no field inside it has taken the keyboard", async () => {
@@ -167,6 +170,20 @@ describe("a sheet the platform presents", () => {
     expect(String(stage.backgroundColor)).toMatch(/^#[0-9a-f]{6}$/);
     expect(dock.backgroundColor).toBe(stage.backgroundColor);
   });
+
+  (Platform.OS === "ios" ? it : it.skip)(
+    "rules the head off from the scroll below it, on the sheet's own ground",
+    async () => {
+      houseLights("down");
+      const { head } = await presented();
+
+      expect(head).toMatchObject({
+        backgroundColor: "#0d0f19",
+        borderBottomColor: "#323748",
+        borderBottomWidth: 1,
+      });
+    },
+  );
 
   it("rules the dock off from the scroll above it", async () => {
     const { dock } = await presented();

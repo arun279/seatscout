@@ -82,7 +82,7 @@ describe("the when term in the Ask sheet", () => {
     const { found } = await asking({ terms: NEAR });
 
     await press("A range");
-    await press("Until, Fri 25 Sep");
+    await press("Last day, Fri 25 Sep");
     await pick("date-picker", new Date(2026, 8, 22));
     await submit();
 

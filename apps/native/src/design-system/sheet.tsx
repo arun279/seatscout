@@ -61,6 +61,7 @@ const styles = StyleSheet.create({
     minHeight: 48,
     minWidth: 48,
   },
+  ruled: { borderBottomWidth: 1 },
   body: { flex: 1 },
   read: { paddingBottom: 18 },
   dock: {
@@ -177,7 +178,16 @@ export const Sheet = ({
           <AppBar {...above} />
         </SafeAreaView>
       ) : (
-        <View testID="sheet-head">
+        <View
+          style={[
+            styles.ruled,
+            {
+              backgroundColor: theme.colours.house,
+              borderBottomColor: theme.colours.hairline,
+            },
+          ]}
+          testID="sheet-head"
+        >
           <Head {...above} />
         </View>
       )}

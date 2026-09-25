@@ -87,7 +87,7 @@ const ARange = ({ span, today, onSpan }: EditorProps) => {
     <SpanField
       endWords={[dayOf(first, today), dayOf(last, today)]}
       first={first}
-      labels={[ASKING.from, ASKING.until]}
+      labels={[ASKING.firstDay, ASKING.lastDay]}
       last={last}
       onSpan={(one, other) => onSpan(spanOf([`${one}..${other}`], today))}
       words={whenWordsOf(span, today)}
