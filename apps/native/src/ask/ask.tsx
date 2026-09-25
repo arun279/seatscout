@@ -8,10 +8,10 @@ import {
 import type { RawTerms, Span, Term, Terms } from "@seatscout/view-logic";
 import {
   ASKING,
+  costOf,
   FIND_SEATS,
   movieOf,
   programmeNear,
-  readingOf,
   termsOf,
   titleOf,
 } from "@seatscout/view-logic";
@@ -72,9 +72,15 @@ export const Ask = ({
   const [typed, setTyped] = useState<string>();
   const film =
     typed ?? titleOf(playing.movies, terms.movie) ?? terms.movie ?? "";
-  const reading = readingOf(draft, today);
+  const cost = costOf(draft, today);
 
-  const patch = (change: RawTerms) => {
+  const patch = (change: Partial<Terms>) => {
+    const next = { ...draft, ...change };
+    setDraft(next);
+    return next;
+  };
+
+  const settle = (change: RawTerms) => {
     const next = termsOf({ ...draft, ...change }, today);
     setDraft(next);
     return next;
@@ -102,9 +108,9 @@ export const Ask = ({
               )
             }
           />
-          {reading !== undefined && (
+          {cost !== undefined && (
             <Type set="sentenceSmall" style={styles.said} tone="silverDim">
-              {reading}
+              {cost}
             </Type>
           )}
           <Type set="sentenceSmall" style={styles.said} tone="silverFaint">
@@ -139,8 +145,8 @@ export const Ask = ({
       />
       <When
         draft={draft}
-        onSpan={({ date, when }: Span) => follow(patch({ date, when }))}
-        onWindow={patch}
+        onSpan={({ date, when }: Span) => follow(settle({ date, when }))}
+        onWindow={settle}
         today={today}
       />
       <Section label={ASKING.party}>
@@ -156,7 +162,7 @@ export const Ask = ({
         label={ASKING.accessible}
         on={draft.accessibleSeating === true}
         onToggle={(accessibleSeating) => patch({ accessibleSeating })}
-        said={ASKING.accessibleSaid}
+        note={ASKING.accessibleNote}
       />
       <Section label={ASKING.format}>
         <Chips

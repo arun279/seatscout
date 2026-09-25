@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { daysIn, HORIZON, horizonFrom, spanOf, valuesOf } from "./when.js";
+import { daysIn, spanIn, spanOf, valuesOf } from "./when.js";
 
 const TODAY = "2026-09-03";
 
@@ -18,7 +18,7 @@ describe("the days a Query's when term holds", () => {
       spanOf(["2026-09-06", "2026-09-04", "2026-09-06", "later"], TODAY),
     ).toEqual({
       date: "2026-09-04",
-      when: { reading: "days", dates: ["2026-09-04", "2026-09-06"] },
+      when: { kind: "days", dates: ["2026-09-04", "2026-09-06"] },
     });
   });
 
@@ -31,7 +31,7 @@ describe("the days a Query's when term holds", () => {
   it("holds a range from its first day to its last, whichever way it was written", () => {
     const range = {
       date: "2026-09-04",
-      when: { reading: "range", first: "2026-09-04", last: "2026-09-13" },
+      when: { kind: "range", first: "2026-09-04", last: "2026-09-13" },
     };
 
     expect(spanOf(["2026-09-04..2026-09-13"], TODAY)).toEqual(range);
@@ -57,7 +57,7 @@ describe("the days a Query's when term holds", () => {
   it("holds any day from today when the address asks for any", () => {
     expect(spanOf(["any"], TODAY)).toEqual({
       date: TODAY,
-      when: { reading: "any" },
+      when: { kind: "any" },
     });
   });
 
@@ -88,7 +88,6 @@ describe("the days a Query's when term holds", () => {
   });
 
   it("reads any day as the horizon's days from today", () => {
-    expect(HORIZON).toBe(7);
     expect(daysIn(spanOf(["any"], TODAY), TODAY)).toEqual([
       "2026-09-03",
       "2026-09-04",
@@ -100,10 +99,25 @@ describe("the days a Query's when term holds", () => {
     ]);
   });
 
-  it("starts a range on a day and runs it to the horizon", () => {
-    expect(horizonFrom("2026-09-29")).toEqual({
+  it("starts each kind of when on the day the query holds, and any day on today", () => {
+    expect(spanIn("day", "2026-09-29", TODAY)).toEqual({ date: "2026-09-29" });
+    expect(spanIn("days", "2026-09-29", TODAY)).toEqual({ date: "2026-09-29" });
+    expect(spanIn("range", "2026-09-29", TODAY)).toEqual({
       date: "2026-09-29",
-      when: { reading: "range", first: "2026-09-29", last: "2026-10-05" },
+      when: { kind: "range", first: "2026-09-29", last: "2026-10-05" },
+    });
+    expect(spanIn("any", "2026-09-29", TODAY)).toEqual({
+      date: TODAY,
+      when: { kind: "any" },
+    });
+  });
+
+  it("reads any and a range only when the address names nothing beside them", () => {
+    expect(spanOf(["any", "2026-09-05"], TODAY)).toEqual({
+      date: "2026-09-05",
+    });
+    expect(spanOf(["2026-09-04..2026-09-13", "2026-09-05"], TODAY)).toEqual({
+      date: "2026-09-05",
     });
   });
 });

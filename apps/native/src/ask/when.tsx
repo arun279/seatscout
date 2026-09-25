@@ -1,8 +1,11 @@
 import {
   ASKING,
+  dayOf,
   daysIn,
-  horizonFrom,
+  type Kind,
+  type RawTerms,
   type Span,
+  spanIn,
   spanOf,
   type Terms,
   timeOf,
@@ -11,24 +14,19 @@ import {
 import { type ReactElement, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { type Chip, Chips } from "../design-system/chips.js";
-import { PickerField } from "../design-system/date-field.js";
 import { Section } from "../design-system/field.js";
+import { PickerField } from "../design-system/picker-field.js";
 import { Segments } from "../design-system/segments.js";
 import { SpanField } from "../design-system/span-field.js";
 import { TimeField } from "../design-system/time-field.js";
 import { Type } from "../design-system/type.js";
 import { dateAt, listingDate } from "../host/clock.js";
 
-type Reading = "day" | "days" | "range" | "any";
-
 export interface WhenProps {
   readonly draft: Terms;
   readonly today: string;
   readonly onSpan: (span: Span) => void;
-  readonly onWindow: (window: {
-    readonly from?: string | undefined;
-    readonly until?: string | undefined;
-  }) => void;
+  readonly onWindow: (window: Pick<RawTerms, "from" | "until">) => void;
 }
 
 interface EditorProps {
@@ -37,20 +35,18 @@ interface EditorProps {
   readonly onSpan: (span: Span) => void;
 }
 
-const [ONE_DAY, SOME_DAYS, A_RANGE, ANY_DAY] = ASKING.readings;
+const KINDS: readonly Kind[] = ["day", "days", "range", "any"];
 
-const SEGMENTS: readonly Chip<Reading>[] = [
-  { value: "day", text: ONE_DAY },
-  { value: "days", text: SOME_DAYS },
-  { value: "range", text: A_RANGE },
-  { value: "any", text: ANY_DAY },
-];
+const SEGMENTS: readonly Chip<Kind>[] = KINDS.map((value) => ({
+  value,
+  text: ASKING.kinds[value],
+}));
+
+const EVENING = "19:00";
 
 const styles = StyleSheet.create({
   window: { flexDirection: "row", gap: 10 },
 });
-
-const dayWords = (date: string, today: string) => whenWordsOf({ date }, today);
 
 const OneDay = ({ span, today, onSpan }: EditorProps) => (
   <PickerField
@@ -58,7 +54,7 @@ const OneDay = ({ span, today, onSpan }: EditorProps) => (
     label={ASKING.when}
     mode="date"
     onPicked={(at) => onSpan({ date: listingDate(at) })}
-    words={dayWords(span.date, today)}
+    words={dayOf(span.date, today)}
   />
 );
 
@@ -67,10 +63,7 @@ const SomeDays = ({ span, today, onSpan }: EditorProps) => {
   return (
     <>
       <Chips
-        chips={dates.map((date) => ({
-          value: date,
-          text: dayWords(date, today),
-        }))}
+        chips={dates.map((date) => ({ value: date, text: dayOf(date, today) }))}
         chosen={dates}
         onChosen={(kept) => {
           if (kept.length > 0) onSpan(spanOf(kept, today));
@@ -93,12 +86,12 @@ const ARange = ({ span, today, onSpan }: EditorProps) => {
   const last = dates.at(-1) ?? first;
   return (
     <SpanField
+      endWords={[dayOf(first, today), dayOf(last, today)]}
       first={first}
       labels={[ASKING.from, ASKING.until]}
       last={last}
-      onSpan={(from, to) => onSpan(spanOf([`${from}..${to}`], today))}
-      said={whenWordsOf(span, today)}
-      words={[dayWords(first, today), dayWords(last, today)]}
+      onSpan={(one, other) => onSpan(spanOf([`${one}..${other}`], today))}
+      words={whenWordsOf(span, today)}
     />
   );
 };
@@ -109,19 +102,11 @@ const AnyDay = ({ span, today }: EditorProps) => (
   </Type>
 );
 
-const EDITORS: Readonly<Record<Reading, (props: EditorProps) => ReactElement>> =
-  { day: OneDay, days: SomeDays, range: ARange, any: AnyDay };
-
-const spanFor = (reading: Reading, date: string, today: string): Span => {
-  switch (reading) {
-    case "day":
-    case "days":
-      return { date };
-    case "range":
-      return horizonFrom(date);
-    case "any":
-      return spanOf(["any"], today);
-  }
+const EDITORS: Readonly<Record<Kind, (props: EditorProps) => ReactElement>> = {
+  day: OneDay,
+  days: SomeDays,
+  range: ARange,
+  any: AnyDay,
 };
 
 const clockWords = (clock: string | undefined) =>
@@ -133,16 +118,16 @@ export const When = ({
   onSpan,
   onWindow,
 }: WhenProps): ReactElement => {
-  const [reading, setReading] = useState<Reading>(draft.when?.reading ?? "day");
-  const Editor = EDITORS[reading];
+  const [kind, setKind] = useState<Kind>(draft.when?.kind ?? "day");
+  const Editor = EDITORS[kind];
 
   return (
     <Section label={ASKING.when}>
       <Segments
-        chosen={reading}
+        chosen={kind}
         onChosen={(chosen) => {
-          setReading(chosen);
-          onSpan(spanFor(chosen, draft.date, today));
+          setKind(chosen);
+          onSpan(spanIn(chosen, draft.date, today));
         }}
         segments={SEGMENTS}
       />
@@ -153,6 +138,7 @@ export const When = ({
           clock={draft.from}
           label={ASKING.from}
           onClock={(from) => onWindow({ from })}
+          opensAt={EVENING}
           words={clockWords(draft.from)}
         />
         <TimeField
@@ -160,6 +146,7 @@ export const When = ({
           clock={draft.until}
           label={ASKING.until}
           onClock={(until) => onWindow({ until })}
+          opensAt={EVENING}
           words={clockWords(draft.until)}
         />
       </View>

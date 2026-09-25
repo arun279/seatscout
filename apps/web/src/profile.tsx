@@ -166,7 +166,7 @@ export const Profile = ({ profile, onChange }: ProfileProps): ReactElement => (
       >
         {SITTING.reference}
       </button>
-      <p className="micro">{SITTING.referenceSaid}</p>
+      <p className="micro">{SITTING.referenceNote}</p>
     </fieldset>
     <fieldset className="field">
       <legend className="eyebrow">{SITTING.minding}</legend>

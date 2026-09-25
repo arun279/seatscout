@@ -235,9 +235,11 @@ matters of degree.
 
 A description of what someone is looking for. Any combination of Movie, Chain, Theater,
 Format, Amenity, geographic area, the days and a time window, party size, accessible
-seating, and Seat Profile. The days are one day, several picked, a range, or any day
-within a horizon counted from today; the nearest of them is the one a listing is read for
-first.
+seating, and Seat Profile.
+
+**The days** a Query asks about take one of four kinds: one day, several days picked, a
+range, or any day within a horizon counted from today. The nearest of them is the day a
+listing is read for first.
 
 Accessible seating is a deliberate term rather than a relaxation. A Query that asks for it
 is answered only with Seat Groups that carry a wheelchair or companion Seat, because

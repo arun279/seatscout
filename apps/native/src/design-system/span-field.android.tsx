@@ -1,5 +1,4 @@
-import { Host } from "@expo/ui/jetpack-compose";
-import { DateRangePickerDialog } from "@expo/ui/jetpack-compose";
+import { DateRangePickerDialog, Host } from "@expo/ui/jetpack-compose";
 import { type ReactElement, useState } from "react";
 import { TouchableOpacity } from "react-native";
 import { useTheme } from "../theme.js";
@@ -14,7 +13,7 @@ const dateOf = (at: Date) => at.toISOString().slice(0, 10);
 export const SpanField = ({
   first,
   last,
-  said,
+  words,
   onSpan,
 }: SpanFieldProps): ReactElement => {
   const theme = useTheme();
@@ -23,13 +22,13 @@ export const SpanField = ({
   return (
     <>
       <TouchableOpacity
-        accessibilityLabel={said}
+        accessibilityLabel={words}
         accessibilityRole="button"
         onPress={() => setPicking(true)}
         style={[fieldBox, fieldColours(theme)]}
       >
         <Type set="ledgerField" tone="silver">
-          {said}
+          {words}
         </Type>
       </TouchableOpacity>
       {picking && (

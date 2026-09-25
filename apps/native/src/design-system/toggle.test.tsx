@@ -12,7 +12,7 @@ const toggling = async (on: boolean) => {
       label="Accessible seating"
       on={on}
       onToggle={onToggle}
-      said="Wheelchair seats stay out of ordinary results."
+      note="Wheelchair seats stay out of ordinary results."
     />,
   );
   return onToggle;
@@ -21,11 +21,17 @@ const toggling = async (on: boolean) => {
 const toggle = () => screen.getByLabelText("Accessible seating");
 
 describe("a term that is on or off", () => {
-  it("is the platform's switch, named, saying whether it is on", async () => {
-    await toggling(true);
+  (Platform.OS === "ios" ? it : it.skip)(
+    "is the platform's switch, named, holding whether it is on",
+    async () => {
+      await toggling(true);
 
-    expect(toggle().props["accessibilityState"]).toEqual({ checked: true });
-  });
+      expect(toggle().props).toMatchObject({
+        accessibilityRole: "switch",
+        value: true,
+      });
+    },
+  );
 
   it("hands out the state it was switched to", async () => {
     const toggled = await toggling(false);

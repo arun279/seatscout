@@ -1,5 +1,5 @@
 import Slider from "@react-native-community/slider";
-import type { Scale } from "@seatscout/view-logic";
+import { hundredths, type Scale } from "@seatscout/view-logic";
 import type { ReactElement } from "react";
 import { StyleSheet, View } from "react-native";
 import { useTheme } from "../theme.js";
@@ -22,9 +22,8 @@ const styles = StyleSheet.create({
   ends: { flexDirection: "row", justifyContent: "space-between" },
 });
 
-const hundredths = (value: number) => Math.round(value * 100) / 100;
-
-const reachable = (value: number) => (value === 0 ? Number.EPSILON : value);
+const zeroTheSliderKeeps = (value: number) =>
+  value === 0 ? Number.EPSILON : value;
 
 export const Range = ({
   label,
@@ -58,7 +57,7 @@ export const Range = ({
         step={scale.step}
         style={styles.slider}
         thumbTintColor={colours.silver}
-        value={reachable(value)}
+        value={zeroTheSliderKeeps(value)}
       />
       {ends !== undefined && (
         <View style={styles.ends}>

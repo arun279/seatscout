@@ -1,3 +1,4 @@
+import "./house.css";
 import "./results.css";
 import type { SeatGroupResult, Snapshot } from "@seatscout/client";
 import type { ReactElement } from "react";
@@ -13,6 +14,7 @@ import {
   tiedIn,
   tiedOf,
   unreachedIn,
+  unreadOf,
   whenOf,
 } from "@seatscout/view-logic";
 import { Empty, Partial, Unreachable } from "./verdicts.js";
@@ -77,12 +79,14 @@ export const Results = ({
   const tied = tiedIn(results);
   const tie = tied > 1;
   const partial = settled && unreachedIn(snapshot) > 0;
+  const unread = unreadOf(terms, today);
 
   if (snapshot.phase === "unreachable")
     return <Unreachable when={when} onRetry={onRetry} onEdit={onEdit} />;
 
   return (
     <>
+      {unread !== undefined && <p className="micro">{unread}</p>}
       {partial && (
         <Partial snapshot={snapshot} onRetry={onRetry} onEdit={onEdit} />
       )}

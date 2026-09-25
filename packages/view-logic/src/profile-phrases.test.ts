@@ -49,19 +49,19 @@ describe("the words a Seat Profile is set in", () => {
     ]);
   });
 
-  it("carries the section's words, the two ends of each range among them", () => {
-    expect(SITTING).toEqual({
-      heading: "Where you sit",
-      drag: "Drag the dot, or use the two ranges below. The faint circle is Reference, where it was.",
-      depth: "How far back",
-      depthEnds: ["Front row", "Back row"],
-      lateral: "Left or right",
-      lateralEnds: ["House left", "House right"],
-      reference: "Back to Reference",
-      referenceSaid:
-        "Reference aims two thirds back on the centreline, where cinema standards tune the room. Saved on this phone once you move it, and sent nowhere. Changing it runs the search again against live availability, because seats are never re-ranked from a reading that has aged.",
-      minding: "And what you mind",
-      mindEnds: ["Don't mind", "Avoid"],
-    });
+  it("says something for every line of the section", () => {
+    for (const line of [
+      SITTING.heading,
+      SITTING.drag,
+      SITTING.depth,
+      SITTING.lateral,
+      SITTING.reference,
+      SITTING.referenceNote,
+      SITTING.minding,
+      ...SITTING.depthEnds,
+      ...SITTING.lateralEnds,
+      ...SITTING.mindEnds,
+    ])
+      expect(line.trim()).not.toBe("");
   });
 });

@@ -1,10 +1,9 @@
 import "@testing-library/jest-dom/vitest";
-import type { SeatGroupResult, Snapshot } from "@seatscout/client";
+import type { SeatGroupResult } from "@seatscout/client";
 import {
   act,
   cleanup,
   fireEvent,
-  render,
   screen,
   waitFor,
   within,
@@ -19,8 +18,8 @@ import {
   TODAY,
   TONIGHT,
 } from "./search.fixtures.js";
-import { clockOf, type HeldSnapshots, labelOf } from "@seatscout/view-logic";
-import { Results } from "./results.js";
+import { clockOf, labelOf } from "@seatscout/view-logic";
+import { listing } from "./results.fixtures.js";
 import { drawn } from "./stylesheet.fixtures.js";
 
 const nameOf = ({ showtime }: SeatGroupResult) =>
@@ -38,31 +37,6 @@ const cardOf = (result: SeatGroupResult) =>
 const minutesOf = (clock: string) => {
   const [, hour, minute, half] = /^(\d+):(\d+)([ap])$/.exec(clock) ?? [];
   return ((Number(hour) % 12) + (half === "p" ? 12 : 0)) * 60 + Number(minute);
-};
-
-const listing = (snapshot: Snapshot, online = true) => {
-  const held: HeldSnapshots = {
-    snapshot: () => snapshot,
-    subscribe: () => () => {},
-    hold: () => {},
-    release: () => {},
-    painted: () => snapshot,
-  };
-  render(
-    <Results
-      snapshot={snapshot}
-      painted={snapshot}
-      terms={TONIGHT}
-      today={TODAY}
-      now={0}
-      held={held}
-      online={online}
-      onRetry={() => {}}
-      onEdit={() => {}}
-      onRoom={() => {}}
-      onHandOff={() => {}}
-    />,
-  );
 };
 
 const afterBoxOf = (element: Element) => {
@@ -179,6 +153,23 @@ describe("the list on the first screen", () => {
       expect(cardOf(result).querySelectorAll("line")).toHaveLength(
         result.plan.reduce((lines, row) => lines + row.runs.length, 1),
       );
+  });
+
+  it("says the days after the nearest are not read yet when the query spans days", async () => {
+    const settled = await settledAlone();
+
+    listing(settled, true, {
+      ...TONIGHT,
+      when: { kind: "range", first: TODAY, last: "2026-08-30" },
+    });
+
+    expect(screen.getByText("Sat 29 to Sun 30 Aug not read yet")).toBeVisible();
+  });
+
+  it("says nothing of the kind for one day", async () => {
+    listing(await settledAlone());
+
+    expect(screen.queryByText(/not read yet/)).toBeNull();
   });
 
   it("says nothing about seats not bookable on a card whose room had every seat to offer", async () => {

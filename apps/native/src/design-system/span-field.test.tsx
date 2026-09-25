@@ -15,8 +15,8 @@ const spanning = async () => {
       labels={["From", "Until"]}
       last="2026-09-13"
       onSpan={onSpan}
-      said="Fri 4 to Sun 13 Sep"
-      words={["Fri 4 Sep", "Sun 13 Sep"]}
+      endWords={["Fri 4 Sep", "Sun 13 Sep"]}
+      words="Fri 4 to Sun 13 Sep"
     />,
   );
   return onSpan;
@@ -82,36 +82,6 @@ onIos("a range of days on iOS, as two compact date pickers", () => {
     );
 
     expect(spanned).toHaveBeenCalledWith("2026-09-04", "2026-09-20");
-  });
-
-  it("turns the ends round when one is picked past the other", async () => {
-    const spanned = await spanning();
-
-    await fireEvent.press(
-      screen.getByRole("button", { name: "Until, Sun 13 Sep" }),
-    );
-    await fireEvent(
-      screen.getByTestId("date-picker"),
-      "change",
-      ...set(new Date(2026, 8, 1)),
-    );
-
-    expect(spanned).toHaveBeenCalledWith("2026-09-01", "2026-09-04");
-  });
-
-  it("turns them round from the first day too", async () => {
-    const spanned = await spanning();
-
-    await fireEvent.press(
-      screen.getByRole("button", { name: "From, Fri 4 Sep" }),
-    );
-    await fireEvent(
-      screen.getByTestId("date-picker"),
-      "change",
-      ...set(new Date(2026, 8, 20)),
-    );
-
-    expect(spanned).toHaveBeenCalledWith("2026-09-13", "2026-09-20");
   });
 });
 

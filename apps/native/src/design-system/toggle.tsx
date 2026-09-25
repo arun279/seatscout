@@ -1,18 +1,19 @@
 import type { ReactElement } from "react";
 import { StyleSheet, Switch, View } from "react-native";
 import { useTheme } from "../theme.js";
+import { SECTION } from "./field.js";
 import { TOUCH_FLOOR } from "./touch.js";
 import { Type } from "./type.js";
 
 export interface ToggleProps {
   readonly label: string;
-  readonly said: string;
+  readonly note: string;
   readonly on: boolean;
   readonly onToggle: (on: boolean) => void;
 }
 
 const styles = StyleSheet.create({
-  toggle: { gap: 4, paddingHorizontal: 18, paddingTop: 14 },
+  toggle: { gap: 4 },
   row: {
     alignItems: "center",
     flexDirection: "row",
@@ -23,28 +24,27 @@ const styles = StyleSheet.create({
 
 export const Toggle = ({
   label,
-  said,
+  note,
   on,
   onToggle,
 }: ToggleProps): ReactElement => {
   const { colours } = useTheme();
 
   return (
-    <View style={styles.toggle}>
+    <View style={[SECTION, styles.toggle]}>
       <View style={styles.row} testID="toggle-row">
         <Type set="sentenceLead" tone="silver">
           {label}
         </Type>
         <Switch
           accessibilityLabel={label}
-          accessibilityState={{ checked: on }}
           onValueChange={onToggle}
           trackColor={{ false: colours.high, true: colours.velvet }}
           value={on}
         />
       </View>
       <Type set="sentenceSmall" tone="silverFaint">
-        {said}
+        {note}
       </Type>
     </View>
   );

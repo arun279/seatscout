@@ -46,29 +46,32 @@ const SeatPicker = ({ profile, onChange }: ProfileProps) => {
 
   return (
     <View
-      onLayout={({ nativeEvent }) => setAcross(nativeEvent.layout.width)}
-      onMoveShouldSetResponder={() => true}
-      onResponderGrant={place}
-      onResponderMove={place}
-      onResponderTerminationRequest={() => false}
-      onStartShouldSetResponder={() => true}
       style={[
         styles.picker,
         { backgroundColor: colours.houseDeep, borderColor: colours.hairline },
       ]}
-      testID="seat-picker"
     >
-      <PlanDrawing
-        across={across}
-        plan={SEAT_PICKER}
-        position={{
-          depth: profile.targetDepth,
-          lateral: profile.targetLateral,
-          seatsOffCentre: 0,
-        }}
-        target={profile}
-        was={isReference(profile) ? undefined : REFERENCE}
-      />
+      <View
+        onLayout={({ nativeEvent }) => setAcross(nativeEvent.layout.width)}
+        onMoveShouldSetResponder={() => true}
+        onResponderGrant={place}
+        onResponderMove={place}
+        onResponderTerminationRequest={() => false}
+        onStartShouldSetResponder={() => true}
+        testID="seat-picker"
+      >
+        <PlanDrawing
+          across={across}
+          plan={SEAT_PICKER}
+          position={{
+            depth: profile.targetDepth,
+            lateral: profile.targetLateral,
+            seatsOffCentre: 0,
+          }}
+          target={profile}
+          was={isReference(profile) ? undefined : REFERENCE}
+        />
+      </View>
     </View>
   );
 };
@@ -101,7 +104,7 @@ export const Profile = ({ profile, onChange }: ProfileProps): ReactElement => (
         onPress={isReference(profile) ? undefined : () => onChange(REFERENCE)}
       />
       <Type set="sentenceSmall" tone="silverFaint">
-        {SITTING.referenceSaid}
+        {SITTING.referenceNote}
       </Type>
     </Section>
     <Section label={SITTING.minding}>

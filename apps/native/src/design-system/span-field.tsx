@@ -1,15 +1,15 @@
 import type { ReactElement } from "react";
 import { StyleSheet, View } from "react-native";
 import { dateAt, listingDate } from "../host/clock.js";
-import { PickerField } from "./date-field.js";
+import { PickerField } from "./picker-field.js";
 import { Type } from "./type.js";
 
 export interface SpanFieldProps {
   readonly first: string;
   readonly last: string;
   readonly labels: readonly [string, string];
-  readonly words: readonly [string, string];
-  readonly said: string;
+  readonly endWords: readonly [string, string];
+  readonly words: string;
   readonly onSpan: (first: string, last: string) => void;
 }
 
@@ -18,28 +18,25 @@ const styles = StyleSheet.create({
   end: { flex: 1, gap: 6 },
 });
 
-const spanned = (one: string, other: string) =>
-  one <= other ? ([one, other] as const) : ([other, one] as const);
-
 export const SpanField = ({
   first,
   last,
   labels,
-  words,
+  endWords,
   onSpan,
 }: SpanFieldProps): ReactElement => {
   const ends = [
     {
       label: labels[0],
-      said: words[0],
+      said: endWords[0],
       date: first,
-      span: (date: string) => spanned(date, last),
+      span: (date: string) => [date, last] as const,
     },
     {
       label: labels[1],
-      said: words[1],
+      said: endWords[1],
       date: last,
-      span: (date: string) => spanned(first, date),
+      span: (date: string) => [first, date] as const,
     },
   ];
 

@@ -132,7 +132,7 @@ describe("the words the Ask sheet is asked in", () => {
       "anyTime",
       "clear",
       "accessible",
-      "accessibleSaid",
+      "accessibleNote",
       "format",
       "comfort",
       "chain",
@@ -143,12 +143,8 @@ describe("the words the Ask sheet is asked in", () => {
       expect([line, ASKING[line].trim()]).not.toEqual([line, ""]);
   });
 
-  it("names the four readings of the when term in the order the control shows them", () => {
-    expect(ASKING.readings).toEqual([
-      "One day",
-      "Some days",
-      "A range",
-      "Any day",
-    ]);
+  it("names each kind of when term", () => {
+    for (const kind of ["day", "days", "range", "any"] as const)
+      expect([kind, ASKING.kinds[kind].trim()]).not.toEqual([kind, ""]);
   });
 });

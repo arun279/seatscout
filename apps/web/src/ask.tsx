@@ -18,6 +18,7 @@ import {
   FIND_SEATS,
   type HeldProgramme,
   movieOf,
+  type RawTerms,
   type Term,
   type Terms,
   termsOf,
@@ -123,7 +124,7 @@ const Party = ({ draft, patch }: Patch) => (
       />
       <span>{ASKING.accessible}</span>
     </label>
-    <p className="micro">{ASKING.accessibleSaid}</p>
+    <p className="micro">{ASKING.accessibleNote}</p>
   </>
 );
 
@@ -147,6 +148,11 @@ export const Ask = ({
   );
   const patch = (change: Partial<Terms>) => {
     const next = { ...draft, ...change };
+    setDraft(next);
+    return next;
+  };
+  const settle = (change: RawTerms) => {
+    const next = termsOf({ ...draft, ...change }, today);
     setDraft(next);
     return next;
   };
@@ -204,7 +210,7 @@ export const Ask = ({
         <When
           draft={draft}
           patch={patch}
-          onDate={(date) => follow(patch({ date }))}
+          onDate={(date) => follow(settle({ date, when: undefined }))}
         />
         <Party draft={draft} patch={patch} />
         <Chips

@@ -244,7 +244,7 @@ describe("a query that spans more than one day", () => {
       terms: {
         ...TONIGHT,
         until: "19:20",
-        when: { reading: "range", first: TODAY, last: "2026-08-31" },
+        when: { kind: "range", first: TODAY, last: "2026-08-31" },
       },
       today: TODAY,
     });

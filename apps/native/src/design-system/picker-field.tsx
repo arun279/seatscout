@@ -3,26 +3,25 @@ import DateTimePicker, {
 } from "@react-native-community/datetimepicker";
 import { type ReactElement, useState } from "react";
 import { TouchableOpacity } from "react-native";
-import { dateAt, listingDate } from "../host/clock.js";
 import { useTheme } from "../theme.js";
-import { fieldBox, fieldColours, Section } from "./field.js";
+import { fieldBox, fieldColours } from "./field.js";
 import { ON_ANDROID } from "./platform.js";
 import { Type } from "./type.js";
+
+type Mode = "date" | "time";
 
 export interface PickerFieldProps {
   readonly label: string;
   readonly words: string;
-  readonly mode: "date" | "time";
+  readonly mode: Mode;
   readonly at: Date;
   readonly onPicked: (at: Date) => void;
 }
 
-export interface DateFieldProps {
-  readonly label: string;
-  readonly date: string;
-  readonly words: string;
-  readonly onDate: (date: string) => void;
-}
+const DISPLAY: Readonly<Record<Mode, "inline" | "spinner">> = {
+  date: "inline",
+  time: "spinner",
+};
 
 export const PickerField = ({
   label,
@@ -33,8 +32,9 @@ export const PickerField = ({
 }: PickerFieldProps): ReactElement => {
   const theme = useTheme();
   const [picking, setPicking] = useState(false);
+  const wheels = !ON_ANDROID && mode === "time";
   const picked = (event: DateTimePickerEvent, chosen: Date | undefined) => {
-    setPicking(false);
+    if (!wheels) setPicking(false);
     if (event.type === "set" && chosen !== undefined) onPicked(chosen);
   };
 
@@ -43,7 +43,8 @@ export const PickerField = ({
       <TouchableOpacity
         accessibilityLabel={`${label}, ${words}`}
         accessibilityRole="button"
-        onPress={() => setPicking(true)}
+        accessibilityState={{ expanded: picking }}
+        onPress={() => setPicking(!picking)}
         style={[fieldBox, fieldColours(theme)]}
       >
         <Type set="ledgerField" tone="silver">
@@ -52,7 +53,7 @@ export const PickerField = ({
       </TouchableOpacity>
       {picking && (
         <DateTimePicker
-          display={ON_ANDROID ? "default" : "spinner"}
+          display={ON_ANDROID ? "default" : DISPLAY[mode]}
           mode={mode}
           onChange={picked}
           testID={`${mode}-picker`}
@@ -63,20 +64,3 @@ export const PickerField = ({
     </>
   );
 };
-
-export const DateField = ({
-  label,
-  date,
-  words,
-  onDate,
-}: DateFieldProps): ReactElement => (
-  <Section label={label}>
-    <PickerField
-      at={dateAt(date)}
-      label={label}
-      mode="date"
-      onPicked={(at) => onDate(listingDate(at))}
-      words={words}
-    />
-  </Section>
-);

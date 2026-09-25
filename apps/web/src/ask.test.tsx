@@ -207,6 +207,24 @@ describe("the Ask sheet", () => {
     expect(stage.chosen).toEqual([everything()]);
   });
 
+  it("replaces the days an address spans with the one date picked", async () => {
+    const all = everything();
+    const stage = await opened({
+      terms: {
+        ...all,
+        when: { kind: "range", first: all.date, last: "2026-08-31" },
+      },
+    });
+
+    fireEvent.change(ask().getByLabelText("Date"), {
+      target: { value: "2026-08-30" },
+    });
+    find();
+
+    expect(stage.chosen[0]?.date).toBe("2026-08-30");
+    expect(stage.chosen[0]).not.toHaveProperty("when");
+  });
+
   it("shows every term it already holds when it opens, and lets one go", async () => {
     const stage = await opened({ terms: everything() });
 

@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { clockFor, timeAt } from "../host/clock.js";
-import { PickerField } from "./date-field.js";
+import { PickerField } from "./picker-field.js";
 import { TOUCH_FLOOR } from "./touch.js";
 import { Type } from "./type.js";
 
@@ -10,10 +10,9 @@ export interface TimeFieldProps {
   readonly words: string;
   readonly clock: string | undefined;
   readonly clear: string;
+  readonly opensAt: string;
   readonly onClock: (clock: string | undefined) => void;
 }
-
-const EVENING = "19:00";
 
 const styles = StyleSheet.create({
   end: { flex: 1, gap: 6 },
@@ -32,6 +31,7 @@ export const TimeField = ({
   words,
   clock,
   clear,
+  opensAt,
   onClock,
 }: TimeFieldProps): ReactElement => (
   <View style={styles.end}>
@@ -41,7 +41,7 @@ export const TimeField = ({
     <View style={styles.row}>
       <View style={styles.picked}>
         <PickerField
-          at={timeAt(clock ?? EVENING)}
+          at={timeAt(clock ?? opensAt)}
           label={label}
           mode="time"
           onPicked={(at) => onClock(clockFor(at))}

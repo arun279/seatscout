@@ -29,7 +29,7 @@ describe("the when term in the Ask sheet", () => {
     await asking({
       terms: {
         ...NEAR,
-        when: { reading: "range", first: TODAY, last: "2026-09-21" },
+        when: { kind: "range", first: TODAY, last: "2026-09-21" },
       },
     });
 
@@ -61,7 +61,7 @@ describe("the when term in the Ask sheet", () => {
     ).toBeOnTheScreen();
     expect(handedOut(found)).toEqual({
       ...NEAR,
-      when: { reading: "any" },
+      when: { kind: "any" },
     });
   });
 
@@ -73,7 +73,7 @@ describe("the when term in the Ask sheet", () => {
 
     expect(handedOut(found)).toEqual({
       ...NEAR,
-      when: { reading: "range", first: TODAY, last: "2026-09-25" },
+      when: { kind: "range", first: TODAY, last: "2026-09-25" },
     });
   });
 
@@ -86,7 +86,7 @@ describe("the when term in the Ask sheet", () => {
     await submit();
 
     expect(handedOut(found)?.when).toEqual({
-      reading: "range",
+      kind: "range",
       first: TODAY,
       last: "2026-09-22",
     });
@@ -105,7 +105,7 @@ describe("the when term in the Ask sheet", () => {
 
     expect(handedOut(found)).toMatchObject({
       date: "2026-09-20",
-      when: { reading: "range", first: "2026-09-20", last: "2026-09-23" },
+      when: { kind: "range", first: "2026-09-20", last: "2026-09-23" },
     });
   });
 
@@ -125,7 +125,7 @@ describe("the when term in the Ask sheet", () => {
       ),
     ).toBeOnTheScreen();
     expect(handedOut(found)?.when).toEqual({
-      reading: "days",
+      kind: "days",
       dates: [TODAY, "2026-09-21", "2026-09-22"],
     });
   });
@@ -134,7 +134,7 @@ describe("the when term in the Ask sheet", () => {
     await asking({
       terms: {
         ...NEAR,
-        when: { reading: "days", dates: [TODAY, "2026-09-23"] },
+        when: { kind: "days", dates: [TODAY, "2026-09-23"] },
       },
     });
 
@@ -149,7 +149,7 @@ describe("the when term in the Ask sheet", () => {
     const { found } = await asking({
       terms: {
         ...NEAR,
-        when: { reading: "days", dates: [TODAY, "2026-09-23"] },
+        when: { kind: "days", dates: [TODAY, "2026-09-23"] },
       },
     });
 
@@ -166,7 +166,7 @@ describe("the when term in the Ask sheet", () => {
       terms: {
         ...NEAR,
         date: "2026-09-21",
-        when: { reading: "days", dates: ["2026-09-21", "2026-09-23"] },
+        when: { kind: "days", dates: ["2026-09-21", "2026-09-23"] },
       },
     });
 

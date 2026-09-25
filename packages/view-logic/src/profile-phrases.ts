@@ -34,7 +34,7 @@ export const SITTING = {
   lateral: "Left or right",
   lateralEnds: ["House left", "House right"],
   reference: "Back to Reference",
-  referenceSaid:
+  referenceNote:
     "Reference aims two thirds back on the centreline, where cinema standards tune the room. Saved on this phone once you move it, and sent nowhere. Changing it runs the search again against live availability, because seats are never re-ranked from a reading that has aged.",
   minding: "And what you mind",
   mindEnds: ["Don't mind", "Avoid"],

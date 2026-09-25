@@ -1,4 +1,8 @@
-import { REFERENCE, type SeatGroupResult } from "@seatscout/client";
+import {
+  REFERENCE,
+  type SeatGroupResult,
+  type SeatProfile,
+} from "@seatscout/client";
 import { marksOf } from "@seatscout/view-logic";
 import type { ReactElement } from "react";
 import { View } from "react-native";
@@ -21,7 +25,7 @@ const DRAWN = {
   pair: { radius: 3, spread: 1.75, lit: 0.9, lamp: "url(#lit)", unlit: "" },
 } as const;
 
-type Target = Parameters<typeof marksOf>[2];
+type Target = Pick<SeatProfile, "targetDepth" | "targetLateral">;
 
 export interface RoomPlanProps {
   readonly result: SeatGroupResult;

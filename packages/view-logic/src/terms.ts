@@ -7,7 +7,7 @@ import {
   type Format,
   type TheaterId,
 } from "@seatscout/client";
-import { spanOf, valuesOf, type When } from "./when.js";
+import { spanOf, valuesOf, type When, whenValuesOf } from "./when.js";
 
 export type Parameter = [name: string, value: string];
 
@@ -77,10 +77,8 @@ const clockOf = (value: string | undefined) => {
   return CLOCK.test(clock) ? clock : undefined;
 };
 
-const datesOf = ({ date, when }: RawTerms) => {
-  if (when !== undefined) return valuesOf({ date: "", when });
-  return typeof date === "string" ? [given(date)] : (date ?? []).map(given);
-};
+const datesOf = ({ date, when }: RawTerms) =>
+  when === undefined ? [date].flat().map(given) : whenValuesOf(when);
 
 const identityOf = (raw: RawTerms, today: string) => {
   const movie = given(raw.movie);
@@ -160,17 +158,6 @@ const LISTS: readonly (readonly [
   ["format", (terms) => terms.formats],
   ["amenity", (terms) => terms.amenities],
 ];
-
-export const toggled = <Named extends string>(
-  every: readonly Named[],
-  chosen: readonly Named[] | undefined,
-  value: Named,
-): readonly Named[] => {
-  const pressed = new Set(chosen);
-  if (pressed.has(value)) pressed.delete(value);
-  else pressed.add(value);
-  return every.filter((named) => pressed.has(named));
-};
 
 export const windowIn = (
   terms: Terms,

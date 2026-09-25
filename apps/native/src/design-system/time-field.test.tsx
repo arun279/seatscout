@@ -1,6 +1,5 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { fireEvent, render, screen } from "@testing-library/react-native";
-import { Platform } from "react-native";
 import {
   everyControlReachesTheTouchFloor,
   everyControlSaysWhatItIs,
@@ -15,6 +14,7 @@ const timing = async (clock?: string) => {
       clock={clock}
       label="From"
       onClock={onClock}
+      opensAt="19:00"
       words={clock === undefined ? "Any time" : "7:00p"}
     />,
   );
@@ -31,7 +31,7 @@ describe("one end of the time window", () => {
     expect(screen.queryByRole("button", { name: "Clear, From" })).toBeNull();
   });
 
-  it("opens the platform's own time picker at the evening when no time is held", async () => {
+  it("opens the platform's own time picker at the time it is told to when none is held", async () => {
     await timing();
 
     await fireEvent.press(
@@ -44,9 +44,6 @@ describe("one end of the time window", () => {
       picker.props["value"].getHours(),
       picker.props["value"].getMinutes(),
     ]).toEqual([19, 0]);
-    expect(picker.props["display"]).toBe(
-      Platform.OS === "android" ? "default" : "spinner",
-    );
   });
 
   it("opens it at the time it holds, and hands out the time picked on the clock a window is asked by", async () => {

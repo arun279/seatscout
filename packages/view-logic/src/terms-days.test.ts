@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parametersOf, termsFrom, termsOf, toggled } from "./terms.js";
+import { parametersOf, termsFrom, termsOf } from "./terms.js";
 import { TODAY } from "./terms.fixtures.js";
 
 describe("the days an address asks about", () => {
@@ -32,7 +32,7 @@ describe("the days an address asks about", () => {
       ),
     ).toEqual({
       date: "2026-08-29",
-      when: { reading: "days", dates: ["2026-08-29", "2026-08-31"] },
+      when: { kind: "days", dates: ["2026-08-29", "2026-08-31"] },
       partySize: 2,
     });
     expect(termsFrom([["date", "any"]], TODAY).date).toBe(TODAY);
@@ -43,13 +43,13 @@ describe("the days an address asks about", () => {
       termsOf(
         {
           date: "2026-08-29",
-          when: { reading: "range", first: "2026-08-29", last: "2026-09-02" },
+          when: { kind: "range", first: "2026-08-29", last: "2026-09-02" },
         },
         TODAY,
       ),
     ).toEqual({
       date: "2026-08-29",
-      when: { reading: "range", first: "2026-08-29", last: "2026-09-02" },
+      when: { kind: "range", first: "2026-08-29", last: "2026-09-02" },
       partySize: 2,
     });
   });
@@ -57,19 +57,5 @@ describe("the days an address asks about", () => {
   it("trims a date the address padded", () => {
     expect(termsOf({ date: [" 2026-08-29 "] }, TODAY).date).toBe("2026-08-29");
     expect(termsOf({ date: " 2026-08-29 " }, TODAY).date).toBe("2026-08-29");
-  });
-});
-
-describe("a chip pressed among a closed set", () => {
-  const EVERY = ["IMAX", "Dolby Cinema", "3D"] as const;
-
-  it("adds a value not yet chosen, in the order the set lists them", () => {
-    expect(toggled(EVERY, ["3D"], "IMAX")).toEqual(["IMAX", "3D"]);
-    expect(toggled(EVERY, undefined, "Dolby Cinema")).toEqual(["Dolby Cinema"]);
-  });
-
-  it("takes out a value already chosen", () => {
-    expect(toggled(EVERY, ["IMAX", "3D"], "IMAX")).toEqual(["3D"]);
-    expect(toggled(EVERY, ["IMAX"], "IMAX")).toEqual([]);
   });
 });

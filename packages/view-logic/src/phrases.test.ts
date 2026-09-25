@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest";
 import {
   ageOf,
   clockOf,
-  dayOf,
   labelOf,
   lateralOf,
   noneOf,
@@ -15,10 +14,10 @@ import {
   seatOf,
   seatSetOf,
   spokenOf,
-  whenOf,
   whyOf,
 } from "./phrases.js";
 import { openedRooms, WEST_PLANO_28 } from "./rooms.fixtures.js";
+import { dayOf, whenOf } from "./when-phrases.js";
 
 const REASONS = {
   rowFromFront: 7,

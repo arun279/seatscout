@@ -10,7 +10,8 @@ const ROWS_SPAN = 32;
 const CENTRE = 32;
 const HALF_WIDTH = 30;
 
-const hundredths = (value: number) => Math.round(value * 100) / 100;
+export const hundredths = (value: number): number =>
+  Math.round(value * 100) / 100;
 
 const x = (lateral: number) => hundredths(CENTRE + lateral * HALF_WIDTH);
 const y = (depth: number) => hundredths(FRONT + depth * ROWS_SPAN);

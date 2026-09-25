@@ -1,4 +1,5 @@
-import { whenOf } from "./phrases.js";
+import type { Kind } from "./when.js";
+import { whenOf } from "./when-phrases.js";
 import type { ProgrammeState } from "./programme.js";
 
 export interface PlayingStatus {
@@ -17,14 +18,14 @@ interface AskWords {
   readonly fewer: string;
   readonly more: string;
   readonly kept: string;
-  readonly readings: readonly [string, string, string, string];
+  readonly kinds: Readonly<Record<Kind, string>>;
   readonly addDay: string;
   readonly from: string;
   readonly until: string;
   readonly anyTime: string;
   readonly clear: string;
   readonly accessible: string;
-  readonly accessibleSaid: string;
+  readonly accessibleNote: string;
   readonly format: string;
   readonly comfort: string;
   readonly chain: string;
@@ -42,14 +43,19 @@ export const ASKING: AskWords = {
   fewer: "Fewer seats",
   more: "More seats",
   kept: "Preferences and history stay on this phone. No account exists.",
-  readings: ["One day", "Some days", "A range", "Any day"],
+  kinds: {
+    day: "One day",
+    days: "Some days",
+    range: "A range",
+    any: "Any day",
+  },
   addDay: "Add a day",
   from: "From",
   until: "Until",
   anyTime: "Any time",
   clear: "Clear",
   accessible: "Accessible seating",
-  accessibleSaid:
+  accessibleNote:
     "Wheelchair and companion seats stay out of ordinary results. Turning this on searches for them deliberately.",
   format: "Format",
   comfort: "Comfort",
