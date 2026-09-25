@@ -29,7 +29,8 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     rowGap: DRAWN.gap.down,
   },
-  entry: { alignItems: "center", flexDirection: "row" },
+  entry: { alignItems: "center", flexDirection: "row", flexShrink: 1 },
+  words: { flexShrink: 1 },
   lit: SWATCH,
   forSale: SWATCH,
   notBookable: { ...SWATCH, borderWidth: DRAWN.space.stroke },
@@ -78,7 +79,7 @@ export const Legend = ({
             style={[styles[entry.mark], tones[entry.mark]]}
             testID={`mark-${entry.mark}`}
           />
-          <Type set="ledgerRow" tone="silverDim">
+          <Type set="ledgerRow" style={styles.words} tone="silverDim">
             {entry.words}
           </Type>
         </View>

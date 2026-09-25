@@ -117,7 +117,8 @@ export const ScreenEdge = ({
     <View
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      style={styles.band}
+      style={[styles.band, { width: span }]}
+      testID="screen-edge"
     >
       {appearance === "down" ? (
         <Lit colours={colours} span={span} />

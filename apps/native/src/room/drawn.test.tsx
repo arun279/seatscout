@@ -54,6 +54,18 @@ describe("the room drawn to the screen it is on", () => {
     expect(map.height).toBeGreaterThan(50);
   });
 
+  it("sets the screen edge over the map at the map's own width", async () => {
+    await shown({ room: WEST_PLANO_28 });
+
+    const edge = StyleSheet.flatten(
+      screen.getByTestId("screen-edge", { includeHiddenElements: true }).props[
+        "style"
+      ],
+    );
+
+    expect(edge.width).toBe(drawnMap().width);
+  });
+
   it("draws the map at no size until the screen has been measured", async () => {
     await shown({ stage: null });
 
