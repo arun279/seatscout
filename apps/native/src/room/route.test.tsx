@@ -96,6 +96,16 @@ describe("the Room a card on the list opens", () => {
 });
 
 describe("the Room a deep link opens", () => {
+  it("draws nothing and reads nothing when the link carries no query that can run", async () => {
+    const before = mockReads.length;
+    const app = opened(`/room?showtime=${VILLAGE_1.showtime}`);
+    await app;
+
+    expect(app.getPathname()).toBe("/room");
+    expect(screen.queryByText(`‹ ${BACK_TO_THE_LIST}`)).toBeNull();
+    expect(mockReads).toHaveLength(before);
+  });
+
   it("draws the room the Showtime in the link names", async () => {
     const app = opened(roomLink(VILLAGE_1.showtime));
     await settled(app);

@@ -15,6 +15,7 @@ import {
   screen,
   within,
 } from "@testing-library/react-native";
+import type { LayoutRectangle } from "react-native";
 import { still } from "../../test/rooms.js";
 import { Room } from "./room.js";
 
@@ -43,6 +44,7 @@ export const shown = async (
     readonly online?: boolean;
     readonly accessibleSeating?: boolean;
     readonly opening?: (opened: OpenedRoom) => SeatGroupResult;
+    readonly stage?: LayoutRectangle | null;
   } = {},
 ): Promise<Shown> => {
   const [opened] = await openedRooms(
@@ -65,9 +67,11 @@ export const shown = async (
       today={TODAY}
     />,
   );
-  await fireEvent(screen.getByTestId("scroll"), "layout", {
-    nativeEvent: { layout: STAGE },
-  });
+  const stage = over.stage === undefined ? STAGE : over.stage;
+  if (stage !== null)
+    await fireEvent(screen.getByTestId("scroll"), "layout", {
+      nativeEvent: { layout: stage },
+    });
 
   return { ...opened, handedOff, left };
 };

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 import { renderHook } from "@testing-library/react-native";
-import { ASKED } from "../../test/rooms.js";
 import { phone } from "../../test/phone.js";
+import { ASKED } from "../../test/rooms.js";
 import { useSession } from "./session.js";
 
 const { seatscout } = phone([], { script: {} });
@@ -33,6 +33,15 @@ describe("the search a screen holds", () => {
     const again = await held();
 
     expect(again.result.current).not.toBe(before);
+  });
+
+  it("is still held after the screen holding it draws again", async () => {
+    const list = await held();
+
+    await list.rerender({});
+    const room = await held();
+
+    expect(room.result.current).toBe(list.result.current);
   });
 
   it("is still shared while one screen holds it after another lets go", async () => {

@@ -2,19 +2,19 @@ import type { Auditorium, SeatGroupResult } from "@seatscout/client";
 import {
   BACK_TO_THE_LIST,
   backToOf,
+  type Cursor,
   chosenOf,
   clockOf,
   consolesIn,
   creditsOf,
-  type Cursor,
   dayOf,
   type Frame,
   frameOf,
   groupHolding,
   notBookableIn,
   opened,
-  partyOf,
   type Place,
+  partyOf,
   placed,
   readingOf,
   refusalOf,
@@ -59,10 +59,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     minHeight: TOUCH_FLOOR,
     minWidth: TOUCH_FLOOR,
+    paddingHorizontal: DRAWN.across,
   },
-  head: { gap: DRAWN.gap.line, paddingTop: DRAWN.gap.head },
-  beside: { paddingHorizontal: DRAWN.across },
-  bar: { paddingTop: DRAWN.gap.head },
+  head: {
+    gap: DRAWN.gap.line,
+    paddingHorizontal: DRAWN.across,
+    paddingTop: DRAWN.gap.head,
+  },
+  bar: { paddingHorizontal: DRAWN.across, paddingTop: DRAWN.gap.head },
   frame: {
     alignItems: "center",
     borderRadius: DRAWN.map.radius,
@@ -83,18 +87,26 @@ const styles = StyleSheet.create({
     minHeight: TOUCH_FLOOR,
     minWidth: TOUCH_FLOOR,
   },
-  section: { paddingTop: DRAWN.gap.section },
-  billing: { alignItems: "center", gap: DRAWN.gap.credit },
+  section: { paddingHorizontal: DRAWN.across, paddingTop: DRAWN.gap.section },
+  billing: {
+    alignItems: "center",
+    gap: DRAWN.gap.credit,
+    paddingHorizontal: DRAWN.across,
+    paddingTop: DRAWN.gap.section,
+  },
   facts: {
     columnGap: DRAWN.gap.fact,
     flexDirection: "row",
     flexWrap: "wrap",
+    paddingHorizontal: DRAWN.across,
+    paddingTop: DRAWN.gap.section,
     rowGap: DRAWN.gap.line,
   },
   prov: {
     borderTopWidth: 1,
     gap: DRAWN.gap.line,
     marginTop: DRAWN.gap.section,
+    paddingHorizontal: DRAWN.across,
     paddingTop: DRAWN.gap.head,
   },
   centred: { textAlign: "center" },
@@ -123,7 +135,7 @@ const drawnIn = (stage: LayoutRectangle, frame: Frame): Drawn => {
 };
 
 const Billing = ({ group }: { readonly group: SeatGroupResult }) => (
-  <View style={[styles.beside, styles.section, styles.billing]}>
+  <View style={styles.billing}>
     <Type set="ledgerLabel" style={styles.centred} tone="silver">
       {rowOf(group.reasons)}
     </Type>
@@ -212,13 +224,13 @@ export const Room = ({
           accessibilityRole="button"
           hitSlop={SLOP}
           onPress={onBack}
-          style={[styles.beside, styles.back]}
+          style={styles.back}
         >
           <Type set="sentence" tone="beamDim">
             ‹ {BACK_TO_THE_LIST}
           </Type>
         </TouchableOpacity>
-        <View style={[styles.beside, styles.head]}>
+        <View style={styles.head}>
           <Type set="ledgerLabel" tone="silverFaint">
             {[
               partyOf(partySize),
@@ -230,7 +242,7 @@ export const Room = ({
             {theater.name}
           </Type>
         </View>
-        <View style={[styles.beside, styles.bar]}>
+        <View style={styles.bar}>
           <RowBar map={auditorium.map} notice={notice} row={cursor.row} />
         </View>
         <View
@@ -241,6 +253,7 @@ export const Room = ({
               borderColor: colours.hairline,
             },
           ]}
+          testID="map-frame"
         >
           <ScreenEdge span={drawn.width} />
           <SeatMap
@@ -261,12 +274,13 @@ export const Room = ({
             setNotice(null);
           }}
           style={[styles.return, { borderColor: colours.hairline }]}
+          testID="return"
         >
           <Type set="sentence" tone="silverDim">
             {backToOf(result)}
           </Type>
         </TouchableOpacity>
-        <View style={[styles.beside, styles.section]}>
+        <View style={styles.section}>
           <Legend
             accessibleSeating={accessibleSeating}
             chosen={chosen}
@@ -274,7 +288,7 @@ export const Room = ({
           />
         </View>
         <Billing group={chosen} />
-        <View style={[styles.beside, styles.section]}>
+        <View style={styles.section}>
           <Alternates
             chosen={chosen}
             listed={shownIn(auditorium, result, chosen)}
@@ -283,7 +297,7 @@ export const Room = ({
             partySize={partySize}
           />
         </View>
-        <View style={[styles.beside, styles.section, styles.facts]}>
+        <View style={styles.facts} testID="facts">
           <Type set="ledgerRow" tone="silverDim">
             {notBookableIn(auditorium.map)}
           </Type>
@@ -294,11 +308,8 @@ export const Room = ({
           )}
         </View>
         <View
-          style={[
-            styles.beside,
-            styles.prov,
-            { borderTopColor: colours.hairline },
-          ]}
+          style={[styles.prov, { borderTopColor: colours.hairline }]}
+          testID="provenance"
         >
           <Reading clock={clock} fetchedAt={result.fetchedAt} />
           <Type set="ledgerLabel" tone="velvetLit">

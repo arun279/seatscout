@@ -8,6 +8,7 @@ export interface Session {
 }
 
 interface Holding {
+  readonly key: string;
   readonly session: Session;
   holders: number;
 }
@@ -23,20 +24,21 @@ export const useSession = (
   seatscout: SeatScout,
   asked: SearchTerms,
 ): Session => {
-  const key = JSON.stringify(asked);
-  const [session] = useState(
-    () => live.get(key)?.session ?? opened(seatscout, asked),
-  );
+  const [holding] = useState(() => {
+    const key = JSON.stringify(asked);
+    return (
+      live.get(key) ?? { key, session: opened(seatscout, asked), holders: 0 }
+    );
+  });
 
   useEffect(() => {
-    const holding = live.get(key) ?? { session, holders: 0 };
     holding.holders += 1;
-    live.set(key, holding);
+    live.set(holding.key, holding);
     return () => {
       holding.holders -= 1;
-      if (holding.holders === 0) live.delete(key);
+      if (holding.holders === 0) live.delete(holding.key);
     };
-  }, [key, session]);
+  });
 
-  return session;
+  return holding.session;
 };
