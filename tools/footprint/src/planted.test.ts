@@ -23,9 +23,6 @@ const judging = (...reports: readonly string[]) => ({
       report: `${PLANTED}/${report}`,
     })),
   ),
-  ...Object.fromEntries(
-    reports.map((report) => [`${PLANTED}/${report}`, planted(report)]),
-  ),
 });
 
 const measuring = (
@@ -43,7 +40,9 @@ const measuring = (
   const { read } = reading(
     judging(...(reports.length > 0 ? reports : ["mutation-one.json"])),
   );
-  return () => measureWith(run, read)("origin/main", "HEAD");
+  const onDisk = (path: string) =>
+    path.startsWith(`${PLANTED}/`) ? readFileSync(path, "utf8") : read(path);
+  return () => measureWith(run, onDisk)("origin/main", "HEAD");
 };
 
 describe("the planted red", () => {
@@ -87,6 +86,12 @@ describe("the planted red", () => {
     expect(measuring({}, "mutation-nothing.json")).toThrow(
       "The mutation run weighed no mutant",
     );
+  });
+
+  it("refuses a shard the list names whose report never reached the job, and names the report", () => {
+    expect(
+      measuring({}, "mutation-one.json", "mutation-never-written.json"),
+    ).toThrow(`${PLANTED}/mutation-never-written.json`);
   });
 
   it("refuses a later shard that weighed nothing behind one that weighed something", () => {
