@@ -1,7 +1,7 @@
 {
   "$schema": "https://unpkg.com/knip@6.32.3/schema.json",
   "includeEntryExports": true,
-  "ignoreDependencies": ["web-vitals"],
+  "ignoreDependencies": ["serve", "web-vitals"],
   "workspaces": {
     ".": {
       "vitest": {

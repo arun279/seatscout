@@ -25,8 +25,7 @@ export default defineConfig({
       url: `http://localhost:${PORT}/`,
     },
     {
-      command: `pnpm exec expo serve --port ${APP_PORT}`,
-      cwd: "apps/native",
+      command: `pnpm exec serve apps/native/dist --single --no-clipboard --listen ${APP_PORT}`,
       url: `http://localhost:${APP_PORT}/`,
     },
   ],

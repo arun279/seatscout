@@ -80,7 +80,7 @@ pnpm journey --head reports/journey/app-samples.json --no-gesture --no-baseline
 ```
 
 `pnpm test:e2e` and `pnpm test:journey` serve the app's web build from `apps/native/dist` with
-`expo serve`, so the bundle step comes first. Playwright runs `tests/e2e` over `apps/web` as
+`serve`, compressed as a host would send it, so the bundle step comes first. Playwright runs `tests/e2e` over `apps/web` as
 the `web` project and `tests/app` over the app's web build as the `app` project.
 
 The list is the job, not a selection from it. Running a shorter one and finding it green is

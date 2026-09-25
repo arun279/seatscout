@@ -832,13 +832,16 @@ walk itself, each for its default ten iterations with the app's data cleared bef
 nothing, failed, or carried no frame rate or memory is refused rather than printed.
 
 **The app's web build is held to the same accessibility standard and the same journey as the web
-app.** `tests/app` runs as a Playwright project of its own over `expo serve`: axe scans every screen
+app.** `tests/app` runs as a Playwright project of its own over Vercel's `serve`: axe scans every screen
 from the Ask sheet to the Room against WCAG 2.2 at A and AA, and the Core Web Vitals journey runs
 under the same mobile emulation and network profile as `tests/e2e`, held to Google's thresholds and
 to its merge base by `pnpm journey --no-gesture`. The flag says the journey makes no gesture, as
 `--no-baseline` says there is no merge base; leaving both out is refused, so a dropped gesture file
 cannot quietly skip the gesture gate. Its first run found a real violation: the film list in the Ask
 sheet was a list with no items in it (axe's `aria-required-children`), so each film is now a list item.
+The build is served compressed because every host compresses what it sends. `expo serve` does not,
+and the first journeys through it read a p75 LCP of 8,500 and 8,692 ms, the 1.3 MB script arriving
+whole over Slow 4G; `serve` gzips on the fly, which is no smaller than the brotli Cloudflare sends.
 
 **The app's bundles are four more ratchets.** The Hermes bytecode for iOS and for Android, the web
 build's scripts, and the faces and images every platform ships, each against its own figure in
