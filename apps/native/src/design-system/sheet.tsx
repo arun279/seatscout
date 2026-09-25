@@ -1,7 +1,15 @@
-import { type ReactElement, type ReactNode, useEffect } from "react";
+import {
+  type ReactElement,
+  type ReactNode,
+  useEffect,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import {
   AccessibilityInfo,
-  KeyboardAvoidingView,
+  Keyboard,
+  type KeyboardEvent,
+  LayoutAnimation,
   Platform,
   ScrollView,
   StyleSheet,
@@ -63,6 +71,38 @@ const styles = StyleSheet.create({
   },
 });
 
+const keyboardLift = () => {
+  let lift = 0;
+
+  return {
+    snapshot: () => lift,
+    subscribe: (changed: () => void) => {
+      const follow = ({ duration }: KeyboardEvent, to: number) => {
+        if (duration > 0)
+          LayoutAnimation.configureNext({
+            duration,
+            update: { duration, type: "keyboard" },
+          });
+        lift = to;
+        changed();
+      };
+      const subscriptions = ON_ANDROID
+        ? []
+        : [
+            Keyboard.addListener("keyboardWillShow", (event) =>
+              follow(event, event.endCoordinates.height),
+            ),
+            Keyboard.addListener("keyboardWillHide", (event) =>
+              follow(event, 0),
+            ),
+          ];
+      return () => {
+        for (const subscription of subscriptions) subscription.remove();
+      };
+    },
+  };
+};
+
 type HeadProps = Pick<SheetProps, "heading" | "keep" | "onKeep">;
 
 const AppBar = ({ heading, keep, onKeep }: HeadProps) => (
@@ -111,15 +151,19 @@ export const Sheet = ({
 }: SheetProps): ReactElement => {
   const theme = useTheme();
   const above: HeadProps = { heading, keep, onKeep };
+  const [keyboard] = useState(keyboardLift);
+  const lift = useSyncExternalStore(keyboard.subscribe, keyboard.snapshot);
 
   useEffect(() => {
     if (!claimed) AccessibilityInfo.announceForAccessibility(heading);
   }, [claimed, heading]);
 
   return (
-    <KeyboardAvoidingView
-      behavior={ON_ANDROID ? undefined : "padding"}
-      style={[styles.sheet, { backgroundColor: theme.colours.house }]}
+    <View
+      style={[
+        styles.sheet,
+        { backgroundColor: theme.colours.house, paddingBottom: lift },
+      ]}
       testID="stage"
     >
       {ON_ANDROID ? (
@@ -135,13 +179,14 @@ export const Sheet = ({
           <Head {...above} />
         </View>
       )}
-      <ScrollView
-        contentContainerStyle={styles.read}
-        keyboardShouldPersistTaps="handled"
-        style={styles.body}
-      >
-        {children}
-      </ScrollView>
+      <View collapsable={false} style={styles.body} testID="sheet-body">
+        <ScrollView
+          contentContainerStyle={styles.read}
+          keyboardShouldPersistTaps="handled"
+        >
+          {children}
+        </ScrollView>
+      </View>
       <SafeAreaView
         edges={["bottom"]}
         style={[
@@ -155,6 +200,6 @@ export const Sheet = ({
       >
         {dock}
       </SafeAreaView>
-    </KeyboardAvoidingView>
+    </View>
   );
 };

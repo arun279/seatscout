@@ -1,6 +1,18 @@
 import { describe, expect, it, jest } from "@jest/globals";
-import { fireEvent, render, screen } from "@testing-library/react-native";
-import { AccessibilityInfo, Platform, StyleSheet } from "react-native";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react-native";
+import {
+  AccessibilityInfo,
+  DeviceEventEmitter,
+  LayoutAnimation,
+  Platform,
+  StyleSheet,
+} from "react-native";
 import { contrastOf } from "../../test/contrast.js";
 import { everyControlReachesTheTouchFloor } from "../../test/floors.js";
 import { houseLights } from "../../test/lights.js";
@@ -9,6 +21,26 @@ import { presentationFor, Sheet } from "./sheet.js";
 import { Type } from "./type.js";
 
 const APPEARANCES: readonly Appearance[] = ["down", "up"];
+
+const KEYBOARD = {
+  duration: 250,
+  easing: "keyboard",
+  isEventFromThisApp: true,
+  startCoordinates: { height: 0, screenX: 0, screenY: 874, width: 402 },
+  endCoordinates: { height: 328, screenX: 0, screenY: 546, width: 402 },
+};
+
+const keyboard = async (
+  event: "keyboardWillShow" | "keyboardWillHide",
+  duration = KEYBOARD.duration,
+) => {
+  await act(() => {
+    DeviceEventEmitter.emit(event, { ...KEYBOARD, duration });
+  });
+};
+
+const stagePadding = () =>
+  StyleSheet.flatten(screen.getByTestId("stage").props["style"]).paddingBottom;
 
 const presented = async (
   appearance: Appearance = "down",
@@ -92,6 +124,26 @@ describe("a sheet the platform presents", () => {
     expect(said).toHaveBeenCalledWith("What are we seeing?");
   });
 
+  it("says its heading again when it comes to say another one", async () => {
+    const said = jest.spyOn(AccessibilityInfo, "announceForAccessibility");
+    await presented();
+    said.mockClear();
+
+    await screen.rerender(
+      <Sheet
+        claimed={false}
+        dock={null}
+        heading="Where are we sitting?"
+        keep="Keep as it was"
+        onKeep={() => undefined}
+      >
+        {null}
+      </Sheet>,
+    );
+
+    expect(said).toHaveBeenCalledWith("Where are we sitting?");
+  });
+
   it("says nothing over the field a person was sent to, when one claimed the keyboard", async () => {
     const said = jest.spyOn(AccessibilityInfo, "announceForAccessibility");
     said.mockClear();
@@ -142,10 +194,68 @@ describe("a sheet the platform presents", () => {
     );
   });
 
-  it("lifts the dock above the keyboard where the platform does not do it itself", async () => {
-    const { stage } = await presented();
+  it("lifts the dock by the keyboard's whole height on iOS, although the form sheet starts below the top of the window", async () => {
+    await presented();
+    await fireEvent(screen.getByTestId("stage"), "layout", {
+      nativeEvent: { layout: { height: 812, width: 402, x: 0, y: 0 } },
+      persist: () => undefined,
+    });
 
-    expect(stage.paddingBottom !== undefined).toBe(Platform.OS === "ios");
+    await keyboard("keyboardWillShow");
+
+    expect(stagePadding()).toBe(Platform.OS === "ios" ? 328 : 0);
+  });
+
+  it("lets the dock back down when the keyboard goes", async () => {
+    await presented();
+    await keyboard("keyboardWillShow");
+
+    await keyboard("keyboardWillHide");
+
+    expect(stagePadding()).toBe(0);
+  });
+
+  it("moves the dock with the keyboard's own timing and curve on iOS", async () => {
+    const animated = jest.spyOn(LayoutAnimation, "configureNext");
+    animated.mockClear();
+    await presented();
+
+    await keyboard("keyboardWillShow");
+
+    expect(animated.mock.calls).toEqual(
+      Platform.OS === "ios"
+        ? [[{ duration: 250, update: { duration: 250, type: "keyboard" } }]]
+        : [],
+    );
+  });
+
+  it("moves the dock at once when the keyboard arrives without a motion, as a hardware keyboard's bar does", async () => {
+    const animated = jest.spyOn(LayoutAnimation, "configureNext");
+    animated.mockClear();
+    await presented();
+
+    await keyboard("keyboardWillShow", 0);
+
+    expect(animated).not.toHaveBeenCalled();
+    expect(stagePadding()).toBe(Platform.OS === "ios" ? 328 : 0);
+  });
+
+  it("stops following the keyboard once it is gone", async () => {
+    const before = DeviceEventEmitter.listenerCount("keyboardWillShow");
+    await presented();
+
+    await screen.unmount();
+
+    expect(DeviceEventEmitter.listenerCount("keyboardWillShow")).toBe(before);
+  });
+
+  it("holds its scroll in a view the native sheet cannot flatten, so the form sheet cannot stretch the scroll over the head", async () => {
+    await presented();
+
+    const body = screen.getByTestId("sheet-body");
+
+    expect(body).toHaveProp("collapsable", false);
+    expect(within(body).getByText("Near, by postal code")).toBeOnTheScreen();
   });
 
   it("reaches the platform's touch floor with every control it draws", async () => {
