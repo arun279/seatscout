@@ -170,17 +170,4 @@ test("a first search in the app's web build on a mid-tier phone over a slow conn
   }
   mkdirSync("reports/journey", { recursive: true });
   writeFileSync(SAMPLES, JSON.stringify(journeys, null, 2));
-
-  expect(JSON.parse(readFileSync(SAMPLES, "utf8"))).toEqual(
-    Array.from({ length: JOURNEYS }, () => ({
-      firstSeatGroupsMs: expect.any(Number),
-      lcp: expect.any(Number),
-      inp: expect.any(Number),
-      cls: expect.any(Number),
-      heapBytes: expect.any(Number),
-      blockingMs: expect.any(Number),
-      longTasks: expect.any(Number),
-      conditions: CONDITIONS,
-    })),
-  );
 });

@@ -1,4 +1,4 @@
-import { type Reading, readingOf } from "./flashlight.ts";
+import { type Figure, type Reading, readingOf } from "./flashlight.ts";
 
 interface Writer {
   readonly write: (text: string) => void;
@@ -12,42 +12,34 @@ const argumentAfter = (argv: readonly string[], flag: string) => {
   return at === -1 ? undefined : argv[at + 1];
 };
 
-const row = (measure: string, average: string, spread: number) =>
-  `| ${measure} | ${average} | ${spread}% |`;
+const row = (measure: string, unit: string, { mean, spread }: Figure) =>
+  `| ${measure} | ${mean}${unit} | ${spread}% |`;
 
-const sectionOf = (startup: Reading, journey: Reading): string => {
-  const widest = Math.max(
-    startup.runtimeSpread,
-    journey.runtimeSpread,
-    journey.fpsSpread,
-    journey.cpuSpread,
-    journey.ramSpread,
-  );
-  return [
+const sectionOf = (startup: Reading, journey: Reading): string =>
+  [
     "### On the Android emulator",
     "",
-    `Flashlight's own averages over ${startup.iterations} iterations of start-up and ${journey.iterations} of the journey, with the app stopped before each, and the spread across iterations as Flashlight's coefficient of variation.`,
+    `Flashlight over ${startup.iterations} iterations of start-up and ${journey.iterations} of the journey, with the app's data cleared before each. Each figure is the mean over iterations; the spread is the standard deviation across iterations as a share of that mean.`,
     "",
-    "| Measure | Average | Spread |",
+    "| Measure | Mean | Spread |",
     "| --- | --- | --- |",
-    row(
-      "Start-up, to the first frame",
-      `${startup.runtime} ms`,
-      startup.runtimeSpread,
-    ),
-    row(
-      "Journey, from a cold start",
-      `${journey.runtime} ms`,
-      journey.runtimeSpread,
-    ),
-    row("Frame rate over the journey", `${journey.fps} FPS`, journey.fpsSpread),
-    row("CPU over the journey", `${journey.cpu}%`, journey.cpuSpread),
-    row("Memory over the journey", `${journey.ram} MB`, journey.ramSpread),
+    row("Start-up, launch to the first frame", " ms", startup.runtime),
+    row("Journey, as Maestro walks it", " ms", journey.runtime),
+    row("Frame rate over the journey", " FPS", journey.fps),
+    row("CPU over the journey", "%", journey.cpu),
+    row("Memory over the journey", " MB", journey.ram),
     "",
-    `The widest spread across iterations is ${widest}%.`,
+    `The widest spread across iterations is ${Math.max(
+      ...[
+        startup.runtime,
+        journey.runtime,
+        journey.fps,
+        journey.cpu,
+        journey.ram,
+      ].map((figure) => figure.spread),
+    )}%.`,
     "",
   ].join("\n");
-};
 
 export const main = (
   argv: readonly string[],

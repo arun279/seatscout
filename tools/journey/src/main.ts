@@ -52,7 +52,7 @@ interface Subjects {
   readonly baseGesture: readonly Gesture[] | null;
 }
 
-const REFUSED = "refused";
+const REFUSED: unique symbol = Symbol();
 
 const readIf = <Reading>(
   path: string | null,

@@ -272,13 +272,6 @@ importers:
         version: 4.1.11(@types/node@26.6.1)(jsdom@30.0.1)(vite@8.3.0(@types/node@26.6.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.1)(yaml@2.9.0))
 
   tools/device:
-    dependencies:
-      '@perf-profiler/reporter':
-        specifier: 0.9.0
-        version: 0.9.0
-      '@perf-profiler/types':
-        specifier: 0.8.0
-        version: 0.8.0
     devDependencies:
       '@types/node':
         specifier: 26.6.1
@@ -2527,12 +2520,6 @@ packages:
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [x64]
     os: [win32]
-
-  '@perf-profiler/reporter@0.9.0':
-    resolution: {integrity: sha512-wJt6ZRVM/cL+8rv9gFYgl8ZIra0uKdesfcfvsvhmrPXtxgC0O4ZdHF9hJDMtcCiHuHb8ptVq/BmEEW84CnvRIw==}
-
-  '@perf-profiler/types@0.8.0':
-    resolution: {integrity: sha512-TFiktv00SzLjjPp1hFYYjT9O36iGIUaF6yPLd7x/UT4CuLd0YYDUj+gvX0fbXtVtV7141tTvWbXFL5HiXGx0kw==}
 
   '@playwright/test@1.63.0':
     resolution: {integrity: sha512-oxMK4vllB9RK5NQ2l1pq1IfOf2AvnEuj/vYGDj0H2nMtmtZpKtCwt/l00GEO6xjGfpBNAvjovvYdCm50dRQkpQ==}
@@ -9179,13 +9166,6 @@ snapshots:
 
   '@oxlint/binding-win32-x64-msvc@1.83.0':
     optional: true
-
-  '@perf-profiler/reporter@0.9.0':
-    dependencies:
-      '@perf-profiler/types': 0.8.0
-      lodash: 4.18.1
-
-  '@perf-profiler/types@0.8.0': {}
 
   '@playwright/test@1.63.0':
     dependencies:

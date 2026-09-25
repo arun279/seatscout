@@ -4,15 +4,12 @@ import { getDefaultConfig } from "expo/metro-config.js";
 
 const EMITTED_JS = /^\.{1,2}\/.*\.jsx?$/;
 const UPSTREAM = resolve(import.meta.dirname, "src/host/upstream.ts");
-const ANSWERED_BY: Readonly<Record<string, string>> = {
-  corpus: resolve(import.meta.dirname, "e2e/upstream.ts"),
-};
+const CORPUS = resolve(import.meta.dirname, "e2e/upstream.ts");
 
 const asked = process.env["SEATSCOUT_UPSTREAM"];
-const substitute = asked === undefined ? undefined : ANSWERED_BY[asked];
-if (asked !== undefined && substitute === undefined)
+if (asked !== undefined && asked !== "corpus")
   throw new Error(
-    `SEATSCOUT_UPSTREAM names no stand-in for the Source: ${asked}. Leave it unset for the Source itself, or name one of ${Object.keys(ANSWERED_BY).join(", ")}.`,
+    `SEATSCOUT_UPSTREAM names no stand-in for the Source: ${asked}. Leave it unset for the Source itself, or set it to corpus.`,
   );
 
 const config = getDefaultConfig(import.meta.dirname);
@@ -26,10 +23,10 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
     answered ? moduleName : moduleName.replace(/\.jsx?$/, ""),
     platform,
   );
-  return substitute !== undefined &&
+  return asked !== undefined &&
     resolution.type === "sourceFile" &&
     resolution.filePath === UPSTREAM
-    ? { type: "sourceFile", filePath: substitute }
+    ? { type: "sourceFile", filePath: CORPUS }
     : resolution;
 };
 

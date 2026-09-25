@@ -11,7 +11,7 @@ test("every screen of the app's web build, from Ask to the Room, carries no WCAG
   expect(await violationsOn(page)).toEqual([]);
 
   await find.click();
-  const film = page.getByLabel("Film");
+  const film = page.getByRole("textbox", { name: "Film" });
   await expect(film).toBeVisible();
   expect(await violationsOn(page)).toEqual([]);
 
