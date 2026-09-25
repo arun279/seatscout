@@ -115,7 +115,20 @@ describe("what the film field says about the listing under it", () => {
 
 describe("the words the Ask sheet is asked in", () => {
   it("says something for every control and every heading it names", () => {
-    for (const [named, words] of Object.entries(ASKING))
-      expect(`${named}: ${words.trim()}`).not.toBe(`${named}: `);
+    const named = [
+      "heading",
+      "keep",
+      "area",
+      "areaDecides",
+      "film",
+      "when",
+      "party",
+      "fewer",
+      "more",
+      "kept",
+    ] as const;
+
+    for (const line of named)
+      expect([line, ASKING[line].trim()]).not.toEqual([line, ""]);
   });
 });

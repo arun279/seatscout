@@ -1,6 +1,7 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import type { Term, Terms } from "@seatscout/view-logic";
 import { fireEvent, render, screen } from "@testing-library/react-native";
+import { AccessibilityInfo } from "react-native";
 import {
   everyControlReachesTheTouchFloor,
   everyControlSaysWhatItIs,
@@ -191,6 +192,35 @@ describe("the Ask sheet", () => {
       false,
     );
     expect(screen.getByLabelText("Film")).toHaveProp("autoFocus", false);
+  });
+
+  for (const focus of ["movie", "area"] as const)
+    it(`leaves the heading unsaid when the ${focus} field takes the keyboard`, async () => {
+      const said = jest.spyOn(AccessibilityInfo, "announceForAccessibility");
+      said.mockClear();
+
+      await asking({ focus, terms: NEAR });
+
+      expect(said).not.toHaveBeenCalled();
+    });
+
+  it("says its heading when the term it was opened at has no field to take the keyboard", async () => {
+    const said = jest.spyOn(AccessibilityInfo, "announceForAccessibility");
+    said.mockClear();
+
+    await asking({ focus: "partySize" });
+
+    expect(said).toHaveBeenCalledWith("What are we seeing?");
+  });
+
+  it("does not read the listing again when the area is left as it was", async () => {
+    const { seatscout } = await asking({ terms: NEAR, playing: PLAYING });
+    await screen.findByRole("button", { name: "Akira" });
+    const read = jest.spyOn(seatscout, "programme");
+
+    await fireEvent(screen.getByLabelText("Near, by postal code"), "blur");
+
+    expect(read).not.toHaveBeenCalled();
   });
 
   it("holds an empty area as an empty field, and asks for one", async () => {

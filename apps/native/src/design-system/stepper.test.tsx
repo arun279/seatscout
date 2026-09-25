@@ -2,6 +2,7 @@ import { describe, expect, it, jest } from "@jest/globals";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import { Platform, StyleSheet } from "react-native";
 import { everyControlReachesTheTouchFloor } from "../../test/floors.js";
+import { houseLights } from "../../test/lights.js";
 import { Stepper } from "./stepper.js";
 
 const stepping = async (count: number, onCount = jest.fn()) => {
@@ -63,5 +64,16 @@ describe("stepping a count up and down", () => {
     expect(Number(step.borderRadius) >= Number(step.minHeight) / 2).toBe(
       Platform.OS === "android",
     );
+  });
+
+  it("raises each control off the ground on a hairline edge", async () => {
+    houseLights("down");
+    await stepping(2);
+    const step = StyleSheet.flatten(
+      screen.getByRole("button", { name: "Fewer seats" }).props["style"],
+    );
+
+    expect(step.backgroundColor).toBe("#161926");
+    expect(step.borderColor).toBe("#323748");
   });
 });

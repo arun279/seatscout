@@ -85,7 +85,7 @@ export const Ask = ({
           </Type>
         </>
       }
-      claimed={focus !== undefined}
+      claimed={focus === "area" || focus === "movie"}
       heading={ASKING.heading}
       keep={ASKING.keep}
       onKeep={onKeep}
