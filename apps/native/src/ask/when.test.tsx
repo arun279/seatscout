@@ -43,6 +43,7 @@ describe("the when term in the Ask sheet", () => {
 
     expect(screen.getByRole("button", { name: "One day" })).toBeSelected();
     expect(screen.queryByText(READING)).toBeNull();
+    expect(screen.queryByTestId("cost")).toBeNull();
   });
 
   it("hands out any day from today, and says what those days cost under Find seats", async () => {
@@ -134,7 +135,7 @@ describe("the when term in the Ask sheet", () => {
     await asking({
       terms: {
         ...NEAR,
-        when: { kind: "days", dates: [TODAY, "2026-09-23"] },
+        when: { kind: "days", dates: [TODAY, "2026-09-21", "2026-09-23"] },
       },
     });
 
@@ -143,6 +144,26 @@ describe("the when term in the Ask sheet", () => {
     expect(screen.getByTestId("date-picker").props["value"]).toEqual(
       new Date(2026, 8, 23),
     );
+  });
+
+  it("opens a time the query does not hold at seven in the evening", async () => {
+    await asking({ terms: NEAR });
+
+    await press("From, Any time");
+    const at = screen.getByTestId("time-picker").props["value"];
+
+    expect([at.getHours(), at.getMinutes()]).toEqual([19, 0]);
+  });
+
+  it("says the times the query holds on the clock a person reads", async () => {
+    await asking({ terms: { ...NEAR, from: "18:30", until: "23:05" } });
+
+    expect(
+      screen.getByRole("button", { name: "From, 6:30p" }),
+    ).toBeOnTheScreen();
+    expect(
+      screen.getByRole("button", { name: "Until, 11:05p" }),
+    ).toBeOnTheScreen();
   });
 
   it("takes a picked day out when its chip is pressed, and keeps the last one", async () => {

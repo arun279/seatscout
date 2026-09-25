@@ -164,19 +164,21 @@ describe("the stack the app opens on", () => {
 });
 
 describe("the Query a search is", () => {
-  it("writes what the sheet states into the Search route's parameters", async () => {
+  it("writes what the sheet states into the Search route's parameters, several days included", async () => {
     const { app } = await asked();
 
     await fireEvent.changeText(
       screen.getByLabelText("Near, by postal code"),
       "75234",
     );
+    await fireEvent.press(screen.getByRole("button", { name: "Any day" }));
     await commit();
 
     expect(app.getPathname()).toBe("/");
     expect(app.getSearchParams()).toMatchObject({
       area: "75234",
       partySize: "2",
+      date: "any",
     });
   });
 
@@ -204,21 +206,20 @@ describe("the Query a search is", () => {
 
 describe("what the sheet changes beyond the address", () => {
   afterEach(async () => {
+    jest.restoreAllMocks();
     await act(() => seatProfile.choose(REFERENCE));
   });
 
-  it("writes several days into the route as the dates they are", async () => {
-    const { app } = await asked();
-
-    await fireEvent.press(screen.getByRole("button", { name: "Any day" }));
-    await commit();
-
-    expect(app.getSearchParams()).toMatchObject({ date: "any" });
+  it("draws neither screen until the phone's Seat Profile has been read, so no search runs twice", async () => {
+    jest.spyOn(seatProfile, "snapshot").mockReturnValue(undefined);
+    await opened();
+    expect(screen.queryByRole("button", { name: "Find seats" })).toBeNull();
+    await opened("/ask?term=movie&area=75234");
+    expect(screen.queryByText("What are we seeing?")).toBeNull();
   });
 
   it("runs the search again under a Seat Profile moved in the sheet, and keeps it on the phone", async () => {
     await ranked();
-
     await fireEvent.press(
       screen.getByRole("button", { name: "Reference seat" }),
     );

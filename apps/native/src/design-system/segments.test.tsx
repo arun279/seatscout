@@ -6,6 +6,7 @@ import {
   everyControlSaysWhatItIs,
 } from "../../test/floors.js";
 import { houseLights } from "../../test/lights.js";
+import { themeFor } from "../theme.js";
 import { Segments } from "./segments.js";
 
 const READINGS = [
@@ -63,12 +64,37 @@ describe("a segmented control, exactly one segment chosen", () => {
     expect(styleOf("Some days").backgroundColor).toBeUndefined();
   });
 
+  it("sets the chosen segment's words brighter than the rest", async () => {
+    houseLights("down");
+    await segmenting("day");
+    const colour = (name: string) =>
+      StyleSheet.flatten(screen.getByText(name).props["style"]).color;
+
+    expect(colour("One day")).toBe("#e6ecf2");
+    expect(colour("A range")).toBe("#aab2bd");
+  });
+
+  it("sinks the track on iOS and outlines it on Android", async () => {
+    houseLights("down");
+    await segmenting("day");
+    const track = StyleSheet.flatten(segment("One day").parent?.props["style"]);
+
+    expect(track).toMatchObject(
+      Platform.OS === "android"
+        ? { borderColor: "#323748", borderWidth: 1 }
+        : { backgroundColor: "#161926", padding: 3 },
+    );
+  });
+
   it("draws a divider before every segment but the first on Android, and none on iOS", async () => {
     await segmenting("day");
     const divided = Platform.OS === "android" ? 1 : undefined;
 
     expect(styleOf("One day").borderLeftWidth).toBeUndefined();
     expect(styleOf("Some days").borderLeftWidth).toBe(divided);
+    expect(styleOf("Some days").borderColor).toBe(
+      Platform.OS === "android" ? themeFor("down").colours.hairline : undefined,
+    );
     expect(styleOf("A range").borderLeftWidth).toBe(divided);
   });
 });

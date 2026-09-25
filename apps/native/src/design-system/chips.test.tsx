@@ -68,6 +68,12 @@ describe("a group of chips, any number of them chosen", () => {
       StyleSheet.flatten(chip(name).props["style"]);
 
     expect(style("IMAX").backgroundColor).toBe("#e6ecf2");
+    expect(
+      StyleSheet.flatten(screen.getByText("IMAX").props["style"]).color,
+    ).toBe("#06070e");
+    expect(
+      StyleSheet.flatten(screen.getByText("3D").props["style"]).color,
+    ).toBe("#e6ecf2");
     expect(style("3D")).toMatchObject({
       backgroundColor: "#161926",
       borderColor: "#323748",

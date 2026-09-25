@@ -49,6 +49,16 @@ describe("a term that is on or off", () => {
     ).toBeOnTheScreen();
   });
 
+  it("sits inside the section inset the rest of the sheet uses", async () => {
+    await toggling(false);
+
+    expect(
+      StyleSheet.flatten(
+        screen.getByTestId("toggle-row").parent?.props["style"],
+      ),
+    ).toMatchObject({ paddingHorizontal: 18, paddingTop: 14 });
+  });
+
   it("stands its row as tall as the touch floor", async () => {
     await toggling(false);
 

@@ -129,6 +129,13 @@ onAndroid("a range of days on Android, as Material's range picker", () => {
     await fireEvent.press(
       screen.getByRole("button", { name: "Fri 4 to Sun 13 Sep" }),
     );
+    await fireEvent(dialog(), "dateRangeSelected", {
+      start: null,
+      end: new Date(Date.UTC(2026, 8, 9)),
+    });
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Fri 4 to Sun 13 Sep" }),
+    );
     await fireEvent(dialog(), "dismissRequest");
 
     expect(spanned).not.toHaveBeenCalled();

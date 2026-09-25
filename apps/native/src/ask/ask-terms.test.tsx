@@ -1,6 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 import { REFERENCE } from "@seatscout/client";
-import { fireEvent, screen } from "@testing-library/react-native";
+import { cleanup, fireEvent, screen } from "@testing-library/react-native";
+import { Platform } from "react-native";
 import { asking, NEAR, PLAYING, submit } from "../../test/ask.js";
 
 const press = async (name: string) => {
@@ -60,6 +61,22 @@ describe("the narrowing terms the Ask sheet carries", () => {
 
     expect(screen.queryByText("Theater")).toBeNull();
   });
+
+  (Platform.OS === "ios" ? it : it.skip)(
+    "shows accessible seating on when the query asks for it, and off when it does not",
+    async () => {
+      await asking({ terms: { ...NEAR, accessibleSeating: true } });
+      expect(screen.getByLabelText("Accessible seating").props["value"]).toBe(
+        true,
+      );
+      await cleanup();
+
+      await asking({ terms: NEAR });
+      expect(screen.getByLabelText("Accessible seating").props["value"]).toBe(
+        false,
+      );
+    },
+  );
 
   it("hands out accessible seating once it is switched on", async () => {
     const { found } = await asking({ terms: NEAR });

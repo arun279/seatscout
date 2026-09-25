@@ -81,9 +81,8 @@ const SomeDays = ({ span, today, onSpan }: EditorProps) => {
 };
 
 const ARange = ({ span, today, onSpan }: EditorProps) => {
-  const dates = daysIn(span, today);
-  const first = dates[0] ?? span.date;
-  const last = dates.at(-1) ?? first;
+  const first = span.date;
+  const last = daysIn(span, today).at(-1) ?? first;
   return (
     <SpanField
       endWords={[dayOf(first, today), dayOf(last, today)]}

@@ -2,6 +2,8 @@ import { describe, expect, it } from "@jest/globals";
 import { REFERENCE } from "@seatscout/client";
 import { act, fireEvent, screen } from "@testing-library/react-native";
 import { asking, NEAR, submit } from "../../test/ask.js";
+import { StyleSheet } from "react-native";
+import { houseLights } from "../../test/lights.js";
 import { TOUCH_FLOOR } from "../design-system/touch.js";
 
 const FRONT_ROW = { ...REFERENCE, targetDepth: 0 };
@@ -129,6 +131,21 @@ describe("where you sit, in the Ask sheet", () => {
     await respond("onResponderGrant", touched(0, 0));
     await respond("onResponderTerminate");
     expect(scrolls()).toBe(true);
+  });
+
+  it("draws the pair where the target is, on the room's own ground", async () => {
+    houseLights("down");
+    await asking({ terms: NEAR });
+    const hidden = { includeHiddenElements: true };
+
+    expect(screen.getByTestId("pair", hidden).props).toMatchObject({
+      cx: 32,
+      cy: 30.44,
+    });
+    expect(StyleSheet.flatten(picker().parent?.props["style"])).toMatchObject({
+      backgroundColor: "#06070e",
+      borderColor: "#323748",
+    });
   });
 
   it("draws the faint Reference circle only once the Profile has left it", async () => {

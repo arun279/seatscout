@@ -110,7 +110,12 @@ export const Ask = ({
             }
           />
           {cost !== undefined && (
-            <Type set="sentenceSmall" style={styles.said} tone="silverDim">
+            <Type
+              set="sentenceSmall"
+              style={styles.said}
+              testID="cost"
+              tone="silverDim"
+            >
               {cost}
             </Type>
           )}
