@@ -144,11 +144,11 @@ jobs:
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ steps.trees.outputs.seed }}
-          key: stryker-tree-${{ matrix.shard }}-${{ steps.trees.outputs.head }}
+          key: stryker-shard-${{ matrix.shard }}-tree-${{ steps.trees.outputs.head }}
           restore-keys: |
-            stryker-tree-${{ matrix.shard }}-${{ steps.trees.outputs.base }}
-            stryker-${{ matrix.shard }}-${{ github.head_ref }}-
-            stryker-main-${{ matrix.shard }}-
+            stryker-shard-${{ matrix.shard }}-tree-${{ steps.trees.outputs.base }}
+            stryker-shard-${{ matrix.shard }}-branch-${{ github.head_ref }}-
+            stryker-shard-${{ matrix.shard }}-main-
             stryker-main-
             stryker-native-main-
       - name: Refuse to judge the whole workspace from nothing
@@ -177,20 +177,20 @@ jobs:
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ steps.trees.outputs.seed }}
-          key: stryker-${{ matrix.shard }}-${{ github.head_ref }}-${{ github.sha }}
+          key: stryker-shard-${{ matrix.shard }}-branch-${{ github.head_ref }}-${{ github.sha }}
       - name: Leave it under this tree's name too, for main once this branch merges
         if: always() && steps.mutation.outcome == 'success' && steps.collection.outcome == 'success'
         continue-on-error: true
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ steps.trees.outputs.seed }}
-          key: stryker-tree-${{ matrix.shard }}-${{ steps.trees.outputs.head }}
+          key: stryker-shard-${{ matrix.shard }}-tree-${{ steps.trees.outputs.head }}
       - name: Publish it for main to inherit, since a cache saved on a branch is invisible to main
         if: always() && steps.mutation.outcome == 'success' && steps.collection.outcome == 'success'
         continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: stryker-tree-${{ matrix.shard }}-${{ steps.trees.outputs.head }}
+          name: stryker-shard-${{ matrix.shard }}-tree-${{ steps.trees.outputs.head }}
           path: ${{ steps.trees.outputs.seed }}
           retention-days: 14
       - name: Hand this shard's score to the job that reports every shard
@@ -210,7 +210,7 @@ jobs:
           exit 1
 
   footprint:
-    needs: [shards, mutation]
+    needs: mutation
     if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 45

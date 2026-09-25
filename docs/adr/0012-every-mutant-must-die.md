@@ -128,8 +128,7 @@ count became a listing, and the refusal names that case rather than leaving a re
 The incremental mode is Stryker's own, and it is a reuse of earlier results rather than a
 second opinion about them: it matches a mutant by the content of the file it sits in and of
 the tests that covered it, and re-runs anything that does not match. That is why the whole
-run on `main` stays. A pull request whose cache is cold pays the whole run of that workspace,
-which is the honest cost of the first push on a branch that `main`'s seed usually spares it.
+run on `main` stays, and a pull request always starts from the seed `main` last left.
 
 **Each shard's seed is one file, and every cache entry names it alone.** Each shard writes the
 incremental file its runner owns, under the name it has always had:
@@ -139,10 +138,12 @@ two files cannot read a cache saved for one, and a list that grows silently hide
 saved before it: the run that found this judged 4,987 mutants from nothing and was cancelled at
 its two-hour cap. Renaming the file per shard would do the same to every seed `main` holds. So
 each workflow reads the file's name for the shard it runs out of `stryker.config.mjs` and caches
-that one path, and the keys carry the shard instead. `stryker-main-` and `stryker-native-main-`,
-the keys `main` saved under before the division, stay as the last resorts, which is how a shard
-that has never run inherits the whole tree's report the first time; a cache saved for the other
-file has another version, so neither can hand a shard the wrong one. A pull request whose shard
+that one path, and the keys carry the shard instead, each starting `stryker-shard-<id>-`.
+`stryker-main-` and `stryker-native-main-`, the keys `main` saved under before the division,
+stay as the last resorts, which is how a shard that has never run inherits the whole tree's
+report the first time. No key a shard saves starts with either, so a fallback can only reach a
+report of the whole tree and never another workspace's, and a cache saved for the other file
+has another version, so the app's seed and the rest never cross. A pull request whose shard
 restores nothing at all is refused rather than left to judge its workspace from nothing, and
 dispatching the Baseline reseeds it. Stryker writes the incremental file as the report of the
 run that wrote it, so a shard's file holds its own workspace after that first run, and two

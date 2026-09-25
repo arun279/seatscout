@@ -296,8 +296,8 @@ that shard sets `coverageAnalysis` to `off`, and what its ignore-plugin skips.
 
 `pnpm test:mutation` judges every shard in turn, inheriting nothing and writing nothing to
 inherit from, and names every shard it refused. Both scripts first refuse a list that leaves a
-source file under `{apps,packages,tools}/*/src` to no shard. `pnpm test:mutation:shard <id>` judges one incrementally, which is what each
-runner in CI runs. `--base` and `--head` make `pnpm footprint` compare something else, and
+source file under `{apps,packages,tools}/*/src` to no shard. `pnpm test:mutation:shard <id>`
+judges one incrementally, which is what each runner in CI runs. `--base` and `--head` make `pnpm footprint` compare something else, and
 `--out` writes its Markdown to a file.
 
 Both scripts run Vitest on one worker under Stryker (`VITEST_MAX_WORKERS=1`): with more, Stryker

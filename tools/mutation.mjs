@@ -55,35 +55,33 @@ if (judged.length === 0) {
   );
 }
 
-const ran = (command, args, environment = {}) =>
+const succeeded = (command, args, environment = {}) =>
   spawnSync(command, args, {
     cwd: root,
     stdio: "inherit",
     env: { ...process.env, ...environment },
   }).status === 0;
 
-const failed = judged
-  .filter(
-    (shard) =>
-      !(
-        ran(
-          "pnpm",
-          [
-            "exec",
-            "stryker",
-            "run",
-            ...(values.incremental ? ["--incremental"] : []),
-          ],
-          { MUTATION_SHARD: shard.id },
-        ) &&
-        ran("node", [
-          "tools/no-empty-run/src/index.ts",
-          "mutation",
-          shard.report,
-        ])
-      ),
-  )
-  .map((shard) => shard.id);
+const failed = [];
+for (const shard of judged) {
+  const passed =
+    succeeded(
+      "pnpm",
+      [
+        "exec",
+        "stryker",
+        "run",
+        ...(values.incremental ? ["--incremental"] : []),
+      ],
+      { MUTATION_SHARD: shard.id },
+    ) &&
+    succeeded("node", [
+      "tools/no-empty-run/src/index.ts",
+      "mutation",
+      shard.report,
+    ]);
+  if (!passed) failed.push(shard.id);
+}
 
 if (failed.length > 0) {
   refuse(`The mutation gate refused ${failed.join(", ")}.`);
