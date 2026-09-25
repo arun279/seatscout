@@ -2,6 +2,7 @@ import { REFERENCE } from "@seatscout/client";
 import {
   afterEach,
   beforeAll,
+  beforeEach,
   describe,
   expect,
   it,
@@ -23,7 +24,6 @@ import {
   warmTheCorpus,
 } from "../../test/rooms.js";
 import type { Clock } from "../host/clock.js";
-import { listDrawn } from "../../test/lists.js";
 import { Search } from "./search.js";
 
 const PROMPT_DAY = "2026-09-19";
@@ -64,7 +64,13 @@ const showing = async (
   return carried;
 };
 
-afterEach(listDrawn);
+beforeEach(() => {
+  jest.useFakeTimers();
+});
+
+afterEach(() => {
+  jest.useRealTimers();
+});
 
 describe("the Search screen's prompt face", () => {
   it("announces the party on the title card's first line, and it can be pressed", async () => {

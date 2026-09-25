@@ -2,6 +2,7 @@ import { REFERENCE, type SearchTerms } from "@seatscout/client";
 import {
   afterEach,
   beforeAll,
+  beforeEach,
   describe,
   expect,
   it,
@@ -31,7 +32,6 @@ import type { Clock } from "../host/clock.js";
 import { StyleSheet } from "react-native";
 import { houseLights } from "../../test/lights.js";
 import { themeFor } from "../theme.js";
-import { listDrawn } from "../../test/lists.js";
 import { Results } from "./results.js";
 
 const SEAT_MAP = "/napi/seatMap/";
@@ -101,7 +101,13 @@ beforeAll(async () => {
   await cleanup();
 }, WARM_UP);
 
-afterEach(listDrawn);
+beforeEach(() => {
+  jest.useFakeTimers();
+});
+
+afterEach(() => {
+  jest.useRealTimers();
+});
 
 describe("the list once the ranking has stopped moving", () => {
   it("puts the best Seat Groups first and totals what it found", async () => {
