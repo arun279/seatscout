@@ -65,15 +65,16 @@ export const GATE_CLAIMS = [
   },
   {
     adr: "0012-every-mutant-must-die.md",
-    says: /`testFiles` limits it to that workspace's own tests/,
-    holds: "the setting that limits a shard to the tests its workspace holds",
-    pattern: "testFiles: [",
-    paths: [STRYKER],
+    says: /includes that workspace's test files and no others/,
+    holds:
+      "the configuration that limits a shard to the tests its workspace holds",
+    pattern: "configFor(shard?.workspace)",
+    paths: ["vitest.stryker.config.ts"],
     files: 1,
   },
   {
     adr: "0012-every-mutant-must-die.md",
-    says: /The Vitest runner's `vitest\.related` is turned off for it/,
+    says: /The Vitest runner's `vitest\.related` is turned off for the/,
     holds: "the setting that keeps related mode off a shard's static mutants",
     pattern: "related: false",
     paths: [STRYKER],
