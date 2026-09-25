@@ -1,10 +1,4 @@
-import {
-  type Auditorium,
-  nearestInRow,
-  type PositionedSeat,
-  REFERENCE,
-  type SeatRow,
-} from "@seatscout/client";
+import type { Auditorium, PositionedSeat, SeatRow } from "@seatscout/client";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
   HOOKY_ADDISON,
@@ -14,7 +8,6 @@ import {
   WEST_PLANO_28,
 } from "./rooms.fixtures.js";
 import {
-  aimedAt,
   consolesIn,
   dividersIn,
   frameOf,
@@ -81,6 +74,26 @@ describe("the frame the whole room is drawn in", () => {
       Math.max(...seats.map((seat) => seat.y + seat.height)) + 0.5 * widest,
       6,
     );
+  });
+
+  it("takes its scale from the widest Seat in the room", () => {
+    const { auditorium } = openedRoom(WEST_PLANO_28);
+    const [first, ...rest] = auditorium.map.rows;
+    const [seat, ...others] = first?.seats ?? [];
+    if (first === undefined || seat === undefined)
+      throw new Error("the room has no Seats");
+    const wide = {
+      ...auditorium,
+      map: {
+        ...auditorium.map,
+        rows: [
+          { ...first, seats: [{ ...seat, width: seat.width * 3 }, ...others] },
+          ...rest,
+        ],
+      },
+    };
+
+    expect(frameOf(wide).seatWidth).toBe(seat.width * 3);
   });
 
   it("holds every Seat in the room inside itself", () => {
@@ -168,45 +181,6 @@ describe("which Seats a person may choose from the map", () => {
   });
 });
 
-describe("where the Seat Profile aims in the room", () => {
-  it("rings the Seat nearest the depth and the lateral the profile asks for", () => {
-    const { auditorium, result } = openedRoom(WEST_PLANO_28);
-    const profile = result.terms.profile ?? REFERENCE;
-    const row = auditorium.map.rows.reduce((nearest, held) =>
-      Math.abs(held.depth - profile.targetDepth) <
-      Math.abs(nearest.depth - profile.targetDepth)
-        ? held
-        : nearest,
-    );
-    const seat = nearestInRow(row, profile.targetLateral);
-
-    expect(aimedAt(result, auditorium.map)).toEqual({
-      x: seat.x,
-      y: seat.y,
-      width: seat.width,
-      height: seat.height,
-    });
-  });
-
-  it("aims at the room the profile names rather than at the group that was chosen", () => {
-    const { auditorium, result } = openedRoom(WEST_PLANO_28);
-    const lower = { ...(result.terms.profile ?? REFERENCE), targetDepth: 0 };
-    const deeper = { ...lower, targetDepth: 1 };
-
-    expect(
-      aimedAt(
-        { ...result, terms: { ...result.terms, profile: lower } },
-        auditorium.map,
-      ).y,
-    ).toBeLessThan(
-      aimedAt(
-        { ...result, terms: { ...result.terms, profile: deeper } },
-        auditorium.map,
-      ).y,
-    );
-  });
-});
-
 describe("the alternates the room lists", () => {
   it("opens with the recommendation and at most three others, the recommendation first", () => {
     const { auditorium, result } = openedRoom(HOOKY_ADDISON);
@@ -241,6 +215,16 @@ describe("the alternates the room lists", () => {
 });
 
 describe("the console dividers a row carries", () => {
+  it("draws no tick where a row claims a pod gap past its own last Seat", () => {
+    const { auditorium } = openedRoom(VILLAGE_1);
+    const [row] = auditorium.map.rows;
+    if (row === undefined) throw new Error("the room has no rows");
+
+    expect(
+      dividersIn({ ...row, gapAfter: [...row.gapAfter, "pod", "pod"] }),
+    ).toEqual(dividersIn(row));
+  });
+
   it("draws a tick midway across every pod gap, down the middle of the Seats beside it", () => {
     const { auditorium } = openedRoom(HOOKY_ADDISON);
     const row = auditorium.map.rows.find((held) =>

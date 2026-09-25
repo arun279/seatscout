@@ -1,10 +1,18 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import {
+  BACK_TO_THE_LIST,
   backToOf,
+  CLEAR_OF_THE_FRONT,
+  creditsOf,
   heldWhileOfflineOf,
   legendOf,
   notBookableIn,
+  RE_CHECKED_ON_THE_TAP,
   readingOf,
+  rowOf,
+  UNCONFIRMED,
+  WAITS_FOR_THE_CONNECTION,
+  YOUR_SEATS_IN_THIS_ROOM,
 } from "./auditorium-phrases.js";
 import {
   type OpenedRoom,
@@ -85,5 +93,62 @@ describe("the legend the map is read with", () => {
     expect(
       legendOf(result, false, false).map((entry) => entry.mark),
     ).not.toContain("console");
+  });
+});
+
+const REASONS = {
+  rowFromFront: 7,
+  rowCount: 10,
+  seatsOffCentre: 0,
+  inFrontBand: false,
+  againstWall: false,
+  tiedAtRoomResolution: true,
+};
+
+describe("the billing under the map", () => {
+  it("heads it with the row counted from the front", () => {
+    expect(rowOf(REASONS)).toBe("Row 7 of 10");
+  });
+
+  it("credits a centred group clear of every penalty as clear of the front and the walls", () => {
+    expect(creditsOf(REASONS, 0)).toEqual([
+      "On the centreline",
+      "Clear of the front rows and the walls",
+    ]);
+  });
+
+  it("credits each penalty on a line of its own in place of the clear line", () => {
+    expect(
+      creditsOf(
+        {
+          ...REASONS,
+          seatsOffCentre: -1,
+          inFrontBand: true,
+          againstWall: true,
+        },
+        1,
+      ),
+    ).toEqual([
+      "One seat left of centre",
+      "In the front rows",
+      "Against a wall",
+      "Across a console",
+    ]);
+  });
+});
+
+describe("the lines a screen reader says in the room", () => {
+  it("leaves none of them empty", () => {
+    const said = [
+      BACK_TO_THE_LIST,
+      YOUR_SEATS_IN_THIS_ROOM,
+      CLEAR_OF_THE_FRONT,
+      UNCONFIRMED,
+      RE_CHECKED_ON_THE_TAP,
+      WAITS_FOR_THE_CONNECTION,
+    ];
+
+    expect(said.filter((line) => line.trim().length === 0)).toEqual([]);
+    expect(said).toHaveLength(6);
   });
 });
