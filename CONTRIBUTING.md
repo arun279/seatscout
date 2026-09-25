@@ -286,9 +286,9 @@ pnpm footprint
 ```
 
 The mutation gate is one run per workspace. `stryker.shards.json` names them, and
-`stryker.config.mjs` takes the one `MUTATION_SHARD` names out of that list: it mutates that
-workspace and limits Stryker to that workspace's own tests, so a mutant is killed by the tests
-that own it or by nothing. Each shard writes its own report under `reports/mutation`, each
+`stryker.config.mjs` takes the one `MUTATION_SHARD` names out of that list and mutates that
+workspace, and `vitest.stryker.config.ts` limits Vitest to that workspace's own tests, so a
+mutant is killed by the tests that own it or by nothing. Each shard writes its own report under `reports/mutation`, each
 breaks below 100, and the footprint comment prints every one of them. Vitest runs all of them
 but `apps/native`, which Vitest cannot render and Stryker's Jest runner takes instead.
 [ADR 12](docs/adr/0012-every-mutant-must-die.md) says why the division is by workspace, why
