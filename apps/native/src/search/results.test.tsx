@@ -21,6 +21,9 @@ import {
   WARM_UP,
 } from "../../test/rooms.js";
 import type { Clock } from "../host/clock.js";
+import { StyleSheet } from "react-native";
+import { houseLights } from "../../test/lights.js";
+import { themeFor } from "../theme.js";
 import { Results } from "./results.js";
 
 const SEAT_MAP = "/napi/seatMap/";
@@ -105,12 +108,16 @@ describe("the list once the ranking has stopped moving", () => {
   });
 
   it("rules a line of light where what is below is measurably further", async () => {
+    houseLights("down");
     await shown();
     await screen.findByText("The top of the list is a tie");
 
     expect(screen.getByTestId("tie-rule")).toBeOnTheScreen();
     expect(screen.getByText(/^\d+ tied$/)).toBeOnTheScreen();
     expect(screen.getByText("below: measurably further")).toBeOnTheScreen();
+    expect(
+      StyleSheet.flatten(screen.getByTestId("beam").props["style"]),
+    ).toMatchObject({ backgroundColor: themeFor("down").colours.beamDim });
   });
 
   it("calls the top no tie when only one result sits at the room's resolution", async () => {
@@ -143,6 +150,15 @@ describe("the list while the ranking is still moving", () => {
     expect(screen.getByTestId("progress")).toBeOnTheScreen();
   });
 
+  it("passes no verdict on an empty list until the ranking has stopped moving", async () => {
+    const gate = holding();
+    await shown({ upstream: { script: {}, through: gate.through } });
+    await screen.findByText(/^Reading \d+ seat maps$/);
+
+    expect(screen.queryByTestId("verdict")).toBeNull();
+    expect(screen.queryByText(/rooms that answered/)).toBeNull();
+  });
+
   it("holds the list still while a finger is on it, and lets it move again on release", async () => {
     const gate = holding();
     await shown({ upstream: { script: {}, through: gate.through } });
@@ -169,6 +185,7 @@ describe("the search that did not reach every room", () => {
     ).toBeOnTheScreen();
     expect(screen.getByTestId("verdict")).toBeOnTheScreen();
     expect(screen.getByText("Could not be reached")).toBeOnTheScreen();
+    expect(screen.queryAllByText(/^$/)).toHaveLength(0);
   });
 
   it("re-reads only what failed when the retry is pressed", async () => {

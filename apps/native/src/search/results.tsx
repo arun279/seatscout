@@ -110,7 +110,10 @@ const TieRule = ({ tied }: { readonly tied: number }) => {
       <Type set="ledgerTag" tone="beamDim">
         {tiedOf(tied)}
       </Type>
-      <View style={[styles.beam, { backgroundColor: theme.colours.beamDim }]} />
+      <View
+        style={[styles.beam, { backgroundColor: theme.colours.beamDim }]}
+        testID="beam"
+      />
       <Type set="ledgerTag" tone="beamDim">
         {BELOW_THE_TIE}
       </Type>

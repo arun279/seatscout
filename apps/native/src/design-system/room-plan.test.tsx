@@ -83,13 +83,13 @@ describe("the room a card draws to scale", () => {
   it("lights the offered pair with the house lights down", async () => {
     await drawn("down");
 
-    expect(String(propAt("pair", "filter")).length).toBeGreaterThan(0);
+    expect(propAt("pair", "filter")).toBe("lit");
   });
 
   it("lets the lit room carry it by edge instead, because light is information in the dark", async () => {
     await drawn("up");
 
-    expect(String(propAt("pair", "filter") ?? "")).toBe("");
+    expect(propAt("pair", "filter")).toBeUndefined();
   });
 
   it("rings the target the Profile asks for, and fills the pair the search offers", async () => {

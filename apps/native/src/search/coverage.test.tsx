@@ -6,7 +6,11 @@ import {
   everyControlReachesTheTouchFloor,
   everyControlSaysWhatItIs,
 } from "../../test/floors.js";
+import { houseLights } from "../../test/lights.js";
+import { type Appearance, themeFor } from "../theme.js";
 import { Strip } from "./coverage.js";
+
+const APPEARANCES: readonly Appearance[] = ["down", "up"];
 
 const covering = (candidates: number, checked: number): Coverage => ({
   started: [],
@@ -94,4 +98,20 @@ describe("the coverage strip", () => {
     everyControlReachesTheTouchFloor();
     everyControlSaysWhatItIs();
   });
+
+  it.each(APPEARANCES)(
+    "rules itself with the hairline and lays its track on the raised ground, lights %s",
+    async (appearance) => {
+      houseLights(appearance);
+      await reading("searching", 200, 84);
+      const { colours } = themeFor(appearance);
+
+      expect(
+        StyleSheet.flatten(screen.getByTestId("strip").props["style"]),
+      ).toMatchObject({ borderTopColor: colours.hairline, borderTopWidth: 1 });
+      expect(
+        StyleSheet.flatten(screen.getByTestId("progress").props["style"]),
+      ).toMatchObject({ backgroundColor: colours.high });
+    },
+  );
 });
