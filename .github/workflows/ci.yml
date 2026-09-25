@@ -78,7 +78,7 @@ jobs:
             if printf '%s' "$listed" | grep -q '\[app\]'; then
               pnpm --filter @seatscout/native run bundle
             fi
-            pnpm exec playwright test --grep @performance
+            pnpm exec playwright test --grep @performance --workers=1
             cp reports/journey/samples.json "$GITHUB_WORKSPACE/reports/journey/base.json"
             if [ -f reports/journey/gesture.json ]; then
               cp reports/journey/gesture.json "$GITHUB_WORKSPACE/reports/journey/base-gesture.json"

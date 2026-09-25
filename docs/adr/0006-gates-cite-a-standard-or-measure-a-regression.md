@@ -829,7 +829,12 @@ not bundle.
 **What the emulator reads is reported beside the walk.** Flashlight runs `am start -W` and then the
 walk itself, each for its default ten iterations with the app's data cleared before each, and
 `tools/device` prints the mean over iterations and the spread across them. A reading that measured
-nothing, failed, or carried no frame rate or memory is refused rather than printed.
+nothing, failed, or carried no frame rate or memory is refused rather than printed, and that refusal
+fails `footprint`. The figures themselves gate nothing yet. Gating them on regression needs the merge
+base built and read on the same runner, a second 14-minute release build, and the spread already
+says which figures that would hold: on the first reading frame rate spread 0.3 per cent, memory 0.5
+and CPU 4.7 across ten iterations, under the 5 per cent Reassure calls steady, while start-up spread
+7.9 and the walk's own time 5.7, over it.
 
 **The app's web build is held to the same accessibility standard and the same journey as the web
 app.** `tests/app` runs as a Playwright project of its own over Vercel's `serve`: axe scans every screen
