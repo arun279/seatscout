@@ -70,6 +70,7 @@ export const Ask = ({
   );
   const playing = useSyncExternalStore(held.subscribe, held.snapshot);
   const [typed, setTyped] = useState<string>();
+  const [holding, setHolding] = useState(false);
   const film =
     typed ?? titleOf(playing.movies, terms.movie) ?? terms.movie ?? "";
   const cost = costOf(draft, today);
@@ -122,6 +123,7 @@ export const Ask = ({
       heading={ASKING.heading}
       keep={ASKING.keep}
       onKeep={onKeep}
+      scrolls={!holding}
     >
       <Field
         focused={focus === "area"}
@@ -197,7 +199,7 @@ export const Ask = ({
           />
         </Section>
       )}
-      <Profile onChange={setProfile} profile={profile} />
+      <Profile onChange={setProfile} onHolding={setHolding} profile={profile} />
     </Sheet>
   );
 };

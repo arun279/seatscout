@@ -5,6 +5,7 @@ import {
   DEPTH,
   depthOf,
   LATERAL,
+  marksOf,
   mindOf,
   SEAT_PICKER,
   SITTING,
@@ -16,6 +17,7 @@ import { type GestureResponderEvent, StyleSheet, View } from "react-native";
 import { Ghost } from "../design-system/button.js";
 import { Section } from "../design-system/field.js";
 import { Range } from "../design-system/range.js";
+import { TOUCH_FLOOR } from "../design-system/touch.js";
 import { PLAN_ACROSS, PlanDrawing } from "../design-system/room-plan.js";
 import { Type } from "../design-system/type.js";
 import { useTheme } from "../theme.js";
@@ -23,6 +25,7 @@ import { useTheme } from "../theme.js";
 export interface ProfileProps {
   readonly profile: SeatProfile;
   readonly onChange: (profile: SeatProfile) => void;
+  readonly onHolding: (holding: boolean) => void;
 }
 
 const styles = StyleSheet.create({
@@ -30,18 +33,31 @@ const styles = StyleSheet.create({
   ends: { flexDirection: "row", justifyContent: "space-between" },
 });
 
-const SeatPicker = ({ profile, onChange }: ProfileProps) => {
+const SeatPicker = ({ profile, onChange, onHolding }: ProfileProps) => {
   const { colours } = useTheme();
   const [across, setAcross] = useState(0);
-  const place = ({ nativeEvent }: GestureResponderEvent) => {
-    const scale = PLAN_ACROSS / across;
+  const sitting = {
+    depth: profile.targetDepth,
+    lateral: profile.targetLateral,
+    seatsOffCentre: 0,
+  };
+  const scale = across / PLAN_ACROSS;
+  const place = ({ nativeEvent }: GestureResponderEvent) =>
     onChange({
       ...profile,
       ...aimAt({
-        cx: nativeEvent.locationX * scale,
-        cy: nativeEvent.locationY * scale,
+        cx: nativeEvent.locationX / scale,
+        cy: nativeEvent.locationY / scale,
       }),
     });
+  const onTheDot = ({ nativeEvent }: GestureResponderEvent) => {
+    const { cx, cy } = marksOf(SEAT_PICKER, sitting, profile).target;
+    return (
+      Math.hypot(
+        nativeEvent.locationX - cx * scale,
+        nativeEvent.locationY - cy * scale,
+      ) <= TOUCH_FLOOR
+    );
   };
 
   return (
@@ -53,21 +69,21 @@ const SeatPicker = ({ profile, onChange }: ProfileProps) => {
     >
       <View
         onLayout={({ nativeEvent }) => setAcross(nativeEvent.layout.width)}
-        onMoveShouldSetResponder={() => true}
-        onResponderGrant={place}
+        onResponderGrant={(touch) => {
+          onHolding(true);
+          place(touch);
+        }}
         onResponderMove={place}
+        onResponderRelease={() => onHolding(false)}
+        onResponderTerminate={() => onHolding(false)}
         onResponderTerminationRequest={() => false}
-        onStartShouldSetResponder={() => true}
+        onStartShouldSetResponder={onTheDot}
         testID="seat-picker"
       >
         <PlanDrawing
           across={across}
           plan={SEAT_PICKER}
-          position={{
-            depth: profile.targetDepth,
-            lateral: profile.targetLateral,
-            seatsOffCentre: 0,
-          }}
+          position={sitting}
           target={profile}
           was={isReference(profile) ? undefined : REFERENCE}
         />
@@ -76,10 +92,14 @@ const SeatPicker = ({ profile, onChange }: ProfileProps) => {
   );
 };
 
-export const Profile = ({ profile, onChange }: ProfileProps): ReactElement => (
+export const Profile = ({
+  profile,
+  onChange,
+  onHolding,
+}: ProfileProps): ReactElement => (
   <>
     <Section label={SITTING.heading}>
-      <SeatPicker onChange={onChange} profile={profile} />
+      <SeatPicker onChange={onChange} onHolding={onHolding} profile={profile} />
       <Type set="sentenceSmall" tone="silverFaint">
         {SITTING.drag}
       </Type>

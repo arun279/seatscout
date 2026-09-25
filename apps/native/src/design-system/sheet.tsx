@@ -27,6 +27,7 @@ export interface SheetProps {
   readonly keep: string;
   readonly onKeep: () => void;
   readonly claimed: boolean;
+  readonly scrolls?: boolean;
   readonly dock: ReactNode;
   readonly children: ReactNode;
 }
@@ -146,6 +147,7 @@ export const Sheet = ({
   keep,
   onKeep,
   claimed,
+  scrolls = true,
   dock,
   children,
 }: SheetProps): ReactElement => {
@@ -183,6 +185,8 @@ export const Sheet = ({
         <ScrollView
           contentContainerStyle={styles.read}
           keyboardShouldPersistTaps="handled"
+          scrollEnabled={scrolls}
+          testID="sheet-scroll"
         >
           {children}
         </ScrollView>

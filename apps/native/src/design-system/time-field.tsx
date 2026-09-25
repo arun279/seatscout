@@ -16,7 +16,7 @@ export interface TimeFieldProps {
 
 const styles = StyleSheet.create({
   end: { flex: 1, gap: 6 },
-  row: { alignItems: "center", flexDirection: "row" },
+  row: { alignItems: "flex-start", flexDirection: "row" },
   picked: { flex: 1 },
   clear: {
     alignItems: "center",

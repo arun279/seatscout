@@ -1,7 +1,8 @@
 import { describe, expect, it } from "@jest/globals";
 import { REFERENCE } from "@seatscout/client";
-import { fireEvent, screen } from "@testing-library/react-native";
+import { act, fireEvent, screen } from "@testing-library/react-native";
 import { asking, NEAR, submit } from "../../test/ask.js";
+import { TOUCH_FLOOR } from "../design-system/touch.js";
 
 const FRONT_ROW = { ...REFERENCE, targetDepth: 0 };
 
@@ -14,15 +15,19 @@ const slide = async (name: string, value: number) => {
 
 const picker = () => screen.getByTestId("seat-picker");
 
-const laidOut = async (width: number) => {
-  await fireEvent(picker(), "layout", {
-    nativeEvent: { layout: { width, height: (width * 46) / 64 } },
-  });
-};
-
 const touched = (locationX: number, locationY: number) => ({
   nativeEvent: { locationX, locationY },
 });
+
+const respond = async (handler: string, event?: object) => {
+  await act(() => picker().props[handler](event));
+};
+
+const laidOut = async (width: number) => {
+  await respond("onLayout", {
+    nativeEvent: { layout: { width, height: (width * 46) / 64 } },
+  });
+};
 
 describe("where you sit, in the Ask sheet", () => {
   it("opens on the Profile it was given, saying each value in words", async () => {
@@ -70,8 +75,8 @@ describe("where you sit, in the Ask sheet", () => {
     const { found } = await asking({ terms: NEAR });
     await laidOut(320);
 
-    await fireEvent(picker(), "responderGrant", touched(160, 45));
-    await fireEvent(picker(), "responderMove", touched(85, 125));
+    await respond("onResponderGrant", touched(160, 45));
+    await respond("onResponderMove", touched(85, 125));
     await submit();
 
     expect(profileHandedOut(found)).toEqual({
@@ -85,7 +90,7 @@ describe("where you sit, in the Ask sheet", () => {
     const { found } = await asking({ terms: NEAR });
     await laidOut(640);
 
-    await fireEvent(picker(), "responderGrant", touched(170, 250));
+    await respond("onResponderGrant", touched(170, 250));
     await submit();
 
     expect(profileHandedOut(found)).toEqual({
@@ -95,13 +100,35 @@ describe("where you sit, in the Ask sheet", () => {
     });
   });
 
-  it("keeps hold of a drag rather than handing it to the scroll", async () => {
+  it("takes a touch that lands on the dot, and leaves one anywhere else to the scroll", async () => {
     await asking({ terms: NEAR });
-    const held = picker().props;
+    await laidOut(320);
+    const takes = (x: number, y: number) =>
+      picker().props["onStartShouldSetResponder"](touched(x, y));
 
-    expect(held["onStartShouldSetResponder"]()).toBe(true);
-    expect(held["onMoveShouldSetResponder"]()).toBe(true);
-    expect(held["onResponderTerminationRequest"]()).toBe(false);
+    const dot = { x: 32 * 5, y: 30.44 * 5 };
+
+    expect(takes(dot.x, dot.y)).toBe(true);
+    expect(takes(dot.x + TOUCH_FLOOR, dot.y)).toBe(true);
+    expect(takes(dot.x, dot.y + TOUCH_FLOOR + 1)).toBe(false);
+    expect(takes(40, 40)).toBe(false);
+    expect(picker().props["onResponderTerminationRequest"]()).toBe(false);
+  });
+
+  it("holds the sheet still while a finger is on the drawing, and lets it scroll again on release", async () => {
+    await asking({ terms: NEAR });
+    const scrolls = () =>
+      screen.getByTestId("sheet-scroll").props["scrollEnabled"];
+
+    await respond("onResponderGrant", touched(0, 0));
+    expect(scrolls()).toBe(false);
+
+    await respond("onResponderRelease");
+    expect(scrolls()).toBe(true);
+
+    await respond("onResponderGrant", touched(0, 0));
+    await respond("onResponderTerminate");
+    expect(scrolls()).toBe(true);
   });
 
   it("draws the faint Reference circle only once the Profile has left it", async () => {
