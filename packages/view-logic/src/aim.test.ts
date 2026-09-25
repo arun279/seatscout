@@ -19,6 +19,23 @@ beforeAll(async () => {
 });
 
 describe("where the Seat Profile aims in the room", () => {
+  it("aims inside the room, neither the front row nor the back, for a depth part way back", () => {
+    const { auditorium, result } = opened();
+    const rows = auditorium.map.rows.map((row) => row.seats[0]?.y);
+    const partWay = {
+      ...result,
+      terms: {
+        ...result.terms,
+        profile: { ...(result.terms.profile ?? REFERENCE), targetDepth: 0.4 },
+      },
+    };
+
+    const aimed = aimedAt(partWay, auditorium.map).y;
+
+    expect(aimed).toBeGreaterThan(rows[0] ?? Number.NaN);
+    expect(aimed).toBeLessThan(rows.at(-1) ?? Number.NaN);
+  });
+
   it("aims at the row in front when two rows are equally near the depth the profile asks for", () => {
     const { auditorium, result } = opened();
     const [front, , back] = auditorium.map.rows;
