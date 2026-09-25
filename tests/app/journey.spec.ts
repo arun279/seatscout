@@ -162,6 +162,7 @@ const journey = async (context: BrowserContext): Promise<Journey> => {
 test("a first search in the app's web build on a mid-tier phone over a slow connection puts Seat Groups on screen, measured on every axis the gate holds", {
   tag: "@performance",
 }, async ({ browser }) => {
+  test.setTimeout(JOURNEYS * test.info().timeout);
   const journeys: Journey[] = [];
   for (let run = 0; run < JOURNEYS; run += 1) {
     const context = await browser.newContext(MID_TIER_PHONE);
