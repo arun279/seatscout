@@ -1,0 +1,15 @@
+{
+  "name": "@seatscout/device",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "dependencies": {
+    "@perf-profiler/reporter": "0.9.0",
+    "@perf-profiler/types": "0.8.0"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.1",
+    "vitest": "4.1.11"
+  }
+}

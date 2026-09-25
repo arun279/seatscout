@@ -1,8 +1,7 @@
 import { createSeatScout, type SeatScout } from "@seatscout/client";
 import { type HeldProfile, heldProfile } from "./profile.js";
 import { deviceStore } from "./store.js";
-
-type Fetch = Parameters<typeof createSeatScout>[0]["fetch"];
+import { type Fetch, upstream } from "./upstream.js";
 
 const UPSTREAM_ORIGIN = "https://www.fandango.com";
 
@@ -22,7 +21,7 @@ export const reaching =
 
 export const deviceSeatScout = (): SeatScout =>
   createSeatScout({
-    fetch: reaching((url, init) => fetch(url, init)),
+    fetch: reaching(upstream),
     now: Date.now,
     wait: (ms) => new Promise((done) => setTimeout(done, ms)),
     random: Math.random,
