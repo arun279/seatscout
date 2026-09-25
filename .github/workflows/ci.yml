@@ -45,14 +45,14 @@ jobs:
       - run: pnpm complexity
       - run: pnpm duplication
       - run: actionlint
-      - run: shellcheck deploy/*.sh
+      - run: shellcheck deploy/*.sh apps/native/e2e/*.sh
       - run: pnpm spell
       - run: pnpm typecheck
       - run: pnpm dead-code
       - run: pnpm versions
       - run: pnpm --filter @seatscout/native run install-check
       - run: pnpm --filter @seatscout/native run doctor
-      - name: Check the app bundles for both phones on a machine that has only what the lockfile installs
+      - name: Check the app bundles for both phones and the web on a machine that has only what the lockfile installs
         run: pnpm --filter @seatscout/native run bundle
       - run: pnpm counts
       - run: pnpm claims
@@ -75,10 +75,14 @@ jobs:
           if listed="$(pnpm exec playwright test --list --grep @performance 2>&1)"; then
             pnpm exec playwright install --with-deps chromium
             pnpm build
+            pnpm --filter @seatscout/native run bundle
             pnpm exec playwright test --grep @performance
             cp reports/journey/samples.json "$GITHUB_WORKSPACE/reports/journey/base.json"
             if [ -f reports/journey/gesture.json ]; then
               cp reports/journey/gesture.json "$GITHUB_WORKSPACE/reports/journey/base-gesture.json"
+            fi
+            if [ -f reports/journey/app-samples.json ]; then
+              cp reports/journey/app-samples.json "$GITHUB_WORKSPACE/reports/journey/base-app.json"
             fi
           elif printf '%s' "$listed" | grep -q "No tests found"; then
             echo "The merge base has no journey to hold this one to."
@@ -95,8 +99,16 @@ jobs:
               held+=(--base-gesture reports/journey/base-gesture.json)
             fi
           fi
+          app=(--no-baseline)
+          if [ -f reports/journey/base-app.json ]; then
+            app=(--base reports/journey/base-app.json)
+          fi
+          refused=0
           pnpm journey --head reports/journey/samples.json \
-            --head-gesture reports/journey/gesture.json "${held[@]}"
+            --head-gesture reports/journey/gesture.json "${held[@]}" || refused=1
+          echo "The same journey over the app's web build:"
+          pnpm journey --head reports/journey/app-samples.json --no-gesture "${app[@]}" || refused=1
+          exit "$refused"
 
   shards:
     runs-on: ubuntu-24.04
@@ -209,8 +221,81 @@ jobs:
           echo "::error::The $SHARD shard's mutation run came back $JUDGED and its test collection $COLLECTED. The steps above say why."
           exit 1
 
+  device:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    outputs:
+      journey: ${{ steps.journey.outputs.outcome }}
+      measured: ${{ steps.measured.outcome }}
+    env:
+      APK: apps/native/android/app/build/outputs/apk/release/app-release.apk
+      APP_ID: io.github.arun279.seatscout
+      LINK: seatscout:///?area=75006&date=2026-08-28&partySize=2
+      OUT: reports/device
+      SEATSCOUT_UPSTREAM: corpus
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
+        with:
+          runtime: node@24.20.0
+          cache: true
+          install: false
+      - run: pnpm install --frozen-lockfile
+      - name: Write the Android project the app's configuration describes
+        run: pnpm --filter @seatscout/native exec expo prebuild --platform android --no-install
+      - name: Build the release app for the emulator's processor, with the Source answered from the corpus
+        working-directory: apps/native/android
+        run: ./gradlew assembleRelease -PreactNativeArchitectures=x86_64
+      - name: Install Maestro
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/maestro.zip" https://github.com/mobile-dev-inc/maestro/releases/download/cli-2.10.0/maestro.zip
+          echo "29b675e10cc12080e445e9bfb2e2b4e4dfb9c0f2e30d5884120d258b5e1cd991  $RUNNER_TEMP/maestro.zip" | sha256sum --check
+          unzip -q "$RUNNER_TEMP/maestro.zip" -d "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/maestro/bin" >> "$GITHUB_PATH"
+      - name: Install Flashlight
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/flashlight.zip" https://github.com/bamlab/flashlight/releases/download/v0.18.0/flashlight-linux.zip
+          echo "5b9faba6254344d78ee5d0326c293807fcbc43918eb53c272f3c1e054557ea68  $RUNNER_TEMP/flashlight.zip" | sha256sum --check
+          unzip -q "$RUNNER_TEMP/flashlight.zip" -d "$RUNNER_TEMP"
+          sudo install -m 0755 "$RUNNER_TEMP/flashlight-linux" /usr/local/bin/flashlight
+      - name: Let the emulator use the runner's hardware virtualisation
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          mkdir -p "$OUT"
+      - name: Walk the journey on an emulator, then measure start-up and the journey with Flashlight
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 34
+          arch: x86_64
+          target: default
+          disable-animations: true
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          script: apps/native/e2e/device.sh
+      - name: Say whether the journey reached every screen
+        id: journey
+        if: ${{ !cancelled() }}
+        run: echo "outcome=$(cat "$OUT/journey.outcome" 2>/dev/null || echo failed)" >> "$GITHUB_OUTPUT"
+      - name: Read what Flashlight measured, refusing a run that measured nothing
+        id: measured
+        if: ${{ !cancelled() }}
+        run: node tools/device/src/index.ts --startup "$OUT/startup.json" --journey "$OUT/journey.json" > "$OUT/device.md"
+      - name: Hand the reading to the job that reports every gate
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: device
+          path: |
+            ${{ env.OUT }}/device.md
+            ${{ env.OUT }}/journey.xml
+            ${{ env.OUT }}/maestro/
+          if-no-files-found: ignore
+
   footprint:
-    needs: mutation
+    needs: [mutation, device]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -221,6 +306,8 @@ jobs:
       BASE: ${{ github.event.pull_request.base.sha }}
       HEAD: ${{ github.event.pull_request.head.sha }}
       JUDGED: ${{ needs.mutation.result }}
+      WALKED: ${{ needs.device.outputs.journey }}
+      MEASURED_ON_DEVICE: ${{ needs.device.outputs.measured }}
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -234,12 +321,20 @@ jobs:
           install: false
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      - name: Export the app for both phones and the web, so its bundles are weighed
+        run: pnpm --filter @seatscout/native run bundle
       - name: Collect what every shard judged
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           pattern: mutation-*
           merge-multiple: true
           path: reports/mutation
+      - name: Collect what the emulator walked and measured
+        continue-on-error: true
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: device
+          path: reports/device
       - name: Hold every shard to a report that weighed something
         id: reports
         continue-on-error: true
@@ -310,12 +405,19 @@ jobs:
             echo "| Every shard left a report | $REPORTED |"
             echo "| Test collection | $COLLECTION, the shards held ${COUNTED:-an uncounted number of} tests between them, and the runners collect ${HELD:-an uncounted number} |"
             echo "| Footprint measurement | $MEASURED |"
+            echo "| Journey over the built app on an Android emulator | ${WALKED:-not walked} |"
+            echo "| Start-up and frame rate read on the emulator | ${MEASURED_ON_DEVICE:-not read} |"
             echo
           } > verdict.md
           if [ -s footprint.md ]; then
             cat footprint.md >> verdict.md
           else
             echo "The footprint was not measured on this run, so there are no figures below." >> verdict.md
+          fi
+          if [ -s reports/device/device.md ]; then
+            { echo; cat reports/device/device.md; } >> verdict.md
+          else
+            printf '\nThe emulator measured nothing on this run, so there are no device figures.\n' >> verdict.md
           fi
           mv verdict.md footprint.md
       - name: Add the report to the run summary
@@ -334,10 +436,10 @@ jobs:
           COLLECTION: ${{ steps.collection.outcome }}
           MEASURED: ${{ steps.footprint.outcome }}
         run: |
-          if [ "$JUDGED" = success ] && [ "$REPORTED" = success ] && [ "$COLLECTION" = success ] && [ "$MEASURED" = success ]; then
+          if [ "$JUDGED" = success ] && [ "$REPORTED" = success ] && [ "$COLLECTION" = success ] && [ "$MEASURED" = success ] && [ "$WALKED" = passed ] && [ "$MEASURED_ON_DEVICE" = success ]; then
             exit 0
           fi
-          echo "::error::Mutation runs $JUDGED, every shard reported $REPORTED, test collection $COLLECTION, footprint measurement $MEASURED. The report on the pull request says what each one measured."
+          echo "::error::Mutation runs $JUDGED, every shard reported $REPORTED, test collection $COLLECTION, footprint measurement $MEASURED, the journey on the emulator ${WALKED:-not walked}, the reading on the emulator ${MEASURED_ON_DEVICE:-not read}. The report on the pull request says what each one measured."
           exit 1
 
   performance:

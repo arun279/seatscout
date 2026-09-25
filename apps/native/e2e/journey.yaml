@@ -1,0 +1,51 @@
+appId: ${APP_ID}
+name: Ask, the ranked Seat Groups, the hand-off and the Room, with the Source answered from the corpus
+---
+- launchApp:
+    clearState: true
+- openLink: ${LINK}
+- extendedWaitUntil:
+    visible: Find seats
+    timeout: 120000
+- tapOn: Find seats
+- extendedWaitUntil:
+    visible: What are we seeing\?
+    timeout: 15000
+- tapOn: Film
+- inputText: Dog Stars
+- tapOn:
+    text: The Dog Stars \(2026\)
+    childOf:
+      id: offered
+- tapOn:
+    text: Find seats
+    childOf:
+      id: dock
+- extendedWaitUntil:
+    visible:
+      id: seats
+    timeout: 60000
+- tapOn:
+    id: seats
+    index: 0
+- extendedWaitUntil:
+    visible: Taking the seats
+    timeout: 15000
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - back
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - swipe:
+          start: 50%, 60%
+          end: 50%, 95%
+- tapOn:
+    id: body
+    index: 0
+- extendedWaitUntil:
+    visible: The room
+    timeout: 15000

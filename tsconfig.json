@@ -1,25 +1,71 @@
 {
   "files": [],
   "references": [
-    { "path": "packages/core" },
-    { "path": "packages/core/tsconfig.test.json" },
-    { "path": "packages/client" },
-    { "path": "packages/client/tsconfig.test.json" },
-    { "path": "packages/view-logic" },
-    { "path": "packages/view-logic/tsconfig.test.json" },
-    { "path": "apps/native" },
-    { "path": "apps/native/tsconfig.test.json" },
-    { "path": "apps/web" },
-    { "path": "apps/web/tsconfig.test.json" },
-    { "path": "apps/web/tsconfig.worker.json" },
-    { "path": "apps/proxy" },
-    { "path": "apps/proxy/tsconfig.test.json" },
-    { "path": "tools" },
-    { "path": "tools/counts-in-prose" },
-    { "path": "tools/journey" },
-    { "path": "tools/no-empty-run" },
-    { "path": "tools/planted-red" },
-    { "path": "tools/footprint" },
-    { "path": "tests/e2e" }
+    {
+      "path": "packages/core"
+    },
+    {
+      "path": "packages/core/tsconfig.test.json"
+    },
+    {
+      "path": "packages/client"
+    },
+    {
+      "path": "packages/client/tsconfig.test.json"
+    },
+    {
+      "path": "packages/view-logic"
+    },
+    {
+      "path": "packages/view-logic/tsconfig.test.json"
+    },
+    {
+      "path": "apps/native"
+    },
+    {
+      "path": "apps/native/tsconfig.test.json"
+    },
+    {
+      "path": "apps/web"
+    },
+    {
+      "path": "apps/web/tsconfig.test.json"
+    },
+    {
+      "path": "apps/web/tsconfig.worker.json"
+    },
+    {
+      "path": "apps/proxy"
+    },
+    {
+      "path": "apps/proxy/tsconfig.test.json"
+    },
+    {
+      "path": "tools"
+    },
+    {
+      "path": "tools/counts-in-prose"
+    },
+    {
+      "path": "tools/device"
+    },
+    {
+      "path": "tools/journey"
+    },
+    {
+      "path": "tools/no-empty-run"
+    },
+    {
+      "path": "tools/planted-red"
+    },
+    {
+      "path": "tools/footprint"
+    },
+    {
+      "path": "tests/e2e"
+    },
+    {
+      "path": "tests/app"
+    }
   ]
 }
