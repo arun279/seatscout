@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { globSync, readFileSync } from "node:fs";
+import { existsSync, globSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
@@ -53,6 +53,17 @@ if (judged.length === 0) {
       .map((shard) => shard.id)
       .join(", ")}.`,
   );
+}
+
+if (values.incremental) {
+  const [shard] = judged;
+  process.env["MUTATION_SHARD"] = shard.id;
+  const { default: config } = await import("../stryker.config.mjs");
+  const { scoped } = await import("./no-empty-run/src/scope.ts");
+  const seed = `${root}${config.incrementalFile}`;
+  if (existsSync(seed)) {
+    writeFileSync(seed, scoped(readFileSync(seed, "utf8"), shard.mutate));
+  }
 }
 
 const succeeded = (command, args, environment = {}) =>

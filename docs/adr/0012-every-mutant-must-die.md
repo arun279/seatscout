@@ -145,10 +145,11 @@ report the first time. No key a shard saves starts with either, so a fallback ca
 report of the whole tree and never another workspace's, and a cache saved for the other file
 has another version, so the app's seed and the rest never cross. A pull request whose shard
 restores nothing at all is refused rather than left to judge its workspace from nothing, and
-dispatching the Baseline reseeds it. Stryker writes the incremental file as the report of the
-run that wrote it, so a shard's file holds its own workspace after that first run, and two
-shards sharing one file would each erase what the other judged; they never do, because they run
-on machines of their own. Five cache entries across the two workflows name one seed file each,
+dispatching the Baseline reseeds it. Stryker keeps every file of a restored incremental file in the report it writes, out of scope
+or not, so before a shard runs, `tools/mutation.mjs` cuts the restored file down to the files
+that shard mutates. Its report, its score and the seed it saves then hold its own workspace and
+nothing else, and two shards sharing one file would each erase what the other judged; they
+never do, because they run on machines of their own. Five cache entries across the two workflows name one seed file each,
 and a list that grows back to two is a count that no longer matches this sentence.
 
 **Only a run that passed leaves a seed, under every key it writes.** A mutant that runs while
