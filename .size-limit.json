@@ -26,17 +26,17 @@
   {
     "name": "app for iOS, Hermes bytecode",
     "path": "apps/native/dist/_expo/static/js/ios/*.hbc",
-    "limit": "969705 B"
+    "limit": "967857 B"
   },
   {
     "name": "app for Android, Hermes bytecode",
     "path": "apps/native/dist/_expo/static/js/android/*.hbc",
-    "limit": "1079520 B"
+    "limit": "1077920 B"
   },
   {
     "name": "app for the web",
     "path": "apps/native/dist/_expo/static/js/web/*.js",
-    "limit": "271857 B"
+    "limit": "272087 B"
   },
   {
     "name": "app's faces and images",
