@@ -1,10 +1,9 @@
 import { readFileSync } from "node:fs";
 
 const RUNNERS = {
-  vitest: (workspace) => ({
+  vitest: () => ({
     testRunner: "vitest",
     incrementalFile: "reports/stryker-incremental.json",
-    testFiles: [`${workspace}/**/*.{test,spec}.?(c|m)[jt]s?(x)`],
     vitest: { related: false, configFile: "vitest.stryker.config.ts" },
   }),
   jest: () => ({
@@ -26,7 +25,6 @@ const NOT_PRODUCTION = [
 ];
 
 const NOTHING = {
-  workspace: "no-workspace",
   runner: "vitest",
   mutate: [],
   report: "reports/mutation/no-shard.json",
@@ -50,7 +48,7 @@ if (shard === undefined) {
 
 /** @type {import("@stryker-mutator/api/core").PartialStrykerOptions} */
 export default {
-  ...RUNNERS[shard.runner](shard.workspace),
+  ...RUNNERS[shard.runner](),
   plugins: [
     "@stryker-mutator/vitest-runner",
     "@stryker-mutator/jest-runner",

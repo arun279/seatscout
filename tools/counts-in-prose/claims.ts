@@ -66,8 +66,8 @@ const sheetsImported = (read: Read) =>
 
 const projectsExtending = (read: Read) => {
   const config = read(VITEST);
-  const projects = [...config.matchAll(/^ {10}name: "/gm)];
-  const extending = [...config.matchAll(/^ {8}extends: true,$/gm)];
+  const projects = [...config.matchAll(/^ +name: "/gm)];
+  const extending = [...config.matchAll(/^ +extends: true,$/gm)];
   if (projects.length !== extending.length)
     throw new Error(
       `a project in ${VITEST} does not extend the root configuration, so the dry run's timeout never reaches its tests`,

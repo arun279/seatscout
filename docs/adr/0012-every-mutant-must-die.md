@@ -32,17 +32,24 @@ has for it, which is what its own record of
 says it does. Over the whole tree that was the 986 tests the repository held that day, 150
 seconds net, for each such mutant: moving one module of constants on 2026-09-19 left 502 mutants to re-judge and
 the run took 57 minutes, where the Expo app's own run took one or two. Stryker has no sharding
-of its own ([stryker-js#4806](https://github.com/stryker-mutator/stryker-js/issues/4806)); what
-it publishes instead is `mutate` and `testFiles`, the second of which exists "to verify that a
-module's dedicated unit tests can kill all its mutants independently". That is the division
-taken here. Each shard mutates one workspace and `testFiles` limits it to that workspace's own
-tests, which Stryker applies to the initial run and to every static mutant alike, so such a
-mutant costs one workspace's suite and the wall clock is the slowest shard rather than the sum.
-The Vitest runner's `vitest.related` is turned off for it. That setting is on by default and is
-applied on top of `testFiles`, so it narrowed a static mutant to the few tests that import the
-mutated file: on the first run of the division, 165 static mutants in `packages/view-logic`
-survived for it alone, and the initial run of two shards left out every test file that imports
-no mutated source.
+of its own ([stryker-js#4806](https://github.com/stryker-mutator/stryker-js/issues/4806)), so
+each shard narrows both halves itself: `mutate` to one workspace, and the tests to that
+workspace's own through the Vitest configuration the runner loads. `vitest.stryker.config.ts`
+reads the shard `MUTATION_SHARD` names and includes that workspace's test files and no others,
+so the initial run and every static mutant see one workspace's suite, and the wall clock is the
+slowest shard rather than the sum.
+
+Stryker's own `testFiles` does the same selection and is not used, because it also hands every
+mutant a test filter, and Stryker 10.0.0 activates a static mutant that has a filter only once
+its module has already loaded
+([stryker-js#6144](https://github.com/stryker-mutator/stryker-js/issues/6144)). Under it the
+mutant never takes effect: two static mutants in `tools/no-empty-run` survived a test that
+asserts their exact output, and the rest of that file's came back as timeouts rather than
+kills. A configuration that includes fewer files gives Stryker no filter, so a static mutant is
+active before anything imports it. The Vitest runner's `vitest.related` is turned off for the
+same reason in another form: on by default, it narrowed a static mutant to the few tests that
+import the mutated file, and on the first run of the division 165 static mutants in
+`packages/view-logic` survived for it alone.
 `ignoreStatic` would have been the cheaper answer and is refused, because it narrows what the
 gate judges rather than what the gate costs.
 
@@ -116,9 +123,9 @@ a file rather than into a pipe, and leaves its own errors on the step's output.
 
 Related mode went with the division. The count used to be taken in the mode Stryker's Vitest
 runner selects with, through a configuration carrying `test.related`, because the runner chose
-the tests for the initial run itself. `testFiles` names them instead, and Stryker runs exactly
-those, so the listing the count is held to is filtered by the same workspace rather than
-computed a second way beside it.
+the tests for the initial run itself. The shard's configuration names them instead, and
+Stryker runs exactly those, so the listing the count is held to is filtered by the same
+workspace rather than computed a second way beside it.
 
 The two counts are not reached the same way, and one difference survives that. A listing
 leaves a skipped test out and Stryker's run counts it, so the first `it.skip` in the suite
@@ -174,10 +181,10 @@ that directory with Stryker's Jest runner over the `jest-expo` preset. That shar
 environment from a raw, un-normalised config and silently replaces a preset's with the Node
 default ([stryker-js#6108](https://github.com/stryker-mutator/stryker-js/issues/6108), which
 names `jest-expo`); `off` is unaffected. It keeps an incremental report of its own and breaks
-below 100 like the rest, and it is the one shard with no `testFiles` of its own: the Jest
-configuration it runs collects `apps/native` and nothing else, and naming those files again
-would turn off the related-test filter the runner applies to every mutant, so the setting that
-divides the others would cost this one every test on every mutant.
+below 100 like the rest, and its Jest configuration already collects `apps/native` and
+nothing else, so it needs no narrowing of its own. It must not be given `testFiles` either:
+naming the files turns off the related-test filter the Jest runner applies to every mutant, so
+every mutant would run every test.
 
 **One kind of value is ignored, by a plugin rather than by file.** `tools/stryker-style-tables.mjs`
 skips the argument of `StyleSheet.create`, and a table declared at the top of the three files that
