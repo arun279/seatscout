@@ -14,10 +14,8 @@ name: Ask, the ranked Seat Groups, the hand-off and the Room, with the Source an
     visible: The Dog Stars \(2026\)
     timeout: 30000
 - tapOn: The Dog Stars \(2026\)
-- tapOn:
-    text: Find seats
-    childOf:
-      id: dock
+- hideKeyboard
+- tapOn: Find seats
 - extendedWaitUntil:
     visible:
       id: seats
