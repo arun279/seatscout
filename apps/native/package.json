@@ -7,8 +7,8 @@
   "scripts": {
     "build": "tsc --build --pretty false",
     "bundle": "expo export --platform ios --platform android --output-dir dist",
-    "doctor": "expo-doctor",
-    "install-check": "expo install --check",
+    "doctor": "EXPO_OFFLINE=1 expo-doctor",
+    "install-check": "EXPO_OFFLINE=1 expo install --check",
     "start": "expo start",
     "test": "jest"
   },
