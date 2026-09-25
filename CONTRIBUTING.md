@@ -92,7 +92,8 @@ Seven further jobs run beside it. `device` builds the app for Android with the S
 answered from the corpus (`SEATSCOUT_UPSTREAM=corpus`, which Metro reads to swap
 `src/host/upstream.ts` for `e2e/upstream.ts`), walks `apps/native/e2e/journey.yaml` with
 Maestro on an emulator, and then has Flashlight read start-up, frame rate, CPU and memory. The
-walk gates; the reading is reported. `shards` reads the workspaces the mutation gate is divided
+walk gates, and so does a reading that measured nothing; what the reading measured is reported
+and gates nothing. `shards` reads the workspaces the mutation gate is divided
 into out of `stryker.shards.json`, and `mutation` judges one of them per runner, in parallel.
 `footprint` gathers what they and `device` wrote and reports what the change weighs. `secrets` scans the
 pull request's commits with gitleaks. `dependencies`
