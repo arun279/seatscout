@@ -1,19 +1,36 @@
-import { Report } from "@perf-profiler/reporter";
-import type { TestCaseResult } from "@perf-profiler/types";
+interface Measure {
+  readonly cpu: { readonly perName: Readonly<Record<string, number>> };
+  readonly fps?: number;
+  readonly ram?: number;
+}
+
+interface Iteration {
+  readonly time: number;
+  readonly status: string;
+  readonly measures: readonly Measure[];
+}
+
+interface Run {
+  readonly status: string;
+  readonly iterations: readonly Iteration[];
+}
+
+export interface Figure {
+  readonly mean: number;
+  readonly spread: number;
+}
 
 export interface Reading {
   readonly iterations: number;
-  readonly runtime: number;
-  readonly runtimeSpread: number;
-  readonly fps: number;
-  readonly fpsSpread: number;
-  readonly cpu: number;
-  readonly cpuSpread: number;
-  readonly ram: number;
-  readonly ramSpread: number;
+  readonly runtime: Figure;
+  readonly fps: Figure;
+  readonly cpu: Figure;
+  readonly ram: Figure;
 }
 
-const isRun = (parsed: unknown): parsed is TestCaseResult =>
+const NO_JSON: unique symbol = Symbol();
+
+const isRun = (parsed: unknown): parsed is Run =>
   typeof parsed === "object" &&
   parsed !== null &&
   "status" in parsed &&
@@ -24,30 +41,58 @@ const parsedFrom = (text: string): unknown => {
   try {
     return JSON.parse(text);
   } catch {
-    return null;
+    return NO_JSON;
   }
 };
 
+const sumOf = (values: readonly number[]) =>
+  values.reduce((sum, value) => sum + value, 0);
+
+const meanOf = (values: readonly number[]) => sumOf(values) / values.length;
+
+const tenths = (value: number) => Math.round(value * 10) / 10;
+
+const figureOf = (values: readonly number[]): Figure => {
+  const mean = meanOf(values);
+  const deviation = Math.sqrt(
+    meanOf(values.map((value) => (value - mean) ** 2)),
+  );
+  return { mean: tenths(mean), spread: tenths((deviation / mean) * 100) };
+};
+
+const each = (
+  iterations: readonly Iteration[],
+  read: (measure: Measure) => number | undefined,
+): readonly number[] =>
+  iterations.map((iteration) =>
+    meanOf(iteration.measures.map((measure) => read(measure) ?? Number.NaN)),
+  );
+
 export const readingOf = (path: string, text: string): Reading | string => {
   const run = parsedFrom(text);
+  if (run === NO_JSON) return `${path} holds no JSON`;
   if (!isRun(run)) return `${path} holds no Flashlight run`;
   if (run.status !== "SUCCESS")
     return `${path} records a Flashlight run that failed`;
-  const report = new Report(run);
-  if (!report.hasMeasures()) return `${path} measured no iteration`;
-  const { runtime, fps, cpu, ram } = report.getAverageMetrics();
-  const spread = report.getStats();
-  if (fps === undefined || ram === undefined || !spread.fps || !spread.ram)
+  const measured = run.iterations.filter(
+    (iteration) => iteration.status === "SUCCESS",
+  );
+  if (
+    measured.length === 0 ||
+    measured.some((iteration) => iteration.measures.length === 0)
+  )
+    return `${path} measured no iteration`;
+  const fps = each(measured, (measure) => measure.fps);
+  const ram = each(measured, (measure) => measure.ram);
+  if ([...fps, ...ram].some(Number.isNaN))
     return `${path} read no frame rate or memory`;
   return {
-    iterations: report.getIterationCount(),
-    runtime,
-    runtimeSpread: spread.runtime.variationCoefficient,
-    fps,
-    fpsSpread: spread.fps.variationCoefficient,
-    cpu,
-    cpuSpread: spread.cpu.variationCoefficient,
-    ram,
-    ramSpread: spread.ram.variationCoefficient,
+    iterations: measured.length,
+    runtime: figureOf(measured.map((iteration) => iteration.time)),
+    fps: figureOf(fps),
+    cpu: figureOf(
+      each(measured, (measure) => sumOf(Object.values(measure.cpu.perName))),
+    ),
+    ram: figureOf(ram),
   };
 };

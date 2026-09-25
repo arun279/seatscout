@@ -9,8 +9,10 @@ adb install -r "$APK"
 echo passed > "$OUT/journey.outcome"
 
 flashlight test --bundleId "$APP_ID" \
+  --beforeEachCommand "adb shell pm clear $APP_ID" \
   --testCommand "adb shell am start -W -n $APP_ID/.MainActivity" \
   --resultsFilePath "$OUT/startup.json"
 flashlight test --bundleId "$APP_ID" \
+  --beforeEachCommand "adb shell pm clear $APP_ID" \
   --testCommand "$journeyed" \
   --resultsFilePath "$OUT/journey.json"

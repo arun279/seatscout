@@ -58,13 +58,14 @@ pnpm lint
 pnpm complexity
 pnpm duplication
 actionlint
-shellcheck deploy/*.sh
+shellcheck deploy/*.sh apps/native/e2e/*.sh
 pnpm spell
 pnpm typecheck
 pnpm dead-code
 pnpm versions
 pnpm --filter @seatscout/native run install-check
 pnpm --filter @seatscout/native run doctor
+pnpm --filter @seatscout/native run bundle
 pnpm counts
 pnpm claims
 pnpm test:unit
@@ -75,16 +76,25 @@ pnpm test:e2e
 pnpm test:journey
 pnpm journey --head reports/journey/samples.json \
   --head-gesture reports/journey/gesture.json --no-baseline
+pnpm journey --head reports/journey/app-samples.json --no-gesture --no-baseline
 ```
+
+`pnpm test:e2e` and `pnpm test:journey` serve the app's web build from `apps/native/dist` with
+`expo serve`, so the bundle step comes first. Playwright runs `tests/e2e` over `apps/web` as
+the `web` project and `tests/app` over the app's web build as the `app` project.
 
 The list is the job, not a selection from it. Running a shorter one and finding it green is
 how a contributor arrives red on a pull request, which is what this list is for. The last
 line is the half of the journey gate a checkout can run alone; the job also builds the merge
 base in a worktree, runs its journey, and holds this one to it.
 
-Six further jobs run beside it. `shards` reads the workspaces the mutation gate is divided
+Seven further jobs run beside it. `device` builds the app for Android with the Source
+answered from the corpus (`SEATSCOUT_UPSTREAM=corpus`, which Metro reads to swap
+`src/host/upstream.ts` for `e2e/upstream.ts`), walks `apps/native/e2e/journey.yaml` with
+Maestro on an emulator, and then has Flashlight read start-up, frame rate, CPU and memory. The
+walk gates; the reading is reported. `shards` reads the workspaces the mutation gate is divided
 into out of `stryker.shards.json`, and `mutation` judges one of them per runner, in parallel.
-`footprint` gathers what they wrote and reports what the change weighs. `secrets` scans the
+`footprint` gathers what they and `device` wrote and reports what the change weighs. `secrets` scans the
 pull request's commits with gitleaks. `dependencies`
 scans the lockfile against the OSV database and fails on any advisory, then reads every
 dependency's licence and fails on any SPDX identifier outside the allowlist that job
@@ -217,9 +227,11 @@ Take a ratchet's new value from the `footprint` comment on the pull request rath
 local run: the job measures the merge of your branch with `main` rather than the branch alone,
 so the bundle's bytes and the sum of the unit and end-to-end counts are what that merge weighs,
 and a floor derived locally read 25 too high the moment `main` had dropped a package's tests.
-`.size-limit.json` holds four ratchets over what the build emits: the scripts, the
-stylesheets, the woff2 faces the page preloads and the icons it names. The comment prints
-each measured figure beside its own ratchet.
+`.size-limit.json` holds four ratchets over what the web app's build emits: the scripts, the
+stylesheets, the woff2 faces the page preloads and the icons it names. Four more weigh what the
+app's export emits: the Hermes bytecode for iOS and for Android, the web build's scripts, and
+the faces and images every platform ships. The comment prints each measured figure beside its
+own ratchet.
 
 A pull request that changes what a person sees or does carries its headed pass as images or
 video: drive the built tree in a real browser at a phone's size, screenshot each state the
