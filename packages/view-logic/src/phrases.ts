@@ -9,6 +9,8 @@ import type { Terms } from "./terms.js";
 
 type RankReasons = SeatGroupResult["reasons"];
 
+const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
 const WORDS = [
   "one",
   "two",
@@ -20,8 +22,6 @@ const WORDS = [
   "eight",
   "nine",
 ];
-
-const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const MONTHS = [
   "Jan",
