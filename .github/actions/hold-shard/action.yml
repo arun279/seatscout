@@ -53,7 +53,7 @@ runs:
           reads='.numTotalTests'
         else
           pnpm exec vitest list --json="$collected" "$workspace/"
-          reads='length'
+          reads="[.[] | select(.file | index(\"$GITHUB_WORKSPACE/$workspace/\") == 0)] | length"
         fi
         if [ ! -s "$collected" ]; then
           echo "::error::The runner wrote no listing of the tests in $workspace, so there is nothing to hold Stryker's initial run to. Its own errors are above."
