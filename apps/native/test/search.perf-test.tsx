@@ -3,17 +3,14 @@ import { REFERENCE, type SearchTerms } from "@seatscout/client";
 import type { Terms } from "@seatscout/view-logic";
 import { screen } from "@testing-library/react-native";
 import { measureRenders } from "reassure";
-import type { Clock } from "../src/host/clock.js";
 import { Results } from "../src/search/results.js";
 import { Search } from "../src/search/search.js";
 import { phone } from "./phone.js";
-import { NOTHING_READ, NOW, TODAY } from "./rooms.js";
+import { NOTHING_READ, NOW, still, TODAY } from "./rooms.js";
 
 const PROMPT_DAY = "2026-09-19";
 
 const SHORT: Terms = { date: PROMPT_DAY, partySize: 2 };
-
-const STILL: Clock = { now: () => NOW, subscribe: () => () => undefined };
 
 const WHOLE_LISTING: Terms = {
   movie: "245569",
@@ -35,7 +32,7 @@ const nothing = () => undefined;
 test("the Search screen's prompt face, drawn and read", async () => {
   await measureRenders(
     <Search
-      clock={STILL}
+      clock={still(NOW)}
       onAsk={nothing}
       onHandOff={nothing}
       onLedger={nothing}
@@ -60,7 +57,7 @@ test("the Search screen's ranked Seat Groups, over the whole corpus", async () =
   await measureRenders(
     <Results
       asked={WHOLE_SEARCH}
-      clock={STILL}
+      clock={still(NOW)}
       onEdit={nothing}
       onHandOff={nothing}
       onLedger={nothing}

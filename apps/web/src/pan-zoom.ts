@@ -5,6 +5,7 @@ import {
   type Box,
   type Cursor,
   FITTED,
+  type Frame,
   mostZoomFor,
   panned,
   pinched,
@@ -15,16 +16,13 @@ import {
   zoomed,
 } from "@seatscout/view-logic";
 
-export interface Frame extends Box {
-  readonly seatWidth: number;
-}
-
 interface Tracked extends Point {
   readonly from: Point;
 }
 
 const TOUCH_SLOP = 8;
 const WHEEL_TRAVEL_PER_DOUBLING = 240;
+const POINTER_TAP_TARGET = 44;
 
 const boxOf = (seat: PositionedSeat, frame: Frame): Box => ({
   x: seat.x - frame.x,
@@ -42,6 +40,7 @@ const measured = (target: SVGGElement, frame: Frame, view: View) => {
       frame.seatWidth,
       frame.width,
       bounds.width / view.scale,
+      POINTER_TAP_TARGET,
     ),
     inView: (client: Point): Point => ({
       x: (client.x - bounds.left) / perUnit + view.tx,

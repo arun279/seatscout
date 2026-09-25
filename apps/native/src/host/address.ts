@@ -47,6 +47,21 @@ export const askAbout = (terms: Terms, term: Term): void => {
   router.push({ pathname: "/ask", params: { ...askedIn(terms), term } });
 };
 
+export const openRoom = (
+  terms: Terms,
+  showtime: number,
+  group: string,
+): void => {
+  router.push({
+    pathname: "/room",
+    params: { ...askedIn(terms), showtime: `${showtime}`, group },
+  });
+};
+
+export const handOff = (group: string): void => {
+  router.push({ pathname: "/hand-off", params: { group } });
+};
+
 export const runInstead = (terms: Terms): void => {
   router.replace({ pathname: "/", params: askedIn(terms) });
 };

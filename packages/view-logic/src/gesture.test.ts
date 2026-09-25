@@ -141,9 +141,16 @@ describe("panning and zooming the room", () => {
   });
 
   it("derives the most zoom from the tap target a Seat has to reach", () => {
-    expect(mostZoomFor(18, 500, 340)).toBeCloseTo(3.595, 3);
-    expect(mostZoomFor(82.6, 1189.1, 340)).toBeCloseTo(1.863, 3);
-    expect(mostZoomFor(82.6, 1189.1, 1000)).toBe(1);
+    expect(mostZoomFor(18, 500, 340, 44)).toBeCloseTo(3.595, 3);
+    expect(mostZoomFor(82.6, 1189.1, 340, 44)).toBeCloseTo(1.863, 3);
+    expect(mostZoomFor(82.6, 1189.1, 1000, 44)).toBe(1);
+  });
+
+  it("zooms further where the platform's own touch floor is higher", () => {
+    expect(mostZoomFor(18, 500, 340, 48)).toBeCloseTo(3.922, 3);
+    expect(mostZoomFor(18, 500, 340, 48)).toBeGreaterThan(
+      mostZoomFor(18, 500, 340, 44),
+    );
   });
 
   it("spells the transform the wrapping group carries", () => {

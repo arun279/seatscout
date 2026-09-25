@@ -6,6 +6,7 @@ import {
   it,
   jest,
 } from "@jest/globals";
+import { BACK_TO_THE_LIST } from "@seatscout/view-logic";
 import { act, fireEvent, screen, within } from "@testing-library/react-native";
 import { renderRouter } from "expo-router/testing-library";
 import { StyleSheet } from "react-native";
@@ -24,6 +25,9 @@ import RoomRoute from "./app/room.js";
 const mockLoading = jest.fn<() => [boolean, Error | null]>(() => [true, null]);
 
 jest.mock("expo-font", () => ({ useFonts: () => mockLoading() }));
+jest.mock("react-native-reanimated", () =>
+  require("react-native-reanimated/mock"),
+);
 
 jest.mock("expo-network", () => ({
   useNetworkState: () => ({ isConnected: true, isInternetReachable: true }),
@@ -248,7 +252,7 @@ describe("a deep link that carries a whole query", () => {
     if (body === undefined) throw new Error("no card was drawn");
 
     await fireEvent.press(body);
-    await screen.findByText("The room");
+    await screen.findByText(`‹ ${BACK_TO_THE_LIST}`);
 
     expect(listed.at()).toBe("/room");
   });

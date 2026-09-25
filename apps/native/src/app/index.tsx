@@ -1,13 +1,17 @@
 import { router } from "expo-router";
 import type { ReactElement } from "react";
-import { askAbout, goTo, useTerms } from "../host/address.js";
-import { deviceClock, today } from "../host/clock.js";
+import {
+  askAbout,
+  goTo,
+  handOff,
+  openRoom,
+  useTerms,
+} from "../host/address.js";
+import { clock, today } from "../host/clock.js";
 import { useOnline } from "../host/online.js";
 import { useProfile } from "../host/profile.js";
 import { seatProfile, seatscout } from "../host/source.js";
 import { Search } from "../search/search.js";
-
-const clock = deviceClock();
 
 export default function Index(): ReactElement | null {
   const now = today();
@@ -19,10 +23,10 @@ export default function Index(): ReactElement | null {
     <Search
       clock={clock}
       onAsk={(term) => askAbout(terms, term)}
-      onHandOff={() => router.push("/hand-off")}
+      onHandOff={(result) => handOff(result.key)}
       onLedger={() => router.push("/ledger")}
       online={online}
-      onRoom={() => router.push("/room")}
+      onRoom={(result) => openRoom(terms, result.showtime.id, result.key)}
       onRun={goTo}
       profile={profile}
       seatscout={seatscout}
