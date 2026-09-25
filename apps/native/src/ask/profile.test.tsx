@@ -122,13 +122,14 @@ describe("where you sit, in the Ask sheet", () => {
     const scrolls = () =>
       screen.getByTestId("sheet-scroll").props["scrollEnabled"];
 
-    await respond("onResponderGrant", touched(0, 0));
+    await laidOut(320);
+    await respond("onResponderGrant", touched(160, 152));
     expect(scrolls()).toBe(false);
 
     await respond("onResponderRelease");
     expect(scrolls()).toBe(true);
 
-    await respond("onResponderGrant", touched(0, 0));
+    await respond("onResponderGrant", touched(160, 152));
     await respond("onResponderTerminate");
     expect(scrolls()).toBe(true);
   });

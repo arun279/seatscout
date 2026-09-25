@@ -92,6 +92,21 @@ describe("a field the platform's own picker fills", () => {
     expect(picker().props["themeVariant"]).toBe("dark");
   });
 
+  onIos(
+    "holds the time the wheels open on, since wheels left unturned still show it",
+    async () => {
+      const picked = await picking("time");
+
+      expect(picked).toHaveBeenCalledWith(HELD);
+    },
+  );
+
+  it("holds nothing when a calendar opens, until a day is picked", async () => {
+    const picked = await picking();
+
+    expect(picked).not.toHaveBeenCalled();
+  });
+
   it("hands out the day picked and closes", async () => {
     const picked = await picking();
 
@@ -118,6 +133,7 @@ describe("a field the platform's own picker fills", () => {
       );
 
       expect(picked).toHaveBeenLastCalledWith(new Date(2026, 8, 5, 18, 30));
+      expect(picked).toHaveBeenCalledTimes(3);
       expect(picker("time")).toBeOnTheScreen();
 
       await fireEvent.press(field());

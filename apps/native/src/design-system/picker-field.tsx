@@ -44,7 +44,10 @@ export const PickerField = ({
         accessibilityLabel={`${label}, ${words}`}
         accessibilityRole="button"
         accessibilityState={{ expanded: picking }}
-        onPress={() => setPicking(!picking)}
+        onPress={() => {
+          if (wheels && !picking) onPicked(at);
+          setPicking(!picking);
+        }}
         style={[fieldBox, fieldColours(theme)]}
       >
         <Type set="ledgerField" tone="silver">
