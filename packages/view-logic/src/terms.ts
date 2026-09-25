@@ -26,7 +26,7 @@ export interface Terms {
   readonly until?: string;
 }
 
-interface RawTerms {
+export interface RawTerms {
   readonly movie?: string | undefined;
   readonly date?: string | readonly string[] | undefined;
   readonly when?: When | undefined;

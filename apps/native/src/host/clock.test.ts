@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, jest } from "@jest/globals";
-import { deviceClock, listingDate, today } from "./clock.js";
+import { clockFor, deviceClock, listingDate, timeAt, today } from "./clock.js";
 
 describe("the date a listing is asked for", () => {
   it("pads a single-digit month and day, and stays on the day the phone is on late at night", () => {
@@ -8,6 +8,20 @@ describe("the date a listing is asked for", () => {
 
   it("stays on the day the phone is on just after midnight", () => {
     expect(listingDate(new Date(2026, 8, 19, 0, 30))).toBe("2026-09-19");
+  });
+});
+
+describe("the clock a time window is asked by", () => {
+  it("pads a single-digit hour and minute", () => {
+    expect(clockFor(new Date(2026, 0, 9, 7, 5))).toBe("07:05");
+    expect(clockFor(new Date(2026, 0, 9, 23, 45))).toBe("23:45");
+  });
+
+  it("opens a picker on the hour and minute a clock names", () => {
+    const at = timeAt("21:35");
+
+    expect([at.getHours(), at.getMinutes()]).toEqual([21, 35]);
+    expect(clockFor(timeAt("07:05"))).toBe("07:05");
   });
 });
 

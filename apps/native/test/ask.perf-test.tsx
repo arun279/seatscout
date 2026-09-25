@@ -1,4 +1,5 @@
 import { test } from "@jest/globals";
+import { REFERENCE } from "@seatscout/client";
 import type { Terms } from "@seatscout/view-logic";
 import { screen } from "@testing-library/react-native";
 import { measureRenders } from "reassure";
@@ -15,6 +16,7 @@ test("the Ask sheet, opened over a query that names an area", async () => {
       focus={undefined}
       onFind={() => undefined}
       onKeep={() => undefined}
+      profile={REFERENCE}
       seatscout={
         phone([], {
           playing: {

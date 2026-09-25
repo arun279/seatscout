@@ -7,18 +7,26 @@ import {
   useTerms,
 } from "../host/address.js";
 import { today } from "../host/clock.js";
-import { seatscout } from "../host/source.js";
+import { useProfile } from "../host/profile.js";
+import { seatProfile, seatscout } from "../host/source.js";
 
-export default function AskRoute(): ReactElement {
+export default function AskRoute(): ReactElement | null {
   const now = today();
+  const profile = useProfile(seatProfile);
+  const focus = useFocus();
+  const terms = useTerms(now);
 
-  return (
+  return profile === undefined ? null : (
     <Ask
-      focus={useFocus()}
-      onFind={runInstead}
+      focus={focus}
+      onFind={(asked, chosen) => {
+        seatProfile.choose(chosen);
+        runInstead(asked);
+      }}
       onKeep={keepAsItWas}
+      profile={profile}
       seatscout={seatscout}
-      terms={useTerms(now)}
+      terms={terms}
       today={now}
     />
   );

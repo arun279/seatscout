@@ -60,6 +60,9 @@ export const valuesOf = ({ date, when }: Span): readonly string[] => {
 const run = (first: string, count: number) =>
   Array.from({ length: count }, (_, days) => dayAfter(first, days));
 
+export const horizonFrom = (date: string): Span =>
+  rangeOf([date, dayAfter(date, HORIZON - 1)]);
+
 export const daysIn = (
   { date, when }: Span,
   today: string,

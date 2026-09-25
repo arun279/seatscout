@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { daysIn, HORIZON, spanOf, valuesOf } from "./when.js";
+import { daysIn, HORIZON, horizonFrom, spanOf, valuesOf } from "./when.js";
 
 const TODAY = "2026-09-03";
 
@@ -98,5 +98,12 @@ describe("the days a Query's when term holds", () => {
       "2026-09-08",
       "2026-09-09",
     ]);
+  });
+
+  it("starts a range on a day and runs it to the horizon", () => {
+    expect(horizonFrom("2026-09-29")).toEqual({
+      date: "2026-09-29",
+      when: { reading: "range", first: "2026-09-29", last: "2026-10-05" },
+    });
   });
 });

@@ -9,6 +9,14 @@ import { fieldBox, fieldColours, Section } from "./field.js";
 import { ON_ANDROID } from "./platform.js";
 import { Type } from "./type.js";
 
+export interface PickerFieldProps {
+  readonly label: string;
+  readonly words: string;
+  readonly mode: "date" | "time";
+  readonly at: Date;
+  readonly onPicked: (at: Date) => void;
+}
+
 export interface DateFieldProps {
   readonly label: string;
   readonly date: string;
@@ -16,21 +24,22 @@ export interface DateFieldProps {
   readonly onDate: (date: string) => void;
 }
 
-export const DateField = ({
+export const PickerField = ({
   label,
-  date,
   words,
-  onDate,
-}: DateFieldProps): ReactElement => {
+  mode,
+  at,
+  onPicked,
+}: PickerFieldProps): ReactElement => {
   const theme = useTheme();
   const [picking, setPicking] = useState(false);
-  const picked = (event: DateTimePickerEvent, at: Date | undefined) => {
+  const picked = (event: DateTimePickerEvent, chosen: Date | undefined) => {
     setPicking(false);
-    if (event.type === "set" && at !== undefined) onDate(listingDate(at));
+    if (event.type === "set" && chosen !== undefined) onPicked(chosen);
   };
 
   return (
-    <Section label={label}>
+    <>
       <TouchableOpacity
         accessibilityLabel={`${label}, ${words}`}
         accessibilityRole="button"
@@ -44,13 +53,30 @@ export const DateField = ({
       {picking && (
         <DateTimePicker
           display={ON_ANDROID ? "default" : "spinner"}
-          mode="date"
+          mode={mode}
           onChange={picked}
-          testID="date-picker"
+          testID={`${mode}-picker`}
           themeVariant={theme.appearance === "down" ? "dark" : "light"}
-          value={dateAt(date)}
+          value={at}
         />
       )}
-    </Section>
+    </>
   );
 };
+
+export const DateField = ({
+  label,
+  date,
+  words,
+  onDate,
+}: DateFieldProps): ReactElement => (
+  <Section label={label}>
+    <PickerField
+      at={dateAt(date)}
+      label={label}
+      mode="date"
+      onPicked={(at) => onDate(listingDate(at))}
+      words={words}
+    />
+  </Section>
+);
