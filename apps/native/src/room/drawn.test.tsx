@@ -1,11 +1,22 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { frameOf } from "@seatscout/view-logic";
-import { LAKE_HIGHLANDS_1, WEST_PLANO_28 } from "@seatscout/view-logic/testing";
-import { cleanup, screen } from "@testing-library/react-native";
+import {
+  LAKE_HIGHLANDS_1,
+  openedRooms,
+  VILLAGE_1,
+  WEST_PLANO_28,
+} from "@seatscout/view-logic/testing";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+} from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import { houseLights } from "../../test/lights.js";
 import { type Appearance, themeFor } from "../theme.js";
-import { shown } from "./room.fixtures.js";
+import { refusedIn, seatNamed, shown } from "./room.fixtures.js";
+import { RowBar } from "./row-bar.js";
 
 jest.mock("react-native/Libraries/Utilities/useColorScheme");
 jest.mock("react-native-reanimated", () =>
@@ -68,7 +79,7 @@ describe("the room drawn to the screen it is on", () => {
     expect(drawnMap()).toEqual({ width: 0, height: 0 });
   });
 
-  it("stands the room on the house ground and the map on the deeper ground inside a hairline, in either appearance", async () => {
+  it("stands the room and its dock on the house ground and the map on the deeper ground inside a hairline, in either appearance", async () => {
     const grounds = async (appearance: Appearance) => {
       houseLights(appearance);
       await shown();
@@ -78,6 +89,10 @@ describe("the room drawn to the screen it is on", () => {
         edge: flat("map-frame").borderColor,
         back: flat("return").borderColor,
         rule: flat("provenance").borderTopColor,
+        bar: flat("row-bar").backgroundColor,
+        barEdge: flat("row-bar").borderColor,
+        dock: flat("dock").backgroundColor,
+        dockRule: flat("dock").borderTopColor,
       };
       await cleanup();
       return drawn;
@@ -91,8 +106,45 @@ describe("the room drawn to the screen it is on", () => {
         edge: colours.hairline,
         back: colours.hairline,
         rule: colours.hairline,
+        bar: colours.raised,
+        barEdge: colours.hairline,
+        dock: colours.house,
+        dockRule: colours.hairline,
       });
     }
+  });
+});
+
+describe("the row bar", () => {
+  it("edges a refusal in velvet, in either appearance", async () => {
+    for (const appearance of ["down", "up"] as const) {
+      houseLights(appearance);
+      const room = await shown();
+      await fireEvent.press(seatNamed(refusedIn(room).id));
+
+      expect(flat("row-bar").borderColor).toBe(
+        themeFor(appearance).colours.velvet,
+      );
+      await cleanup();
+    }
+  });
+
+  it("leaves the row chip off a row that agrees on no label, and still names its ordinal", async () => {
+    const [opened] = await openedRooms(undefined, [VILLAGE_1]);
+    const row = opened?.auditorium.map.rows[4];
+    if (opened === undefined || row === undefined)
+      throw new Error("the room has no fifth row");
+
+    await render(
+      <RowBar map={opened.auditorium.map} notice={null} row={row} />,
+    );
+
+    expect(
+      screen.getByText(
+        "5th row of 10 from the front. 23 seats, 21 bookable, 11 of them wheelchair or companion spaces.",
+      ),
+    ).toBeOnTheScreen();
+    expect(screen.queryByText(/^ROW/)).toBeNull();
   });
 });
 
