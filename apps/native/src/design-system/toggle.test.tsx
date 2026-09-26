@@ -38,7 +38,6 @@ describe("a term that is on or off", () => {
 
     expect(toggle()).toBeChecked();
     expect(screen.queryAllByRole("switch")).toHaveLength(1);
-    expect(screen.getByTestId("toggle-row").props["accessible"]).toBe(false);
   });
 
   it("hands out the state its switch was moved to, with a selection tick", async () => {

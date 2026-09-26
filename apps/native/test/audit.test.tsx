@@ -221,6 +221,42 @@ describe("the accessibility audit every rendered screen passes through", () => {
     ).toContain("can be pressed and has no role");
   });
 
+  it("lets a small control inside such a row borrow its reach, and no small control inside anything else", async () => {
+    const small = (
+      <TouchableOpacity
+        accessibilityLabel="Accessible seating"
+        accessibilityRole="switch"
+        onPress={() => void selectionAsync()}
+      />
+    );
+
+    expect(
+      await audited(
+        <Pressable
+          accessible={false}
+          onPress={() => undefined}
+          style={REACHING}
+        >
+          {small}
+        </Pressable>,
+      ),
+    ).toBe("");
+    expect(
+      await audited(
+        <TouchableOpacity
+          accessibilityLabel="Card"
+          accessibilityRole="button"
+          onPress={() => undefined}
+          style={REACHING}
+        >
+          {small}
+        </TouchableOpacity>,
+      ),
+    ).toContain(
+      '2.5.8 Target Size (Minimum), at the platform\'s floor: \\"Accessible seating\\"',
+    );
+  });
+
   it("refuses a text field with no label", async () => {
     expect(await audited(<TextInput />)).toContain(
       "WCAG 2.2 3.3.2 Labels or Instructions: a text field with no label",

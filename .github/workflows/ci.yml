@@ -231,6 +231,7 @@ jobs:
           else
             echo "The $MATRIX_SIDE has no walk, so there is nothing to build for it."
             echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "This side has no walk." > "$RUNNER_TEMP/no-walk.txt"
           fi
         env:
           MATRIX_SIDE: ${{ matrix.side }}
@@ -259,6 +260,13 @@ jobs:
             apps/native/android/app/build/outputs/apk/release/app-release.apk
             apps/native/e2e/*.yaml
           if-no-files-found: error
+      - name: Say to the emulator that this side has no walk, so its absence is never a lost download
+        if: steps.walk.outputs.present != 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: apk-${{ matrix.side }}
+          path: ${{ runner.temp }}/no-walk.txt
+          if-no-files-found: error
 
   device:
     needs: apk
@@ -285,8 +293,7 @@ jobs:
         with:
           name: apk-head
           path: ${{ runner.temp }}/head
-      - name: Collect the merge base's, when it has a walk
-        continue-on-error: true
+      - name: Collect the merge base's app and walk, or its word that it has none
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: apk-base
@@ -315,6 +322,9 @@ jobs:
             if [ -f "$RUNNER_TEMP/base/e2e/journey.yaml" ]; then
               echo "BASE_APK=$RUNNER_TEMP/base/android/app/build/outputs/apk/release/app-release.apk"
               echo "BASE_WALK=$RUNNER_TEMP/base/e2e/journey.yaml"
+            elif [ ! -f "$RUNNER_TEMP/base/no-walk.txt" ]; then
+              echo "::error::The merge base's artifact holds neither a walk nor its word that it has none."
+              exit 1
             fi
           } >> "$GITHUB_ENV"
       - name: Walk the journey on an emulator, then measure both sides with Flashlight and hold this one to the merge base

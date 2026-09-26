@@ -151,6 +151,10 @@ describe("what the emulator measured, held to the merge base", () => {
     ["no-frame.json", "no-frame.json read no frame rate or memory"],
     ["no-ram.json", "no-ram.json read no frame rate or memory"],
     ["no-fps.json", "no-fps.json read no frame rate or memory"],
+    [
+      "no-cpu.json",
+      "no-cpu.json read a figure that was nothing on every iteration",
+    ],
   ])("refuses %s rather than report over it", (journey, refusal) => {
     const report = heldWith("--head-journey", journey);
 

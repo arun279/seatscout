@@ -51,7 +51,7 @@ const sumOf = (values: readonly number[]) =>
 
 const meanOf = (values: readonly number[]) => sumOf(values) / values.length;
 
-const tenths = (value: number) => Math.round(value * 10) / 10;
+export const tenths = (value: number): number => Math.round(value * 10) / 10;
 
 const medianOf = (values: readonly number[]) => {
   const sorted = values.toSorted((one, other) => one - other);
@@ -97,7 +97,7 @@ export const readingOf = (path: string, text: string): Reading | string => {
   const ram = each(measured, (measure) => measure.ram);
   if ([...fps, ...ram].some(Number.isNaN))
     return `${path} read no frame rate or memory`;
-  return {
+  const reading = {
     iterations: measured.length,
     runtime: figureOf(measured.map((iteration) => iteration.time)),
     fps: figureOf(fps),
@@ -106,4 +106,9 @@ export const readingOf = (path: string, text: string): Reading | string => {
     ),
     ram: figureOf(ram),
   };
+  return [reading.runtime, reading.fps, reading.cpu, reading.ram].some(
+    (figure) => Number.isNaN(figure.spread),
+  )
+    ? `${path} read a figure that was nothing on every iteration`
+    : reading;
 };

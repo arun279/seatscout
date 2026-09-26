@@ -98,9 +98,9 @@ const widensANamedControl = (node: Host) =>
     .slice(1)
     .some((inner) => pressable(inner) && saysItself(inner));
 
-const withinAReachingControl = (node: Host) => {
+const widenedByARow = (node: Host) => {
   for (let at = node.parent; at !== null; at = at.parent)
-    if (pressable(at) && reaches(at)) return true;
+    if (pressable(at) && widensANamedControl(at) && reaches(at)) return true;
   return false;
 };
 
@@ -115,7 +115,7 @@ const control = (node: Host): readonly string[] => {
     ...(!read || named(node)
       ? []
       : [`${NAME_ROLE}: a ${String(role)} with no accessible name`]),
-    ...(inSentence(node) || reaches(node) || withinAReachingControl(node)
+    ...(inSentence(node) || reaches(node) || widenedByARow(node)
       ? []
       : [
           `${TARGET}: "${nameOf(node)}" reaches less than ${TOUCH_FLOOR} by ${TOUCH_FLOOR}`,

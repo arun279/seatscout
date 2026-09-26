@@ -1,11 +1,11 @@
-import type { Figure, Reading } from "./flashlight.ts";
+import { type Figure, type Reading, tenths } from "./flashlight.ts";
 
 export interface Side {
   readonly startup: Reading;
   readonly journey: Reading;
 }
 
-interface Measure {
+interface Axis {
   readonly name: string;
   readonly unit: string;
   readonly of: (side: Side) => Figure;
@@ -15,7 +15,7 @@ interface Measure {
 const higher = (one: number, other: number) => one > other;
 const lower = (one: number, other: number) => one < other;
 
-const MEASURES: readonly Measure[] = [
+const AXES: readonly Axis[] = [
   {
     name: "Start-up, launch to the first frame",
     unit: " ms",
@@ -52,17 +52,15 @@ const STEADY = 5;
 
 const RETRY = 3;
 
-const worstOf = (measure: Measure, figure: Figure) =>
+const worstOf = (measure: Axis, figure: Figure) =>
   figure.values.reduce((worst, value) =>
     measure.worse(value, worst) ? value : worst,
   );
 
-const tenths = (value: number) => Math.round(value * 10) / 10;
-
 const alone = (head: Side) => [
   "| Measure | This branch, median | Spread |",
   "| --- | --- | --- |",
-  ...MEASURES.map((measure) => {
+  ...AXES.map((measure) => {
     const figure = measure.of(head);
     return `| ${measure.name} | ${figure.median}${measure.unit} | ${figure.spread}% |`;
   }),
@@ -71,7 +69,7 @@ const alone = (head: Side) => [
 const beside = (head: Side, base: Side) => [
   "| Measure | This branch, median | Spread | Merge base, worst | Spread |",
   "| --- | --- | --- | --- | --- |",
-  ...MEASURES.map((measure) => {
+  ...AXES.map((measure) => {
     const ours = measure.of(head);
     const theirs = measure.of(base);
     return `| ${measure.name} | ${ours.median}${measure.unit} | ${ours.spread}% | ${tenths(worstOf(measure, theirs))}${measure.unit} | ${theirs.spread}% |`;
@@ -81,7 +79,7 @@ const beside = (head: Side, base: Side) => [
 const held = (head: Side, base: Side, last: boolean) => {
   const widest = Math.max(
     ...[head, base].flatMap((side) =>
-      MEASURES.map((measure) => measure.of(side).spread),
+      AXES.map((measure) => measure.of(side).spread),
     ),
   );
   if (widest >= STEADY)
@@ -94,7 +92,7 @@ const held = (head: Side, base: Side, last: boolean) => {
           code: RETRY,
           line: `The widest spread is ${widest}%, over the ${STEADY} per cent Reassure calls steady, so the reading is taken again with twice the iterations.`,
         };
-  const worse = MEASURES.filter((measure) =>
+  const worse = AXES.filter((measure) =>
     measure.worse(measure.of(head).median, worstOf(measure, measure.of(base))),
   );
   return worse.length > 0
