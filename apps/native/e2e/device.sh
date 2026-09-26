@@ -41,8 +41,16 @@ judge() {
     "${held[@]}" "$@" > "$OUT/device.md"
 }
 
-adb shell cmd overlay enable com.android.internal.systemui.navbar.gestural
-echo "Navigation mode, 2 is gestural: $(adb shell settings get secure navigation_mode)"
+adb shell cmd overlay list | grep navbar
+adb shell cmd overlay enable-exclusive --category com.android.internal.systemui.navbar.gestural
+for _ in $(seq 30); do
+  [ "$(adb shell settings get secure navigation_mode | tr -d '\r')" = 2 ] && break
+  sleep 1
+done
+if [ "$(adb shell settings get secure navigation_mode | tr -d '\r')" != 2 ]; then
+  echo "The emulator would not navigate by gesture, so the walk cannot test a back gesture." >&2
+  exit 1
+fi
 fresh "$HEAD_APK"
 maestro test "$HEAD_WALK" -e "APP_ID=$APP_ID" -e "LINK=$LINK" \
   --format junit --output "$OUT/journey.xml" --debug-output "$OUT/maestro"
