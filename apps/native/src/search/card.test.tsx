@@ -9,10 +9,6 @@ import {
 } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import { contrastOf, READS_AT } from "../../test/contrast.js";
-import {
-  everyControlReachesTheTouchFloor,
-  everyControlSaysWhatItIs,
-} from "../../test/floors.js";
 import { houseLights } from "../../test/lights.js";
 import { first, formatted, NOW, settled } from "../../test/rooms.js";
 import type { Clock } from "../host/clock.js";
@@ -181,11 +177,9 @@ describe("what a card owes the person reading it", () => {
     },
   );
 
-  it("draws both its controls at the platform's touch floor, each with a name", async () => {
+  it("offers two controls, the room and the hand-off", async () => {
     await shown(first(await settled()));
 
-    everyControlReachesTheTouchFloor();
-    everyControlSaysWhatItIs();
     expect(screen.getAllByRole("button")).toHaveLength(2);
   });
 

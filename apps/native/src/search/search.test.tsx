@@ -11,10 +11,6 @@ import {
 import type { Term, Terms } from "@seatscout/view-logic";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
-import {
-  everyControlReachesTheTouchFloor,
-  everyControlSaysWhatItIs,
-} from "../../test/floors.js";
 import { phone, type Upstream } from "../../test/phone.js";
 import {
   NOW,
@@ -198,20 +194,6 @@ describe("what this phone remembers", () => {
       area: "75201",
       partySize: 4,
     });
-  });
-});
-
-describe("what a thumb can reach", () => {
-  it("draws every control at the platform's touch floor or above", async () => {
-    await showing();
-
-    everyControlReachesTheTouchFloor();
-  });
-
-  it("gives every control a name a screen reader can say", async () => {
-    await showing();
-
-    everyControlSaysWhatItIs();
   });
 });
 

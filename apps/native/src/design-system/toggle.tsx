@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
-import { StyleSheet, Switch, View } from "react-native";
+import { Pressable, StyleSheet, Switch, View } from "react-native";
 import { useTheme } from "../theme.js";
+import { felt } from "./feedback.js";
 import { SECTION } from "./field.js";
 import { TOUCH_FLOOR } from "./touch.js";
 import { Type } from "./type.js";
@@ -19,6 +20,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     minHeight: TOUCH_FLOOR,
+    minWidth: TOUCH_FLOOR,
   },
 });
 
@@ -29,20 +31,31 @@ export const Toggle = ({
   onToggle,
 }: ToggleProps): ReactElement => {
   const { colours } = useTheme();
+  const flip = felt(onToggle);
 
   return (
     <View style={[SECTION, styles.toggle]}>
-      <View style={styles.row} testID="toggle-row">
+      <Pressable
+        accessibilityLabel={label}
+        accessibilityRole="switch"
+        accessibilityState={{ checked: on }}
+        onPress={() => flip(!on)}
+        style={styles.row}
+        testID="toggle-row"
+      >
         <Type set="sentenceLead" tone="silver">
           {label}
         </Type>
         <Switch
-          accessibilityLabel={label}
-          onValueChange={onToggle}
+          accessibilityRole="none"
+          accessible={false}
+          importantForAccessibility="no-hide-descendants"
+          onValueChange={flip}
+          testID="toggle-switch"
           trackColor={{ false: colours.high, true: colours.velvet }}
           value={on}
         />
-      </View>
+      </Pressable>
       <Type set="sentenceSmall" tone="silverFaint">
         {note}
       </Type>

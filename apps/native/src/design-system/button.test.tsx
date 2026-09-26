@@ -1,8 +1,8 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { fireEvent, render, screen } from "@testing-library/react-native";
+import { notificationAsync, selectionAsync } from "expo-haptics";
 import { Platform, StyleSheet } from "react-native";
 import { contrastOf } from "../../test/contrast.js";
-import { everyControlReachesTheTouchFloor } from "../../test/floors.js";
 import { houseLights } from "../../test/lights.js";
 import { type Appearance, themeFor } from "../theme.js";
 import { Ghost, Velvet } from "./button.js";
@@ -41,10 +41,13 @@ describe("the velvet control", () => {
     expect(pressed).toHaveBeenCalledTimes(1);
   });
 
-  it("reaches the platform's touch floor", async () => {
-    await drawn();
+  it("plays the success notification a commit earns, and no selection tick", async () => {
+    await drawn("down", jest.fn());
 
-    everyControlReachesTheTouchFloor();
+    await fireEvent.press(screen.getByRole("button", { name: "Find seats" }));
+
+    expect(jest.mocked(notificationAsync).mock.calls).toEqual([["success"]]);
+    expect(selectionAsync).not.toHaveBeenCalled();
   });
 
   for (const appearance of APPEARANCES)

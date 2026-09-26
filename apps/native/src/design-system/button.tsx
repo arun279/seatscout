@@ -3,6 +3,7 @@ import { Platform, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 import type { Appearance, Palette, Theme } from "../theme.js";
 import { useTheme } from "../theme.js";
+import { committed } from "./feedback.js";
 import { TOUCH_FLOOR } from "./touch.js";
 import { Type } from "./type.js";
 
@@ -67,7 +68,7 @@ export const Velvet = ({ label, onPress }: VelvetProps): ReactElement => {
   return (
     <TouchableOpacity
       accessibilityRole="button"
-      onPress={onPress}
+      onPress={committed(onPress)}
       style={[
         styles.control,
         {

@@ -1,5 +1,6 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { fireEvent, render, screen } from "@testing-library/react-native";
+import { selectionAsync } from "expo-haptics";
 import { Platform, StyleSheet } from "react-native";
 import { houseLights } from "../../test/lights.js";
 import { Toggle } from "./toggle.js";
@@ -18,27 +19,43 @@ const toggling = async (on: boolean) => {
   return onToggle;
 };
 
-const toggle = () => screen.getByLabelText("Accessible seating");
+const toggle = () => screen.getByRole("switch", { name: "Accessible seating" });
+
+const track = () =>
+  screen.getByTestId("toggle-switch", { includeHiddenElements: true });
 
 describe("a term that is on or off", () => {
   (Platform.OS === "ios" ? it : it.skip)(
-    "is the platform's switch, named, holding whether it is on",
+    "draws the platform's switch, holding whether it is on",
     async () => {
       await toggling(true);
 
-      expect(toggle().props).toMatchObject({
-        accessibilityRole: "switch",
-        value: true,
-      });
+      expect(track().props["value"]).toBe(true);
     },
   );
 
-  it("hands out the state it was switched to", async () => {
+  it("is one switch to a screen reader, its whole row, named and checked", async () => {
+    await toggling(true);
+
+    expect(toggle()).toBeChecked();
+    expect(screen.queryAllByRole("switch")).toHaveLength(1);
+  });
+
+  it("hands out the state its switch was moved to, with a selection tick", async () => {
     const toggled = await toggling(false);
 
-    await fireEvent(toggle(), "valueChange", true);
+    await fireEvent(track(), "valueChange", true);
 
     expect(toggled).toHaveBeenCalledWith(true);
+    expect(selectionAsync).toHaveBeenCalledTimes(1);
+  });
+
+  it("turns over when its row is pressed anywhere, as far as the touch floor reaches", async () => {
+    const toggled = await toggling(true);
+
+    await fireEvent.press(toggle());
+
+    expect(toggled).toHaveBeenCalledWith(false);
   });
 
   it("says what the term does beneath it", async () => {
@@ -74,7 +91,7 @@ describe("a term that is on or off", () => {
       houseLights("down");
       await toggling(true);
 
-      expect(toggle().props).toMatchObject({
+      expect(track().props).toMatchObject({
         onTintColor: "#c01242",
         tintColor: "#202333",
       });

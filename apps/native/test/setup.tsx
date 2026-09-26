@@ -1,5 +1,6 @@
 import { afterEach, beforeAll, jest } from "@jest/globals";
 import { cleanup, render } from "@testing-library/react-native/pure";
+import { notificationAsync, selectionAsync } from "expo-haptics";
 import { createElement, type ReactNode } from "react";
 import {
   ScrollView,
@@ -9,7 +10,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { appearanceOf, themeFor } from "../src/theme.js";
-import { everyStateReadsApart } from "./floors.js";
+import { audit } from "./audit.js";
 
 jest.mock("@react-native-async-storage/async-storage", () =>
   jest.requireActual(
@@ -50,8 +51,21 @@ beforeAll(async () => {
   await cleanup();
 }, INITIALISATION);
 
-afterEach(() => {
-  everyStateReadsApart(themeFor(appearanceOf(useColorScheme())).colours.house);
+jest.mock("expo-haptics", () => ({
+  ...jest.requireActual<object>("expo-haptics"),
+  selectionAsync: jest.fn(() => Promise.resolve()),
+  notificationAsync: jest.fn(() => Promise.resolve()),
+}));
+
+afterEach(async () => {
+  const { house } = themeFor(appearanceOf(useColorScheme())).colours;
+  try {
+    await audit(house);
+  } finally {
+    await cleanup();
+    jest.mocked(selectionAsync).mockClear();
+    jest.mocked(notificationAsync).mockClear();
+  }
 });
 
 const refuse = (...report: readonly unknown[]) => {

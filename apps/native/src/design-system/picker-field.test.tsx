@@ -1,7 +1,6 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import { Platform } from "react-native";
-import { everyControlReachesTheTouchFloor } from "../../test/floors.js";
 import { houseLights } from "../../test/lights.js";
 import type { Appearance } from "../theme.js";
 import { PickerField } from "./picker-field.js";
@@ -162,11 +161,5 @@ describe("a field the platform's own picker fills", () => {
     await fireEvent(picker(), "change", ...set());
 
     expect(picked).not.toHaveBeenCalled();
-  });
-
-  it("reaches the platform's touch floor", async () => {
-    await showing();
-
-    everyControlReachesTheTouchFloor();
   });
 });

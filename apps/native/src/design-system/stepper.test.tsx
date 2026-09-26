@@ -1,7 +1,6 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import { Platform, StyleSheet } from "react-native";
-import { everyControlReachesTheTouchFloor } from "../../test/floors.js";
 import { houseLights } from "../../test/lights.js";
 import { Stepper } from "./stepper.js";
 
@@ -47,12 +46,6 @@ describe("stepping a count up and down", () => {
     await fireEvent.press(screen.getByRole("button", { name: "Fewer seats" }));
 
     expect(counted).toHaveBeenCalledWith(1);
-  });
-
-  it("reaches the platform's touch floor with both of its controls", async () => {
-    await stepping(2);
-
-    everyControlReachesTheTouchFloor();
   });
 
   it("takes the corner its own platform gives a round control", async () => {

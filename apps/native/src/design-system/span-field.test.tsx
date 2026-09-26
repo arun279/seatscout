@@ -1,10 +1,6 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import { Platform } from "react-native";
-import {
-  everyControlReachesTheTouchFloor,
-  everyControlSaysWhatItIs,
-} from "../../test/floors.js";
 import { SpanField } from "./span-field.js";
 
 const spanning = async () => {
@@ -26,15 +22,6 @@ const set = (at: Date) => [{ type: "set", nativeEvent: {} }, at] as const;
 
 const onIos = Platform.OS === "ios" ? describe : describe.skip;
 const onAndroid = Platform.OS === "android" ? describe : describe.skip;
-
-describe("a range of days", () => {
-  it("reaches the platform's touch floor and names what it holds", async () => {
-    await spanning();
-
-    everyControlReachesTheTouchFloor();
-    everyControlSaysWhatItIs();
-  });
-});
 
 onIos("a range of days on iOS, as two compact date pickers", () => {
   it("offers its first and last day as two fields, From and Until", async () => {

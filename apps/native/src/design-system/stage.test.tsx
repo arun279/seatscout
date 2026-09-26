@@ -1,9 +1,10 @@
 import { describe, expect, it } from "@jest/globals";
 import { render, screen } from "@testing-library/react-native";
-import { StyleSheet, Text } from "react-native";
+import { StyleSheet } from "react-native";
 import { houseLights } from "../../test/lights.js";
 import { type Appearance, themeFor } from "../theme.js";
 import { Stage } from "./stage.js";
+import { Type } from "./type.js";
 
 const APPEARANCES: readonly Appearance[] = ["down", "up"];
 
@@ -14,7 +15,9 @@ describe("the stage a screen stands on", () => {
       houseLights(appearance);
       await render(
         <Stage>
-          <Text>on stage</Text>
+          <Type set="sentence" tone="silver">
+            on stage
+          </Type>
         </Stage>,
       );
 

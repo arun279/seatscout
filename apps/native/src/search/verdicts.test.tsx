@@ -2,10 +2,6 @@ import type { Snapshot } from "@seatscout/client";
 import { describe, expect, it, jest } from "@jest/globals";
 import type { Term, Terms } from "@seatscout/view-logic";
 import { fireEvent, render, screen } from "@testing-library/react-native";
-import {
-  everyControlReachesTheTouchFloor,
-  everyControlSaysWhatItIs,
-} from "../../test/floors.js";
 import { settled, TODAY } from "../../test/rooms.js";
 import { Empty, Partial, Unreachable } from "./verdicts.js";
 
@@ -130,20 +126,6 @@ describe("the search that did not reach everywhere", () => {
 
     expect(snapshot.coverage.failed).toHaveLength(1);
     expect(again).toHaveBeenCalledTimes(1);
-  });
-
-  it("puts every control it offers within a thumb's reach, each with a name", async () => {
-    await render(
-      <Partial
-        onEdit={nothing}
-        online
-        onRetry={nothing}
-        snapshot={await partial()}
-      />,
-    );
-
-    everyControlReachesTheTouchFloor();
-    everyControlSaysWhatItIs();
   });
 });
 

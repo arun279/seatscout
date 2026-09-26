@@ -15,10 +15,6 @@ import {
   render,
   screen,
 } from "@testing-library/react-native";
-import {
-  everyControlReachesTheTouchFloor,
-  everyControlSaysWhatItIs,
-} from "../../test/floors.js";
 import { type Fetch, phone, type Upstream } from "../../test/phone.js";
 import {
   ASKED,
@@ -143,14 +139,6 @@ describe("the list once the ranking has stopped moving", () => {
 
     expect(await screen.findByText("Best seats first")).toBeOnTheScreen();
     expect(screen.queryByTestId("tie-rule")).toBeNull();
-  });
-
-  it("draws every control it offers within a thumb's reach, each with a name", async () => {
-    await shown();
-    await screen.findByText("The top of the list is a tie");
-
-    everyControlReachesTheTouchFloor();
-    everyControlSaysWhatItIs();
   });
 });
 

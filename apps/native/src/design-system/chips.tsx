@@ -2,6 +2,7 @@ import { toggled } from "@seatscout/view-logic";
 import type { ReactElement } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { useTheme } from "../theme.js";
+import { felt } from "./feedback.js";
 import { ON_ANDROID } from "./platform.js";
 import { TOUCH_FLOOR } from "./touch.js";
 import { Type } from "./type.js";
@@ -51,7 +52,7 @@ export const Chips = <Named extends string>({
             accessibilityRole="button"
             accessibilityState={{ selected: pressed }}
             key={value}
-            onPress={() => onChosen(toggled(every, chosen, value))}
+            onPress={felt(() => onChosen(toggled(every, chosen, value)))}
             style={[
               styles.chip,
               ON_ANDROID ? styles.filter : styles.square,

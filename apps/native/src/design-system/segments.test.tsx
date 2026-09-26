@@ -1,10 +1,7 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { fireEvent, render, screen } from "@testing-library/react-native";
+import { notificationAsync, selectionAsync } from "expo-haptics";
 import { Platform, StyleSheet } from "react-native";
-import {
-  everyControlReachesTheTouchFloor,
-  everyControlSaysWhatItIs,
-} from "../../test/floors.js";
 import { contrastOf } from "../../test/contrast.js";
 import { houseLights } from "../../test/lights.js";
 import { themeFor } from "../theme.js";
@@ -48,11 +45,13 @@ describe("a segmented control, exactly one segment chosen", () => {
     expect(chosen).toHaveBeenCalledWith("range");
   });
 
-  it("reaches the platform's touch floor and names every segment", async () => {
+  it("plays one selection tick for the segment pressed", async () => {
     await segmenting("day");
 
-    everyControlReachesTheTouchFloor();
-    everyControlSaysWhatItIs();
+    await fireEvent.press(segment("A range"));
+
+    expect(selectionAsync).toHaveBeenCalledTimes(1);
+    expect(notificationAsync).not.toHaveBeenCalled();
   });
 
   for (const appearance of ["down", "up"] as const)

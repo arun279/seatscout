@@ -1,9 +1,5 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { fireEvent, render, screen } from "@testing-library/react-native";
-import {
-  everyControlReachesTheTouchFloor,
-  everyControlSaysWhatItIs,
-} from "../../test/floors.js";
 import { TimeField } from "./time-field.js";
 
 const timing = async (clock?: string) => {
@@ -69,12 +65,5 @@ describe("one end of the time window", () => {
     await fireEvent.press(screen.getByRole("button", { name: "Clear, From" }));
 
     expect(clocked).toHaveBeenCalledWith(undefined);
-  });
-
-  it("reaches the platform's touch floor and names both its controls", async () => {
-    await timing("21:30");
-
-    everyControlReachesTheTouchFloor();
-    everyControlSaysWhatItIs();
   });
 });
