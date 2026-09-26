@@ -873,7 +873,8 @@ from a temporary directory named with `Math.random()` and the time (`exportHerme
 same twice either: Expo numbers modules in the order Metro meets them, and one commit weighed 992708
 and 990513 B for iOS on two runs of the same job (run 36231517101). So `metro.config.ts` gives each
 module an id hashed from its path, refusing a clash by name, and `quality` exports the scripts twice
-and fails if a byte differs. Each ratchet went in at 1 B and the `footprint` job refused it, naming
+and fails if a byte differs. The longer ids cost the web build 10,862 B of brotli, 282557 to 293419 B (run
+36234684086), which is the price of a size that means the same thing on every run. Each ratchet went in at 1 B and the `footprint` job refused it, naming
 each and printing its size; those sizes are the ratchets.
 
 **A colour written into a screen is refused** by a Grit plugin, `tools/lint/no-colour-literals.grit`,
