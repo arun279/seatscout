@@ -11,17 +11,19 @@ const { values } = parseArgs({
   options: {
     shard: { type: "string" },
     incremental: { type: "boolean", default: false },
+    list: { type: "boolean", default: false },
   },
 });
+const NOT_PRODUCTION = /\.(test|spec|fixtures)\.[cm]?[jt]sx?$/;
 
 const refuse = (message) => {
   process.stderr.write(`${message}\n`);
   process.exit(1);
 };
 
-if (values.incremental && values.shard === undefined) {
+if ((values.incremental || values.list) && values.shard === undefined) {
   refuse(
-    "--incremental needs --shard: every shard writes the same incremental file, so judging them in turn would leave only the last one's.",
+    "--incremental and --list need --shard: every shard writes the same incremental file, so judging them in turn would leave only the last one's, and a listing is of one shard's sources.",
   );
 }
 
@@ -53,6 +55,17 @@ if (judged.length === 0) {
       .map((shard) => shard.id)
       .join(", ")}.`,
   );
+}
+
+if (values.list) {
+  const [shard] = judged;
+  process.stdout.write(
+    `${globSync(shard.mutate, { cwd: root })
+      .filter((file) => !NOT_PRODUCTION.test(file))
+      .sort()
+      .join("\n")}\n`,
+  );
+  process.exit(0);
 }
 
 if (values.incremental) {

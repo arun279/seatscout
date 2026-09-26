@@ -147,14 +147,14 @@ describe("measuring a change", () => {
     });
     expect(measurement.mutation).toStrictEqual([
       {
-        over: "packages/core",
+        over: "core",
         score: 100,
         detected: 1,
         weighed: 1,
         breaksAt: 100,
       },
       {
-        over: "apps/native",
+        over: "native",
         score: 100,
         detected: 1,
         weighed: 1,

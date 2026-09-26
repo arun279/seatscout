@@ -188,7 +188,7 @@ describe("the mutation reports the shards wrote", () => {
         [SHARDS]: JSON.stringify([{ id: "core", workspace: "packages/core" }]),
       }),
     ).toThrow(
-      `${SHARDS} holds a shard without a workspace and a report, so there is no score of it to read:\n{"workspace":"packages/core"}`,
+      `${SHARDS} holds a shard without an id, a workspace and a report, so there is no score of it to read:\n{"id":"core","workspace":"packages/core"}`,
     );
   });
 
@@ -200,7 +200,19 @@ describe("the mutation reports the shards wrote", () => {
         ]),
       }),
     ).toThrow(
-      `${SHARDS} holds a shard without a workspace and a report, so there is no score of it to read:\n{"report":"reports/mutation/core.json"}`,
+      `${SHARDS} holds a shard without an id, a workspace and a report, so there is no score of it to read:\n{"id":"core","report":"reports/mutation/core.json"}`,
+    );
+  });
+
+  it("refuses a shard that names no id, whose row would carry no name", () => {
+    expect(
+      measured({
+        [SHARDS]: JSON.stringify([
+          { workspace: "packages/core", report: "reports/mutation/core.json" },
+        ]),
+      }),
+    ).toThrow(
+      `${SHARDS} holds a shard without an id, a workspace and a report, so there is no score of it to read:\n{"workspace":"packages/core","report":"reports/mutation/core.json"}`,
     );
   });
 });

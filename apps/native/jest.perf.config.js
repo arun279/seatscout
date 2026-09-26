@@ -1,9 +1,8 @@
-import { shared } from "./jest.shared.js";
+import { platform } from "./jest.shared.js";
 
 export default {
-  ...shared,
+  ...platform("ios"),
   rootDir: ".",
-  preset: "jest-expo/ios",
   testMatch: ["<rootDir>/test/**/*.perf-test.tsx"],
   testTimeout: 120_000,
 };

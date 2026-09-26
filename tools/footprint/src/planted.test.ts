@@ -19,6 +19,7 @@ const INNOCENT: Record<string, string> = {
 const judging = (...reports: readonly string[]) => ({
   [SHARDS]: JSON.stringify(
     reports.map((report, index) => ({
+      id: `planted-${index}`,
       workspace: `packages/planted-${index}`,
       report: `${PLANTED}/${report}`,
     })),

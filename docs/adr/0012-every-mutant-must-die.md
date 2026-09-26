@@ -22,7 +22,9 @@ moment somebody least wants to have it.
 
 `stryker.shards.json` names one run for each workspace, and `stryker.config.mjs` takes the
 shard named in `MUTATION_SHARD` out of that list: it mutates that workspace's `src`, runs that
-workspace's own tests and nothing else, and breaks below a score of 100. A file the unit suite
+workspace's own tests and nothing else, and breaks below a score of 100. The Expo app is the
+one workspace divided further, into five file groups on each of its two platforms, for the
+reason the amendment below measures. A file the unit suite
 does not judge shows up as an uncovered mutant and fails the run just as a survivor does.
 
 **The gate is divided by workspace because a static mutant costs the whole suite.** A mutant
@@ -264,3 +266,25 @@ that refused anything turns it red. The reason
 of that list, that it reads a world this repository does not control, reaches nothing here.
 What was ever argued against requiring this one was its cost, and dividing it by workspace is
 the answer to the cost.
+
+## Amendment, 2026-09-26: the Expo app is ten shards, not one
+
+One shard for `apps/native` could not judge a cold tree inside two hours: a pull request that
+touched 18 of its files left 666 mutants to judge after the seed, and the run was cancelled at
+the 120-minute limit twice. The cost is not the mutant count. With `coverageAnalysis` off, a
+mutant runs every test file Jest's related-tests search reaches from its module, on both
+platforms, and that reach is very uneven: `theme.ts` reaches 32 of the app's 43 test files,
+the type, touch, platform and feedback primitives 15 to 30, and a screen file 3 to 7. Weighed
+by each file's mutants against the initial run's 99 net seconds for 926 tests on four runners,
+a cold run of the whole app comes to about 96 minutes, of which the theme file alone is 28 and
+the design system 36.
+
+So the app is divided twice. By file group, so the widest fan-in sits in the smallest shards:
+`theme` (the files at the root of `src`), `design-system`, `search`, `ask`, and `shell` (every
+other directory). And by platform, since every mutant otherwise runs its tests twice: each
+group runs once under `jest.ios.config.js` and once under `jest.android.config.js`, which are
+the two projects `jest.config.js` composes. That halves the cost of every mutant and puts the
+slowest cold shard at about 18 minutes by the same estimate, so the job's limit is 60 minutes:
+twice the slowest estimate plus its fixed cost, rather than a limit set to what the last run
+happened to take. The shards of one suite each see all of that suite's tests, so the sum the
+footprint job holds counts a suite once however many shards divide it.

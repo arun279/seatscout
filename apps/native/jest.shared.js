@@ -1,4 +1,4 @@
-export const shared = {
+const shared = {
   resolver: "<rootDir>/test/resolver.cjs",
   setupFiles: ["@testing-library/react-native/dont-cleanup-after-each"],
   setupFilesAfterEnv: ["<rootDir>/test/setup.tsx"],
@@ -8,3 +8,14 @@ export const shared = {
     "/node_modules/@react-native/babel-preset/",
   ],
 };
+
+export const platform = (name) => ({
+  ...shared,
+  displayName: name,
+  preset: `jest-expo/${name}`,
+});
+
+export const on = (...platforms) => ({
+  rootDir: ".",
+  projects: platforms.map(platform),
+});

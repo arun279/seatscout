@@ -15,7 +15,12 @@
     "apps/native": {
       "entry": ["src/app/**/*.tsx", "test/**/*.perf-test.tsx"],
       "jest": {
-        "config": ["jest.config.js", "jest.perf.config.js"]
+        "config": [
+          "jest.config.js",
+          "jest.ios.config.js",
+          "jest.android.config.js",
+          "jest.perf.config.js"
+        ]
       }
     }
   }

@@ -1,5 +1,5 @@
 name: Hold a mutation shard to its workspace
-description: Names the tests a failed initial run reported, then holds Stryker's initial run to the tests the shard's own workspace holds and writes both counts for the job that sums the shards.
+description: Names the tests a failed initial run reported, then holds Stryker's initial run to the tests its sources reach (a workspace's own under Vitest; under Jest, the tests related to the shard's sources on one platform) and writes both counts and the test files reached, for the job that checks every test file is reached by some shard.
 inputs:
   shard:
     description: The shard's id in stryker.shards.json.
@@ -37,7 +37,7 @@ runs:
         } >> "$GITHUB_STEP_SUMMARY"
         echo "::error::The initial test run of the $SHARD shard failed. The tests it named:"
         cat "$RUNNER_TEMP/failing-tests.txt"
-    - name: Check that this shard saw every test its own workspace holds
+    - name: Check that this shard saw every test its sources reach
       shell: bash
       env:
         SHARD: ${{ inputs.shard }}
@@ -48,12 +48,21 @@ runs:
         workspace="$(printf '%s' "$named" | jq -r .workspace)"
         collected="$RUNNER_TEMP/collected.json"
         if [ "$(printf '%s' "$named" | jq -r .runner)" = jest ]; then
-          pnpm exec jest --config apps/native/jest.config.js --ci --json --maxWorkers 2 \
-            --outputFile="$collected" > /dev/null
+          suite="$(printf '%s' "$named" | jq -r .jest)"
+          node tools/mutation.mjs --list --shard "$SHARD" > "$RUNNER_TEMP/sources.txt"
+          # shellcheck disable=SC2046
+          pnpm exec jest --config "$suite" --listTests --findRelatedTests $(cat "$RUNNER_TEMP/sources.txt") \
+            | sort > "$RUNNER_TEMP/files.txt"
+          # shellcheck disable=SC2046
+          pnpm exec jest --config "$suite" --ci --json --maxWorkers 2 \
+            --findRelatedTests $(cat "$RUNNER_TEMP/sources.txt") --outputFile="$collected" > /dev/null
           reads='.numTotalTests'
+          files="$(jq -R -s -c 'split("\n") | map(select(length > 0))' "$RUNNER_TEMP/files.txt")"
         else
+          suite="$workspace"
           pnpm exec vitest list --json="$collected" "$workspace/"
           reads="[.[] | select(.file | index(\"$GITHUB_WORKSPACE/$workspace/\") == 0)] | length"
+          files="$(jq -c "[.[] | select(.file | index(\"$GITHUB_WORKSPACE/$workspace/\") == 0) | .file] | unique" "$collected")"
         fi
         if [ ! -s "$collected" ]; then
           echo "::error::The runner wrote no listing of the tests in $workspace, so there is nothing to hold Stryker's initial run to. Its own errors are above."
@@ -65,7 +74,9 @@ runs:
           ran="$(sed -n 's/.*Initial test run succeeded\. Ran \([0-9][0-9]*\) tests.*/\1/p' "$LOG" | tail -n 1)"
         fi
         mkdir -p reports/mutation
-        printf '{"id":"%s","ran":%s,"expected":%s}\n' "$SHARD" "${ran:-0}" "$expected" \
+        jq -n -c --arg id "$SHARD" --arg suite "$suite" --argjson ran "${ran:-0}" \
+          --argjson expected "$expected" --argjson files "$files" \
+          '{id: $id, suite: $suite, ran: $ran, expected: $expected, files: $files}' \
           > "reports/mutation/$SHARD.counted.json"
         echo "Stryker initial tests in $SHARD: ${ran:-missing} of $expected"
         if [ -n "$ran" ] && [ "$expected" -gt 0 ] && [ "$ran" -eq "$expected" ]; then
