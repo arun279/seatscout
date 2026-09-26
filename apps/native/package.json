@@ -15,7 +15,6 @@
   },
   "dependencies": {
     "@expo/metro-runtime": "57.0.16",
-    "@expo/ui": "57.0.19",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/datetimepicker": "9.1.0",
     "@react-native-community/slider": "5.2.0",
@@ -33,6 +32,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.3",
+    "react-native-calendars": "1.1314.0",
     "react-native-safe-area-context": "5.7.0",
     "react-native-screens": "4.26.2",
     "react-native-svg": "15.15.4",

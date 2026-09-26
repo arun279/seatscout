@@ -1,5 +1,5 @@
 import type { Movie } from "@seatscout/client";
-import type { ProgrammeState } from "@seatscout/view-logic";
+import type { ProgrammeState, Span } from "@seatscout/view-logic";
 import {
   ASKING,
   markedIn,
@@ -15,7 +15,7 @@ import { useTheme } from "../theme.js";
 export interface FilmProps {
   readonly area: string | undefined;
   readonly programme: ProgrammeState;
-  readonly date: string;
+  readonly span: Span;
   readonly today: string;
   readonly typed: string;
   readonly focused: boolean;
@@ -75,13 +75,13 @@ const Suggestion = ({
 export const Film = ({
   area,
   programme,
-  date,
+  span,
   today,
   typed,
   focused,
   onTyped,
 }: FilmProps): ReactElement => {
-  const status = playingStatusOf(programme, area, date, today);
+  const status = playingStatusOf(programme, area, span, today);
   const offered = offeredFor(typed, programme.movies);
 
   return (
