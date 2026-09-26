@@ -68,14 +68,9 @@ export const matrixOf = (view: View): number[] => {
   return [view.scale, 0, 0, view.scale, view.tx, view.ty];
 };
 
-export const labelledAt = (
-  view: View,
-  frame: Frame,
-  perUnit: number,
-  floor: number,
-): number => {
+export const labelledAt = (view: View, mostZoom: number): number => {
   "worklet";
-  return view.scale * frame.seatWidth * perUnit >= floor ? 1 : 0;
+  return view.scale >= mostZoom ? 1 : 0;
 };
 
 export const usePanZoom = (
@@ -99,12 +94,15 @@ export const usePanZoom = (
           .maxPointers(2)
           .averageTouches(true)
           .minDistance(TOUCH_SLOP)
+          .withTestId("pan")
           .onChange((moved) => {
             view.value = pannedBy(view.value, moved, perUnit, frame);
           }),
-        Gesture.Pinch().onChange((spread) => {
-          view.value = zoomedBy(view.value, spread, perUnit, frame, mostZoom);
-        }),
+        Gesture.Pinch()
+          .withTestId("pinch")
+          .onChange((spread) => {
+            view.value = zoomedBy(view.value, spread, perUnit, frame, mostZoom);
+          }),
       ),
     [frame, mostZoom, perUnit, view],
   );
@@ -112,7 +110,7 @@ export const usePanZoom = (
   const drawing = useAnimatedProps(() => ({ matrix: matrixOf(view.value) }));
 
   const labels = useAnimatedProps(() => ({
-    opacity: labelledAt(view.value, frame, perUnit, TOUCH_FLOOR),
+    opacity: labelledAt(view.value, mostZoom),
   }));
 
   const seat = cursor.seat;

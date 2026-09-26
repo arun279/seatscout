@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { chosenOf, labelOf, refusalOf } from "@seatscout/view-logic";
 import { HOOKY_ADDISON, VILLAGE_1 } from "@seatscout/view-logic/testing";
 import { fireEvent, screen } from "@testing-library/react-native";
+import { AccessibilityInfo } from "react-native";
 import {
   everyControlReachesTheTouchFloor,
   everyControlSaysWhatItIs,
@@ -154,9 +155,29 @@ describe("choosing another Seat Group in the room", () => {
       screen.getByRole("radio", { name: new RegExp(`^${labelOf(other)} `) });
 
     await fireEvent.press(control());
-    await fireEvent.press(control());
-
     expect(mockTicked).toHaveBeenCalledTimes(1);
+
+    await fireEvent.press(control());
+    expect(mockTicked).toHaveBeenCalledTimes(1);
+  });
+
+  it("speaks the choice and a refusal as each is made, and nothing on opening", async () => {
+    const said = jest.spyOn(AccessibilityInfo, "announceForAccessibility");
+    said.mockClear();
+    const room = await shown({ room: HOOKY_ADDISON });
+    const other = otherThan(room);
+    const refused = refusedIn(room);
+    expect(said).not.toHaveBeenCalled();
+
+    await fireEvent.press(
+      screen.getByRole("radio", { name: new RegExp(`^${labelOf(other)} `) }),
+    );
+    await fireEvent.press(seatNamed(refused.id));
+
+    expect(said.mock.calls).toEqual([
+      [chosenOf(other)],
+      [refusalOf(refused, 2, false)],
+    ]);
   });
 
   it("takes the choice from the map when a Seat an offered group holds is pressed", async () => {

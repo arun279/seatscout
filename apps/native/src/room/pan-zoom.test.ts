@@ -1,5 +1,19 @@
 import { describe, expect, it } from "@jest/globals";
-import { FITTED, type Frame } from "@seatscout/view-logic";
+import {
+  FITTED,
+  type Frame,
+  frameOf,
+  mostZoomFor,
+} from "@seatscout/view-logic";
+import {
+  ANGELIKA_5,
+  HOOKY_ADDISON,
+  LAKE_HIGHLANDS_1,
+  openedRooms,
+  STRIKE_AND_REEL_1,
+  VILLAGE_1,
+  WEST_PLANO_28,
+} from "@seatscout/view-logic/testing";
 import {
   labelledAt,
   matrixOf,
@@ -12,6 +26,7 @@ const FRAME: Frame = { x: 100, y: 50, width: 500, height: 300, seatWidth: 18 };
 const DRAWN = { width: 250, height: 150 };
 const PER_UNIT = 0.5;
 const MOST = 4;
+const PHONE = 354;
 
 describe("what a finger does to the drawing", () => {
   it("reads a drag in points and moves the drawing in the room's own units", () => {
@@ -79,14 +94,33 @@ describe("the frame the drawing is fitted into", () => {
 });
 
 describe("the label a Seat carries at the closest the map comes", () => {
-  it("shows it only once a Seat has reached the touch floor", () => {
-    expect(labelledAt(FITTED, FRAME, PER_UNIT, 44)).toBe(0);
-    expect(labelledAt({ scale: 4, tx: 0, ty: 0 }, FRAME, PER_UNIT, 44)).toBe(0);
-    expect(labelledAt({ scale: 5, tx: 0, ty: 0 }, FRAME, PER_UNIT, 44)).toBe(1);
-  });
+  it("shows it at the closest zoom in every captured room, on either platform's touch floor, and not a step before", async () => {
+    const rooms = await openedRooms(undefined, [
+      VILLAGE_1,
+      WEST_PLANO_28,
+      HOOKY_ADDISON,
+      ANGELIKA_5,
+      LAKE_HIGHLANDS_1,
+      STRIKE_AND_REEL_1,
+    ]);
 
-  it("shows it later where the platform asks for a wider floor", () => {
-    expect(labelledAt({ scale: 5, tx: 0, ty: 0 }, FRAME, PER_UNIT, 48)).toBe(0);
-    expect(labelledAt({ scale: 6, tx: 0, ty: 0 }, FRAME, PER_UNIT, 48)).toBe(1);
+    for (const { auditorium } of rooms) {
+      const frame = frameOf(auditorium);
+      for (const floor of [44, 48]) {
+        const most = mostZoomFor(frame.seatWidth, frame.width, PHONE, floor);
+        const closest = zoomedBy(
+          FITTED,
+          { scaleChange: 100, focalX: 0, focalY: 0 },
+          perUnitOf(frame, { width: PHONE, height: 0 }),
+          frame,
+          most,
+        );
+
+        expect(labelledAt(closest, most)).toBe(1);
+        expect(
+          labelledAt({ ...closest, scale: closest.scale * 0.99 }, most),
+        ).toBe(0);
+      }
+    }
   });
 });

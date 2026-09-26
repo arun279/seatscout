@@ -141,6 +141,7 @@ const Row = ({
         fill={theme.colours.silverFaint}
         fontFamily={theme.type.ledgerRow.family}
         fontSize={DRAWN.label.size * frame.seatWidth}
+        testID="row-label"
         textAnchor="middle"
         x={frame.x + DRAWN.label.inset * frame.seatWidth}
         y={
@@ -156,6 +157,7 @@ const Row = ({
         key={divider.x}
         stroke={theme.colours.seatTick}
         strokeWidth={DRAWN.tick.stroke}
+        testID="tick"
         vectorEffect="non-scaling-stroke"
         x1={divider.x}
         x2={divider.x}
@@ -195,6 +197,7 @@ export const SeatMap = ({
         />
         <Svg
           height={drawn.height}
+          testID="plan"
           viewBox={`0 0 ${frame.width} ${frame.height}`}
           width={drawn.width}
         >
@@ -209,8 +212,8 @@ export const SeatMap = ({
               />
             </Filter>
           </Defs>
-          <AnimatedG animatedProps={drawing}>
-            <G x={-frame.x} y={-frame.y}>
+          <AnimatedG animatedProps={drawing} testID="drawing">
+            <G testID="room" x={-frame.x} y={-frame.y}>
               <Circle
                 cx={aim.x + aim.width / 2}
                 cy={aim.y + aim.height / 2}
@@ -219,6 +222,7 @@ export const SeatMap = ({
                 stroke={theme.colours.silverFaint}
                 strokeDasharray={[...DRAWN.aim.dashes]}
                 strokeWidth={DRAWN.aim.stroke}
+                testID="aim"
                 vectorEffect="non-scaling-stroke"
               />
               {auditorium.map.rows.map((row) => (
@@ -241,7 +245,7 @@ export const SeatMap = ({
                   ))}
                 </Row>
               ))}
-              <AnimatedG animatedProps={labels}>
+              <AnimatedG animatedProps={labels} testID="ids">
                 {chosen.seats.map((held) => (
                   <SvgText
                     key={held.id}
@@ -249,6 +253,7 @@ export const SeatMap = ({
                     fill={theme.colours.houseDeep}
                     fontFamily={theme.type.ledgerRow.family}
                     fontSize={DRAWN.id.size * held.width}
+                    testID="seat-id"
                     textAnchor="middle"
                     x={held.x + held.width / 2}
                     y={held.y + held.height / 2}
