@@ -50,12 +50,10 @@ export const Range = ({
       <Slider
         accessibilityLabel={label}
         accessibilityRole="adjustable"
-        accessibilityValue={{
-          min: inHundredths(scale.min),
-          max: inHundredths(scale.max),
-          now: inHundredths(value),
-          text: said,
-        }}
+        aria-valuemax={inHundredths(scale.max)}
+        aria-valuemin={inHundredths(scale.min)}
+        aria-valuenow={inHundredths(value)}
+        aria-valuetext={said}
         maximumTrackTintColor={colours.high}
         maximumValue={scale.max}
         minimumTrackTintColor={colours.beam}

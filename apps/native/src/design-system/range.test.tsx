@@ -39,9 +39,7 @@ describe("a range a person slides along", () => {
     await ranging();
 
     expect(screen.getByText("67% of the way back")).toBeOnTheScreen();
-    expect(slider().props["accessibilityValue"]).toMatchObject({
-      text: "67% of the way back",
-    });
+    expect(slider().props["aria-valuetext"]).toBe("67% of the way back");
   });
 
   it("hands out where it was slid to, in hundredths", async () => {
@@ -84,9 +82,12 @@ describe("a range a person slides along", () => {
       />,
     );
 
-    expect(
-      screen.getByLabelText("Left or right").props["accessibilityValue"],
-    ).toEqual({ min: -100, max: 100, now: -30, text: "a little left" });
+    expect(screen.getByLabelText("Left or right").props).toMatchObject({
+      "aria-valuemin": -100,
+      "aria-valuemax": 100,
+      "aria-valuenow": -30,
+      "aria-valuetext": "a little left",
+    });
   });
 
   it("moves its thumb to zero when the value it holds becomes zero", async () => {
