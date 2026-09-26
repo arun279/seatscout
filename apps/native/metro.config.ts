@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { dirname, relative, resolve } from "node:path";
 import { getDefaultConfig } from "expo/metro-config.js";
 
 const EMITTED_JS = /^\.{1,2}\/.*\.jsx?$/;
@@ -28,6 +28,30 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
     resolution.filePath === UPSTREAM
     ? { type: "sourceFile", filePath: CORPUS }
     : resolution;
+};
+
+const FNV_OFFSET = 0x811c9dc5;
+const FNV_PRIME = 0x01000193;
+
+const idOf = (path: string) => {
+  let hash = FNV_OFFSET;
+  for (const unit of relative(import.meta.dirname, path)) {
+    hash ^= unit.charCodeAt(0);
+    hash = Math.imul(hash, FNV_PRIME) >>> 0;
+  }
+  return hash >>> 1;
+};
+
+config.serializer.createModuleIdFactory = () => {
+  const held = new Map<number, string>();
+  return (path: string) => {
+    const id = idOf(path);
+    const other = held.get(id);
+    if (other !== undefined && other !== path)
+      throw new Error(`Two modules hash to the id ${id}: ${other} and ${path}`);
+    held.set(id, path);
+    return id;
+  };
 };
 
 export default config;
