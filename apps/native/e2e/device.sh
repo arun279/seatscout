@@ -51,6 +51,14 @@ if [ "$(adb shell settings get secure navigation_mode | tr -d '\r')" != 2 ]; the
   echo "The emulator would not navigate by gesture, so the walk cannot test a back gesture." >&2
   exit 1
 fi
+adb shell am start -W -a android.settings.WIRELESS_SETTINGS > /dev/null
+before=$(adb shell dumpsys activity activities | grep -m 1 topResumedActivity)
+adb shell input swipe 2 400 240 400 250
+sleep 2
+after=$(adb shell dumpsys activity activities | grep -m 1 topResumedActivity)
+echo "A system edge swipe on Settings moved from [$before] to [$after]."
+adb shell am force-stop com.android.settings
+
 fresh "$HEAD_APK"
 maestro test "$HEAD_WALK" -e "APP_ID=$APP_ID" -e "LINK=$LINK" \
   --format junit --output "$OUT/journey.xml" --debug-output "$OUT/maestro"
