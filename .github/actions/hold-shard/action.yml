@@ -1,5 +1,5 @@
 name: Hold a mutation shard to its workspace
-description: Names the tests a failed initial run reported, then holds Stryker's initial run to the tests the shard's own workspace holds and writes both counts for the job that sums the shards.
+description: Names the tests a failed initial run reported, then holds Stryker's initial run to the tests the shard's own suite holds (a workspace under Vitest, one platform's Jest configuration under Jest) and writes both counts for the job that sums the suites.
 inputs:
   shard:
     description: The shard's id in stryker.shards.json.
@@ -48,10 +48,12 @@ runs:
         workspace="$(printf '%s' "$named" | jq -r .workspace)"
         collected="$RUNNER_TEMP/collected.json"
         if [ "$(printf '%s' "$named" | jq -r .runner)" = jest ]; then
-          pnpm exec jest --config apps/native/jest.config.js --ci --json --maxWorkers 2 \
+          suite="$(printf '%s' "$named" | jq -r .jest)"
+          pnpm exec jest --config "$suite" --ci --json --maxWorkers 2 \
             --outputFile="$collected" > /dev/null
           reads='.numTotalTests'
         else
+          suite="$workspace"
           pnpm exec vitest list --json="$collected" "$workspace/"
           reads="[.[] | select(.file | index(\"$GITHUB_WORKSPACE/$workspace/\") == 0)] | length"
         fi
@@ -65,7 +67,7 @@ runs:
           ran="$(sed -n 's/.*Initial test run succeeded\. Ran \([0-9][0-9]*\) tests.*/\1/p' "$LOG" | tail -n 1)"
         fi
         mkdir -p reports/mutation
-        printf '{"id":"%s","ran":%s,"expected":%s}\n' "$SHARD" "${ran:-0}" "$expected" \
+        printf '{"id":"%s","suite":"%s","ran":%s,"expected":%s}\n' "$SHARD" "$suite" "${ran:-0}" "$expected" \
           > "reports/mutation/$SHARD.counted.json"
         echo "Stryker initial tests in $SHARD: ${ran:-missing} of $expected"
         if [ -n "$ran" ] && [ "$expected" -gt 0 ] && [ "$ran" -eq "$expected" ]; then

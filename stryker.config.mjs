@@ -6,14 +6,14 @@ const RUNNERS = {
     incrementalFile: "reports/stryker-incremental.json",
     vitest: { related: false, configFile: "vitest.stryker.config.ts" },
   }),
-  jest: () => ({
+  jest: (shard) => ({
     testRunner: "jest",
     ignorers: ["drawn-values"],
     coverageAnalysis: "off",
     incrementalFile: "reports/stryker-native-incremental.json",
     jest: {
       projectType: "custom",
-      configFile: "apps/native/jest.config.js",
+      configFile: shard.jest,
       enableFindRelatedTests: true,
     },
   }),
@@ -47,7 +47,7 @@ if (shard === undefined) {
 }
 
 export default {
-  ...RUNNERS[shard.runner](),
+  ...RUNNERS[shard.runner](shard),
   plugins: [
     "@stryker-mutator/vitest-runner",
     "@stryker-mutator/jest-runner",

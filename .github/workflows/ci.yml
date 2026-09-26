@@ -121,7 +121,7 @@ jobs:
   mutation:
     needs: shards
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -157,6 +157,7 @@ jobs:
             stryker-shard-${{ matrix.shard }}-tree-${{ steps.trees.outputs.base }}
             stryker-shard-${{ matrix.shard }}-branch-${{ github.head_ref }}-
             stryker-shard-${{ matrix.shard }}-main-
+            stryker-shard-native-
             stryker-main-
             stryker-native-main-
       - name: Refuse to judge the whole workspace from nothing
@@ -416,7 +417,7 @@ jobs:
             node tools/no-empty-run/src/index.ts mutation "$report" || refused=1
           done
           exit "$refused"
-      - name: Check that the shards between them saw every test file
+      - name: Check that the shards between them saw every test file, counting a suite once however many shards divide it
         id: collection
         continue-on-error: true
         run: |
@@ -437,7 +438,7 @@ jobs:
             exit 1
           fi
           held=$(( $(jq 'length' "$RUNNER_TEMP/unit.json") + $(jq '.numTotalTests' "$RUNNER_TEMP/screens.json") ))
-          counted="$(jq -s '[.[].ran] | add // 0' reports/mutation/*.counted.json)"
+          counted="$(jq -s '[.[] | {suite, ran}] | unique | map(.ran) | add // 0' reports/mutation/*.counted.json)"
           {
             echo "counted=$counted"
             echo "held=$held"
@@ -446,7 +447,7 @@ jobs:
           if [ "$counted" -eq "$held" ]; then
             exit 0
           fi
-          echo "::error::The shards judged $counted tests between them and the runners collect $held. A test file under no shard's workspace falls between them and is judged by nothing, so stryker.shards.json is short of a workspace."
+          echo "::error::The shards judged $counted tests between them and the runners collect $held. A test file under no shard's suite falls between them and is judged by nothing, so stryker.shards.json is short of a workspace, or two shards of one suite ran different counts of it."
           exit 1
       - name: Install the counter
         if: ${{ !cancelled() }}

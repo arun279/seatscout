@@ -18,6 +18,7 @@ export const SHARDS = "stryker.shards.json";
 const NATIVE_JEST = "apps/native/jest.config.js";
 
 interface Shard {
+  readonly id?: unknown;
   readonly workspace?: unknown;
   readonly report?: unknown;
 }
@@ -117,12 +118,16 @@ export const measureWith = (run: Run, read: (path: string) => string) => {
       throw new Error(
         `${SHARDS} names no shard, so no mutation run was asked for and a score over nothing would pass.`,
       );
-    return shards.map(({ workspace, report }) => {
-      if (typeof workspace !== "string" || typeof report !== "string")
+    return shards.map(({ id, workspace, report }) => {
+      if (
+        typeof id !== "string" ||
+        typeof workspace !== "string" ||
+        typeof report !== "string"
+      )
         throw new Error(
-          `${SHARDS} holds a shard without a workspace and a report, so there is no score of it to read:\n${JSON.stringify({ workspace, report })}`,
+          `${SHARDS} holds a shard without an id, a workspace and a report, so there is no score of it to read:\n${JSON.stringify({ id, workspace, report })}`,
         );
-      return mutationFrom(workspace, read(report));
+      return mutationFrom(id, read(report));
     });
   };
 

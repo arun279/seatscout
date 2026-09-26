@@ -100,9 +100,10 @@ mutant alive.
 
 ### Mutation
 
-One run for each workspace, on a runner of its own, mutating that workspace and running only
-that workspace's own tests, so a mutant is killed by the tests that own it or by nothing at
-all. Each run is held to the threshold named in its own report rather than to one restated
+One run for each shard, on a runner of its own, mutating that shard's files and running only
+its own suite, so a mutant is killed by the tests that own it or by nothing at all. A shard
+is a workspace, or a slice of the Expo app on one platform, so that the slowest shard stays
+short. Each run is held to the threshold named in its own report rather than to one restated
 here, and a run that weighed no mutant is refused instead of scored, because such a run
 scores NaN and NaN is never below a threshold. Vitest judges everything that runs in Node
 and Jest judges the Expo app, which Vitest cannot render. Every run is incremental: it
@@ -110,7 +111,7 @@ starts from what the run on \`main\` last judged of that workspace, and from thi
 own last run after that. Nothing cross-checks a reused verdict, so it is one that run
 reached rather than one reached again.
 
-| Workspace | Score | Detected | Weighed | Break |
+| Shard | Score | Detected | Weighed | Break |
 | --- | ---: | ---: | ---: | ---: |
 | packages/core | 100.00 | 2174 | 2174 | 100 |
 | apps/native | 100.00 | 180 | 180 | 100 |

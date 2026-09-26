@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!packages/core/src/corpus/**/*.json"]
+    "includes": ["**", "!.claude/**", "!packages/core/src/corpus/**/*.json"]
   },
   "formatter": {
     "indentStyle": "space"

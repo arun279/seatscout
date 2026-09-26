@@ -1,3 +1,3 @@
 import { on } from "./jest.shared.js";
 
-export default on("ios", "android");
+export default on("ios");
