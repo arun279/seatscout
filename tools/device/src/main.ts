@@ -1,45 +1,38 @@
-import { type Figure, type Reading, readingOf } from "./flashlight.ts";
+import { readingOf } from "./flashlight.ts";
+import { judged, type Side } from "./verdict.ts";
 
 interface Writer {
   readonly write: (text: string) => void;
 }
 
+type Pair = readonly [string, string];
+
 const USAGE =
-  "usage: device --startup <flashlight.json> --journey <flashlight.json>\n";
+  "usage: device --head-startup <flashlight.json> --head-journey <flashlight.json> (--base-startup <flashlight.json> --base-journey <flashlight.json> | --no-baseline) [--last]\n";
 
 const argumentAfter = (argv: readonly string[], flag: string) => {
   const at = argv.indexOf(flag);
   return at === -1 ? undefined : argv[at + 1];
 };
 
-const row = (measure: string, unit: string, { mean, spread }: Figure) =>
-  `| ${measure} | ${mean}${unit} | ${spread}% |`;
+const pairAfter = (argv: readonly string[], side: string): Pair | null => {
+  const startup = argumentAfter(argv, `--${side}-startup`);
+  const journey = argumentAfter(argv, `--${side}-journey`);
+  return startup === undefined || journey === undefined
+    ? null
+    : [startup, journey];
+};
 
-const sectionOf = (startup: Reading, journey: Reading): string =>
-  [
-    "### On the Android emulator",
-    "",
-    `Flashlight over ${startup.iterations} iterations of start-up and ${journey.iterations} of the journey, with the app's data cleared before each. Each figure is the mean over iterations; the spread is the standard deviation across iterations as a share of that mean.`,
-    "",
-    "| Measure | Mean | Spread |",
-    "| --- | --- | --- |",
-    row("Start-up, launch to the first frame", " ms", startup.runtime),
-    row("Journey, as Maestro walks it", " ms", journey.runtime),
-    row("Frame rate over the journey", " FPS", journey.fps),
-    row("CPU over the journey", "%", journey.cpu),
-    row("Memory over the journey", " MB", journey.ram),
-    "",
-    `The widest spread across iterations is ${Math.max(
-      ...[
-        startup.runtime,
-        journey.runtime,
-        journey.fps,
-        journey.cpu,
-        journey.ram,
-      ].map((figure) => figure.spread),
-    )}%.`,
-    "",
-  ].join("\n");
+const pathsIn = (argv: readonly string[]) => {
+  const head = pairAfter(argv, "head");
+  const base = pairAfter(argv, "base");
+  const alone = argv.includes("--no-baseline");
+  const partial =
+    base === null &&
+    ["--base-startup", "--base-journey"].some((flag) => argv.includes(flag));
+  if (head === null || partial || alone === (base !== null)) return null;
+  return { head, base };
+};
 
 export const main = (
   argv: readonly string[],
@@ -47,9 +40,8 @@ export const main = (
   out: Writer,
   err: Writer,
 ): number => {
-  const startupPath = argumentAfter(argv, "--startup");
-  const journeyPath = argumentAfter(argv, "--journey");
-  if (startupPath === undefined || journeyPath === undefined) {
+  const paths = pathsIn(argv);
+  if (paths === null) {
     err.write(USAGE);
     return 2;
   }
@@ -57,12 +49,19 @@ export const main = (
     const text = read(path);
     return text === null ? `${path} was never written` : readingOf(path, text);
   };
-  const startup = readingAt(startupPath);
-  const journey = readingAt(journeyPath);
-  if (typeof startup === "string" || typeof journey === "string") {
-    err.write(`${typeof startup === "string" ? startup : journey}\n`);
+  const sideAt = ([startupPath, journeyPath]: Pair): Side | string => {
+    const startup = readingAt(startupPath);
+    const journey = readingAt(journeyPath);
+    if (typeof startup === "string") return startup;
+    return typeof journey === "string" ? journey : { startup, journey };
+  };
+  const head = sideAt(paths.head);
+  const base = paths.base === null ? null : sideAt(paths.base);
+  if (typeof head === "string" || typeof base === "string") {
+    err.write(`${typeof head === "string" ? head : base}\n`);
     return 1;
   }
-  out.write(sectionOf(startup, journey));
-  return 0;
+  const { code, report } = judged(head, base, argv.includes("--last"));
+  out.write(report);
+  return code;
 };

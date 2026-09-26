@@ -1,18 +1,57 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-journey=(maestro test apps/native/e2e/journey.yaml -e "APP_ID=$APP_ID" -e "LINK=$LINK")
-printf -v journeyed '%q ' "${journey[@]}"
+FLASHLIGHT_DEFAULT=10
 
-adb install -r "$APK"
-"${journey[@]}" --format junit --output "$OUT/journey.xml" --debug-output "$OUT/maestro"
+fresh() {
+  adb uninstall "$APP_ID" > /dev/null 2>&1 || true
+  adb install "$1"
+}
+
+measure() {
+  local side=$1 walk=$2 iterations=$3 walked
+  printf -v walked '%q ' maestro test "$walk" -e "APP_ID=$APP_ID" -e "LINK=$LINK"
+  mkdir -p "$OUT/$side"
+  flashlight test --bundleId "$APP_ID" --iterationCount "$iterations" \
+    --beforeEachCommand "adb shell pm clear $APP_ID" \
+    --testCommand "adb shell am start -W -n $APP_ID/.MainActivity" \
+    --resultsFilePath "$OUT/$side/startup.json"
+  flashlight test --bundleId "$APP_ID" --iterationCount "$iterations" \
+    --beforeEachCommand "adb shell pm clear $APP_ID" \
+    --testCommand "$walked" \
+    --resultsFilePath "$OUT/$side/journey.json"
+}
+
+read_both() {
+  if [ -n "${BASE_APK:-}" ]; then
+    fresh "$BASE_APK"
+    measure base "${BASE_WALK:?}" "$1"
+  fi
+  fresh "$HEAD_APK"
+  measure head "$HEAD_WALK" "$1"
+}
+
+judge() {
+  local held=(--no-baseline)
+  if [ -n "${BASE_APK:-}" ]; then
+    held=(--base-startup "$OUT/base/startup.json" --base-journey "$OUT/base/journey.json")
+  fi
+  node tools/device/src/index.ts \
+    --head-startup "$OUT/head/startup.json" --head-journey "$OUT/head/journey.json" \
+    "${held[@]}" "$@" > "$OUT/device.md"
+}
+
+fresh "$HEAD_APK"
+maestro test "$HEAD_WALK" -e "APP_ID=$APP_ID" -e "LINK=$LINK" \
+  --format junit --output "$OUT/journey.xml" --debug-output "$OUT/maestro"
 echo passed > "$OUT/journey.outcome"
 
-flashlight test --bundleId "$APP_ID" \
-  --beforeEachCommand "adb shell pm clear $APP_ID" \
-  --testCommand "adb shell am start -W -n $APP_ID/.MainActivity" \
-  --resultsFilePath "$OUT/startup.json"
-flashlight test --bundleId "$APP_ID" \
-  --beforeEachCommand "adb shell pm clear $APP_ID" \
-  --testCommand "$journeyed" \
-  --resultsFilePath "$OUT/journey.json"
+read_both "$FLASHLIGHT_DEFAULT"
+verdict=0
+judge || verdict=$?
+if [ "$verdict" -eq 3 ]; then
+  read_both "$((FLASHLIGHT_DEFAULT * 2))"
+  verdict=0
+  judge --last || verdict=$?
+fi
+echo "$verdict" > "$OUT/measured.status"

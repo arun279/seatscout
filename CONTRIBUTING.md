@@ -87,12 +87,13 @@ how a contributor arrives red on a pull request, which is what this list is for.
 line is the half of the journey gate a checkout can run alone; the job also builds the merge
 base in a worktree, runs its journey, and holds this one to it.
 
-Seven further jobs run beside it. `device` builds the app for Android with the Source
+Eight further jobs run beside it. `device` builds the app for Android with the Source
 answered from the corpus (`SEATSCOUT_UPSTREAM=corpus`, which Metro reads to swap
 `src/host/upstream.ts` for `e2e/upstream.ts`), walks `apps/native/e2e/journey.yaml` with
-Maestro on an emulator, and then has Flashlight read start-up, frame rate, CPU and memory. The
-walk gates, and so does a reading that measured nothing; what the reading measured is reported
-and gates nothing. `shards` reads the workspaces the mutation gate is divided
+Maestro on an emulator, and then has Flashlight read start-up, frame rate, CPU and memory on this
+branch and on its merge base, which `apk` builds beside it. The walk gates, and so does a figure
+worse than the merge base's worst iteration, or a runner too unsteady to tell after a second, longer
+reading; ADR 6 says how. `shards` reads the workspaces the mutation gate is divided
 into out of `stryker.shards.json`, and `mutation` judges one of them per runner, in parallel.
 `footprint` gathers what they and `device` wrote and reports what the change weighs. `secrets` scans the
 pull request's commits with gitleaks. `dependencies`

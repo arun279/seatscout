@@ -826,15 +826,20 @@ a macOS runner puts one run at 15 to 25 minutes. [Lanterna](https://github.com/r
 was read and not taken: it is at 0.0.x, and its iOS frame rate needs a native module Expo Go does
 not bundle.
 
-**What the emulator reads is reported beside the walk.** Flashlight runs `am start -W` and then the
-walk itself, each for its default ten iterations with the app's data cleared before each, and
-`tools/device` prints the mean over iterations and the spread across them. A reading that measured
-nothing, failed, or carried no frame rate or memory is refused rather than printed, and that refusal
-fails `footprint`. The figures themselves gate nothing yet. Gating them on regression needs the merge
-base built and read on the same runner, a second 14-minute release build, and the spread already
-says which figures that would hold: on the first reading frame rate spread 0.3 per cent, memory 0.5
-and CPU 4.7 across ten iterations, under the 5 per cent Reassure calls steady, while start-up spread
-7.9 and the walk's own time 5.7, over it.
+**What the emulator reads is held to the merge base, and the runner says whether it may hold it.**
+The `apk` job builds this branch and its merge base side by side, and `device` reads both on one
+emulator, the merge base first, as Reassure asks of any comparison: Flashlight runs `am start -W`
+and then the walk, each for its default ten iterations with the app's data cleared before each.
+`tools/device` takes each side's figures per iteration: start-up, the walk's own time, frame rate,
+CPU and memory. A figure fails when this branch's median is worse than the merge base's worst
+iteration, the rule the browser journey already holds its first Seat Groups to. Before it judges,
+it reads the spread across iterations on both sides, the standard deviation as a share of the mean,
+and holds it to the line Reassure publishes: under 5 per cent is steady. Over it, both sides are read
+again with twice the iterations, Reassure's own advice for a noisy runner; still over it, the job
+fails as unable to measure and never passes. A reading that measured nothing, failed, or carried no
+frame rate or memory is refused. A merge base with no walk, as on the change that added it, is
+measured on this branch alone and holds it to nothing. The first reading, of this branch alone, spread
+0.3 per cent for frame rate, 0.5 for memory and 4.7 for CPU, and 7.9 for start-up and 5.7 for the walk.
 
 **The app's web build is held to the same accessibility standard as the web app.** `tests/app` runs
 as a Playwright project of its own over Vercel's `serve`, which compresses what it sends as any host

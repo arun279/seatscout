@@ -16,7 +16,8 @@ interface Run {
 }
 
 export interface Figure {
-  readonly mean: number;
+  readonly values: readonly number[];
+  readonly median: number;
   readonly spread: number;
 }
 
@@ -52,12 +53,22 @@ const meanOf = (values: readonly number[]) => sumOf(values) / values.length;
 
 const tenths = (value: number) => Math.round(value * 10) / 10;
 
+const medianOf = (values: readonly number[]) => {
+  const sorted = values.toSorted((one, other) => one - other);
+  const middle = sorted.length / 2;
+  return meanOf(sorted.slice(Math.ceil(middle) - 1, Math.floor(middle) + 1));
+};
+
 const figureOf = (values: readonly number[]): Figure => {
   const mean = meanOf(values);
   const deviation = Math.sqrt(
     meanOf(values.map((value) => (value - mean) ** 2)),
   );
-  return { mean: tenths(mean), spread: tenths((deviation / mean) * 100) };
+  return {
+    values,
+    median: tenths(medianOf(values)),
+    spread: tenths((deviation / mean) * 100),
+  };
 };
 
 const each = (
