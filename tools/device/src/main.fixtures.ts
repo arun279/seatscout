@@ -32,18 +32,27 @@ const times = (
   );
 
 const FILES: Readonly<Record<string, string>> = {
-  "head-startup.json": times([1000, 1020, 1010]),
+  "head-startup.json": "[1000, 1020, 1010]",
   "head-walk.json": times([20000, 20400, 20200], [60, 60, 60], [200, 202, 201]),
-  "base-startup.json": times([1000, 1030, 1015]),
+  "base-startup.json": "[1000, 1030, 1015]",
   "base-walk.json": times([20100, 20500, 20300], [60, 60, 60], [200, 203, 201]),
-  "slower-startup.json": times([1100, 1120, 1110]),
+  "slower-startup.json": "[1100, 1120, 1110]",
   "fewer-frames.json": times(
     [20000, 20400, 20200],
     [55, 55, 55],
     [200, 202, 201],
   ),
-  "unsteady-startup.json": times([500, 1500, 1000]),
-  "edge-startup.json": times([950, 1050]),
+  "unsteady-startup.json": "[500, 1500, 1000]",
+  "edge-startup.json": "[950, 1050]",
+  "even-startup.json": "[990, 1010]",
+  "no-launch.json": "[]",
+  "zero-launch.json": "[0]",
+  "word-launch.json": '["fast"]',
+  "unsteady-walk.json": times(
+    [10000, 30000, 20000],
+    [60, 60, 60],
+    [200, 202, 201],
+  ),
   "no-cpu.json": run({
     time: 900,
     status: "SUCCESS",
@@ -51,15 +60,12 @@ const FILES: Readonly<Record<string, string>> = {
       { cpu: { perName: {}, perCore: {} }, fps: 60, ram: 100, time: 500 },
     ],
   }),
-  "skewed-startup.json": times([1000, 1010, 1040]),
-  "startup.json": run(iteration(900, 60, 100), iteration(1100, 60, 100)),
-  "journey.json": run(iteration(20000, 60, 200), iteration(30000, 50, 300)),
-  "startup-retried.json": run(
-    iteration(900, 60, 100),
-    { ...iteration(5000, 60, 100), status: "FAILURE" },
-    iteration(1100, 60, 100),
+  "skewed-startup.json": "[1000, 1010, 1040]",
+  "walk-retried.json": run(
+    iteration(20000, 60, 200),
+    { ...iteration(90000, 60, 200), status: "FAILURE" },
+    iteration(20400, 60, 200),
   ),
-  "startup-wide.json": run(iteration(500, 60, 100), iteration(1500, 60, 100)),
   "no-ram.json": run({
     time: 900,
     status: "SUCCESS",

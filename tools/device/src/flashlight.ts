@@ -112,3 +112,13 @@ export const readingOf = (path: string, text: string): Reading | string => {
     ? `${path} read a figure that was nothing on every iteration`
     : reading;
 };
+
+export const launchesOf = (path: string, text: string): Figure | string => {
+  const launches = parsedFrom(text);
+  if (launches === NO_JSON) return `${path} holds no JSON`;
+  return Array.isArray(launches) &&
+    launches.length > 0 &&
+    launches.every((launch) => typeof launch === "number" && launch > 0)
+    ? figureOf(launches)
+    : `${path} holds no cold launch it timed`;
+};

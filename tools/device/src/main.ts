@@ -1,4 +1,4 @@
-import { readingOf } from "./flashlight.ts";
+import { launchesOf, readingOf } from "./flashlight.ts";
 import { judged, type Side } from "./verdict.ts";
 
 interface Writer {
@@ -8,7 +8,7 @@ interface Writer {
 type Pair = readonly [string, string];
 
 const USAGE =
-  "usage: device --head-startup <flashlight.json> --head-journey <flashlight.json> (--base-startup <flashlight.json> --base-journey <flashlight.json> | --no-baseline) [--last]\n";
+  "usage: device --head-startup <launches.json> --head-journey <flashlight.json> (--base-startup <launches.json> --base-journey <flashlight.json> | --no-baseline) [--last]\n";
 
 const argumentAfter = (argv: readonly string[], flag: string) => {
   const at = argv.indexOf(flag);
@@ -42,13 +42,16 @@ export const main = (
     err.write(USAGE);
     return 2;
   }
-  const readingAt = (path: string) => {
+  const at = <Held>(
+    path: string,
+    parse: (path: string, text: string) => Held | string,
+  ) => {
     const text = read(path);
-    return text === null ? `${path} was never written` : readingOf(path, text);
+    return text === null ? `${path} was never written` : parse(path, text);
   };
   const sideAt = ([startupPath, journeyPath]: Pair): Side | string => {
-    const startup = readingAt(startupPath);
-    const journey = readingAt(journeyPath);
+    const startup = at(startupPath, launchesOf);
+    const journey = at(journeyPath, readingOf);
     if (typeof startup === "string") return startup;
     return typeof journey === "string" ? journey : { startup, journey };
   };

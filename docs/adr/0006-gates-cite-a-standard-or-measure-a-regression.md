@@ -834,26 +834,25 @@ a macOS runner puts one run at 15 to 25 minutes (the workflow comment in
 was read and not taken: it is at 0.0.x, and its iOS frame rate needs a native module Expo Go does
 not bundle.
 
-**What the emulator reads is held to the merge base, and the runner says whether it may hold it.**
+**What the emulator reads is held to the merge base, one measure at a time, while it is steady.**
 The `apk` job builds this branch and its merge base side by side, and `device` reads both on one
-emulator, the merge base first, as Reassure asks of any comparison: Flashlight runs `am start -W`
-and then the walk, each for its default ten iterations with the app's data cleared before each.
-`tools/device` takes each side's figures per iteration: start-up, the walk's own time, frame rate,
-CPU and memory. A figure fails when this branch's median is worse than the merge base's worst
-iteration, the rule the browser journey already holds its first Seat Groups to. Before it judges,
-it reads the spread across iterations on both sides as the coefficient of variation, the standard
-deviation as a share of the mean, which is the measure Reassure's own glossary names for how steady
-a run is ([CONTEXT.md](https://github.com/callstack/reassure/blob/main/CONTEXT.md)), and holds it to
-the line Reassure publishes for a steady runner: below 5 per cent. At or over it, both sides are read
-again with twice the iterations, Reassure's own advice for a noisy runner (its README suggests raising
-the runs from the default 10 to 20); still at or over it, the job fails as unable to measure and never passes. A reading
-that measured nothing, failed, carried no frame rate or memory, or read a figure that was nothing on
-every iteration is refused. A merge base with no walk, as on the change that added it, is measured on
-this branch alone, holds it to nothing and judges no steadiness. The first reading, of this branch
-alone, spread 0.3 per cent for frame rate, 0.5 for memory and 4.7 for CPU, and 7.9 for start-up and
-5.7 for the walk, so the first change measured against a merge base with a walk may well be read
-twice and fail as unable to measure; that is the rule doing its job, and a start-up measure steadier
-than `am start -W` through adb is the way to meet it.
+emulator, the merge base first, as Reassure asks of any comparison. Start-up is the platform's own
+cold-launch timing, the `TotalTime` that `am start -W` prints, over twenty cold launches; Flashlight's
+reading of start-up spread 7.9, 19.6 and 12.1 per cent on three runs (36183944292, 36225719569,
+36229377921), too wide to hold anything to. The walk is read by Flashlight for its default ten
+iterations with the app's data cleared before each: the walk's own time, frame rate, CPU and memory.
+A measure fails when this branch's median is worse than the merge base's worst reading, the rule the
+browser journey already holds its first Seat Groups to. Each measure is held only while its spread on
+both sides, the coefficient of variation that Reassure's own glossary names for how steady a run is
+([CONTEXT.md](https://github.com/callstack/reassure/blob/main/CONTEXT.md)), stays below the 5 per
+cent Reassure publishes for a steady runner. When any measure is at or over it, everything is read
+again with twice the launches and iterations, Reassure's own advice for a noisy runner (its README
+suggests raising the runs from the default 10 to 20). A measure still at or over it is left out of
+the report and the verdict, named with its spread, and the rest are still held: a runner too noisy
+for one measure never fails every pull request as unable to measure, and a measure too noisy to hold
+is never printed as though it were held. A reading that measured nothing, failed, carried no frame
+rate or memory, timed no cold launch, or read a figure that was nothing on every iteration is refused.
+A merge base with no walk, as on the change that added it, holds this branch to nothing.
 
 **The app's web build is held to the same accessibility standard as the web app.** `tests/app` runs
 as a Playwright project of its own over Vercel's `serve`, which compresses what it sends as any host

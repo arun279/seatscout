@@ -1,7 +1,7 @@
 import { type Figure, type Reading, tenths } from "./flashlight.ts";
 
 export interface Side {
-  readonly startup: Reading;
+  readonly startup: Figure;
   readonly journey: Reading;
 }
 
@@ -17,9 +17,9 @@ const lower = (one: number, other: number) => one < other;
 
 const AXES: readonly Axis[] = [
   {
-    name: "Start-up, launch to the first frame",
+    name: "Start-up, a cold launch to the first frame",
     unit: " ms",
-    of: (side) => side.startup.runtime,
+    of: (side) => side.startup,
     worse: higher,
   },
   {
@@ -52,57 +52,63 @@ const STEADY = 5;
 
 const RETRY = 3;
 
-const worstOf = (measure: Axis, figure: Figure) =>
+const worstOf = (axis: Axis, figure: Figure) =>
   figure.values.reduce((worst, value) =>
-    measure.worse(value, worst) ? value : worst,
+    axis.worse(value, worst) ? value : worst,
   );
 
-const alone = (head: Side) => [
-  "| Measure | This branch, median | Spread |",
-  "| --- | --- | --- |",
-  ...AXES.map((measure) => {
-    const figure = measure.of(head);
-    return `| ${measure.name} | ${figure.median}${measure.unit} | ${figure.spread}% |`;
-  }),
-];
+const spreadOf = (axis: Axis, head: Side, base: Side | null) =>
+  Math.max(axis.of(head).spread, base === null ? 0 : axis.of(base).spread);
 
-const beside = (head: Side, base: Side) => [
-  "| Measure | This branch, median | Spread | Merge base, worst | Spread |",
-  "| --- | --- | --- | --- | --- |",
-  ...AXES.map((measure) => {
-    const ours = measure.of(head);
-    const theirs = measure.of(base);
-    return `| ${measure.name} | ${ours.median}${measure.unit} | ${ours.spread}% | ${tenths(worstOf(measure, theirs))}${measure.unit} | ${theirs.spread}% |`;
-  }),
-];
+const row = (axis: Axis, head: Side, base: Side | null) => {
+  const ours = axis.of(head);
+  const cells = [axis.name, `${ours.median}${axis.unit}`, `${ours.spread}%`];
+  if (base !== null) {
+    const theirs = axis.of(base);
+    cells.push(
+      `${tenths(worstOf(axis, theirs))}${axis.unit}`,
+      `${theirs.spread}%`,
+    );
+  }
+  return `| ${cells.join(" | ")} |`;
+};
 
-const held = (head: Side, base: Side, last: boolean) => {
-  const widest = Math.max(
-    ...[head, base].flatMap((side) =>
-      AXES.map((measure) => measure.of(side).spread),
-    ),
-  );
-  if (widest >= STEADY)
-    return last
-      ? {
-          code: 1,
-          line: `Could not measure: the widest spread is still ${widest}% with twice the iterations, over the ${STEADY} per cent Reassure calls steady.`,
-        }
-      : {
-          code: RETRY,
-          line: `The widest spread is ${widest}%, over the ${STEADY} per cent Reassure calls steady, so the reading is taken again with twice the iterations.`,
-        };
-  const worse = AXES.filter((measure) =>
-    measure.worse(measure.of(head).median, worstOf(measure, measure.of(base))),
+const table = (axes: readonly Axis[], head: Side, base: Side | null) =>
+  axes.length === 0
+    ? []
+    : [
+        base === null
+          ? "| Measure | This branch, median | Spread |"
+          : "| Measure | This branch, median | Spread | Merge base, worst | Spread |",
+        base === null
+          ? "| --- | --- | --- |"
+          : "| --- | --- | --- | --- | --- |",
+        ...axes.map((axis) => row(axis, head, base)),
+        "",
+      ];
+
+const named = (axes: readonly Axis[], head: Side, base: Side | null) =>
+  axes
+    .map((axis) => `${axis.name} (${spreadOf(axis, head, base)}%)`)
+    .join(", ");
+
+const verdictOf = (kept: readonly Axis[], head: Side, base: Side | null) => {
+  if (base === null)
+    return {
+      code: 0,
+      line: "The merge base has no walk to measure, so nothing here is held to one.",
+    };
+  const worse = kept.filter((axis) =>
+    axis.worse(axis.of(head).median, worstOf(axis, axis.of(base))),
   );
   return worse.length > 0
     ? {
         code: 1,
-        line: `Worse than the merge base's worst iteration: ${worse.map((measure) => measure.name).join(", ")}.`,
+        line: `Worse than the merge base's worst iteration: ${worse.map((axis) => axis.name).join(", ")}.`,
       }
     : {
         code: 0,
-        line: `No figure is worse than the merge base's worst iteration, and the widest spread is ${widest}%, under the ${STEADY} per cent Reassure calls steady.`,
+        line: "No figure held here is worse than the merge base's worst iteration.",
       };
 };
 
@@ -111,22 +117,29 @@ export const judged = (
   base: Side | null,
   last: boolean,
 ): { readonly code: number; readonly report: string } => {
-  const verdict =
-    base === null
-      ? {
-          code: 0,
-          line: "The merge base has no walk to measure, so nothing here is held to one.",
-        }
-      : held(head, base, last);
+  const unsteady = AXES.filter((axis) => spreadOf(axis, head, base) >= STEADY);
+  const retry = base !== null && !last && unsteady.length > 0;
+  const kept = retry ? AXES : AXES.filter((axis) => !unsteady.includes(axis));
+  const verdict = retry
+    ? {
+        code: RETRY,
+        line: `At or over the ${STEADY} per cent Reassure calls steady: ${named(unsteady, head, base)}, so the reading is taken again with twice the iterations.`,
+      }
+    : verdictOf(kept, head, base);
   return {
     code: verdict.code,
     report: [
       "### On the Android emulator",
       "",
-      `Flashlight on one emulator, the merge base first, each over ${head.startup.iterations} iterations of start-up and ${head.journey.iterations} of the walk, with the app's data cleared before each. This branch's median over its iterations stands beside the merge base's worst; the spread is the standard deviation across iterations as a share of the mean.`,
+      `One emulator, the merge base first. Start-up is the platform's own cold-launch timing, \`am start -W\` TotalTime, over ${head.startup.values.length} cold launches; the walk is Flashlight over ${head.journey.iterations} iterations with the app's data cleared before each. This branch's median stands beside the merge base's worst; the spread is the standard deviation as a share of the mean, and a measure is held only while it stays under the ${STEADY} per cent Reassure calls steady.`,
       "",
-      ...(base === null ? alone(head) : beside(head, base)),
-      "",
+      ...table(kept, head, base),
+      ...(retry || unsteady.length === 0
+        ? []
+        : [
+            `Left out, too unsteady to hold: ${named(unsteady, head, base)}.`,
+            "",
+          ]),
       verdict.line,
       "",
     ].join("\n"),

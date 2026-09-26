@@ -2,21 +2,29 @@
 set -euo pipefail
 
 FLASHLIGHT_DEFAULT=10
+COLD_LAUNCHES=20
 
 fresh() {
   adb uninstall "$APP_ID" > /dev/null 2>&1 || true
   adb install "$1"
 }
 
+cold_launches() {
+  local launches=()
+  for _ in $(seq "$1"); do
+    adb shell am force-stop "$APP_ID"
+    launches+=("$(adb shell am start -W -n "$APP_ID/.MainActivity" | tr -d '\r' | awk '/^TotalTime:/ { print $2 }')")
+  done
+  local IFS=,
+  echo "[${launches[*]}]"
+}
+
 measure() {
-  local side=$1 walk=$2 iterations=$3 walked
+  local side=$1 walk=$2 times=$3 walked
   printf -v walked '%q ' maestro test "$walk" -e "APP_ID=$APP_ID" -e "LINK=$LINK"
   mkdir -p "$OUT/$side"
-  flashlight test --bundleId "$APP_ID" --iterationCount "$iterations" \
-    --beforeEachCommand "adb shell pm clear $APP_ID" \
-    --testCommand "adb shell am start -W -n $APP_ID/.MainActivity" \
-    --resultsFilePath "$OUT/$side/startup.json"
-  flashlight test --bundleId "$APP_ID" --iterationCount "$iterations" \
+  cold_launches "$((COLD_LAUNCHES * times))" > "$OUT/$side/startup.json"
+  flashlight test --bundleId "$APP_ID" --iterationCount "$((FLASHLIGHT_DEFAULT * times))" \
     --beforeEachCommand "adb shell pm clear $APP_ID" \
     --testCommand "$walked" \
     --resultsFilePath "$OUT/$side/journey.json"
@@ -46,11 +54,11 @@ maestro test "$HEAD_WALK" -e "APP_ID=$APP_ID" -e "LINK=$LINK" \
   --format junit --output "$OUT/journey.xml" --debug-output "$OUT/maestro"
 echo passed > "$OUT/journey.outcome"
 
-read_both "$FLASHLIGHT_DEFAULT"
+read_both 1
 verdict=0
 judge || verdict=$?
 if [ "$verdict" -eq 3 ]; then
-  read_both "$((FLASHLIGHT_DEFAULT * 2))"
+  read_both 2
   verdict=0
   judge --last || verdict=$?
 fi

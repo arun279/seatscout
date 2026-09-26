@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { held, heldWith, ran } from "./main.fixtures.ts";
 
-describe("what the emulator measured, held to the merge base", () => {
-  it("passes a branch no worse than the merge base's worst iteration on a steady runner, saying what it measured", () => {
+const START = "Start-up, a cold launch to the first frame";
+
+describe("what the emulator measured, each measure held to the merge base while it is steady", () => {
+  it("passes a branch no worse than the merge base's worst on a steady runner, saying what it measured", () => {
     const report = held();
 
     expect(report.code).toBe(0);
@@ -11,31 +13,31 @@ describe("what the emulator measured, held to the merge base", () => {
       [
         "### On the Android emulator",
         "",
-        "Flashlight on one emulator, the merge base first, each over 3 iterations of start-up and 3 of the walk, with the app's data cleared before each. This branch's median over its iterations stands beside the merge base's worst; the spread is the standard deviation across iterations as a share of the mean.",
+        "One emulator, the merge base first. Start-up is the platform's own cold-launch timing, `am start -W` TotalTime, over 3 cold launches; the walk is Flashlight over 3 iterations with the app's data cleared before each. This branch's median stands beside the merge base's worst; the spread is the standard deviation as a share of the mean, and a measure is held only while it stays under the 5 per cent Reassure calls steady.",
         "",
         "| Measure | This branch, median | Spread | Merge base, worst | Spread |",
         "| --- | --- | --- | --- | --- |",
-        "| Start-up, launch to the first frame | 1010 ms | 0.8% | 1030 ms | 1.2% |",
+        `| ${START} | 1010 ms | 0.8% | 1030 ms | 1.2% |`,
         "| Walk, as Maestro makes it | 20200 ms | 0.8% | 20500 ms | 0.8% |",
         "| Frame rate over the walk | 60 FPS | 0% | 60 FPS | 0% |",
         "| CPU over the walk | 50% | 0% | 50% | 0% |",
         "| Memory over the walk | 201 MB | 0.4% | 203 MB | 0.6% |",
         "",
-        "No figure is worse than the merge base's worst iteration, and the widest spread is 1.2%, under the 5 per cent Reassure calls steady.",
+        "No figure held here is worse than the merge base's worst iteration.",
         "",
       ].join("\n"),
     );
   });
 
-  it("fails a branch whose median is slower than the merge base's slowest iteration, naming the figure", () => {
+  it("fails a branch whose median start-up is slower than the merge base's slowest cold launch", () => {
     const report = heldWith("--head-startup", "slower-startup.json");
 
     expect(report.code).toBe(1);
     expect(report.out).toContain(
-      "| Start-up, launch to the first frame | 1110 ms | 0.7% | 1030 ms | 1.2% |",
+      `| ${START} | 1110 ms | 0.7% | 1030 ms | 1.2% |`,
     );
     expect(report.out).toContain(
-      "Worse than the merge base's worst iteration: Start-up, launch to the first frame.",
+      `Worse than the merge base's worst iteration: ${START}.`,
     );
   });
 
@@ -46,19 +48,6 @@ describe("what the emulator measured, held to the merge base", () => {
     expect(report.out).toContain(
       "Worse than the merge base's worst iteration: Frame rate over the walk.",
     );
-  });
-
-  it("asks for the reading again with more iterations when either side spread over 5 per cent", () => {
-    const report = heldWith("--base-startup", "unsteady-startup.json");
-
-    expect(report.code).toBe(3);
-    expect(report.out).toContain(
-      "The widest spread is 40.8%, over the 5 per cent Reassure calls steady, so the reading is taken again with twice the iterations.",
-    );
-  });
-
-  it("counts a spread of exactly 5 per cent as unsteady, since Reassure calls steady only what is below it", () => {
-    expect(heldWith("--base-startup", "edge-startup.json").code).toBe(3);
   });
 
   it("names every figure that got worse", () => {
@@ -74,12 +63,25 @@ describe("what the emulator measured, held to the merge base", () => {
     );
 
     expect(report.out).toContain(
-      "Worse than the merge base's worst iteration: Start-up, launch to the first frame, Frame rate over the walk.",
+      `Worse than the merge base's worst iteration: ${START}, Frame rate over the walk.`,
     );
   });
 
-  it("fails as unmeasurable, never passes, when the second reading is still unsteady", () => {
-    const report = ran(
+  it("reads everything again with twice the iterations when one measure spreads over 5 per cent on either side, naming it", () => {
+    const report = heldWith("--base-startup", "unsteady-startup.json");
+
+    expect(report.code).toBe(3);
+    expect(report.out).toContain(
+      `At or over the 5 per cent Reassure calls steady: ${START} (40.8%), so the reading is taken again with twice the iterations.`,
+    );
+  });
+
+  it("counts a spread of exactly 5 per cent as unsteady, since Reassure calls steady only what is below it", () => {
+    expect(heldWith("--base-startup", "edge-startup.json").code).toBe(3);
+  });
+
+  it("leaves out a measure still unsteady on the second reading, and holds the rest, never failing as unmeasurable", () => {
+    const steady = ran(
       "--head-startup",
       "unsteady-startup.json",
       "--head-journey",
@@ -91,13 +93,53 @@ describe("what the emulator measured, held to the merge base", () => {
       "--last",
     );
 
+    expect(steady.code).toBe(0);
+    expect(steady.out).not.toContain(`| ${START} |`);
+    expect(steady.out).toContain(
+      `Left out, too unsteady to hold: ${START} (40.8%).`,
+    );
+    expect(steady.out).toContain("| Walk, as Maestro makes it | 20200 ms |");
+  });
+
+  it("still fails a steady measure that got worse when another is left out", () => {
+    const report = ran(
+      "--head-startup",
+      "unsteady-startup.json",
+      "--head-journey",
+      "fewer-frames.json",
+      "--base-startup",
+      "base-startup.json",
+      "--base-journey",
+      "base-walk.json",
+      "--last",
+    );
+
     expect(report.code).toBe(1);
     expect(report.out).toContain(
-      "Could not measure: the widest spread is still 40.8% with twice the iterations, over the 5 per cent Reassure calls steady.",
+      "Worse than the merge base's worst iteration: Frame rate over the walk.",
     );
   });
 
-  it("reports the branch alone when the merge base has no walk to measure", () => {
+  it("leaves out an unsteady walk time the same way", () => {
+    const report = ran(
+      "--head-startup",
+      "head-startup.json",
+      "--head-journey",
+      "unsteady-walk.json",
+      "--base-startup",
+      "base-startup.json",
+      "--base-journey",
+      "base-walk.json",
+      "--last",
+    );
+
+    expect(report.code).toBe(0);
+    expect(report.out).toContain(
+      "Left out, too unsteady to hold: Walk, as Maestro makes it (40.8%).",
+    );
+  });
+
+  it("reports the branch alone when the merge base has no walk, leaving out what is unsteady", () => {
     const report = ran(
       "--head-startup",
       "unsteady-startup.json",
@@ -108,31 +150,31 @@ describe("what the emulator measured, held to the merge base", () => {
 
     expect(report.code).toBe(0);
     expect(report.out).toContain(
-      "| Measure | This branch, median | Spread |\n| --- | --- | --- |\n",
+      "| Measure | This branch, median | Spread |\n| --- | --- | --- |\n| Walk, as Maestro makes it | 20200 ms | 0.8% |\n",
     );
     expect(report.out).toContain(
-      "| Start-up, launch to the first frame | 1000 ms | 40.8% |",
+      `Left out, too unsteady to hold: ${START} (40.8%).`,
     );
     expect(report.out).toContain(
       "The merge base has no walk to measure, so nothing here is held to one.",
     );
   });
 
-  it("takes the middle iteration rather than the mean, so one slow iteration cannot move it", () => {
+  it("takes the middle launch rather than the mean, so one slow launch cannot move it", () => {
     expect(heldWith("--head-startup", "skewed-startup.json").out).toContain(
-      "| Start-up, launch to the first frame | 1010 ms | 1.7% | 1030 ms | 1.2% |",
+      `| ${START} | 1010 ms | 1.7% | 1030 ms | 1.2% |`,
     );
   });
 
-  it("takes the mean of the two middle iterations when there is an even number", () => {
-    expect(heldWith("--head-startup", "startup.json").out).toContain(
-      "| Start-up, launch to the first frame | 1000 ms | 10% |",
+  it("takes the mean of the two middle launches when there is an even number", () => {
+    expect(heldWith("--head-startup", "even-startup.json").out).toContain(
+      `| ${START} | 1000 ms | 1% | 1030 ms | 1.2% |`,
     );
   });
 
   it("leaves out an iteration Flashlight marked failed", () => {
-    expect(heldWith("--head-startup", "startup-retried.json").out).toContain(
-      "| Start-up, launch to the first frame | 1000 ms | 10% |",
+    expect(heldWith("--head-journey", "walk-retried.json").out).toContain(
+      "| Walk, as Maestro makes it | 20200 ms | 1% |",
     );
   });
 
@@ -163,12 +205,39 @@ describe("what the emulator measured, held to the merge base", () => {
     expect(report.err).toBe(`${refusal}\n`);
   });
 
-  it.each(["--head-startup", "--base-startup", "--base-journey"])(
-    "refuses a reading it cannot read wherever it was given, here %s",
-    (flag) => {
-      expect(heldWith(flag, "no-iteration.json").err).toBe(
-        "no-iteration.json measured no iteration\n",
-      );
+  it.each([
+    ["missing.json", "missing.json was never written"],
+    ["not-json.json", "not-json.json holds no JSON"],
+    ["no-launch.json", "no-launch.json holds no cold launch it timed"],
+    ["zero-launch.json", "zero-launch.json holds no cold launch it timed"],
+    ["word-launch.json", "word-launch.json holds no cold launch it timed"],
+    ["head-walk.json", "head-walk.json holds no cold launch it timed"],
+  ])(
+    "refuses cold launches in %s rather than report over them",
+    (startup, refusal) => {
+      const report = heldWith("--head-startup", startup);
+
+      expect(report.code).toBe(1);
+      expect(report.out).toBe("");
+      expect(report.err).toBe(`${refusal}\n`);
+    },
+  );
+
+  it.each([
+    [
+      "--base-startup",
+      "no-launch.json",
+      "no-launch.json holds no cold launch it timed",
+    ],
+    [
+      "--base-journey",
+      "no-iteration.json",
+      "no-iteration.json measured no iteration",
+    ],
+  ])(
+    "refuses the merge base's reading as it refuses this branch's, here %s",
+    (flag, file, refusal) => {
+      expect(heldWith(flag, file).err).toBe(`${refusal}\n`);
     },
   );
 
@@ -198,7 +267,7 @@ describe("what the emulator measured, held to the merge base", () => {
 
       expect(report.code).toBe(2);
       expect(report.err).toBe(
-        "usage: device --head-startup <flashlight.json> --head-journey <flashlight.json> (--base-startup <flashlight.json> --base-journey <flashlight.json> | --no-baseline) [--last]\n",
+        "usage: device --head-startup <launches.json> --head-journey <flashlight.json> (--base-startup <launches.json> --base-journey <flashlight.json> | --no-baseline) [--last]\n",
       );
     },
   );
