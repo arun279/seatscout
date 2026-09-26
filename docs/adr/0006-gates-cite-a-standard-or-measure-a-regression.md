@@ -811,6 +811,72 @@ than fails is a merge base with no measurement to compare against, which the ste
 base records for the step that judges. With the reading taken, the same runner reads 3.9 per cent
 and the job gates.
 
+**The app is walked end to end on an emulator, and the walk gates.** The `device` job builds a
+release of the app for Android, with the Source answered in the build from the corpus, and Maestro
+walks it from the Ask sheet through the ranked Seat Groups and the hand-off to the Room
+(`apps/native/e2e/journey.yaml`). It leaves every level it visits twice, and after each it asserts the
+screen beneath is back. First by gesture: a drag down on a sheet, which the app's own sheet answers,
+and on iOS the edge swipe on a pushed screen and the drag down on the Ask sheet. On Android the edge
+swipe on the full-screen Ask dialog and the Room is recognised by the system, not the app, which
+turns it into the same back event the back key sends; injected edge swipes are not recognised on
+the runner's emulator even with gesture navigation on (run 36223227514 swiped from the edge of
+Settings and opened a subpage instead), so the walk sends that back event itself. Then by the way
+back a person presses: the Ask sheet's own close control, and the Android back key. A step that finds nothing fails the job, and `footprint`, which is
+required, needs it. The corpus stands in through Metro: `SEATSCOUT_UPSTREAM=corpus` swaps
+`src/host/upstream.ts` for `e2e/upstream.ts`, which answers from the same `fakeUpstream` the browser
+suite uses, so the bundle a phone runs never carries the corpus. Any other value is refused, and
+`app.config.ts` turns updates off in such a build so a published update cannot replace the stand-in.
+It is Android on an ubuntu runner rather than iOS on a macOS one because the only maintained
+open-source frame-rate reader, [Flashlight](https://github.com/bamlab/flashlight), reads Android
+only, so one build serves both the walk and the reading, and published prior art for an Expo app on
+a macOS runner puts one run at 15 to 25 minutes (the workflow comment in
+[johntips/react-native-infinite-material-tab](https://github.com/johntips/react-native-infinite-material-tab/blob/main/.github/workflows/e2e.yml)). [Lanterna](https://github.com/rogerfuentes/lanterna)
+was read and not taken: it is at 0.0.x, and its iOS frame rate needs a native module Expo Go does
+not bundle.
+
+**What the emulator reads is held to the merge base, one measure at a time, while it is steady.**
+The `apk` job builds this branch and its merge base side by side, and `device` reads both on one
+emulator, the merge base first, as Reassure asks of any comparison. Start-up is the platform's own
+cold-launch timing, the `TotalTime` that `am start -W` prints, over twenty cold launches; Flashlight's
+reading of start-up spread 7.9, 19.6 and 12.1 per cent on three runs (36183944292, 36225719569,
+36229377921), too wide to hold anything to. The walk is read by Flashlight for its default ten
+iterations with the app's data cleared before each: the walk's own time, frame rate, CPU and memory.
+A measure fails when this branch's median is worse than the merge base's worst reading, the rule the
+browser journey already holds its first Seat Groups to. Each measure is held only while its spread on
+both sides, the coefficient of variation that Reassure's own glossary names for how steady a run is
+([CONTEXT.md](https://github.com/callstack/reassure/blob/main/CONTEXT.md)), stays below the 5 per
+cent Reassure publishes for a steady runner. When any measure is at or over it, everything is read
+again with twice the launches and iterations, Reassure's own advice for a noisy runner (its README
+suggests raising the runs from the default 10 to 20). A measure still at or over it is left out of
+the report and the verdict, named with its spread, and the rest are still held: a runner too noisy
+for one measure never fails every pull request as unable to measure, and a measure too noisy to hold
+is never printed as though it were held. A reading that measured nothing, failed, carried no frame
+rate or memory, timed no cold launch, or read a figure that was nothing on every iteration is refused.
+A merge base with no walk, as on the change that added it, holds this branch to nothing.
+
+**The app's web build is held to the same accessibility standard as the web app.** `tests/app` runs
+as a Playwright project of its own over Vercel's `serve`, which compresses what it sends as any host
+does: axe scans every screen from the Ask sheet to the Room against WCAG 2.2 at A and AA. Its first run
+found a real violation: the film list in the Ask
+sheet was a list with no items in it (axe's `aria-required-children`), so each film is now a list item.
+The Core Web Vitals journey is not held over the app's web build yet. It was built and run, and it
+reads a p75 LCP of 3,304 ms against the 2,500 ms Google publishes as good, on a runner where the web
+app reads 1,648 ms: the app's 1.3 MB script has to run before the first paint. The gate arrives with
+the web build work that passes it, at Google's threshold, rather than now at a looser one.
+
+**The app's bundles are four more ratchets.** The script Hermes compiles for iOS and for Android, the
+web build's scripts, and the faces and images every platform ships, each against its own figure in
+`.size-limit.json`. The phones' scripts are weighed before Hermes compiles them, from
+`expo export --no-bytecode`, because the bytecode is not the same twice: Expo's exporter compiles
+from a temporary directory named with `Math.random()` and the time (`exportHermes.js` in
+`@expo/metro-config`), and Hermes writes that path into the bytecode. Metro's own output was not the
+same twice either: Expo numbers modules in the order Metro meets them, and one commit weighed 992708
+and 990513 B for iOS on two runs of the same job (run 36231517101). So `metro.config.ts` gives each
+module an id hashed from its path, refusing a clash by name, and `quality` exports the scripts twice
+and fails if a byte differs. The longer ids cost the web build 10,862 B of brotli, 282557 to 293419 B (run
+36234684086), which is the price of a size that means the same thing on every run. Each ratchet went in at 1 B and the `footprint` job refused it, naming
+each and printing its size; those sizes are the ratchets.
+
 **A colour written into a screen is refused** by a Grit plugin, `tools/lint/no-colour-literals.grit`,
 which `biome.json` points at `apps/native/src` except the theme and the tests. It refuses a string
 that is a hex colour, a CSS colour function or one of the CSS Color Module Level 4 named colours,

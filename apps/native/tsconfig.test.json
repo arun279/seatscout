@@ -7,5 +7,5 @@
     "tsBuildInfoFile": "dist/tsconfig.test.tsbuildinfo",
     "types": []
   },
-  "include": ["src", "test"]
+  "include": ["src", "test", "e2e"]
 }

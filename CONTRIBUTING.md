@@ -58,13 +58,14 @@ pnpm lint
 pnpm complexity
 pnpm duplication
 actionlint
-shellcheck deploy/*.sh
+shellcheck deploy/*.sh apps/native/e2e/*.sh
 pnpm spell
 pnpm typecheck
 pnpm dead-code
 pnpm versions
 pnpm --filter @seatscout/native run install-check
 pnpm --filter @seatscout/native run doctor
+pnpm --filter @seatscout/native run bundle
 pnpm counts
 pnpm claims
 pnpm test:unit
@@ -77,14 +78,24 @@ pnpm journey --head reports/journey/samples.json \
   --head-gesture reports/journey/gesture.json --no-baseline
 ```
 
+`pnpm test:e2e` serves the app's web build from `apps/native/dist` with
+`serve`, compressed as a host would send it, so the bundle step comes first. Playwright runs `tests/e2e` over `apps/web` as
+the `web` project and `tests/app` over the app's web build as the `app` project.
+
 The list is the job, not a selection from it. Running a shorter one and finding it green is
 how a contributor arrives red on a pull request, which is what this list is for. The last
 line is the half of the journey gate a checkout can run alone; the job also builds the merge
 base in a worktree, runs its journey, and holds this one to it.
 
-Six further jobs run beside it. `shards` reads the workspaces the mutation gate is divided
+Eight further jobs run beside it. `device` builds the app for Android with the Source
+answered from the corpus (`SEATSCOUT_UPSTREAM=corpus`, which Metro reads to swap
+`src/host/upstream.ts` for `e2e/upstream.ts`), walks `apps/native/e2e/journey.yaml` with
+Maestro on an emulator, then times twenty cold launches and has Flashlight read the walk's time,
+frame rate, CPU and memory, on this branch and on its merge base, which `apk` builds beside it. The
+walk gates, and so does any measure worse than the merge base's worst reading while that measure is
+steady; one that stays unsteady is left out and named. ADR 6 says how. `shards` reads the workspaces the mutation gate is divided
 into out of `stryker.shards.json`, and `mutation` judges one of them per runner, in parallel.
-`footprint` gathers what they wrote and reports what the change weighs. `secrets` scans the
+`footprint` gathers what they and `device` wrote and reports what the change weighs. `secrets` scans the
 pull request's commits with gitleaks. `dependencies`
 scans the lockfile against the OSV database and fails on any advisory, then reads every
 dependency's licence and fails on any SPDX identifier outside the allowlist that job
@@ -209,10 +220,10 @@ Each of these has one way through and no exemption to grant.
   WCAG's 18 and 14 points in the units React Native lays out in (WCAG 2.2 1.4.3);
   a chosen button, radio, tab or checkbox under 3 to 1 against its ground and its unchosen
   neighbours (1.4.11); something that can be pressed or answers touch directly with no role or no
-  name, unless it is hidden from screen readers because a control beside it does the same job
-  (4.1.2); a control short of the platform's own touch floor, 44 pt on iOS and 48 dp on Android,
-  counting its `hitSlop` (2.5.8, pressable words inside a sentence excepted as that criterion
-  excepts them); a text field with no label (3.3.2); words with
+  name, unless it is hidden from screen readers because a control beside it does the same job,
+  or it only widens where a finger lands around a named control inside it (4.1.2); a control short of the platform's own touch floor, 44 pt on iOS and 48 dp on Android,
+  counting its `hitSlop`, or reached through such a row around it (2.5.8, pressable words inside
+  a sentence excepted as that criterion excepts them); a text field with no label (3.3.2); words with
   `allowFontScaling` off (1.4.4); and a control that changes what is chosen, or the velvet commit,
   that plays no haptic feedback when the audit presses it (Apple's Human Interface Guidelines on
   playing haptics). Fix the screen: give a control the difference as `minHeight` and `minWidth`,
@@ -230,9 +241,11 @@ Take a ratchet's new value from the `footprint` comment on the pull request rath
 local run: the job measures the merge of your branch with `main` rather than the branch alone,
 so the bundle's bytes and the sum of the unit and end-to-end counts are what that merge weighs,
 and a floor derived locally read 25 too high the moment `main` had dropped a package's tests.
-`.size-limit.json` holds four ratchets over what the build emits: the scripts, the
-stylesheets, the woff2 faces the page preloads and the icons it names. The comment prints
-each measured figure beside its own ratchet.
+`.size-limit.json` holds four ratchets over what the web app's build emits: the scripts, the
+stylesheets, the woff2 faces the page preloads and the icons it names. Four more weigh what the
+app's export emits: the script Hermes compiles for iOS and for Android, the web build's scripts, and
+the faces and images every platform ships. The comment prints each measured figure beside its
+own ratchet.
 
 A pull request that changes what a person sees or does carries its headed pass as images or
 video: drive the built tree in a real browser at a phone's size, screenshot each state the

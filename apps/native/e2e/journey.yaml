@@ -1,0 +1,100 @@
+appId: ${APP_ID}
+name: Ask, the ranked Seat Groups, the hand-off, the ledger and the Room, each left by gesture and by its own way back, with the Source answered from the corpus
+---
+- openLink: ${LINK}
+- extendedWaitUntil:
+    visible: Find seats
+    timeout: 120000
+
+- tapOn: Find seats
+- extendedWaitUntil:
+    visible: What are we seeing\?
+    timeout: 15000
+- hideKeyboard
+- runFlow:
+    file: back-by-gesture.yaml
+    env:
+      LEVEL: dialog
+- extendedWaitUntil:
+    notVisible: What are we seeing\?
+    timeout: 10000
+- assertVisible: Find seats
+
+- tapOn: Find seats
+- extendedWaitUntil:
+    visible: What are we seeing\?
+    timeout: 15000
+- tapOn: Keep as it was
+- extendedWaitUntil:
+    notVisible: What are we seeing\?
+    timeout: 10000
+
+- tapOn: Find seats
+- extendedWaitUntil:
+    visible: What are we seeing\?
+    timeout: 15000
+- inputText: Dog Stars
+- extendedWaitUntil:
+    visible: The Dog Stars \(2026\)
+    timeout: 30000
+- tapOn: The Dog Stars \(2026\)
+- hideKeyboard
+- tapOn: Find seats
+- extendedWaitUntil:
+    visible:
+      id: seats
+    timeout: 60000
+
+- tapOn:
+    id: seats
+    index: 0
+- extendedWaitUntil:
+    visible: Taking the seats
+    timeout: 15000
+- runFlow:
+    file: back-by-gesture.yaml
+    env:
+      LEVEL: sheet
+- extendedWaitUntil:
+    notVisible: Taking the seats
+    timeout: 10000
+- assertVisible:
+    id: seats
+    index: 0
+
+- tapOn: ledger ›
+- extendedWaitUntil:
+    visible: Every showtime, accounted for
+    timeout: 15000
+- runFlow:
+    file: back-by-gesture.yaml
+    env:
+      LEVEL: sheet
+- extendedWaitUntil:
+    notVisible: Every showtime, accounted for
+    timeout: 10000
+- assertVisible:
+    id: seats
+    index: 0
+
+- tapOn:
+    id: body
+    index: 0
+- extendedWaitUntil:
+    visible: The room
+    timeout: 15000
+- runFlow:
+    file: back-by-gesture.yaml
+    env:
+      LEVEL: pushed
+- extendedWaitUntil:
+    notVisible: The room
+    timeout: 10000
+- assertVisible:
+    id: seats
+    index: 0
+
+- runFlow:
+    when:
+      platform: Android
+    file: back-by-key.yaml

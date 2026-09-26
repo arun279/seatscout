@@ -16,6 +16,12 @@
         "projectId": "bd0a1be7-8d02-4cd8-9a1b-d0431c52d495"
       }
     },
-    "plugins": ["@react-native-community/datetimepicker"]
+    "plugins": ["@react-native-community/datetimepicker"],
+    "ios": {
+      "bundleIdentifier": "io.github.arun279.seatscout"
+    },
+    "android": {
+      "package": "io.github.arun279.seatscout"
+    }
   }
 }

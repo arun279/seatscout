@@ -7,7 +7,7 @@ import {
   playingStatusOf,
 } from "@seatscout/view-logic";
 import type { ReactElement } from "react";
-import { ScrollView, StyleSheet, TouchableOpacity } from "react-native";
+import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Field } from "../design-system/field.js";
 import { Type } from "../design-system/type.js";
 import { useTheme } from "../theme.js";
@@ -102,12 +102,9 @@ export const Film = ({
           testID="offered"
         >
           {offered.map((movie) => (
-            <Suggestion
-              key={movie.id}
-              movie={movie}
-              onTyped={onTyped}
-              typed={typed}
-            />
+            <View key={movie.id} role="listitem">
+              <Suggestion movie={movie} onTyped={onTyped} typed={typed} />
+            </View>
           ))}
         </ScrollView>
       )}

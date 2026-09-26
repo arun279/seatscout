@@ -22,6 +22,8 @@ const styles = StyleSheet.create({
   ends: { flexDirection: "row", justifyContent: "space-between" },
 });
 
+const inHundredths = (value: number) => Math.round(value * 100);
+
 const zeroTheSliderKeeps = (value: number) =>
   value === 0 ? Number.EPSILON : value;
 
@@ -48,7 +50,10 @@ export const Range = ({
       <Slider
         accessibilityLabel={label}
         accessibilityRole="adjustable"
-        accessibilityValue={{ text: said }}
+        aria-valuemax={inHundredths(scale.max)}
+        aria-valuemin={inHundredths(scale.min)}
+        aria-valuenow={inHundredths(value)}
+        aria-valuetext={said}
         maximumTrackTintColor={colours.high}
         maximumValue={scale.max}
         minimumTrackTintColor={colours.beam}

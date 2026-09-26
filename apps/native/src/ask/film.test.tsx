@@ -74,6 +74,19 @@ describe("naming the film in the Ask sheet", () => {
       ).toBeOnTheScreen();
   });
 
+  it("holds each film as an item of the list, which the web build draws as one", async () => {
+    await showing();
+
+    expect(
+      PLAYING.map(
+        (movie) =>
+          screen.getByRole("button", { name: movie.title }).parent?.props[
+            "role"
+          ],
+      ),
+    ).toEqual(["listitem", "listitem", "listitem"]);
+  });
+
   it("narrows the list to what has been typed", async () => {
     await showing({ typed: "co" });
 
