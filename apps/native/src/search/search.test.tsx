@@ -237,6 +237,38 @@ describe("the face the Search screen wears", () => {
   });
 });
 
+describe("a query that spans more than one day", () => {
+  it("searches the nearest day alone, and says the days after it are not read yet", async () => {
+    const { reads } = await showing({
+      upstream: { script: {} },
+      terms: {
+        ...TONIGHT,
+        until: "19:20",
+        when: { kind: "range", first: TODAY, last: "2026-08-31" },
+      },
+      today: TODAY,
+    });
+
+    expect(await screen.findByText("Best seats first")).toBeOnTheScreen();
+    expect(
+      screen.getByText("Sat 29 to Mon 31 Aug not read yet"),
+    ).toBeOnTheScreen();
+    expect(reads.some((url) => url.includes(TODAY))).toBe(true);
+    expect(reads.filter((url) => /2026-08-(29|30|31)/.test(url))).toEqual([]);
+  });
+
+  it("says nothing is left unread when the query holds one day", async () => {
+    await showing({
+      upstream: { script: {} },
+      terms: { ...TONIGHT, until: "19:20" },
+      today: TODAY,
+    });
+
+    expect(await screen.findByText("Best seats first")).toBeOnTheScreen();
+    expect(screen.queryByText(/not read yet/)).toBeNull();
+  });
+});
+
 describe("what the screen says when the phone is offline", () => {
   it("says seats are never cached, once, wherever the query has got to", async () => {
     await showing({ online: false });

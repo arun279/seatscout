@@ -1,4 +1,8 @@
-import { REFERENCE, type SeatGroupResult } from "@seatscout/client";
+import {
+  REFERENCE,
+  type SeatGroupResult,
+  type SeatProfile,
+} from "@seatscout/client";
 import { marksOf } from "@seatscout/view-logic";
 import type { ReactElement } from "react";
 import { View } from "react-native";
@@ -17,21 +21,37 @@ const DRAWN = {
   screen: { from: 14, to: 50, at: 2.5, width: 2, cap: "round" },
   row: { width: 1.6, cap: "round" },
   target: { radius: 4.5, width: 1, dashes: "2 2.5", fill: "none" },
+  was: { radius: 2, width: 1 },
   pair: { radius: 3, spread: 1.75, lit: 0.9, lamp: "url(#lit)", unlit: "" },
 } as const;
+
+type Target = Pick<SeatProfile, "targetDepth" | "targetLateral">;
 
 export interface RoomPlanProps {
   readonly result: SeatGroupResult;
   readonly across: number;
 }
 
-export const RoomPlan = ({ result, across }: RoomPlanProps): ReactElement => {
+export interface PlanDrawingProps {
+  readonly plan: SeatGroupResult["plan"];
+  readonly position: SeatGroupResult["position"];
+  readonly target: Target;
+  readonly was?: Target | undefined;
+  readonly across: number;
+}
+
+export const PLAN_ACROSS: number = DRAWN.across;
+
+export const PlanDrawing = ({
+  plan,
+  position,
+  target,
+  was,
+  across,
+}: PlanDrawingProps): ReactElement => {
   const { appearance, colours } = useTheme();
-  const marks = marksOf(
-    result.plan,
-    result.position,
-    result.terms.profile ?? REFERENCE,
-  );
+  const marks = marksOf(plan, position, target);
+  const reference = was && marksOf(plan, position, was).target;
 
   return (
     <View
@@ -85,6 +105,17 @@ export const RoomPlan = ({ result, across }: RoomPlanProps): ReactElement => {
             y2={row.y}
           />
         ))}
+        {reference && (
+          <Circle
+            cx={reference.cx}
+            cy={reference.cy}
+            fill={DRAWN.target.fill}
+            r={DRAWN.was.radius}
+            stroke={colours.silverFaint}
+            strokeWidth={DRAWN.was.width}
+            testID="was"
+          />
+        )}
         <Circle
           cx={marks.target.cx}
           cy={marks.target.cy}
@@ -107,3 +138,12 @@ export const RoomPlan = ({ result, across }: RoomPlanProps): ReactElement => {
     </View>
   );
 };
+
+export const RoomPlan = ({ result, across }: RoomPlanProps): ReactElement => (
+  <PlanDrawing
+    across={across}
+    plan={result.plan}
+    position={result.position}
+    target={result.terms.profile ?? REFERENCE}
+  />
+);

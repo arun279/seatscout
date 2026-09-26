@@ -34,6 +34,8 @@ const styles = StyleSheet.create({
   },
 });
 
+export const SECTION: ViewStyle = styles.section;
+
 export const fieldBox: readonly ViewStyle[] = [
   styles.box,
   ON_ANDROID ? styles.underlined : styles.raised,

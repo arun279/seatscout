@@ -1,4 +1,5 @@
 import { createSeatScout, type SeatScout } from "@seatscout/client";
+import { type HeldProfile, heldProfile } from "./profile.js";
 import { deviceStore } from "./store.js";
 
 type Fetch = Parameters<typeof createSeatScout>[0]["fetch"];
@@ -29,3 +30,5 @@ export const deviceSeatScout = (): SeatScout =>
   });
 
 export const seatscout: SeatScout = deviceSeatScout();
+
+export const seatProfile: HeldProfile = heldProfile(seatscout);

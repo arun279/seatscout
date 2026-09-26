@@ -1,60 +1,12 @@
 import { describe, expect, it, jest } from "@jest/globals";
-import type { Term, Terms } from "@seatscout/view-logic";
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { REFERENCE } from "@seatscout/client";
+import { fireEvent, screen } from "@testing-library/react-native";
 import { AccessibilityInfo } from "react-native";
 import {
   everyControlReachesTheTouchFloor,
   everyControlSaysWhatItIs,
 } from "../../test/floors.js";
-import { nearby, phone } from "../../test/phone.js";
-
-import { Ask } from "./ask.js";
-
-const TODAY = "2026-09-19";
-
-const SHORT: Terms = { date: TODAY, partySize: 2 };
-
-const NEAR: Terms = { ...SHORT, area: "75234" };
-
-const PLAYING = {
-  area: "75234",
-  date: TODAY,
-  programme: {
-    theaters: nearby("aacbt", "Cinemark Dallas XD and IMAX"),
-    movies: [
-      { id: "23184", title: "Akira" },
-      { id: "246329", title: "Coyote vs. Acme" },
-    ],
-    unreached: [],
-  },
-};
-
-const asking = async (
-  over: {
-    readonly terms?: Terms;
-    readonly focus?: Term;
-    readonly onKeep?: () => void;
-    readonly playing?: typeof PLAYING;
-  } = {},
-) => {
-  const carried = phone([], { playing: over.playing });
-  const found = jest.fn<(terms: Terms) => void>();
-  await render(
-    <Ask
-      focus={over.focus}
-      onFind={found}
-      onKeep={over.onKeep ?? (() => undefined)}
-      seatscout={carried.seatscout}
-      terms={over.terms ?? SHORT}
-      today={TODAY}
-    />,
-  );
-  return { ...carried, found };
-};
-
-const submit = async () => {
-  await fireEvent.press(screen.getByRole("button", { name: "Find seats" }));
-};
+import { asking, NEAR, PLAYING, submit, TODAY } from "../../test/ask.js";
 
 describe("the Ask sheet", () => {
   it("asks what a person is seeing, under the terms it already holds", async () => {
@@ -104,11 +56,14 @@ describe("the Ask sheet", () => {
     );
     await submit();
 
-    expect(found).toHaveBeenCalledWith({
-      area: "75006",
-      date: TODAY,
-      partySize: 2,
-    });
+    expect(found).toHaveBeenCalledWith(
+      {
+        area: "75006",
+        date: TODAY,
+        partySize: 2,
+      },
+      REFERENCE,
+    );
   });
 
   it("hands out the film a person picked from the listing, by the identity a listing is asked by", async () => {
@@ -117,12 +72,15 @@ describe("the Ask sheet", () => {
     await fireEvent.press(await screen.findByRole("button", { name: "Akira" }));
     await submit();
 
-    expect(found).toHaveBeenCalledWith({
-      movie: "23184",
-      area: "75234",
-      date: TODAY,
-      partySize: 2,
-    });
+    expect(found).toHaveBeenCalledWith(
+      {
+        movie: "23184",
+        area: "75234",
+        date: TODAY,
+        partySize: 2,
+      },
+      REFERENCE,
+    );
   });
 
   it("hands out the party a person stepped to", async () => {
@@ -131,7 +89,7 @@ describe("the Ask sheet", () => {
     await fireEvent.press(screen.getByRole("button", { name: "More seats" }));
     await submit();
 
-    expect(found).toHaveBeenCalledWith({ ...NEAR, partySize: 3 });
+    expect(found).toHaveBeenCalledWith({ ...NEAR, partySize: 3 }, REFERENCE);
   });
 
   it("hands out the date a person picked", async () => {
@@ -149,7 +107,10 @@ describe("the Ask sheet", () => {
     );
     await submit();
 
-    expect(found).toHaveBeenCalledWith({ ...NEAR, date: "2026-09-26" });
+    expect(found).toHaveBeenCalledWith(
+      { ...NEAR, date: "2026-09-26" },
+      REFERENCE,
+    );
   });
 
   it("reads the listing again for the area a person typed once they have finished typing it", async () => {

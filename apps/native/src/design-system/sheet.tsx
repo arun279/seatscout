@@ -27,6 +27,7 @@ export interface SheetProps {
   readonly keep: string;
   readonly onKeep: () => void;
   readonly claimed: boolean;
+  readonly scrolls?: boolean;
   readonly dock: ReactNode;
   readonly children: ReactNode;
 }
@@ -60,6 +61,7 @@ const styles = StyleSheet.create({
     minHeight: 48,
     minWidth: 48,
   },
+  ruled: { borderBottomWidth: 1 },
   body: { flex: 1 },
   read: { paddingBottom: 18 },
   dock: {
@@ -146,6 +148,7 @@ export const Sheet = ({
   keep,
   onKeep,
   claimed,
+  scrolls = true,
   dock,
   children,
 }: SheetProps): ReactElement => {
@@ -175,7 +178,16 @@ export const Sheet = ({
           <AppBar {...above} />
         </SafeAreaView>
       ) : (
-        <View testID="sheet-head">
+        <View
+          style={[
+            styles.ruled,
+            {
+              backgroundColor: theme.colours.house,
+              borderBottomColor: theme.colours.hairline,
+            },
+          ]}
+          testID="sheet-head"
+        >
           <Head {...above} />
         </View>
       )}
@@ -183,6 +195,8 @@ export const Sheet = ({
         <ScrollView
           contentContainerStyle={styles.read}
           keyboardShouldPersistTaps="handled"
+          scrollEnabled={scrolls}
+          testID="sheet-scroll"
         >
           {children}
         </ScrollView>

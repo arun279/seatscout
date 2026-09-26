@@ -6,11 +6,14 @@ import {
   it,
   jest,
 } from "@jest/globals";
-import { fireEvent, screen, within } from "@testing-library/react-native";
+import { act, fireEvent, screen, within } from "@testing-library/react-native";
 import { renderRouter } from "expo-router/testing-library";
 import { StyleSheet } from "react-native";
 import { nearby as mockNearby, phone as mockPhone } from "../test/phone.js";
 import { WARM_UP, warmTheCorpus } from "../test/rooms.js";
+import { REFERENCE } from "@seatscout/client";
+import { heldProfile as mockHeldProfile } from "./host/profile.js";
+import { seatProfile } from "./host/source.js";
 import Layout, { unstable_settings } from "./app/_layout.js";
 import Ask from "./app/ask.js";
 import HandOffRoute from "./app/hand-off.js";
@@ -26,8 +29,8 @@ jest.mock("expo-network", () => ({
   useNetworkState: () => ({ isConnected: true, isInternetReachable: true }),
 }));
 
-jest.mock("./host/source.js", () => ({
-  seatscout: mockPhone([], {
+jest.mock("./host/source.js", () => {
+  const { seatscout } = mockPhone([], {
     script: {},
     playing: {
       area: "75234",
@@ -38,8 +41,9 @@ jest.mock("./host/source.js", () => ({
         unreached: [],
       },
     },
-  }).seatscout,
-}));
+  });
+  return { seatscout, seatProfile: mockHeldProfile(seatscout) };
+});
 
 const LISTED =
   "/?movie=246427&date=2026-08-28&area=75006&partySize=2&from=19:00&until=19:20";
@@ -160,19 +164,21 @@ describe("the stack the app opens on", () => {
 });
 
 describe("the Query a search is", () => {
-  it("writes what the sheet states into the Search route's parameters", async () => {
+  it("writes what the sheet states into the Search route's parameters, several days included", async () => {
     const { app } = await asked();
 
     await fireEvent.changeText(
       screen.getByLabelText("Near, by postal code"),
       "75234",
     );
+    await fireEvent.press(screen.getByRole("button", { name: "Any day" }));
     await commit();
 
     expect(app.getPathname()).toBe("/");
     expect(app.getSearchParams()).toMatchObject({
       area: "75234",
       partySize: "2",
+      date: "any",
     });
   });
 
@@ -195,6 +201,36 @@ describe("the Query a search is", () => {
       await screen.findByRole("button", { name: "Near 75234" }),
     ).toBeOnTheScreen();
     expect(app.getSearchParams()).toMatchObject({ movie: "23184" });
+  });
+});
+
+describe("what the sheet changes beyond the address", () => {
+  afterEach(async () => {
+    jest.restoreAllMocks();
+    await act(() => seatProfile.choose(REFERENCE));
+  });
+
+  it("draws neither screen until the phone's Seat Profile has been read, so no search runs twice", async () => {
+    jest.spyOn(seatProfile, "snapshot").mockReturnValue(undefined);
+    await opened();
+    expect(screen.queryByRole("button", { name: "Find seats" })).toBeNull();
+    await opened("/ask?term=movie&area=75234");
+    expect(screen.queryByText("What are we seeing?")).toBeNull();
+  });
+
+  it("runs the search again under a Seat Profile moved in the sheet, and keeps it on the phone", async () => {
+    await ranked();
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Reference seat" }),
+    );
+    await screen.findByText("What are we seeing?");
+    await fireEvent(screen.getByLabelText("How far back"), "valueChange", 0.1);
+    await commit();
+
+    expect(
+      await screen.findByRole("button", { name: "Custom seat" }),
+    ).toBeOnTheScreen();
+    expect(seatProfile.snapshot()?.targetDepth).toBe(0.1);
   });
 });
 

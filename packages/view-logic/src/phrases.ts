@@ -6,6 +6,7 @@ import {
 } from "@seatscout/client";
 import { seatsOf } from "./derived.js";
 import type { Terms } from "./terms.js";
+import { dayOf, RELATIVE_DAYS, whenSaidOf } from "./when-phrases.js";
 
 type RankReasons = SeatGroupResult["reasons"];
 
@@ -20,25 +21,6 @@ const WORDS = [
   "eight",
   "nine",
 ];
-
-const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 export const wordOf = (count: number): string => WORDS[count - 1] ?? `${count}`;
 
@@ -93,23 +75,6 @@ export const spokenOf = (result: SeatGroupResult): string => {
 export const partyOf = (party: number): string =>
   party === 1 ? "One seat" : `${capitalised(wordOf(party))} seats together`;
 
-const utcOf = (date: string) => Date.parse(`${date}T00:00:00Z`);
-
-export const dayOf = (date: string, today: string): string => {
-  const ahead = (utcOf(date) - utcOf(today)) / DAY_MS;
-  if (ahead === 0) return "Today";
-  if (ahead === 1) return "Tomorrow";
-  const day = new Date(utcOf(date));
-  return `${DAYS[day.getUTCDay()]} ${day.getUTCDate()} ${MONTHS[day.getUTCMonth()]}`;
-};
-
-const RELATIVE_DAYS = ["Today", "Tomorrow"];
-
-export const whenOf = (date: string, today: string): string => {
-  const day = dayOf(date, today);
-  return RELATIVE_DAYS.includes(day) ? day.toLowerCase() : `on ${day}`;
-};
-
 export const seatOf = (profile: SeatProfile): string =>
   isReference(profile) ? "Reference seat" : "Custom seat";
 
@@ -138,7 +103,7 @@ export const ledeOf = (
   profile: SeatProfile,
   today: string,
 ): string =>
-  `Name an area, then a movie playing near it. ${partyOf(terms.partySize)}, ${whenOf(terms.date, today)} and ${seatSetOf(profile)} are already set.`;
+  `Name an area, then a movie playing near it. ${partyOf(terms.partySize)}, ${whenSaidOf(terms, today)} and ${seatSetOf(profile)} are already set.`;
 
 export const noneOf = (party: number): string =>
   party === 1 ? "No seat" : `No ${wordOf(party)} seats together`;

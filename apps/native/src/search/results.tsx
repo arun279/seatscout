@@ -18,6 +18,7 @@ import {
   tiedIn,
   tiedOf,
   unreachedIn,
+  unreadOf,
   whenOf,
 } from "@seatscout/view-logic";
 import { type ReactElement, useState, useSyncExternalStore } from "react";
@@ -72,6 +73,7 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   beam: { flex: 1, height: 1.5 },
+  unread: { paddingHorizontal: 22, paddingTop: 8 },
 });
 
 const opened = (seatscout: SeatScout, asked: SearchTerms): Session => {
@@ -145,6 +147,7 @@ export const Results = ({
     session.held.painted,
   );
   const when = whenOf(terms.date, today);
+  const unread = unreadOf(terms, today);
   const settled = snapshot.phase === "settled";
   const results = painted === null ? [] : listed(painted.results);
   const tied = tiedIn(results);
@@ -198,6 +201,11 @@ export const Results = ({
             today={today}
           />
           <Strip onLedger={onLedger} snapshot={snapshot} />
+          {unread !== undefined && (
+            <Type set="ledgerRow" style={styles.unread} tone="silverFaint">
+              {unread}
+            </Type>
+          )}
           {verdict}
         </>
       }
