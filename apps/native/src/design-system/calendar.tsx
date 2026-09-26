@@ -1,5 +1,5 @@
 import { dayNameOf, type Mark, monthNameOf } from "@seatscout/view-logic";
-import { createContext, type ReactElement, useContext } from "react";
+import { createContext, type ReactElement, useContext, useMemo } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Calendar as MonthGrid, type DateData } from "react-native-calendars";
 import { type Palette, useTheme } from "../theme.js";
@@ -57,11 +57,14 @@ const styles = StyleSheet.create({
 
 const SLOP = { top: 0, bottom: 0, left: SIDE, right: SIDE };
 
-const Header = ({
-  month,
-  addMonth,
-  today,
-}: HeaderProps & { readonly today: string }) => {
+const Chosen = createContext<Pick<CalendarProps, "mark" | "onDay" | "today">>({
+  mark: () => "none",
+  onDay: undefined,
+  today: "",
+});
+
+const Header = ({ month, addMonth }: HeaderProps) => {
+  const { today } = useContext(Chosen);
   const shown = month.toString("yyyy-MM-01");
   const earliest = `${today.slice(0, 7)}-01`;
   return (
@@ -177,12 +180,6 @@ const DayCell = ({
   );
 };
 
-const Chosen = createContext<Pick<CalendarProps, "mark" | "onDay" | "today">>({
-  mark: () => "none",
-  onDay: undefined,
-  today: "",
-});
-
 const Day = ({ date }: { readonly date?: DateData }) => {
   const { mark, onDay, today } = useContext(Chosen);
   const { colours } = useTheme();
@@ -206,17 +203,20 @@ export const Calendar = ({
   onDay,
 }: CalendarProps): ReactElement => {
   const { colours } = useTheme();
+  const theme = useMemo(
+    () => ({ calendarBackground: colours.house, weekVerticalMargin: 2 }),
+    [colours.house],
+  );
+  const chosen = useMemo(() => ({ mark, onDay, today }), [mark, onDay, today]);
 
   return (
-    <Chosen.Provider value={{ mark, onDay, today }}>
+    <Chosen.Provider value={chosen}>
       <MonthGrid
         current={opensOn}
-        customHeader={(props: HeaderProps) => (
-          <Header {...props} today={today} />
-        )}
+        customHeader={Header}
         dayComponent={Day}
         hideExtraDays
-        theme={{ calendarBackground: colours.house, weekVerticalMargin: 2 }}
+        theme={theme}
       />
     </Chosen.Provider>
   );
