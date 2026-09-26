@@ -243,7 +243,7 @@ so the bundle's bytes and the sum of the unit and end-to-end counts are what tha
 and a floor derived locally read 25 too high the moment `main` had dropped a package's tests.
 `.size-limit.json` holds four ratchets over what the web app's build emits: the scripts, the
 stylesheets, the woff2 faces the page preloads and the icons it names. Four more weigh what the
-app's export emits: the Hermes bytecode for iOS and for Android, the web build's scripts, and
+app's export emits: the script Hermes compiles for iOS and for Android, the web build's scripts, and
 the faces and images every platform ships. The comment prints each measured figure beside its
 own ratchet.
 

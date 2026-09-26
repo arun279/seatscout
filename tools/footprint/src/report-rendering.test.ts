@@ -48,7 +48,7 @@ held still holds a file. Holds.
 ### Bundle size
 
 Brotli, summed per file, over what each build publishes: every script an
-application's own bundler emits and the Hermes bytecode each phone runs,
+application's own bundler emits and the script Hermes compiles for each phone,
 with the workspace packages they reach inlined, the stylesheets beside them,
 the faces and the icons. Every emitted chunk counts, including one no page
 has loaded, so this is what a build publishes rather than what a page weighs.

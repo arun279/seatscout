@@ -864,10 +864,17 @@ reads a p75 LCP of 3,304 ms against the 2,500 ms Google publishes as good, on a 
 app reads 1,648 ms: the app's 1.3 MB script has to run before the first paint. The gate arrives with
 the web build work that passes it, at Google's threshold, rather than now at a looser one.
 
-**The app's bundles are four more ratchets.** The Hermes bytecode for iOS and for Android, the web
-build's scripts, and the faces and images every platform ships, each against its own figure in
-`.size-limit.json`. Each went in at 1 B, and the `footprint` job refused all four, naming each and
-printing its size; those sizes are the ratchets.
+**The app's bundles are four more ratchets.** The script Hermes compiles for iOS and for Android, the
+web build's scripts, and the faces and images every platform ships, each against its own figure in
+`.size-limit.json`. The phones' scripts are weighed before Hermes compiles them, from
+`expo export --no-bytecode`, because the bytecode is not the same twice: Expo's exporter compiles
+from a temporary directory named with `Math.random()` and the time (`exportHermes.js` in
+`@expo/metro-config`), and Hermes writes that path into the bytecode. Metro's own output was not the
+same twice either: Expo numbers modules in the order Metro meets them, and one commit weighed 992708
+and 990513 B for iOS on two runs of the same job (run 36231517101). So `metro.config.ts` gives each
+module an id hashed from its path, refusing a clash by name, and `quality` exports the scripts twice
+and fails if a byte differs. Each ratchet went in at 1 B and the `footprint` job refused it, naming
+each and printing its size; those sizes are the ratchets.
 
 **A colour written into a screen is refused** by a Grit plugin, `tools/lint/no-colour-literals.grit`,
 which `biome.json` points at `apps/native/src` except the theme and the tests. It refuses a string

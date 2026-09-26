@@ -54,11 +54,12 @@ jobs:
       - run: pnpm --filter @seatscout/native run doctor
       - name: Check the app bundles for both phones and the web on a machine that has only what the lockfile installs
         run: pnpm --filter @seatscout/native run bundle
-      - name: Check the same source exports to the same bytes, so a size ratchet weighs the change and not the build
+      - name: Check the same source exports the same scripts twice, so a size ratchet weighs the change and not the build
         working-directory: apps/native
         run: |
+          pnpm run weigh
           mv dist "$RUNNER_TEMP/first"
-          pnpm run bundle
+          pnpm run weigh
           diff -r "$RUNNER_TEMP/first/_expo/static/js" dist/_expo/static/js
           rm -rf "$RUNNER_TEMP/first"
       - run: pnpm counts
@@ -392,8 +393,8 @@ jobs:
           install: false
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - name: Export the app for both phones and the web, so its bundles are weighed
-        run: pnpm --filter @seatscout/native run bundle
+      - name: Export the scripts the app ships for both phones and the web, so they are weighed
+        run: pnpm --filter @seatscout/native run weigh
       - name: Collect what every shard judged
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:

@@ -24,14 +24,14 @@
     "limit": "134269 B"
   },
   {
-    "name": "app for iOS, Hermes bytecode",
-    "path": "apps/native/dist/_expo/static/js/ios/*.hbc",
-    "limit": "992381 B"
+    "name": "app for iOS, the script Hermes compiles",
+    "path": "apps/native/dist/_expo/static/js/ios/*.js",
+    "limit": "1 B"
   },
   {
-    "name": "app for Android, Hermes bytecode",
-    "path": "apps/native/dist/_expo/static/js/android/*.hbc",
-    "limit": "1104244 B"
+    "name": "app for Android, the script Hermes compiles",
+    "path": "apps/native/dist/_expo/static/js/android/*.js",
+    "limit": "1 B"
   },
   {
     "name": "app for the web",

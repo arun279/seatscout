@@ -7,6 +7,7 @@
   "scripts": {
     "build": "tsc --build --pretty false",
     "bundle": "expo export --platform ios --platform android --platform web --output-dir dist",
+    "weigh": "expo export --platform ios --platform android --platform web --no-bytecode --output-dir dist",
     "doctor": "EXPO_OFFLINE=1 expo-doctor",
     "install-check": "EXPO_OFFLINE=1 expo install --check",
     "start": "expo start",
