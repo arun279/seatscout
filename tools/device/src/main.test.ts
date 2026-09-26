@@ -131,6 +131,9 @@ describe("what the emulator measured, each measure held to the merge base while 
 
     expect(report.out).not.toContain("| Measure |");
     expect(report.out).toContain(
+      "the 5 per cent Reassure calls steady.\n\nLeft out, too unsteady to hold:",
+    );
+    expect(report.out).toContain(
       `Left out, too unsteady to hold: ${START} (40.8%), Walk, as Maestro makes it (40.8%), Frame rate over the walk (40.8%), CPU over the walk (40.8%), Memory over the walk (40.8%).\n\nThe merge base has no walk`,
     );
   });
