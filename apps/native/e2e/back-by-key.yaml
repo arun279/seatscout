@@ -1,0 +1,36 @@
+appId: ${APP_ID}
+name: Back by the Android back key, from the hand-off, the ledger and the Room
+---
+- tapOn:
+    id: seats
+    index: 0
+- extendedWaitUntil:
+    visible: Taking the seats
+    timeout: 15000
+- back
+- extendedWaitUntil:
+    notVisible: Taking the seats
+    timeout: 10000
+
+- tapOn: ledger ›
+- extendedWaitUntil:
+    visible: Every showtime, accounted for
+    timeout: 15000
+- back
+- extendedWaitUntil:
+    notVisible: Every showtime, accounted for
+    timeout: 10000
+
+- tapOn:
+    id: body
+    index: 0
+- extendedWaitUntil:
+    visible: The room
+    timeout: 15000
+- back
+- extendedWaitUntil:
+    notVisible: The room
+    timeout: 10000
+- assertVisible:
+    id: seats
+    index: 0

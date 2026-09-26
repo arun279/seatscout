@@ -257,13 +257,13 @@ jobs:
           name: apk-${{ matrix.side }}
           path: |
             apps/native/android/app/build/outputs/apk/release/app-release.apk
-            apps/native/e2e/journey.yaml
+            apps/native/e2e/*.yaml
           if-no-files-found: error
 
   device:
     needs: apk
     runs-on: ubuntu-24.04
-    timeout-minutes: 90
+    timeout-minutes: 120
     outputs:
       journey: ${{ steps.journey.outputs.outcome }}
       measured: ${{ steps.measured.outcome }}

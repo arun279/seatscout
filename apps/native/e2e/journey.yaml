@@ -1,10 +1,34 @@
 appId: ${APP_ID}
-name: Ask, the ranked Seat Groups, the hand-off and the Room, with the Source answered from the corpus
+name: Ask, the ranked Seat Groups, the hand-off, the ledger and the Room, each left by gesture and by its own way back, with the Source answered from the corpus
 ---
 - openLink: ${LINK}
 - extendedWaitUntil:
     visible: Find seats
     timeout: 120000
+
+- tapOn: Find seats
+- extendedWaitUntil:
+    visible: What are we seeing\?
+    timeout: 15000
+- hideKeyboard
+- runFlow:
+    file: back-by-gesture.yaml
+    env:
+      LEVEL: dialog
+- extendedWaitUntil:
+    notVisible: What are we seeing\?
+    timeout: 10000
+- assertVisible: Find seats
+
+- tapOn: Find seats
+- extendedWaitUntil:
+    visible: What are we seeing\?
+    timeout: 15000
+- tapOn: Keep as it was
+- extendedWaitUntil:
+    notVisible: What are we seeing\?
+    timeout: 10000
+
 - tapOn: Find seats
 - extendedWaitUntil:
     visible: What are we seeing\?
@@ -20,6 +44,7 @@ name: Ask, the ranked Seat Groups, the hand-off and the Room, with the Source an
     visible:
       id: seats
     timeout: 60000
+
 - tapOn:
     id: seats
     index: 0
@@ -27,20 +52,49 @@ name: Ask, the ranked Seat Groups, the hand-off and the Room, with the Source an
     visible: Taking the seats
     timeout: 15000
 - runFlow:
-    when:
-      platform: Android
-    commands:
-      - back
+    file: back-by-gesture.yaml
+    env:
+      LEVEL: sheet
+- extendedWaitUntil:
+    notVisible: Taking the seats
+    timeout: 10000
+- assertVisible:
+    id: seats
+    index: 0
+
+- tapOn: ledger ›
+- extendedWaitUntil:
+    visible: Every showtime, accounted for
+    timeout: 15000
 - runFlow:
-    when:
-      platform: iOS
-    commands:
-      - swipe:
-          start: 50%, 60%
-          end: 50%, 95%
+    file: back-by-gesture.yaml
+    env:
+      LEVEL: sheet
+- extendedWaitUntil:
+    notVisible: Every showtime, accounted for
+    timeout: 10000
+- assertVisible:
+    id: seats
+    index: 0
+
 - tapOn:
     id: body
     index: 0
 - extendedWaitUntil:
     visible: The room
     timeout: 15000
+- runFlow:
+    file: back-by-gesture.yaml
+    env:
+      LEVEL: pushed
+- extendedWaitUntil:
+    notVisible: The room
+    timeout: 10000
+- assertVisible:
+    id: seats
+    index: 0
+
+- runFlow:
+    when:
+      platform: Android
+    file: back-by-key.yaml

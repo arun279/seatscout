@@ -41,6 +41,7 @@ judge() {
     "${held[@]}" "$@" > "$OUT/device.md"
 }
 
+adb shell cmd overlay enable com.android.internal.systemui.navbar.gestural
 fresh "$HEAD_APK"
 maestro test "$HEAD_WALK" -e "APP_ID=$APP_ID" -e "LINK=$LINK" \
   --format junit --output "$OUT/journey.xml" --debug-output "$OUT/maestro"

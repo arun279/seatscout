@@ -814,7 +814,11 @@ and the job gates.
 **The app is walked end to end on an emulator, and the walk gates.** The `device` job builds a
 release of the app for Android, with the Source answered in the build from the corpus, and Maestro
 walks it from the Ask sheet through the ranked Seat Groups and the hand-off to the Room
-(`apps/native/e2e/journey.yaml`). A step that finds nothing fails the job, and `footprint`, which is
+(`apps/native/e2e/journey.yaml`). It leaves every level it visits twice: once by the platform's
+gesture, a drag down on a sheet and the edge swipe on a pushed screen or, on Android, on the
+full-screen Ask dialog, with the emulator's gesture navigation turned on; and once by the way back
+a person presses, the sheet's own close control or the Android back key. After each it asserts the
+screen beneath is back, so a gesture that stops working fails the check. A step that finds nothing fails the job, and `footprint`, which is
 required, needs it. The corpus stands in through Metro: `SEATSCOUT_UPSTREAM=corpus` swaps
 `src/host/upstream.ts` for `e2e/upstream.ts`, which answers from the same `fakeUpstream` the browser
 suite uses, so the bundle a phone runs never carries the corpus. Any other value is refused, and
