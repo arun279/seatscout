@@ -11100,7 +11100,7 @@ snapshots:
 
   expo-haptics@57.0.3(expo@57.0.24):
     dependencies:
-      expo: 57.0.24(463497657bd5912157b669b1ccbe2bcc)
+      expo: 57.0.24(774192243fad7124760579bca9095f45)
 
   expo-json-utils@57.0.2: {}
 
