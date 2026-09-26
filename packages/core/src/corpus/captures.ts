@@ -1,12 +1,3 @@
-import type {
-  Capture,
-  CapturedNearbyTheaters,
-  CapturedSeatMap,
-  CapturedShowtimeGrouping,
-  CapturedTheaterMovieShowtimes,
-  CapturedUpstreamError,
-  CorpusManifest,
-} from "./types.js";
 import manifest from "./manifest.json" with { type: "json" };
 import afcAapoy564402231 from "./seatmaps/AFC-aapoy-564402231.json" with {
   type: "json",
@@ -161,13 +152,22 @@ import theaterShowtimesAacbt20260920 from "./showtimes/theater-showtimes-aacbt-2
 import nearbyTheaters from "./theaters/nearby-theaters.json" with {
   type: "json",
 };
+import type {
+  Capture,
+  CapturedNearbyTheaters,
+  CapturedSeatMap,
+  CapturedShowtimeGrouping,
+  CapturedTheaterMovieShowtimes,
+  CapturedUpstreamError,
+  CorpusManifest,
+} from "./types.js";
 
 export const corpusManifest: CorpusManifest = manifest;
 
 export const seatMapCaptures: ReadonlyMap<
   string,
   Capture<CapturedSeatMap>
-> = new Map([
+> = new Map<string, Capture<CapturedSeatMap>>([
   ["seatmaps/AFC-aapoy-564402231.json", afcAapoy564402231],
   ["seatmaps/AFC-aapoy-564402238.json", afcAapoy564402238],
   ["seatmaps/ALAM-aawym-562697591.json", alamAawym562697591],
@@ -215,7 +215,7 @@ export const seatMapCaptures: ReadonlyMap<
 export const seatMapFailureCaptures: ReadonlyMap<
   string,
   Capture<readonly CapturedUpstreamError[]>
-> = new Map([
+> = new Map<string, Capture<readonly CapturedUpstreamError[]>>([
   ["seatmaps/CNMK-aacbt-564335359.json", cnmkAacbt564335359],
   ["seatmaps/L-aaddm-563960289.json", lAaddm563960289],
 ]);
@@ -223,7 +223,7 @@ export const seatMapFailureCaptures: ReadonlyMap<
 export const showtimeGroupingCaptures: ReadonlyMap<
   string,
   Capture<CapturedShowtimeGrouping>
-> = new Map([
+> = new Map<string, Capture<CapturedShowtimeGrouping>>([
   ["showtimes/grouping-243819-2026-09-20.json", grouping24381920260920],
   ["showtimes/grouping-245699-2026-09-20.json", grouping24569920260920],
   ["showtimes/grouping-245893-2026-09-19.json", grouping24589320260919],
@@ -234,7 +234,7 @@ export const showtimeGroupingCaptures: ReadonlyMap<
 export const theaterMovieShowtimesCaptures: ReadonlyMap<
   string,
   Capture<CapturedTheaterMovieShowtimes>
-> = new Map([
+> = new Map<string, Capture<CapturedTheaterMovieShowtimes>>([
   [
     "showtimes/theater-showtimes-aacbt-2026-09-20.json",
     theaterShowtimesAacbt20260920,
@@ -244,4 +244,6 @@ export const theaterMovieShowtimesCaptures: ReadonlyMap<
 export const nearbyTheatersCaptures: ReadonlyMap<
   string,
   Capture<CapturedNearbyTheaters>
-> = new Map([["theaters/nearby-theaters.json", nearbyTheaters]]);
+> = new Map<string, Capture<CapturedNearbyTheaters>>([
+  ["theaters/nearby-theaters.json", nearbyTheaters],
+]);
