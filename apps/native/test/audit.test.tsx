@@ -49,22 +49,29 @@ describe("the accessibility audit every rendered screen passes through", () => {
     );
   });
 
-  it("holds large words to 3 to 1, at 18 or at 14 in bold", async () => {
+  it("holds large words to 3 to 1, at 24 or at 18.66 in bold, which are WCAG's 18 and 14 points", async () => {
     expect(
       await audited(
-        <Text style={{ color: "#666666", fontSize: 18 }}>large</Text>,
+        <Text style={{ color: "#666666", fontSize: 24 }}>large</Text>,
       ),
     ).toBe("");
     expect(
       await audited(
-        <Text style={{ color: "#666666", fontSize: 14, fontWeight: "bold" }}>
+        <Text style={{ color: "#666666", fontSize: 18.66, fontWeight: "bold" }}>
           bold
         </Text>,
       ),
     ).toBe("");
     expect(
       await audited(
-        <Text style={{ color: "#666666", fontSize: 17 }}>not large</Text>,
+        <Text style={{ color: "#666666", fontSize: 23 }}>not large</Text>,
+      ),
+    ).toContain("1.4.3");
+    expect(
+      await audited(
+        <Text style={{ color: "#666666", fontSize: 18, fontWeight: "bold" }}>
+          not bold enough
+        </Text>,
       ),
     ).toContain("1.4.3");
   });
@@ -147,7 +154,17 @@ describe("the accessibility audit every rendered screen passes through", () => {
     expect(await audited(small(12))).toBe("");
   });
 
-  it("lets pressable words in a sentence be as small as the sentence, as 2.5.8 excepts inline targets", async () => {
+  it("lets pressable words inside a sentence be as small as the sentence, as 2.5.8 excepts inline targets, and no other words", async () => {
+    expect(
+      await audited(
+        <Text style={{ color: "#ffffff" }}>
+          Seats are kept on this phone.{" "}
+          <Text accessibilityRole="link" onPress={() => undefined}>
+            Read more
+          </Text>
+        </Text>,
+      ),
+    ).toBe("");
     expect(
       await audited(
         <Text
@@ -155,10 +172,30 @@ describe("the accessibility audit every rendered screen passes through", () => {
           onPress={() => undefined}
           style={{ color: "#ffffff" }}
         >
-          read more
+          Read more
         </Text>,
       ),
-    ).toBe("");
+    ).toContain(
+      '2.5.8 Target Size (Minimum), at the platform\'s floor: \\"Read more\\"',
+    );
+  });
+
+  it("judges a surface that answers touch directly, and lets one hidden from screen readers go without a role or name", async () => {
+    const surface = (hidden: boolean) => (
+      <View
+        accessible={!hidden}
+        importantForAccessibility={hidden ? "no-hide-descendants" : "auto"}
+        onResponderGrant={() => undefined}
+        onStartShouldSetResponder={() => true}
+        style={REACHING}
+        testID="drag-surface"
+      />
+    );
+
+    expect(await audited(surface(false))).toContain(
+      '4.1.2 Name, Role, Value: \\"drag-surface\\" can be pressed and has no role',
+    );
+    expect(await audited(surface(true))).toBe("");
   });
 
   it("refuses a text field with no label", async () => {

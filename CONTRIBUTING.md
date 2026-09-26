@@ -204,11 +204,14 @@ Each of these has one way through and no exemption to grant.
 - **A screen that fails the accessibility audit.** After every screen test, before the screen is
   torn down, `apps/native/test/setup.tsx` runs `test/audit.ts` over everything the test rendered.
   No test opts in and none opts out. It refuses, naming the control and the criterion: words under
-  4.5 to 1 against the ground drawn behind them, or 3 to 1 at 18 or at 14 in bold (WCAG 2.2 1.4.3);
-  a chosen button under 3 to 1 against its ground and its unchosen neighbours (1.4.11); something
-  that can be pressed with no role or no name (4.1.2); a control short of the platform's own touch
-  floor, 44 pt on iOS and 48 dp on Android, counting its `hitSlop` (2.5.8, words inside a sentence
-  excepted as that criterion excepts them); a text field with no label (3.3.2); words with
+  4.5 to 1 against the ground drawn behind them, or 3 to 1 at 24 or at 18.66 in bold, which are
+  WCAG's 18 and 14 points in the units React Native lays out in (WCAG 2.2 1.4.3);
+  a chosen button, radio, tab or checkbox under 3 to 1 against its ground and its unchosen
+  neighbours (1.4.11); something that can be pressed or answers touch directly with no role or no
+  name, unless it is hidden from screen readers because a control beside it does the same job
+  (4.1.2); a control short of the platform's own touch floor, 44 pt on iOS and 48 dp on Android,
+  counting its `hitSlop` (2.5.8, pressable words inside a sentence excepted as that criterion
+  excepts them); a text field with no label (3.3.2); words with
   `allowFontScaling` off (1.4.4); and a control that changes what is chosen, or the velvet commit,
   that plays no haptic feedback when the audit presses it (Apple's Human Interface Guidelines on
   playing haptics). Fix the screen: give a control the difference as `minHeight` and `minWidth`,

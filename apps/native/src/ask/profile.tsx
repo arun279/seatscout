@@ -30,6 +30,7 @@ export interface ProfileProps {
 
 const styles = StyleSheet.create({
   picker: { borderRadius: 14, borderWidth: 1, overflow: "hidden" },
+  surface: { minHeight: TOUCH_FLOOR, minWidth: TOUCH_FLOOR },
   ends: { flexDirection: "row", justifyContent: "space-between" },
 });
 
@@ -68,6 +69,8 @@ const SeatPicker = ({ profile, onChange, onHolding }: ProfileProps) => {
       ]}
     >
       <View
+        accessible={false}
+        importantForAccessibility="no-hide-descendants"
         onLayout={({ nativeEvent }) => setAcross(nativeEvent.layout.width)}
         onResponderGrant={(touch) => {
           onHolding(true);
@@ -78,6 +81,7 @@ const SeatPicker = ({ profile, onChange, onHolding }: ProfileProps) => {
         onResponderTerminate={() => onHolding(false)}
         onResponderTerminationRequest={() => false}
         onStartShouldSetResponder={onTheDot}
+        style={styles.surface}
         testID="seat-picker"
       >
         <PlanDrawing

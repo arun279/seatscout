@@ -23,8 +23,6 @@ const set = (at: Date) => [{ type: "set", nativeEvent: {} }, at] as const;
 const onIos = Platform.OS === "ios" ? describe : describe.skip;
 const onAndroid = Platform.OS === "android" ? describe : describe.skip;
 
-describe("a range of days", () => {});
-
 onIos("a range of days on iOS, as two compact date pickers", () => {
   it("offers its first and last day as two fields, From and Until", async () => {
     await spanning();

@@ -1,21 +1,33 @@
 import { expect, jest } from "@jest/globals";
 import { fireEvent, screen } from "@testing-library/react-native/pure";
 import { notificationAsync, selectionAsync } from "expo-haptics";
-import { StyleSheet } from "react-native";
 import { TOUCH_FLOOR } from "../src/design-system/touch.js";
+import {
+  chosenIn,
+  groundOf,
+  type Host,
+  hiddenFromReaders,
+  hosts,
+  inSentence,
+  nameOf,
+  numberIn,
+  pressable,
+  roleOf,
+  STATEFUL_ROLES,
+  styleOf,
+  textIn,
+} from "./audit-tree.js";
 import { contrastOf } from "./contrast.js";
-
-type Host = typeof screen.container;
 
 const HEX = /^#[0-9a-f]{6}$/i;
 const TEXT_DEFAULTS = { color: "#000000", fontSize: 14 };
 const READS = 4.5;
 const READS_LARGE = 3;
 const APART = 3;
-const LARGE = 18;
-const LARGE_BOLD = 14;
+const LARGE = 24;
+const LARGE_BOLD = 18.66;
 const BOLD = ["bold", "700", "800", "900"];
-const STATEFUL_ROLES = ["switch", "checkbox", "radio"];
+const CHOOSING_ROLES = ["button", "checkbox", "radio", "tab"];
 const COMMIT = "velvet";
 
 const CONTRAST = "WCAG 2.2 1.4.3 Contrast (Minimum)";
@@ -26,51 +38,12 @@ const LABELS = "WCAG 2.2 3.3.2 Labels or Instructions";
 const RESIZE = "WCAG 2.2 1.4.4 Resize Text";
 const FEEDBACK = "Apple HIG, Playing haptics";
 
-const styleOf = (node: Host | null): Readonly<Record<string, unknown>> => {
-  const flat: unknown = StyleSheet.flatten(node?.props["style"]);
-  return flat !== null && typeof flat === "object" ? { ...flat } : {};
-};
-
-const numberIn = (held: unknown, named: string): number => {
-  if (held === null || typeof held !== "object") return 0;
-  const value = Object.entries(held).find(([key]) => key === named)?.[1];
-  return typeof value === "number" ? value : 0;
-};
-
-const hosts = (node: Host): readonly Host[] => [
-  node,
-  ...node.children.flatMap((child) =>
-    typeof child === "string" ? [] : hosts(child),
-  ),
-];
-
-const textIn = (node: Host): string =>
-  node.children
-    .map((child) => (typeof child === "string" ? child : textIn(child)))
-    .join("")
-    .trim();
-
-const nameOf = (node: Host): string =>
-  String(
-    node.props["accessibilityLabel"] ??
-      node.props["aria-label"] ??
-      (textIn(node) || node.props["testID"] || node.type),
-  );
-
 const inherited = (node: Host, key: string): unknown => {
   for (let at: Host | null = node; at?.type === "Text"; at = at.parent) {
     const value = styleOf(at)[key];
     if (value !== undefined) return value;
   }
   return undefined;
-};
-
-const groundOf = (node: Host, house: string): string => {
-  for (let at: Host | null = node; at !== null; at = at.parent) {
-    const ground = styleOf(at)["backgroundColor"];
-    if (typeof ground === "string") return ground;
-  }
-  return house;
 };
 
 const unreadable = (...colours: readonly string[]) =>
@@ -102,14 +75,6 @@ const contrast = (node: Host, house: string): readonly string[] => {
     : [];
 };
 
-const roleOf = (node: Host): unknown =>
-  node.props["accessibilityRole"] ?? node.props["role"];
-
-const pressable = (node: Host) =>
-  typeof node.props["onClick"] === "function" ||
-  (node.type === "Text" && typeof node.props["onPress"] === "function") ||
-  STATEFUL_ROLES.includes(String(roleOf(node)));
-
 const named = (node: Host) =>
   String(
     node.props["accessibilityLabel"] ?? node.props["aria-label"] ?? "",
@@ -128,14 +93,15 @@ const reaches = (node: Host) => {
 const control = (node: Host): readonly string[] => {
   if (!pressable(node)) return [];
   const role = roleOf(node);
+  const read = !hiddenFromReaders(node);
   return [
-    ...(role === undefined
+    ...(read && role === undefined
       ? [`${NAME_ROLE}: "${nameOf(node)}" can be pressed and has no role`]
       : []),
-    ...(named(node)
+    ...(!read || named(node)
       ? []
       : [`${NAME_ROLE}: a ${String(role)} with no accessible name`]),
-    ...(node.type === "Text" || reaches(node)
+    ...(inSentence(node) || reaches(node)
       ? []
       : [
           `${TARGET}: "${nameOf(node)}" reaches less than ${TOUCH_FLOOR} by ${TOUCH_FLOOR}`,
@@ -160,17 +126,6 @@ const scales = (node: Host): readonly string[] =>
     ? [`${RESIZE}: "${nameOf(node)}" refuses the reader's text size`]
     : [];
 
-const chosenIn = (state: unknown): boolean | undefined => {
-  if (state === null || typeof state !== "object") return undefined;
-  const flags = Object.entries(state)
-    .filter(
-      ([key, value]) =>
-        ["selected", "checked"].includes(key) && typeof value === "boolean",
-    )
-    .map(([, value]) => value === true);
-  return flags.length === 0 ? undefined : flags.includes(true);
-};
-
 const colourIn = (node: Host, key: string) => {
   const value = styleOf(node)[key];
   return typeof value === "string" ? value : undefined;
@@ -179,7 +134,8 @@ const colourIn = (node: Host, key: string) => {
 const states = (nodes: readonly Host[], house: string): readonly string[] => {
   const stated = nodes.flatMap((node) => {
     const chosen = chosenIn(node.props["accessibilityState"]);
-    if (chosen === undefined || roleOf(node) !== "button") return [];
+    if (chosen === undefined || !CHOOSING_ROLES.includes(String(roleOf(node))))
+      return [];
     const ground = groundOf(node.parent ?? node, house);
     const fill = colourIn(node, "backgroundColor") ?? ground;
     return [
@@ -226,18 +182,31 @@ const attached = (node: Host, container: Host) => {
   return at !== null;
 };
 
-const felt = async (
+const commitsLast = (one: Host, other: Host) =>
+  Number(one.props["testID"] === COMMIT) -
+  Number(other.props["testID"] === COMMIT);
+
+const feedbackFailures = async (
   nodes: readonly Host[],
   container: Host,
 ): Promise<readonly string[]> => {
   const missing: string[] = [];
-  for (const node of nodes.filter(
-    (one) => pressable(one) && answersWithFeel(one),
-  )) {
-    if (!attached(node, container)) continue;
+  const heard = new Set<Host | null>();
+  for (const node of nodes
+    .filter((one) => pressable(one) && answersWithFeel(one))
+    .toReversed()
+    .toSorted(commitsLast)) {
+    if (!attached(node, container)) {
+      if (!heard.has(node.parent))
+        missing.push(
+          `${FEEDBACK}: "${nameOf(node)}" left the screen when an earlier control was pressed, and nothing beside it was heard`,
+        );
+      continue;
+    }
     jest.mocked(selectionAsync).mockClear();
     jest.mocked(notificationAsync).mockClear();
     const name = nameOf(node);
+    const group = node.parent;
     if (
       node.props["value"] !== undefined &&
       typeof node.props["onClick"] !== "function"
@@ -247,7 +216,8 @@ const felt = async (
     const calls =
       jest.mocked(selectionAsync).mock.calls.length +
       jest.mocked(notificationAsync).mock.calls.length;
-    if (calls === 0)
+    if (calls > 0) heard.add(group);
+    else
       missing.push(
         `${FEEDBACK}: "${name}" changes what is chosen or commits and plays no selection or notification feedback`,
       );
@@ -259,8 +229,9 @@ const mountedContainer = (): Host | null => {
   if (screen.isDetached) return null;
   try {
     return screen.container;
-  } catch {
-    return null;
+  } catch (unreadable) {
+    if (String(unreadable).includes("unmounted test renderer")) return null;
+    throw unreadable;
   }
 };
 
@@ -278,5 +249,5 @@ export const audit = async (house: string): Promise<void> => {
     ...states(nodes, house),
   ];
   expect(failing).toEqual([]);
-  expect(await felt(nodes, container)).toEqual([]);
+  expect(await feedbackFailures(nodes, container)).toEqual([]);
 };

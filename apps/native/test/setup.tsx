@@ -1,5 +1,6 @@
 import { afterEach, beforeAll, jest } from "@jest/globals";
 import { cleanup, render } from "@testing-library/react-native/pure";
+import { notificationAsync, selectionAsync } from "expo-haptics";
 import { createElement, type ReactNode } from "react";
 import {
   ScrollView,
@@ -10,7 +11,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { appearanceOf, themeFor } from "../src/theme.js";
 import { audit } from "./audit.js";
-import { notificationAsync, selectionAsync } from "expo-haptics";
 
 jest.mock("@react-native-async-storage/async-storage", () =>
   jest.requireActual(

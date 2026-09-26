@@ -15,7 +15,8 @@ const slide = async (name: string, value: number) => {
   await fireEvent(screen.getByLabelText(name), "valueChange", value);
 };
 
-const picker = () => screen.getByTestId("seat-picker");
+const picker = () =>
+  screen.getByTestId("seat-picker", { includeHiddenElements: true });
 
 const touched = (locationX: number, locationY: number) => ({
   nativeEvent: { locationX, locationY },
