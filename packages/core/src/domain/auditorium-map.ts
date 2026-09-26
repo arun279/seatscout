@@ -36,11 +36,14 @@ const gapsAlong = (seats: readonly Seat[]): readonly Gap[] => {
   return gaps;
 };
 
+const rowNamedBy = (id: string) =>
+  /^\d/.test(id) ? id.slice(0, -2) : id.slice(0, id.search(/\d/));
+
 const labelOf = (row: readonly Seat[]) => {
-  const initial = row
-    .map((seat) => seat.id.slice(0, 1))
+  const named = row
+    .map((seat) => rowNamedBy(seat.id))
     .reduce((left, right) => (left === right ? left : ""));
-  return initial === "" ? null : initial;
+  return named === "" ? null : named;
 };
 
 const seatRowsOf = (seats: readonly Seat[]): readonly SeatRow[] =>
