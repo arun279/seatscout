@@ -22,7 +22,7 @@ name: Back by the platform's gesture, from a sheet, a dialog or a pushed screen
       true: ${LEVEL == 'dialog' || LEVEL == 'pushed'}
     commands:
       - swipe:
-          start: 0%, 50%
+          start: 1%, 50%
           end: 75%, 50%
 - runFlow:
     when:
@@ -30,5 +30,5 @@ name: Back by the platform's gesture, from a sheet, a dialog or a pushed screen
       true: ${LEVEL == 'pushed'}
     commands:
       - swipe:
-          start: 0%, 50%
+          start: 1%, 50%
           end: 75%, 50%

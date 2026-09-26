@@ -42,6 +42,7 @@ judge() {
 }
 
 adb shell cmd overlay enable com.android.internal.systemui.navbar.gestural
+echo "Navigation mode, 2 is gestural: $(adb shell settings get secure navigation_mode)"
 fresh "$HEAD_APK"
 maestro test "$HEAD_WALK" -e "APP_ID=$APP_ID" -e "LINK=$LINK" \
   --format junit --output "$OUT/journey.xml" --debug-output "$OUT/maestro"
