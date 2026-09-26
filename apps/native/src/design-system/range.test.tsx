@@ -39,7 +39,7 @@ describe("a range a person slides along", () => {
     await ranging();
 
     expect(screen.getByText("67% of the way back")).toBeOnTheScreen();
-    expect(slider().props["accessibilityValue"]).toEqual({
+    expect(slider().props["accessibilityValue"]).toMatchObject({
       text: "67% of the way back",
     });
   });
@@ -71,6 +71,22 @@ describe("a range a person slides along", () => {
     expect(StyleSheet.flatten(slider().parent?.props["style"]).height).toBe(
       TOUCH_FLOOR,
     );
+  });
+
+  it("tells a screen reader where its thumb sits between its ends, in whole hundredths", async () => {
+    await render(
+      <Range
+        label="Left or right"
+        onChange={jest.fn()}
+        said="a little left"
+        scale={{ min: -1, max: 1, step: 0.01 }}
+        value={-0.304}
+      />,
+    );
+
+    expect(
+      screen.getByLabelText("Left or right").props["accessibilityValue"],
+    ).toEqual({ min: -100, max: 100, now: -30, text: "a little left" });
   });
 
   it("moves its thumb to zero when the value it holds becomes zero", async () => {

@@ -1,138 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { main } from "./main.ts";
-
-const measure = (fps: number, ui: number, js: number, ram: number) => ({
-  cpu: { perName: { "UI Thread": ui, mqt_v_js: js }, perCore: {} },
-  ram,
-  fps,
-  time: 500,
-});
-
-const iteration = (time: number, fps: number, ram: number) => ({
-  time,
-  status: "SUCCESS",
-  measures: [measure(fps, 20, 10, ram), measure(fps, 40, 30, ram)],
-});
-
-const run = (...iterations: readonly object[]) =>
-  JSON.stringify({ name: "run", status: "SUCCESS", iterations });
-
-const times = (
-  runtimes: readonly number[],
-  fps: readonly number[] = [60, 60, 60],
-  ram: readonly number[] = [100, 100, 100],
-) =>
-  run(
-    ...runtimes.map((time, at) => iteration(time, fps[at] ?? 0, ram[at] ?? 0)),
-  );
-
-const FILES: Readonly<Record<string, string>> = {
-  "head-startup.json": times([1000, 1020, 1010]),
-  "head-walk.json": times([20000, 20400, 20200], [60, 60, 60], [200, 202, 201]),
-  "base-startup.json": times([1000, 1030, 1015]),
-  "base-walk.json": times([20100, 20500, 20300], [60, 60, 60], [200, 203, 201]),
-  "slower-startup.json": times([1100, 1120, 1110]),
-  "fewer-frames.json": times(
-    [20000, 20400, 20200],
-    [55, 55, 55],
-    [200, 202, 201],
-  ),
-  "unsteady-startup.json": times([500, 1500, 1000]),
-  "startup.json": run(iteration(900, 60, 100), iteration(1100, 60, 100)),
-  "journey.json": run(iteration(20000, 60, 200), iteration(30000, 50, 300)),
-  "startup-retried.json": run(
-    iteration(900, 60, 100),
-    { ...iteration(5000, 60, 100), status: "FAILURE" },
-    iteration(1100, 60, 100),
-  ),
-  "startup-wide.json": run(iteration(500, 60, 100), iteration(1500, 60, 100)),
-  "no-ram.json": run({
-    time: 900,
-    status: "SUCCESS",
-    measures: [
-      {
-        cpu: { perName: { "UI Thread": 20 }, perCore: {} },
-        fps: 60,
-        time: 500,
-      },
-    ],
-  }),
-  "failed.json": JSON.stringify({
-    name: "run",
-    status: "FAILURE",
-    iterations: [iteration(900, 60, 100)],
-  }),
-  "no-iteration.json": run(),
-  "no-measure.json": run({ time: 900, status: "SUCCESS", measures: [] }),
-  "one-unmeasured.json": run(iteration(900, 60, 100), {
-    time: 900,
-    status: "SUCCESS",
-    measures: [],
-  }),
-  "no-frame.json": run({
-    time: 900,
-    status: "SUCCESS",
-    measures: [
-      { cpu: { perName: { "UI Thread": 20 }, perCore: {} }, time: 500 },
-    ],
-  }),
-  "no-fps.json": run({
-    time: 900,
-    status: "SUCCESS",
-    measures: [
-      {
-        cpu: { perName: { "UI Thread": 20 }, perCore: {} },
-        ram: 100,
-        time: 500,
-      },
-    ],
-  }),
-  "not-a-run.json": '{"lcp":1}',
-  "not-json.json": "Flashlight crashed",
-  "null.json": "null",
-  "a-number.json": "5",
-  "no-status.json": '{"iterations":[]}',
-  "no-list.json": '{"status":"SUCCESS","iterations":{}}',
-};
-
-const ran = (...argv: string[]) => {
-  const out: string[] = [];
-  const err: string[] = [];
-  const code = main(
-    ["node", "device", ...argv],
-    (path) => FILES[path] ?? null,
-    { write: (text) => out.push(text) },
-    { write: (text) => err.push(text) },
-  );
-  return { code, out: out.join(""), err: err.join("") };
-};
-
-const held = (...argv: string[]) =>
-  ran(
-    "--head-startup",
-    "head-startup.json",
-    "--head-journey",
-    "head-walk.json",
-    "--base-startup",
-    "base-startup.json",
-    "--base-journey",
-    "base-walk.json",
-    ...argv,
-  );
-
-const heldWith = (swap: string, file: string) =>
-  ran(
-    ...[
-      "--head-startup",
-      "head-startup.json",
-      "--head-journey",
-      "head-walk.json",
-      "--base-startup",
-      "base-startup.json",
-      "--base-journey",
-      "base-walk.json",
-    ].map((value, at, all) => (all[at - 1] === swap ? file : value)),
-  );
+import { held, heldWith, ran } from "./main.fixtures.ts";
 
 describe("what the emulator measured, held to the merge base", () => {
   it("passes a branch no worse than the merge base's worst iteration on a steady runner, saying what it measured", () => {
@@ -225,6 +92,18 @@ describe("what the emulator measured, held to the merge base", () => {
     );
     expect(report.out).toContain(
       "The merge base has no walk to measure, so nothing here is held to one.",
+    );
+  });
+
+  it("takes the middle iteration rather than the mean, so one slow iteration cannot move it", () => {
+    expect(heldWith("--head-startup", "skewed-startup.json").out).toContain(
+      "| Start-up, launch to the first frame | 1010 ms | 1.7% | 1030 ms | 1.2% |",
+    );
+  });
+
+  it("takes the mean of the two middle iterations when there is an even number", () => {
+    expect(heldWith("--head-startup", "startup.json").out).toContain(
+      "| Start-up, launch to the first frame | 1000 ms | 10% |",
     );
   });
 

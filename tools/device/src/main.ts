@@ -27,10 +27,7 @@ const pathsIn = (argv: readonly string[]) => {
   const head = pairAfter(argv, "head");
   const base = pairAfter(argv, "base");
   const alone = argv.includes("--no-baseline");
-  const partial =
-    base === null &&
-    ["--base-startup", "--base-journey"].some((flag) => argv.includes(flag));
-  if (head === null || partial || alone === (base !== null)) return null;
+  if (head === null || alone === (base !== null)) return null;
   return { head, base };
 };
 
