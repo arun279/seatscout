@@ -417,7 +417,7 @@ jobs:
             node tools/no-empty-run/src/index.ts mutation "$report" || refused=1
           done
           exit "$refused"
-      - name: Check that the shards between them saw every test file, counting a suite once however many shards divide it
+      - name: Check that every test file in the tree is reached by some shard
         id: collection
         continue-on-error: true
         run: |
@@ -427,27 +427,30 @@ jobs:
             [ -s "reports/mutation/$id.counted.json" ] || uncounted="$uncounted $id"
           done
           if [ -n "$uncounted" ]; then
-            echo "::error::These shards published no count of the tests they ran:$uncounted. The sum over the shards can be held to nothing, and a shard that did not report is a red verdict rather than a smaller number."
+            echo "::error::These shards published no count of the tests they ran:$uncounted. The union over the shards can be held to nothing, and a shard that did not report is a red verdict rather than a smaller number."
             exit 1
           fi
           pnpm exec vitest list --json="$RUNNER_TEMP/unit.json"
-          pnpm exec jest --config apps/native/jest.config.js --ci --json --maxWorkers 2 \
-            --outputFile="$RUNNER_TEMP/screens.json" > /dev/null
-          if [ ! -s "$RUNNER_TEMP/unit.json" ] || [ ! -s "$RUNNER_TEMP/screens.json" ]; then
-            echo "::error::A runner wrote no listing of its tests, so there is nothing to hold the sum over the shards to. Its own errors are above."
+          pnpm exec jest --config apps/native/jest.config.js --listTests > "$RUNNER_TEMP/screens.txt"
+          if [ ! -s "$RUNNER_TEMP/unit.json" ] || [ ! -s "$RUNNER_TEMP/screens.txt" ]; then
+            echo "::error::A runner wrote no listing of its tests, so there is nothing to hold the union over the shards to. Its own errors are above."
             exit 1
           fi
-          held=$(( $(jq 'length' "$RUNNER_TEMP/unit.json") + $(jq '.numTotalTests' "$RUNNER_TEMP/screens.json") ))
-          counted="$(jq -s '[.[] | {suite, ran}] | unique | map(.ran) | add // 0' reports/mutation/*.counted.json)"
+          jq -s '[.[].files[]] | unique' reports/mutation/*.counted.json > "$RUNNER_TEMP/judged.json"
+          jq -R -s 'split("\n") | map(select(length > 0))' "$RUNNER_TEMP/screens.txt" \
+            | jq -s --slurpfile unit "$RUNNER_TEMP/unit.json" '(.[0] + [$unit[0][].file]) | unique' > "$RUNNER_TEMP/held.json"
+          counted="$(jq 'length' "$RUNNER_TEMP/judged.json")"
+          held="$(jq 'length' "$RUNNER_TEMP/held.json")"
           {
             echo "counted=$counted"
             echo "held=$held"
           } >> "$GITHUB_OUTPUT"
-          echo "The shards judged $counted tests of the $held the runners collect."
-          if [ "$counted" -eq "$held" ]; then
+          unreached="$(jq -r --slurpfile judged "$RUNNER_TEMP/judged.json" '. - $judged[0] | .[]' "$RUNNER_TEMP/held.json")"
+          echo "The shards reached $counted test files of the $held the runners collect."
+          if [ -z "$unreached" ]; then
             exit 0
           fi
-          echo "::error::The shards judged $counted tests between them and the runners collect $held. A test file under no shard's suite falls between them and is judged by nothing, so stryker.shards.json is short of a workspace, or two shards of one suite ran different counts of it."
+          echo "::error::These test files are reached by no shard, so nothing judges what they assert: $(echo "$unreached" | tr '\n' ' '). A test file that relates to no mutated source, or a source under no shard, falls between the shards."
           exit 1
       - name: Install the counter
         if: ${{ !cancelled() }}
@@ -476,7 +479,7 @@ jobs:
             echo "| --- | --- |"
             echo "| Mutation runs, one per workspace | $JUDGED |"
             echo "| Every shard left a report | $REPORTED |"
-            echo "| Test collection | $COLLECTION, the shards held ${COUNTED:-an uncounted number of} tests between them, and the runners collect ${HELD:-an uncounted number} |"
+            echo "| Test collection | $COLLECTION, the shards reached ${COUNTED:-an uncounted number of} test files between them, and the runners collect ${HELD:-an uncounted number} |"
             echo "| Footprint measurement | $MEASURED |"
             echo "| Journey over the built app on an Android emulator | ${WALKED:-not walked} |"
             echo "| Start-up and frame rate read on the emulator | ${MEASURED_ON_DEVICE:-not read} |"
