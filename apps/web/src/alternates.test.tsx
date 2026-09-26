@@ -105,7 +105,7 @@ describe("the Seat Groups a room offers, as one choice", () => {
     const [asked] = await openedRooms(
       {
         movie: "245569",
-        date: "2026-08-28",
+        dates: ["2026-08-28"],
         area: "75006",
         partySize: 2,
         accessibleSeating: true,
@@ -141,7 +141,7 @@ describe("the Seat Groups a room offers, as one choice", () => {
     const [room] = await openedRooms(
       {
         movie: "245569",
-        date: "2026-08-28",
+        dates: ["2026-08-28"],
         area: "75006",
         partySize: 3,
         accessibleSeating: false,

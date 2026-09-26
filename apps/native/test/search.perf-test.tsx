@@ -24,7 +24,7 @@ const WHOLE_LISTING: Terms = {
 
 const WHOLE_SEARCH: SearchTerms = {
   movie: "245569",
-  date: TODAY,
+  dates: [TODAY],
   area: "75006",
   partySize: 2,
   accessibleSeating: false,

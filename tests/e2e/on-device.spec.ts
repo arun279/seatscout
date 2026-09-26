@@ -10,7 +10,7 @@ import {
 
 const ANOTHER_NIGHT = "/?movie=243819&date=2026-08-28&area=75234&partySize=3";
 const PROFILE_KEY = "seatscout.profile.v1";
-const RECENT_KEY = "seatscout.recent.v1";
+const RECENT_KEY = "seatscout.recent.v2";
 const SEAT_MAP = "/napi/seatMap/";
 const A_ROOM = "/napi/seatMap/561478479";
 const ROOMS = 172;

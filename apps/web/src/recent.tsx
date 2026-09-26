@@ -2,6 +2,7 @@ import "./house.css";
 import type { RecentSearch } from "@seatscout/client";
 import type { ReactElement } from "react";
 import {
+  isPast,
   NOTHING_REMEMBERED,
   saidOf,
   type Terms,
@@ -21,7 +22,7 @@ export const Recent = ({
   heading,
   onRun,
 }: RecentProps): ReactElement => {
-  const offered = recent.filter((search) => search.date >= today);
+  const offered = recent.filter((search) => !isPast(search.dates, today));
   return (
     <section className="recent" aria-labelledby="recent-title">
       <h2 id="recent-title" className="eyebrow">
@@ -37,7 +38,9 @@ export const Recent = ({
                 type="button"
                 className="rerun"
                 aria-label={`${search.movie}, ${saidOf(search, today)}`}
-                onClick={() => onRun(termsOf(search, today))}
+                onClick={() =>
+                  onRun(termsOf({ ...search, date: search.dates }, today))
+                }
               >
                 <span className="display">{search.movie}</span>
                 <span className="line">{saidOf(search, today)}</span>

@@ -1,3 +1,4 @@
+import type { RecentSearch } from "@seatscout/client";
 import { fakeUpstream } from "@seatscout/client/testing";
 import { act, screen, waitFor, within } from "@testing-library/react";
 import type { Root } from "react-dom/client";
@@ -9,7 +10,7 @@ const SEAT_MAP = "/napi/seatMap/";
 const NEARBY = "/napi/nearbyTheaters";
 
 export const PROFILE = "seatscout.profile.v1";
-export const RECENT = "seatscout.recent.v1";
+export const RECENT = "seatscout.recent.v2";
 export const TONIGHT_QUERY =
   "?movie=245569&date=2026-08-28&area=75006&partySize=2";
 export const NO_MOVIE_QUERY = "?date=2026-08-28&area=75006&partySize=2";
@@ -18,15 +19,15 @@ export const SMALLEST_LISTING_QUERY =
   "?movie=245569&date=2026-08-27&area=75006&partySize=2";
 export const SMALLEST_LISTING_NO_AREA_QUERY =
   "?movie=245569&date=2026-08-27&partySize=2";
-export const TONIGHT_ASKED = {
+export const TONIGHT_ASKED: RecentSearch = {
   movie: "245569",
-  date: "2026-08-28",
+  dates: ["2026-08-28"],
   area: "75006",
   partySize: 2,
 };
-export const SMALLEST_LISTING_ASKED = {
+export const SMALLEST_LISTING_ASKED: RecentSearch = {
   movie: "245569",
-  date: "2026-08-27",
+  dates: ["2026-08-27"],
   area: "75006",
   partySize: 2,
 };

@@ -109,20 +109,24 @@ describe("the aggregating source", () => {
     expect(fetch.requests).toHaveLength(3);
   });
 
-  it("reads a rejection as a refusal like any other rather than as a session to re-open", async () => {
+  it("reads a rejection as the Source refusing this client, and never asks again into the block", async () => {
+    const listing = "/napi/theaterShowtimeGroupings/245569/2026-08-28";
     const { fetch, source, waits } = rig({
-      sequences: { [SEAT_MAP]: [403, 403, 403] },
+      sequences: { [SEAT_MAP]: [403, 200], [listing]: [403, 200] },
     });
-    const reading = await source.seatsFor("561748075");
-
-    expect(reading).toEqual({
+    const refused = {
       ok: false,
-      reason: "unreachable",
+      reason: "refused",
       fetchedAt: 1000,
-      attempts: 3,
-    });
-    expect(pathsOf(fetch)).toEqual([SEAT_MAP, SEAT_MAP, SEAT_MAP]);
-    expect(waits).toEqual([250, 500]);
+      attempts: 1,
+    };
+
+    expect(await source.seatsFor("561748075")).toEqual(refused);
+    expect(await source.showtimesFor("245569", "2026-08-28", "75006")).toEqual(
+      refused,
+    );
+    expect(fetch.requests).toHaveLength(2);
+    expect(waits).toEqual([]);
   });
 
   it("exhausts retry over a growing backoff and says so rather than reading nothing", async () => {

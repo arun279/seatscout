@@ -1,5 +1,6 @@
 import type { RecentSearch } from "@seatscout/client";
 import {
+  isPast,
   NOTHING_REMEMBERED,
   saidOf,
   type Terms,
@@ -49,7 +50,7 @@ const Row = ({
     <TouchableOpacity
       accessibilityLabel={`${search.movie}, ${saidOf(search, today)}`}
       accessibilityRole="button"
-      onPress={() => onRun(termsOf(search, today))}
+      onPress={() => onRun(termsOf({ ...search, date: search.dates }, today))}
       style={[
         styles.row,
         {
@@ -75,7 +76,7 @@ const Row = ({
 
 const Offered = ({ remembered, today, onRun }: RecentProps) => {
   if (remembered === undefined) return null;
-  const offered = remembered.filter((search) => search.date >= today);
+  const offered = remembered.filter((search) => !isPast(search.dates, today));
 
   if (offered.length === 0)
     return (
@@ -86,7 +87,7 @@ const Offered = ({ remembered, today, onRun }: RecentProps) => {
 
   return offered.map((search, at) => (
     <Row
-      key={`${search.movie}|${search.date}|${search.area}|${search.partySize}`}
+      key={`${search.movie}|${search.dates.join()}|${search.area}|${search.partySize}`}
       last={at === offered.length - 1}
       onRun={onRun}
       search={search}

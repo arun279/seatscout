@@ -126,9 +126,10 @@ Each of these has one way through and no exemption to grant.
   sentence or correct the tree, then follow the sentence into
   `tools/counts-in-prose/claims.ts` or `tools/claims-in-prose.pairs.mjs`, where every pair is
   declared; the sentences ADR 6 makes about a gate's globs and thresholds are in
-  `tools/claims-in-prose.pairs.gates.mjs` beside it. A new ADR fails `pnpm claims` until it is
-  paired in one of the last two or recorded in `tools/claims-in-prose.unchecked.mjs` as
-  carrying no claim a search can hold.
+  `tools/claims-in-prose.pairs.gates.mjs` beside it, and those the records of a search make are
+  in `tools/claims-in-prose.pairs.search.mjs`. A new ADR fails `pnpm claims` until it is paired
+  in one of the last three or recorded in `tools/claims-in-prose.unchecked.mjs` as carrying no
+  claim a search can hold.
 - **A word the spell check does not know.** Put it in the `words` list in `cspell.json`. The
   `flagWords` list beside it is the opposite and has no remedy; ADR 8 says what it refuses and
   why.

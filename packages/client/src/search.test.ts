@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
   AT,
-  INWOOD,
-  STONEBRIAR,
-  VILLAGE,
   accountedIn,
   arrivalIn,
+  INWOOD,
   idsIn,
   namedIn,
   refusalNamed,
   routesTo,
+  STONEBRIAR,
   searching,
   stoppedSelling,
+  VILLAGE,
   withoutIdentity,
 } from "./search.fixtures.js";
 
@@ -106,7 +106,7 @@ describe("a search", () => {
     ).toEqual([]);
   });
 
-  it("closes the Coverage ledger in every snapshot, not only the last", async () => {
+  it("closes the Coverage ledger in every snapshot, what is left being what is still being read", async () => {
     const run = await searching({});
     const settled = await run.search.done;
 
@@ -120,6 +120,11 @@ describe("a search", () => {
     expect(left.filter((now, at) => now > (left[at - 1] ?? now))).toEqual([]);
     expect(left[0]).toBe(172);
     expect(left.at(-1)).toBe(0);
+    expect(
+      run.snapshots.map((snapshot) =>
+        snapshot.days.reduce((sum, day) => sum + day.reading + day.unread, 0),
+      ),
+    ).toEqual(left);
     expect(settled.coverage.candidates).toBe(176);
   });
 

@@ -15,7 +15,6 @@ import {
   precedes,
   settledAlone,
   staged,
-  TODAY,
   TONIGHT,
 } from "./search.fixtures.js";
 import { clockOf, labelOf } from "@seatscout/view-logic";
@@ -153,23 +152,6 @@ describe("the list on the first screen", () => {
       expect(cardOf(result).querySelectorAll("line")).toHaveLength(
         result.plan.reduce((lines, row) => lines + row.runs.length, 1),
       );
-  });
-
-  it("says the days after the nearest are not read yet when the query spans days", async () => {
-    const settled = await settledAlone();
-
-    listing(settled, true, {
-      ...TONIGHT,
-      when: { kind: "range", first: TODAY, last: "2026-08-30" },
-    });
-
-    expect(screen.getByText("Sat 29 to Sun 30 Aug not read yet")).toBeVisible();
-  });
-
-  it("says nothing of the kind for one day", async () => {
-    listing(await settledAlone());
-
-    expect(screen.queryByText(/not read yet/)).toBeNull();
   });
 
   it("says nothing about seats not bookable on a card whose room had every seat to offer", async () => {

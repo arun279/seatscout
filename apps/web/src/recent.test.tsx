@@ -13,14 +13,21 @@ import {
 
 const TOMORROW: RecentSearch = {
   movie: "243819",
-  date: "2026-08-29",
+  dates: ["2026-08-29"],
   area: "75234",
   partySize: 4,
 };
 
+const TONIGHT_KEPT: RecentSearch = {
+  movie: TONIGHT.movie,
+  dates: [TODAY],
+  area: TONIGHT.area,
+  partySize: TONIGHT.partySize,
+};
+
 const YESTERDAY: RecentSearch = {
   movie: "246329",
-  date: "2026-08-27",
+  dates: ["2026-08-27"],
   area: "75006",
   partySize: 1,
 };
@@ -36,7 +43,7 @@ describe("recent searches, on the first screen", () => {
   it("offers the searches this device ran, newest first, each as one press", () => {
     const stage = staged({
       terms: NOTHING,
-      recent: [TOMORROW, TONIGHT],
+      recent: [TOMORROW, TONIGHT_KEPT],
     });
 
     expect(again().map((button) => button.textContent)).toEqual([
@@ -54,7 +61,7 @@ describe("recent searches, on the first screen", () => {
   it("counts one seat as one, not as one seats", () => {
     staged({
       terms: NOTHING,
-      recent: [{ ...TONIGHT, partySize: 1 }],
+      recent: [{ ...TONIGHT_KEPT, partySize: 1 }],
     });
 
     expect(again().map((button) => button.textContent)).toEqual([
@@ -63,7 +70,7 @@ describe("recent searches, on the first screen", () => {
   });
 
   it("names each one to assistive technology by what it asked for", () => {
-    staged({ terms: NOTHING, recent: [TONIGHT] });
+    staged({ terms: NOTHING, recent: [TONIGHT_KEPT] });
 
     expect(
       screen.getByRole("button", {
@@ -75,7 +82,7 @@ describe("recent searches, on the first screen", () => {
   it("leaves out a search for a day that has passed, and says so plainly when none is left", () => {
     staged({
       terms: NOTHING,
-      recent: [YESTERDAY, TONIGHT],
+      recent: [YESTERDAY, TONIGHT_KEPT],
     });
     expect(again().map((button) => button.textContent)).toEqual([
       "2455692 seats · today · 75006",
@@ -93,7 +100,7 @@ describe("recent searches, on the first screen", () => {
   it("is not on the screen while a search is, and is on the sheet instead, where one press runs it under the sheet's Profile and closes the sheet", async () => {
     const stage = staged({
       terms: SMALLEST_LISTING,
-      recent: [TONIGHT, TOMORROW],
+      recent: [TONIGHT_KEPT, TOMORROW],
       profile: FRONT_ROW,
     });
     await stage.settled();

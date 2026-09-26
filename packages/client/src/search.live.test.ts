@@ -74,7 +74,13 @@ describe("a full search against the live Source", () => {
       source: sourceOn(reaching(live.origin, live.headers)),
       store: inMemoryStore(),
       now: Date.now,
-    })({ ...terms, partySize: 2, accessibleSeating: false });
+    })({
+      movie: terms.movie,
+      dates: [terms.date],
+      area: terms.area,
+      partySize: 2,
+      accessibleSeating: false,
+    });
     search.subscribe(() => marks.push(Date.now()));
     const settled = await search.done;
     const whole = Date.now() - started;

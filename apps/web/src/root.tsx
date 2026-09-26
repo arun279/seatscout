@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { App, type Checkout, type Clock } from "./app.js";
 import type { Address } from "./browser.js";
-import { type Terms, twoDigits } from "@seatscout/view-logic";
+import { type Terms, twoDigits, valuesOf } from "@seatscout/view-logic";
 import { queryOf, termsIn } from "./terms.js";
 
 export interface Remembered {
@@ -48,10 +48,11 @@ export const Root = ({
   const terms = termsIn(query, today);
 
   useEffect(() => {
-    const { movie, date, area, partySize } = termsIn(query, today);
+    const asked = termsIn(query, today);
+    const { movie, area, partySize } = asked;
     if (movie === undefined || area === undefined) return;
     void seatscout.recent
-      .remember({ movie, date, area, partySize })
+      .remember({ movie, dates: valuesOf(asked), area, partySize })
       .then(setRecent);
   }, [query, today, seatscout]);
 

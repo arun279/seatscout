@@ -1,6 +1,13 @@
-import type { Coverage, SeatGroupResult, Snapshot } from "@seatscout/client";
-import { accountOf, beingReadIn, unreachedIn } from "./derived.js";
+import {
+  type Coverage,
+  type Day,
+  SEAT_MAP_BUDGET,
+  type SeatGroupResult,
+  type Snapshot,
+} from "@seatscout/client";
+import { accountOf, beingReadIn, unreachedIn, unreadIn } from "./derived.js";
 import { clockOf, noneOf, spokenOf, wordOf } from "./phrases.js";
+import { dayOf, whenOf } from "./when-phrases.js";
 import type { Terms } from "./terms.js";
 
 type Named = Coverage["soldOut"][number];
@@ -8,14 +15,61 @@ type Named = Coverage["soldOut"][number];
 export const nameOf = (showtime: Named): string =>
   `${showtime.presentation.theater.name} · ${clockOf(showtime.startsAt)}`;
 
+const REFUSED = "the source refused, so the search stopped";
+
+const countsOf = (snapshot: Snapshot): string => {
+  const account = accountOf(snapshot.coverage);
+  const unread = unreadIn(snapshot);
+  const toGo = account.remaining - unread;
+  return [
+    `${account.candidates} candidates`,
+    `${account.checked} checked`,
+    ...(toGo > 0 ? [`${toGo} to go`] : []),
+    ...(unread > 0 ? [`${unread} not read yet`] : []),
+    ...(snapshot.refused ? [REFUSED] : []),
+  ].join(" · ");
+};
+
 export const coverageOf = (snapshot: Snapshot): string => {
   if (snapshot.phase === "resolving") return "Reading the listing";
-  if (snapshot.phase === "unreachable") return "Nothing was read";
-  const account = accountOf(snapshot.coverage);
-  const counts = `${account.candidates} candidates · ${account.checked} checked`;
-  return account.remaining > 0
-    ? `${counts} · ${account.remaining} to go`
-    : counts;
+  if (snapshot.phase === "unreachable")
+    return snapshot.refused
+      ? `Nothing was read: ${REFUSED}`
+      : "Nothing was read";
+  return countsOf(snapshot);
+};
+
+export const dayCoverageOf = (day: Day, today: string): string => {
+  const counts = [
+    ...(day.read > 0 ? [`${day.read} read`] : []),
+    ...(day.reading > 0 ? [`${day.reading} being read`] : []),
+    ...(day.unread > 0 ? [`${day.unread} not read yet`] : []),
+  ];
+  return `${dayOf(day.date, today)}: ${counts.length > 0 ? counts.join(" · ") : "no seat map to read"}`;
+};
+
+export const readMoreOf = (
+  snapshot: Snapshot,
+  today: string,
+): string | null => {
+  if (snapshot.phase !== "settled" || snapshot.refused) return null;
+  const next = snapshot.days
+    .filter((day) => day.unread > 0)
+    .reduce<{ readonly count: number; readonly dates: readonly string[] }>(
+      (taken, day) =>
+        taken.count < SEAT_MAP_BUDGET
+          ? {
+              count: Math.min(SEAT_MAP_BUDGET, taken.count + day.unread),
+              dates: [...taken.dates, day.date],
+            }
+          : taken,
+      { count: 0, dates: [] },
+    );
+  const days = next.dates.map((date) => whenOf(date, today));
+  const last = days.pop();
+  return last === undefined
+    ? null
+    : `Read ${next.count} more rooms ${[...days, last].join(" and ")}`;
 };
 
 export const LEDGER = "ledger ›";

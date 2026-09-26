@@ -6,7 +6,8 @@ import {
 } from "@seatscout/client";
 import { seatsOf } from "./derived.js";
 import type { Terms } from "./terms.js";
-import { dayOf, RELATIVE_DAYS, whenSaidOf } from "./when-phrases.js";
+import { RELATIVE_DAYS, whenSaidOf, whenWordsOf } from "./when-phrases.js";
+import { spanOf } from "./when.js";
 
 type RankReasons = SeatGroupResult["reasons"];
 
@@ -82,7 +83,7 @@ export const seatSetOf = (profile: SeatProfile): string =>
   isReference(profile) ? "the Reference seat" : "your custom seat";
 
 export const saidOf = (search: RecentSearch, today: string): string => {
-  const day = dayOf(search.date, today);
+  const day = whenWordsOf(spanOf(search.dates, today), today);
   return [
     `${search.partySize} seat${search.partySize === 1 ? "" : "s"}`,
     RELATIVE_DAYS.includes(day) ? day.toLowerCase() : day,

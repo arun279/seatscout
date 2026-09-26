@@ -44,11 +44,12 @@ having a Source of its own.
 ## Reading
 
 What one read of a Source answers with: either the payload that was asked for, or one of
-four reasons there is none.
+five reasons there is none.
 
-The reasons are `noSeatMap`, `started`, `soldOut` and `unreachable`, and each names its own
-remedy: the operator's own page, the next screening, another time at that Theater, and a
-retry. Only a seat map read ever answers with the first three. A 404 on a showtime listing
+The reasons are `noSeatMap`, `started`, `soldOut`, `unreachable` and `refused`, and each names
+its own remedy: the operator's own page, the next screening, another time at that Theater, a
+retry, and waiting. A read is **refused** when the Source has stopped answering this client for
+a while; asking again lengthens that, so it is never retried. Only a seat map read ever answers with the first three. A 404 on a showtime listing
 is not a screening that has begun, so on the other operations those statuses are failures
 like any other.
 
@@ -239,7 +240,7 @@ seating, and Seat Profile.
 
 **The days** a Query asks about take one of four kinds: one day, several days picked, a
 range, or any day within a horizon counted from today. The nearest of them is the day a
-listing is read for first.
+listing is read for first. The time window is a time of day, and it holds on each of them.
 
 Accessible seating is a deliberate term rather than a relaxation. A Query that asks for it
 is answered only with Seat Groups that carry a wheelchair or companion Seat, because
@@ -314,6 +315,13 @@ its Theater and time, and it is offered the operator's own page rather than a re
 Leaving it out of the count instead is what would make the short list look whole. A
 Showtime the Source did identify and already said is sold out, general admission or over is
 not this: it keeps that reason and the remedy that goes with it.
+
+The not-reached remainder is two things. What is **being read** is the seat maps a search has
+asked for and not yet heard back about. What is **not read yet** is what a search has not asked
+for at all, because a search over several days reads a bounded number of seat maps at a time,
+nearest day first, and reads the next only when a person asks. Both are counted per day. A
+search the Source refused stops asking and says so, and every seat map it was refused or had
+not yet asked for is not read yet.
 
 A screening at a Theater the Source says has **stopped selling** is on the same footing, and
 it is the one thing a listing says that its own flags do not. Such a row has not begun, is

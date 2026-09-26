@@ -88,7 +88,7 @@ const SEAT_MAP = "/napi/seatMap/";
 
 const CORPUS_QUERY: SearchTerms = {
   movie: "245569",
-  date: "2026-08-28",
+  dates: ["2026-08-28"],
   area: "75006",
   partySize: 2,
   accessibleSeating: false,

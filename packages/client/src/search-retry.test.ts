@@ -130,7 +130,12 @@ describe("retrying a search", () => {
     const again = run.search.retry();
     run.search.abort();
 
-    expect((await again).coverage.failed).toEqual(refused);
+    const abandoned = await again;
+
+    expect(abandoned.coverage.failed).toEqual(refused);
+    expect(abandoned.days).toEqual([
+      { date: "2026-08-28", read: 4, reading: 0, unread: 0 },
+    ]);
   });
 
   it("issues nothing once it has been aborted", async () => {

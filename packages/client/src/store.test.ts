@@ -178,7 +178,7 @@ describe("the key-value store contract", () => {
       'listing read undefined rather than {"fetchedAt":9,"catalogue":{"bookable":[],"unbookable":[],"unidentified":[]}}',
       'programme read undefined rather than {"fetchedAt":8,"programme":{"theaters":[],"movies":[],"unreached":[]}}',
       'profile read undefined rather than {"targetDepth":0.5,"targetLateral":-0.25,"depthWeight":1.5,"offAxisWeight":0.75,"frontBandWeight":0,"wallBandWeight":0.125,"podDividerWeight":2,"screenGap":6,"rowPitch":1.71,"frontBand":6.97}',
-      'recent read undefined rather than [{"movie":"245569","date":"2026-08-28","area":"75006","partySize":2}]',
+      'recent read undefined rather than [{"movie":"245569","dates":["2026-08-28"],"area":"75006","partySize":2}]',
     ]);
   });
 

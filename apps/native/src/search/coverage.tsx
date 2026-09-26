@@ -1,14 +1,22 @@
 import type { Snapshot } from "@seatscout/client";
-import { accountOf, coverageOf, LEDGER } from "@seatscout/view-logic";
+import {
+  accountOf,
+  coverageOf,
+  LEDGER,
+  readMoreOf,
+} from "@seatscout/view-logic";
 import type { ReactElement } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { Ghost } from "../design-system/button.js";
 import { WIDE_SLOP } from "../design-system/touch.js";
 import { Type } from "../design-system/type.js";
 import { useTheme } from "../theme.js";
 
 export interface StripProps {
   readonly snapshot: Snapshot;
+  readonly today: string;
   readonly onLedger: () => void;
+  readonly onReadMore: () => void;
 }
 
 const styles = StyleSheet.create({
@@ -33,6 +41,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   read: { borderRadius: 1, height: "100%" },
+  more: { marginHorizontal: 18, marginTop: 8 },
 });
 
 const shareOf = (snapshot: Snapshot) => {
@@ -40,8 +49,14 @@ const shareOf = (snapshot: Snapshot) => {
   return account.candidates === 0 ? 0 : account.checked / account.candidates;
 };
 
-export const Strip = ({ snapshot, onLedger }: StripProps): ReactElement => {
+export const Strip = ({
+  snapshot,
+  today,
+  onLedger,
+  onReadMore,
+}: StripProps): ReactElement => {
   const theme = useTheme();
+  const more = readMoreOf(snapshot, today);
   const counted =
     snapshot.phase !== "resolving" && snapshot.phase !== "unreachable";
 
@@ -88,6 +103,11 @@ export const Strip = ({ snapshot, onLedger }: StripProps): ReactElement => {
             ]}
             testID="read"
           />
+        </View>
+      )}
+      {more !== null && (
+        <View style={styles.more}>
+          <Ghost label={more} onPress={onReadMore} />
         </View>
       )}
     </View>

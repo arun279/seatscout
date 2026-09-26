@@ -6,7 +6,10 @@ import type {
 } from "../domain/catalogue.js";
 import type { Seat } from "./seat-map.js";
 
-export type Unreadable = Exclude<UnbookableReason, "salesOff"> | "unreachable";
+export type Unreadable =
+  | Exclude<UnbookableReason, "salesOff">
+  | "unreachable"
+  | "refused";
 
 export type Reading<Payload> =
   | {

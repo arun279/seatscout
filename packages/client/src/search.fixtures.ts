@@ -1,27 +1,28 @@
 import {
   type Catalogue,
+  narrowed,
+  openSource,
   type Reading,
   type SeatProfile,
   type Showtime,
   type UnbookableReason,
   type Unidentified,
-  narrowed,
-  openSource,
 } from "@seatscout/core";
 import {
-  type UpstreamScript,
   fakeUpstream,
   recordedCaptures,
   routeOf,
+  type UpstreamScript,
 } from "@seatscout/core/testing";
-import { openSearch } from "./search.js";
 import type { Coverage, Search, SearchTerms, Snapshot } from "./search.js";
+import { openSearch } from "./search.js";
 import { type CachedCatalogue, inMemoryStore } from "./store.js";
 
 export const SEAT_MAP = "/napi/seatMap/";
-export const LISTING = "/napi/theaterShowtimeGroupings/245569/2026-08-28";
+const LISTINGS = "/napi/theaterShowtimeGroupings/";
+export const LISTING: string = `${LISTINGS}245569/2026-08-28`;
 const AREA = "75006";
-const TODAY = "2026-08-28";
+export const TODAY = "2026-08-28";
 const WIDE_RELEASE = "245569";
 export const AT = 1000;
 export const STONEBRIAR = "AMC Stonebriar 24";
@@ -41,6 +42,8 @@ interface Options {
   readonly answers?: (bookable: readonly Showtime[]) => Routes;
   readonly script?: Omit<UpstreamScript, "seed" | "routes">;
   readonly cached?: (catalogue: Catalogue) => CachedCatalogue;
+  readonly days?: readonly (readonly [date: string, listedAs: string])[];
+  readonly window?: Pick<SearchTerms, "from" | "until">;
 }
 
 export interface SearchRun {
@@ -49,6 +52,7 @@ export interface SearchRun {
   readonly search: Search;
   readonly snapshots: Snapshot[];
   readonly requested: () => number[];
+  readonly paths: () => string[];
 }
 
 const payloadOf = <Found>(reading: Reading<Found>): Found => {
@@ -129,6 +133,18 @@ export const routesTo = (
     showtimes.map((showtime) => [`${SEAT_MAP}${showtime.id}`, answer]),
   );
 
+const listedAs = (days: NonNullable<Options["days"]>): Routes =>
+  Object.fromEntries(
+    days.map(([date, listed]) => {
+      const capture = recordedCaptures().find(
+        (each) => routeOf(each.request.path) === `${LISTINGS}${listed}`,
+      );
+      if (capture === undefined)
+        throw new Error(`${listed} was never captured`);
+      return [`${LISTINGS}${WIDE_RELEASE}/${date}`, answered(capture)];
+    }),
+  );
+
 export const listing = async (): Promise<Catalogue> => {
   const source = openSource({
     fetch: fakeUpstream({ seed: 1 }),
@@ -139,19 +155,22 @@ export const listing = async (): Promise<Catalogue> => {
   return payloadOf(await source.showtimesFor(WIDE_RELEASE, TODAY, AREA));
 };
 
+const termsFor = (options: Options, listed: Catalogue): SearchTerms => ({
+  movie: WIDE_RELEASE,
+  dates: [TODAY, ...(options.days ?? []).map(([date]) => date)],
+  area: AREA,
+  partySize: options.partySize ?? 2,
+  accessibleSeating: options.accessibleSeating ?? false,
+  ...(options.profile === undefined ? {} : { profile: options.profile }),
+  ...options.window,
+  ...(options.at === undefined
+    ? {}
+    : { theaters: options.at.map((name) => theaterIn(listed, name)) }),
+});
+
 export const searching = async (options: Options = {}): Promise<SearchRun> => {
   const listed = await listing();
-  const terms: SearchTerms = {
-    movie: WIDE_RELEASE,
-    date: TODAY,
-    area: AREA,
-    partySize: options.partySize ?? 2,
-    accessibleSeating: options.accessibleSeating ?? false,
-    ...(options.profile === undefined ? {} : { profile: options.profile }),
-    ...(options.at === undefined
-      ? {}
-      : { theaters: options.at.map((name) => theaterIn(listed, name)) }),
-  };
+  const terms = termsFor(options, listed);
   const candidates = narrowed(listed, terms);
   const upstream = fakeUpstream({
     seed: SEED,
@@ -159,6 +178,7 @@ export const searching = async (options: Options = {}): Promise<SearchRun> => {
     routes: {
       ...roomsFor(candidates.bookable, options.rooms),
       ...options.answers?.(candidates.bookable),
+      ...listedAs(options.days ?? []),
     },
   });
   const store = inMemoryStore();
@@ -193,6 +213,7 @@ export const searching = async (options: Options = {}): Promise<SearchRun> => {
         .map((request) => request.path)
         .filter((path) => path.startsWith(SEAT_MAP))
         .map((path) => Number(path.slice(SEAT_MAP.length))),
+    paths: () => upstream.requests.map((request) => routeOf(request.path)),
   };
 };
 

@@ -28,11 +28,11 @@ export const TONIGHT: Terms = {
 
 export const ASKED: SearchTerms = {
   movie: "246427",
-  date: TODAY,
+  dates: [TODAY],
   area: "75006",
   partySize: 2,
-  from: `${TODAY}T19:00`,
-  until: `${TODAY}T20:00`,
+  from: "19:00",
+  until: "20:00",
   accessibleSeating: false,
 };
 

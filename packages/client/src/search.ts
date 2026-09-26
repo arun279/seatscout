@@ -12,6 +12,7 @@ import {
   type CatalogueTerms,
   openCatalogue,
 } from "./catalogue.js";
+import { type Day, type Listed, openDays, type SeatMapState } from "./days.js";
 import { fannedOut } from "./fan-out.js";
 import {
   type Ranking,
@@ -20,7 +21,11 @@ import {
   type SeatGroupResult,
 } from "./ranking.js";
 
-export interface SearchTerms extends CatalogueTerms, ResultTerms {}
+export interface SearchTerms
+  extends Omit<CatalogueTerms, "date">,
+    Omit<ResultTerms, "date"> {
+  readonly dates: readonly string[];
+}
 
 export interface Coverage {
   readonly candidates: number;
@@ -39,6 +44,8 @@ export interface Snapshot {
   readonly results: readonly SeatGroupResult[];
   readonly coverage: Coverage;
   readonly phase: Phase;
+  readonly days: readonly Day[];
+  readonly refused: boolean;
 }
 
 export interface Auditorium {
@@ -52,6 +59,7 @@ export interface Search {
   readonly subscribe: (onChange: () => void) => () => void;
   readonly done: Promise<Snapshot>;
   readonly retry: () => Promise<Snapshot>;
+  readonly readMore: () => Promise<Snapshot>;
   readonly abort: () => void;
   readonly auditorium: (result: SeatGroupResult) => Auditorium;
 }
@@ -73,13 +81,24 @@ const NOTHING: Coverage = {
   failed: [],
 };
 
-const bestFirst = (left: SeatGroupResult, right: SeatGroupResult) =>
-  right.score - left.score || left.showtime.id - right.showtime.id;
+const nearestDayThenBest = (left: SeatGroupResult, right: SeatGroupResult) =>
+  left.terms.date.localeCompare(right.terms.date) ||
+  right.score - left.score ||
+  left.showtime.id - right.showtime.id;
+
+const withinDay = (terms: SearchTerms, date: string): CatalogueTerms => ({
+  ...terms,
+  date,
+  ...(terms.from !== undefined && { from: `${date}T${terms.from}` }),
+  ...(terms.until !== undefined && { until: `${date}T${terms.until}` }),
+});
 
 export const openSearch = (deps: CatalogueDependencies) => {
   const resolve = openCatalogue(deps);
 
   return (terms: SearchTerms): Search => {
+    const dates = [...terms.dates].sort();
+    const byDay = openDays(dates);
     const listeners = new Set<() => void>();
     const results: SeatGroupResult[] = [];
     const named: Record<UnbookableReason, (Showtime | Unidentified)[]> = {
@@ -88,21 +107,25 @@ export const openSearch = (deps: CatalogueDependencies) => {
       soldOut: [],
       started: [],
     };
-    const failed: Showtime[] = [];
+    const failed: Listed[] = [];
+    const unidentified: Unidentified[] = [];
     const rooms = new Map<Showtime["id"], Room>();
-    let unidentified: readonly Unidentified[] = [];
     let candidates = 0;
     let checked = 0;
     let aborted = false;
+    let refused = false;
+
     let current: Snapshot = {
       results: [],
       coverage: NOTHING,
       phase: "resolving",
+      days: byDay.days(),
+      refused,
     };
 
     const publish = (phase: Phase) => {
       current = {
-        results: [...results].sort(bestFirst),
+        results: [...results].sort(nearestDayThenBest),
         coverage: {
           candidates,
           checked,
@@ -110,27 +133,14 @@ export const openSearch = (deps: CatalogueDependencies) => {
           noSeatMap: [...named.noSeatMap],
           started: [...named.started],
           salesOff: [...named.salesOff],
-          unidentified,
-          failed: [...failed],
+          unidentified: [...unidentified],
+          failed: failed.map((entry) => entry.showtime),
         },
         phase,
+        days: byDay.days(),
+        refused,
       };
       for (const listener of listeners) listener();
-    };
-
-    const record = (showtime: Showtime, reading: Reading<readonly Seat[]>) => {
-      const unreached = failed.indexOf(showtime);
-      if (unreached >= 0) failed.splice(unreached, 1);
-      if (!reading.ok) {
-        if (reading.reason === "unreachable") failed.push(showtime);
-        else named[reading.reason].push(showtime);
-        return;
-      }
-      checked += 1;
-      const ranking = rankingIn(reading, terms);
-      rooms.set(showtime.id, { showtime, seats: reading.payload, ranking });
-      const [best] = ranking.offered;
-      if (best !== undefined) results.push(ranking.resultOf(showtime, best));
     };
 
     const auditorium = (result: SeatGroupResult): Auditorium => {
@@ -153,41 +163,91 @@ export const openSearch = (deps: CatalogueDependencies) => {
       };
     };
 
-    const check = async (showtime: Showtime) => {
-      if (aborted) return;
-      const reading = await deps.source.seatsFor(`${showtime.id}`);
-      if (aborted) return;
-      record(showtime, reading);
-      publish("searching");
+    const settle = (entry: Listed) => {
+      byDay.mark(entry, "read");
+      const unreached = failed.indexOf(entry);
+      if (unreached >= 0) failed.splice(unreached, 1);
     };
 
-    const fanOut = (bookable: readonly Showtime[]) =>
-      fannedOut(bookable, check);
+    const rank = (
+      { showtime, date }: Listed,
+      read: Extract<Reading<readonly Seat[]>, { ok: true }>,
+    ) => {
+      checked += 1;
+      const ranking = rankingIn(read, { ...terms, date });
+      rooms.set(showtime.id, { showtime, seats: read.payload, ranking });
+      const [best] = ranking.offered;
+      if (best !== undefined) results.push(ranking.resultOf(showtime, best));
+    };
 
-    const run = async () => {
-      const reading = await resolve(terms);
-      if (!reading.ok) {
-        publish("unreachable");
-        return current;
+    const record = (
+      entry: Listed,
+      reading: Reading<readonly Seat[]>,
+      before: SeatMapState | undefined,
+    ) => {
+      if (reading.ok) {
+        settle(entry);
+        return rank(entry, reading);
       }
-      candidates =
-        reading.payload.bookable.length +
-        reading.payload.unbookable.length +
-        reading.payload.unidentified.length;
-      unidentified = reading.payload.unidentified;
-      for (const entry of reading.payload.unbookable)
-        named[entry.reason].push(entry.showtime);
-      if (!aborted) {
+      if (reading.reason === "refused") {
+        refused = true;
+        return byDay.mark(entry, before);
+      }
+      settle(entry);
+      if (reading.reason === "unreachable") failed.push(entry);
+      else named[reading.reason].push(entry.showtime);
+    };
+
+    const check =
+      (before: SeatMapState | undefined) => async (entry: Listed) => {
+        if (aborted || refused) return byDay.mark(entry, before);
+        const reading = await deps.source.seatsFor(`${entry.showtime.id}`);
+        if (aborted) return byDay.mark(entry, before);
+        record(entry, reading, before);
         publish("searching");
-        await fanOut(reading.payload.bookable);
-      }
+      };
+
+    const readAll = async (batch: readonly Listed[], before?: SeatMapState) => {
+      for (const entry of batch) byDay.mark(entry, "reading");
+      publish("searching");
+      await fannedOut(batch, check(before));
       publish("settled");
       return current;
     };
 
-    const recheck = async () => {
-      publish("searching");
-      await fanOut([...failed]);
+    const readNext = () => readAll(byDay.next());
+
+    const listings = () =>
+      Promise.all(
+        dates.map(async (date) => ({
+          date,
+          reading: await resolve(withinDay(terms, date)),
+        })),
+      );
+
+    const run = async () => {
+      const read = await listings();
+      const catalogues = read.flatMap(({ date, reading }) =>
+        reading.ok ? [{ date, catalogue: reading.payload }] : [],
+      );
+      if (catalogues.length < read.length) {
+        refused = read.some(
+          ({ reading }) => !reading.ok && reading.reason === "refused",
+        );
+        publish("unreachable");
+        return current;
+      }
+      for (const { date, catalogue } of catalogues) {
+        candidates +=
+          catalogue.bookable.length +
+          catalogue.unbookable.length +
+          catalogue.unidentified.length;
+        unidentified.push(...catalogue.unidentified);
+        for (const entry of catalogue.unbookable)
+          named[entry.reason].push(entry.showtime);
+        byDay.list(date, catalogue.bookable);
+      }
+      if (!aborted) return readNext();
       publish("settled");
       return current;
     };
@@ -202,8 +262,19 @@ export const openSearch = (deps: CatalogueDependencies) => {
       },
       done: running,
       retry: () => {
+        if (refused) return running;
         if (current.phase === "unreachable") running = run();
-        else if (current.phase === "settled") running = recheck();
+        else if (current.phase === "settled")
+          running = readAll([...failed], "read");
+        return running;
+      },
+      readMore: () => {
+        if (
+          current.phase === "settled" &&
+          !refused &&
+          current.days.some((day) => day.unread > 0)
+        )
+          running = readNext();
         return running;
       },
       abort: () => {

@@ -28,7 +28,15 @@ const reading = async (
   await render(
     <Strip
       onLedger={onLedger}
-      snapshot={{ results: [], coverage: covering(candidates, checked), phase }}
+      onReadMore={() => undefined}
+      today="2026-08-28"
+      snapshot={{
+        results: [],
+        coverage: covering(candidates, checked),
+        phase,
+        days: [],
+        refused: false,
+      }}
     />,
   );
 };

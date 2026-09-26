@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { costOf, unreadOf, whenSaidOf, whenWordsOf } from "./when-phrases.js";
+import { costOf, whenSaidOf, whenWordsOf } from "./when-phrases.js";
 import { spanOf } from "./when.js";
 
 const TODAY = "2026-09-03";
@@ -55,36 +55,6 @@ describe("what more than one day costs, said before the search", () => {
     expect(costOf(spanOf(["2026-09-04", "2026-09-06"], TODAY), TODAY)).toBe(
       "2 days is 2 days of reading. The nearest day comes back first.",
     );
-  });
-});
-
-describe("the days a search has not read yet", () => {
-  const unread = (...asked: readonly string[]) =>
-    unreadOf(spanOf(asked, TODAY), TODAY);
-
-  it("says nothing when the search holds one day", () => {
-    expect(unread("2026-09-05")).toBeUndefined();
-  });
-
-  it("names the days after the nearest as a span when the days run on", () => {
-    expect(unread("2026-09-04..2026-09-13")).toBe(
-      "Sat 5 to Sun 13 Sep not read yet",
-    );
-    expect(unread("any")).toBe("Fri 4 to Wed 9 Sep not read yet");
-    expect(unread("2026-09-04..2026-09-05")).toBe("Sat 5 Sep not read yet");
-  });
-
-  it("names the days picked after the nearest, and counts them past three", () => {
-    expect(unread("2026-09-04", "2026-09-06")).toBe("Sun 6 Sep not read yet");
-    expect(
-      unread(
-        "2026-09-04",
-        "2026-09-05",
-        "2026-09-06",
-        "2026-09-08",
-        "2026-09-10",
-      ),
-    ).toBe("4 days not read yet");
   });
 });
 

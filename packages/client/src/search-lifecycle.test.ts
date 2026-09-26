@@ -8,6 +8,7 @@ import {
   SEAT_MAP,
   STONEBRIAR,
   searching,
+  TODAY,
   theaterIn,
   WIDTH,
 } from "./search.fixtures.js";
@@ -96,6 +97,8 @@ describe("a search in flight", () => {
         failed: [],
       },
       phase: "resolving",
+      days: [{ date: TODAY, read: 0, reading: 0, unread: 0 }],
+      refused: false,
     });
 
     const settled = await run.search.done;
@@ -135,6 +138,8 @@ describe("a search in flight", () => {
         failed: [],
       },
       phase: "unreachable",
+      days: [{ date: TODAY, read: 0, reading: 0, unread: 0 }],
+      refused: false,
     });
     expect(run.requested()).toEqual([]);
   });

@@ -1,4 +1,5 @@
 import { GATE_CLAIMS } from "./claims-in-prose.pairs.gates.mjs";
+import { SEARCH_CLAIMS } from "./claims-in-prose.pairs.search.mjs";
 
 const BIOME = "biome.json";
 const PRODUCT = ["packages", ":!*.test.ts", ":!*.fixtures.ts"];
@@ -262,30 +263,6 @@ export const CLAIMS = [
     files: 3,
   },
   {
-    adr: "0016-a-search-reports-its-coverage.md",
-    says: /\*\*The fan-out is 24 workers over one queue\.\*\*/,
-    holds: "the fan-out width the search runs at",
-    pattern: "WIDTH = 24",
-    paths: ["packages/client/src/fan-out.ts"],
-    files: 1,
-  },
-  {
-    adr: "0017-retry-and-the-breaker-follow-published-policy.md",
-    says: /\*\*The breaker is the three states of Nygard's/,
-    holds: "modules naming the circuit breaker",
-    pattern: "breaker",
-    paths: PRODUCT,
-    files: 2,
-  },
-  {
-    adr: "0019-the-list-is-painted-once.md",
-    says: /The query lives in the address as `movie`, `date`, `area`, `partySize`, `chain`/,
-    holds: "the module that reads a query out of the address",
-    pattern: "partySize",
-    paths: ["packages/view-logic/src/terms.ts"],
-    files: 1,
-  },
-  {
     adr: "README.md",
     says: /Both addresses name the SDK, so both of them move when `apps\/native` moves to a new Expo SDK/,
     holds: "the manifest holding the Expo SDK the phone's addresses name",
@@ -294,4 +271,5 @@ export const CLAIMS = [
     files: 1,
   },
   ...GATE_CLAIMS,
+  ...SEARCH_CLAIMS,
 ];

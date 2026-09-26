@@ -55,11 +55,12 @@ therefore spends its whole retry budget before the circuit can open; what the br
 the rest of a fan-out that fails progressively, and the next search.
 
 A status the adapter has no reason for is worse than slow, and that follows from these two
-policies rather than from anything else. A 403 is in no refusal table, so a refused read spends
-three requests where a clean one spends one; three refused reads in a row then open the circuit
-`theatersNear`, `showtimesFor` and `seatsFor` share, for five seconds at a time and re-armed by
-every probe that meets another refusal, so while the Source goes on refusing the whole area
-answers `unreachable` rather than only the reads it refused.
+policies rather than from anything else: it spends three requests where a clean read spends one,
+and three such reads in a row open the circuit `theatersNear`, `showtimesFor` and `seatsFor`
+share. A 403 was once such a status. It is now `refused` on every route, answered at once and
+never retried, because a refusal outlasts the burst that earned it by six minutes at least and
+asking again lengthens it; [ADR 20](0020-a-search-over-several-days-reads-48-seat-maps-at-a-time.md) says
+what a search does when it meets one.
 
 **The programme reads through a Source of its own, so its breaker is its own.** Reading what is
 playing near an area is one schedule request per Theater the discovery route names, which was 25

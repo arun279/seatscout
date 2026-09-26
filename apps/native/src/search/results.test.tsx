@@ -134,7 +134,7 @@ describe("the list once the ranking has stopped moving", () => {
 
   it("calls the top no tie when only one result sits at the room's resolution", async () => {
     await shown({
-      asked: asking({ from: `${TODAY}T19:00`, until: `${TODAY}T19:20` }),
+      asked: asking({ from: "19:00", until: "19:20" }),
     });
 
     expect(await screen.findByText("Best seats first")).toBeOnTheScreen();
@@ -230,7 +230,7 @@ describe("the searches that end with nothing to show", () => {
   });
 
   it("says nothing was listed at all when no candidate matched the query", async () => {
-    const window = { from: `${TODAY}T03:00`, until: `${TODAY}T04:00` };
+    const window = { from: "03:00", until: "04:00" };
     await shown({
       asked: asking(window),
       terms: { ...TONIGHT, from: "03:00", until: "04:00" },
