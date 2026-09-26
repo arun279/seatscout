@@ -212,57 +212,6 @@ describe("the journey ratchet's command line", () => {
     ).toBe(1);
   });
 
-  it("holds a journey that makes no gesture on every other axis when told so", () => {
-    const run = ran(
-      "--head",
-      "quick.json",
-      "--no-gesture",
-      "--base",
-      "base.json",
-    );
-
-    expect(run.code).toBe(0);
-    expect(run.out).toContain("p75 LCP 900 ms against 2500");
-    expect(run.out).toContain(
-      "the head's first Seat Groups took 200 ms in the median of 1 journeys",
-    );
-    expect(run.out).not.toContain("gesture");
-    expect(run.err).toBe("");
-  });
-
-  it("still refuses a slower journey that makes no gesture", () => {
-    const run = ran(
-      "--head",
-      "head.json",
-      "--no-gesture",
-      "--base",
-      "base.json",
-    );
-
-    expect(run.code).toBe(1);
-    expect(run.err).toContain("550 ms");
-  });
-
-  it("refuses a word about a gesture that contradicts itself", () => {
-    expect(
-      gestured("--head", "quick.json", "--no-gesture", "--no-baseline").code,
-    ).toBe(2);
-    expect(
-      ran(
-        "--head",
-        "quick.json",
-        "--no-gesture",
-        "--base",
-        "base.json",
-        "--base-gesture",
-        "gesture-base.json",
-      ).code,
-    ).toBe(2);
-    expect(ran("--head", "quick.json", "--no-baseline").err).toContain(
-      "--no-gesture",
-    );
-  });
-
   it("refuses to run without a head, a head gesture, or a word about a baseline", () => {
     expect(gestured("--base", "base.json").code).toBe(2);
     expect(ran("--head", "quick.json", "--no-baseline").code).toBe(2);

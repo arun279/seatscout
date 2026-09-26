@@ -3,7 +3,6 @@ import type { Page } from "@playwright/test";
 import { fakeUpstream } from "@seatscout/core/testing";
 
 export const ASKING = "/?area=75006&date=2026-08-28&partySize=2";
-export const TONIGHT: string = `${ASKING}&movie=245569`;
 
 const WCAG: readonly string[] = [
   "wcag2a",
