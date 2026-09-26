@@ -2,10 +2,6 @@ import { describe, expect, it, jest } from "@jest/globals";
 import { REFERENCE } from "@seatscout/client";
 import { fireEvent, screen } from "@testing-library/react-native";
 import { AccessibilityInfo } from "react-native";
-import {
-  everyControlReachesTheTouchFloor,
-  everyControlSaysWhatItIs,
-} from "../../test/floors.js";
 import { asking, NEAR, PLAYING, submit, TODAY } from "../../test/ask.js";
 
 describe("the Ask sheet", () => {
@@ -233,19 +229,5 @@ describe("the Ask sheet", () => {
         "Preferences and history stay on this phone. No account exists.",
       ),
     ).toBeOnTheScreen();
-  });
-});
-
-describe("what a thumb can reach in the Ask sheet", () => {
-  it("draws every control at the platform's touch floor or above", async () => {
-    await asking({ terms: NEAR, playing: PLAYING });
-
-    everyControlReachesTheTouchFloor();
-  });
-
-  it("gives every control a name a screen reader can say", async () => {
-    await asking({ terms: NEAR, playing: PLAYING });
-
-    everyControlSaysWhatItIs();
   });
 });

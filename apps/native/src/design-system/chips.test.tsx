@@ -1,10 +1,7 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { fireEvent, render, screen } from "@testing-library/react-native";
+import { selectionAsync } from "expo-haptics";
 import { Platform, StyleSheet } from "react-native";
-import {
-  everyControlReachesTheTouchFloor,
-  everyControlSaysWhatItIs,
-} from "../../test/floors.js";
 import { houseLights } from "../../test/lights.js";
 import { Chips } from "./chips.js";
 
@@ -54,11 +51,12 @@ describe("a group of chips, any number of them chosen", () => {
     expect(chosen).toHaveBeenCalledWith(["IMAX"]);
   });
 
-  it("reaches the platform's touch floor and names every chip", async () => {
-    await chipping();
+  it("plays one selection tick for the chip pressed", async () => {
+    await chipping(["3D"]);
 
-    everyControlReachesTheTouchFloor();
-    everyControlSaysWhatItIs();
+    await fireEvent.press(chip("IMAX"));
+
+    expect(selectionAsync).toHaveBeenCalledTimes(1);
   });
 
   it("fills a chosen chip with the chosen ink and leaves the rest raised on an edge that reads", async () => {

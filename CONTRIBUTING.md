@@ -201,10 +201,19 @@ Each of these has one way through and no exemption to grant.
   refuses a string that reads as a colour in any notation. Name the colour in
   `apps/native/src/theme.ts` and read it through the theme, because a token carries both
   appearances and a literal carries one.
-- **A control a thumb cannot reach.** Every screen test holds each control it finds to the
-  platform's own touch floor, 44 pt on iOS and 48 dp on Android, read from the styles the control
-  resolves to. Give the control the difference as `minHeight` and `minWidth`, which leaves the
-  type untouched.
+- **A screen that fails the accessibility audit.** After every screen test, before the screen is
+  torn down, `apps/native/test/setup.tsx` runs `test/audit.ts` over everything the test rendered.
+  No test opts in and none opts out. It refuses, naming the control and the criterion: words under
+  4.5 to 1 against the ground drawn behind them, or 3 to 1 at 18 or at 14 in bold (WCAG 2.2 1.4.3);
+  a chosen button under 3 to 1 against its ground and its unchosen neighbours (1.4.11); something
+  that can be pressed with no role or no name (4.1.2); a control short of the platform's own touch
+  floor, 44 pt on iOS and 48 dp on Android, counting its `hitSlop` (2.5.8, words inside a sentence
+  excepted as that criterion excepts them); a text field with no label (3.3.2); words with
+  `allowFontScaling` off (1.4.4); and a control that changes what is chosen, or the velvet commit,
+  that plays no haptic feedback when the audit presses it (Apple's Human Interface Guidelines on
+  playing haptics). Fix the screen: give a control the difference as `minHeight` and `minWidth`,
+  and reach feedback through `src/design-system/feedback.ts`. `test/audit.test.tsx` plants a
+  violation of each rule and watches the audit refuse it.
 - **The test count.** `.footprint.json` holds a floor under the tests the three runners collect,
   by their own listings rather than by a run, except Jest, which has no listing that counts tests
   without running them and so reports its run's own total; the mutation-cache guard separately

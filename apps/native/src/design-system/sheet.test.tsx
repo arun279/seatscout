@@ -14,7 +14,6 @@ import {
   StyleSheet,
 } from "react-native";
 import { contrastOf } from "../../test/contrast.js";
-import { everyControlReachesTheTouchFloor } from "../../test/floors.js";
 import { houseLights } from "../../test/lights.js";
 import type { Appearance } from "../theme.js";
 import { presentationFor, Sheet } from "./sheet.js";
@@ -281,12 +280,6 @@ describe("a sheet the platform presents", () => {
 
     expect(body).toHaveProp("collapsable", false);
     expect(within(body).getByText("Near, by postal code")).toBeOnTheScreen();
-  });
-
-  it("reaches the platform's touch floor with every control it draws", async () => {
-    await presented();
-
-    everyControlReachesTheTouchFloor();
   });
 
   for (const appearance of APPEARANCES)

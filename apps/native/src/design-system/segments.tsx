@@ -2,6 +2,7 @@ import type { ReactElement } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { useTheme } from "../theme.js";
 import type { Chip } from "./chips.js";
+import { felt } from "./feedback.js";
 import { ON_ANDROID } from "./platform.js";
 import { TOUCH_FLOOR } from "./touch.js";
 import { Type } from "./type.js";
@@ -52,7 +53,7 @@ export const Segments = <Named extends string>({
             accessibilityRole="button"
             accessibilityState={{ selected: picked }}
             key={value}
-            onPress={() => onChosen(value)}
+            onPress={felt(() => onChosen(value))}
             style={[
               styles.segment,
               ON_ANDROID

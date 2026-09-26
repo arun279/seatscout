@@ -2,10 +2,6 @@ import type { Coverage, Snapshot } from "@seatscout/client";
 import { describe, expect, it, jest } from "@jest/globals";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
-import {
-  everyControlReachesTheTouchFloor,
-  everyControlSaysWhatItIs,
-} from "../../test/floors.js";
 import { houseLights } from "../../test/lights.js";
 import { type Appearance, themeFor } from "../theme.js";
 import { Strip } from "./coverage.js";
@@ -90,13 +86,6 @@ describe("the coverage strip", () => {
     await fireEvent.press(screen.getByRole("button", { name: "ledger ›" }));
 
     expect(opened).toHaveBeenCalledTimes(1);
-  });
-
-  it("puts the ledger link within a thumb's reach, with a name a reader can say", async () => {
-    await reading("settled", 176, 176);
-
-    everyControlReachesTheTouchFloor();
-    everyControlSaysWhatItIs();
   });
 
   it.each(APPEARANCES)(
