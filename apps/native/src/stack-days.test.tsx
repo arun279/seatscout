@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it, jest } from "@jest/globals";
-import { spanOf, whenWordsOf } from "@seatscout/view-logic";
+import { dayNameOf, spanOf, whenWordsOf } from "@seatscout/view-logic";
 import {
   fireEvent,
   screen,
@@ -36,16 +36,11 @@ const dayFrom = (ahead: number) => {
   return day;
 };
 
-const pick = async (day: Date) => {
-  await fireEvent.press(
-    screen.getByRole("button", { name: "When, Add a day" }),
-  );
-  await fireEvent(
-    screen.getByTestId("date-picker"),
-    "change",
-    { type: "set", nativeEvent: {} },
-    day,
-  );
+const pick = async (day: Date, today: string) => {
+  const name = dayNameOf(listingDate(day), today);
+  if (screen.queryByRole("button", { name }) === null)
+    await fireEvent.press(screen.getByRole("button", { name: "Next month" }));
+  await fireEvent.press(screen.getByRole("button", { name }));
 };
 
 describe("several days picked in the sheet", () => {
@@ -69,8 +64,8 @@ describe("several days picked in the sheet", () => {
     const before = reads.length;
 
     await fireEvent.press(screen.getByRole("button", { name: "Some days" }));
-    await pick(later);
-    await pick(sooner);
+    await pick(sooner, today);
+    await pick(later, today);
     await fireEvent.press(
       within(screen.getByTestId("dock")).getByRole("button", {
         name: "Find seats",

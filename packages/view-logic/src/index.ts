@@ -1,5 +1,10 @@
 export { ASKING, playingStatusOf } from "./ask-phrases.js";
 export { askedFrom } from "./asked.js";
+export type { Mark } from "./calendar.js";
+export { dayNameOf } from "./calendar.js";
+export { markOf } from "./calendar.js";
+export { monthNameOf } from "./calendar.js";
+export { tapped } from "./calendar.js";
 export { toggled } from "./chips.js";
 export { accountOf } from "./derived.js";
 export { listed } from "./derived.js";
@@ -94,7 +99,6 @@ export type { Term } from "./title-card-terms.js";
 export type { TitleCardEntry } from "./title-card-terms.js";
 export { termLinesOf } from "./title-card-terms.js";
 export type { Span } from "./when.js";
-export { daysIn } from "./when.js";
 export { isPast } from "./when.js";
 export type { Kind } from "./when.js";
 export { spanIn } from "./when.js";
