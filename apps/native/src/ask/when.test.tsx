@@ -1,28 +1,15 @@
 import { describe, expect, it } from "@jest/globals";
 import { fireEvent, screen } from "@testing-library/react-native";
-import { Platform } from "react-native";
 import { asking, NEAR, submit, TODAY } from "../../test/ask.js";
 
 const press = async (name: string) => {
   await fireEvent.press(screen.getByRole("button", { name }));
 };
 
-const pick = async (picker: string, at: Date) => {
-  await fireEvent(
-    screen.getByTestId(picker),
-    "change",
-    { type: "set", nativeEvent: {} },
-    at,
-  );
-};
-
 const handedOut = (found: Awaited<ReturnType<typeof asking>>["found"]) =>
   found.mock.calls.at(-1)?.[0];
 
 const READING = /days of reading\. The nearest day comes back first\.$/;
-
-const onIos = Platform.OS === "ios" ? it : it.skip;
-const onAndroid = Platform.OS === "android" ? it : it.skip;
 
 describe("the when term in the Ask sheet", () => {
   it("offers its four readings, and opens on the one the query holds", async () => {
@@ -78,46 +65,27 @@ describe("the when term in the Ask sheet", () => {
     });
   });
 
-  onIos("moves the range's last day with the Until picker", async () => {
+  it("sets a range's first day and then its last on the calendar", async () => {
     const { found } = await asking({ terms: NEAR });
 
     await press("A range");
-    await press("Last day, Fri 25 Sep");
-    await pick("date-picker", new Date(2026, 8, 22));
-    await submit();
-
-    expect(handedOut(found)?.when).toEqual({
-      kind: "range",
-      first: TODAY,
-      last: "2026-09-22",
-    });
-  });
-
-  onAndroid("moves the whole range with Material's range picker", async () => {
-    const { found } = await asking({ terms: NEAR });
-
-    await press("A range");
-    await press("Sat 19 to Fri 25 Sep");
-    await fireEvent(screen.getByTestId("range-picker"), "dateRangeSelected", {
-      start: new Date(Date.UTC(2026, 8, 20)),
-      end: new Date(Date.UTC(2026, 8, 23)),
-    });
+    await press("Monday 21 September");
+    await press("Thursday 24 September");
     await submit();
 
     expect(handedOut(found)).toMatchObject({
-      date: "2026-09-20",
-      when: { kind: "range", first: "2026-09-20", last: "2026-09-23" },
+      date: "2026-09-21",
+      when: { kind: "range", first: "2026-09-21", last: "2026-09-24" },
     });
+    expect(screen.getByText("Mon 21 to Thu 24 Sep")).toBeOnTheScreen();
   });
 
-  it("adds each day picked to some days, and hands out the days nearest first", async () => {
+  it("adds each day tapped on the calendar to some days, and hands them out nearest first", async () => {
     const { found } = await asking({ terms: NEAR });
 
     await press("Some days");
-    await press("When, Add a day");
-    await pick("date-picker", new Date(2026, 8, 22));
-    await press("When, Add a day");
-    await pick("date-picker", new Date(2026, 8, 21));
+    await press("Tuesday 22 September");
+    await press("Monday 21 September");
     await submit();
 
     expect(
@@ -129,21 +97,44 @@ describe("the when term in the Ask sheet", () => {
       kind: "days",
       dates: [TODAY, "2026-09-21", "2026-09-22"],
     });
+    expect(screen.getByText("Sat 19, Mon 21, Tue 22 Sep")).toBeOnTheScreen();
+    expect(
+      screen.getByRole("button", { name: "Monday 21 September" }),
+    ).toBeSelected();
   });
 
-  it("opens the picker for another day on the last day picked", async () => {
-    await asking({
+  it("takes a day out of some days when it is tapped again on the calendar", async () => {
+    const { found } = await asking({
       terms: {
         ...NEAR,
-        when: { kind: "days", dates: [TODAY, "2026-09-21", "2026-09-23"] },
+        when: { kind: "days", dates: [TODAY, "2026-09-23"] },
       },
     });
 
-    await press("When, Add a day");
+    await press("Wednesday 23 September");
+    await submit();
 
-    expect(screen.getByTestId("date-picker").props["value"]).toEqual(
-      new Date(2026, 8, 23),
-    );
+    expect(handedOut(found)).toEqual(NEAR);
+  });
+
+  it("moves the one day to the day tapped", async () => {
+    const { found } = await asking({ terms: NEAR });
+
+    await press("Thursday 24 September");
+    await submit();
+
+    expect(handedOut(found)).toEqual({ ...NEAR, date: "2026-09-24" });
+  });
+
+  it("shows any day's week on the calendar and takes no tap", async () => {
+    await asking({ terms: NEAR });
+
+    await press("Any day");
+
+    expect(screen.getByLabelText("Tuesday 22 September")).toBeDisabled();
+    expect(
+      screen.queryByRole("button", { name: "Tuesday 22 September" }),
+    ).toBeNull();
   });
 
   it("opens a time the query does not hold at seven in the evening", async () => {
@@ -166,20 +157,17 @@ describe("the when term in the Ask sheet", () => {
     ).toBeOnTheScreen();
   });
 
-  it("takes a picked day out when its chip is pressed, and keeps the last one", async () => {
-    const { found } = await asking({
-      terms: {
-        ...NEAR,
-        when: { kind: "days", dates: [TODAY, "2026-09-23"] },
-      },
-    });
+  it("keeps the last day of some days when it is tapped again", async () => {
+    const { found } = await asking({ terms: NEAR });
 
-    await press("Today");
-    await press("Wed 23 Sep");
+    await press("Some days");
+    await press("Today, Saturday 19 September");
     await submit();
 
-    expect(handedOut(found)).toEqual({ ...NEAR, date: "2026-09-23" });
-    expect(screen.getByRole("button", { name: "Wed 23 Sep" })).toBeSelected();
+    expect(handedOut(found)).toEqual(NEAR);
+    expect(
+      screen.getByRole("button", { name: "Today, Saturday 19 September" }),
+    ).toBeSelected();
   });
 
   it("goes back to one day, the nearest the query held, from any other reading", async () => {
@@ -204,6 +192,8 @@ describe("the when term in the Ask sheet", () => {
     await submit();
 
     expect(handedOut(found)).toEqual({ ...NEAR, date: "2026-09-21" });
-    expect(screen.getByRole("button", { name: "Mon 21 Sep" })).toBeSelected();
+    expect(
+      screen.getByRole("button", { name: "Monday 21 September" }),
+    ).toBeSelected();
   });
 });

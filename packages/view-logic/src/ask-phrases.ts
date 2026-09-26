@@ -19,9 +19,6 @@ interface AskWords {
   readonly more: string;
   readonly kept: string;
   readonly kinds: Readonly<Record<Kind, string>>;
-  readonly addDay: string;
-  readonly firstDay: string;
-  readonly lastDay: string;
   readonly from: string;
   readonly until: string;
   readonly anyTime: string;
@@ -51,9 +48,6 @@ export const ASKING: AskWords = {
     range: "A range",
     any: "Any day",
   },
-  addDay: "Add a day",
-  firstDay: "First day",
-  lastDay: "Last day",
   from: "From",
   until: "Until",
   anyTime: "Any time",
