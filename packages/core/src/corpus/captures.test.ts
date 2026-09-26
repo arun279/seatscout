@@ -160,7 +160,7 @@ describe("the captured corpus", () => {
       ),
     ]);
 
-    expect(groups).toHaveLength(37);
+    expect(groups).toHaveLength(29);
     expect(
       ["id", "ticketingJumpPageURL"].filter((key) => named.has(key)),
     ).toEqual(["id", "ticketingJumpPageURL"]);

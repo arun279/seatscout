@@ -22,73 +22,73 @@ export interface CapturedRoom {
   readonly card: string;
 }
 
-export const WEST_PLANO_28: CapturedRoom = {
-  name: "Cinemark West Plano 28, 304 seats in 14 rows",
-  showtime: 557962494,
-  capture: "561865199",
-  seats: "H14·H13",
-  spoken: "H14 and H13",
-  card: "Cinemark Frisco Square and XD, 10:10p",
+export const WEST_PLANO_10: CapturedRoom = {
+  name: "Cinemark West Plano 10, 303 seats in 14 rows",
+  showtime: 564644951,
+  capture: "562212808",
+  seats: "N14·N13",
+  spoken: "N14 and N13",
+  card: "Cinemark Frisco Square and XD, 8:00p",
 };
 
 export const ANGELIKA_5: CapturedRoom = {
   name: "Angelika 5, 300 seats in 15 rows",
-  showtime: 558016663,
-  capture: "561230736",
-  seats: "L11·L10",
-  spoken: "L11 and L10",
-  card: "Cinemark West Plano and XD, 6:40p",
+  showtime: 564402231,
+  capture: "564402231",
+  seats: "K11·K10",
+  spoken: "K11 and K10",
+  card: "Angelika Film Center & Cafe, 10:00a",
 };
 
 const VILLAGE_1: CapturedRoom = {
   name: "AMC Village on the Parkway 1, 294 seats, row 5 mixing E18 with WC17",
-  showtime: 557962491,
-  capture: "561462741",
-  seats: "G14·G13",
-  spoken: "G14 and G13",
-  card: "Cinemark Frisco Square and XD, 1:25p",
+  showtime: 562247516,
+  capture: "562247516",
+  seats: "D18·D17",
+  spoken: "D18 and D17",
+  card: "AMC Village on the Parkway 9, 2:00p",
 };
 
-const LAKE_HIGHLANDS_1: CapturedRoom = {
-  name: "Alamo Lake Highlands 1, 155 seats numbered 101 to 919",
-  showtime: 557805659,
-  capture: "561505814",
+const CEDARS_3: CapturedRoom = {
+  name: "Alamo Cedars 3, 155 seats numbered 101 to 919",
+  showtime: 561434193,
+  capture: "564216396",
   seats: "608·609",
   spoken: "608 and 609",
-  card: "AMC Highland Village 12, 8:00p",
+  card: "AMC Highland Village 12, 8:30p",
 };
 
-const STRIKE_AND_REEL_1: CapturedRoom = {
-  name: "Strike + Reel 1, 46 seats in 5 rows",
-  showtime: 557843159,
-  capture: "561443587",
-  seats: "D8·D7",
-  spoken: "D8 and D7",
-  card: "AMC Grapevine Mills 24, 9:00p",
+const STRIKE_AND_REEL_4: CapturedRoom = {
+  name: "Strike + Reel 4, 123 seats in 8 rows",
+  showtime: 562687836,
+  capture: "559982630",
+  seats: "G10·G9",
+  spoken: "G10 and G9",
+  card: "Strike + Reel Luxury Dine-In and XD, 10:35a",
 };
 
-const HOOKY_ADDISON: CapturedRoom = {
-  name: "Hooky Addison, 10 rows with consoles in two of them and 30 Seat Groups",
-  showtime: 558016664,
-  capture: "561644741",
-  seats: "G14·G13",
-  spoken: "G14 and G13",
-  card: "Cinemark West Plano and XD, 9:45p",
+const HOOKY_SOUTHLAKE: CapturedRoom = {
+  name: "Hooky Southlake, 10 rows with consoles in two of them and 31 Seat Groups",
+  showtime: 564445998,
+  capture: "564445998",
+  seats: "H14·H13",
+  spoken: "H14 and H13",
+  card: "Hooky Entertainment Southlake + SDX, 10:40a",
 };
 
 const FIVE_ROOMS: readonly CapturedRoom[] = [
-  WEST_PLANO_28,
+  WEST_PLANO_10,
   ANGELIKA_5,
   VILLAGE_1,
-  LAKE_HIGHLANDS_1,
-  STRIKE_AND_REEL_1,
+  CEDARS_3,
+  STRIKE_AND_REEL_4,
 ];
 
 const SEAT_MAP = "/napi/seatMap/";
 
 const CORPUS_QUERY: SearchTerms = {
-  movie: "245569",
-  dates: ["2026-08-28"],
+  movie: "245893",
+  dates: ["2026-09-20"],
   area: "75006",
   partySize: 2,
   accessibleSeating: false,
@@ -102,7 +102,7 @@ const capturedBody = (capture: string) => {
   return { status: captured.status, body: JSON.stringify(captured.body) };
 };
 
-const DRAWN_ROOMS: readonly CapturedRoom[] = [...FIVE_ROOMS, HOOKY_ADDISON];
+const DRAWN_ROOMS: readonly CapturedRoom[] = [...FIVE_ROOMS, HOOKY_SOUTHLAKE];
 
 const roomRoutes = (
   rooms: readonly CapturedRoom[] = DRAWN_ROOMS,

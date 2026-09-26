@@ -1,25 +1,25 @@
 import { recordedCaptures, routeOf } from "@seatscout/core/testing";
 import { describe, expect, expectTypeOf, it } from "vitest";
 import {
+  answering,
+  counted,
   FETCHED_AT,
   LISTINGS,
+  opened,
+  payloadOf,
   TERMS,
   TODAY,
   WIDE_RELEASE,
   YESTERDAY,
-  answering,
-  counted,
-  opened,
-  payloadOf,
 } from "./catalogue.fixtures.js";
-import { type KeyValueStore, inMemoryStore } from "./store.js";
+import { inMemoryStore, type KeyValueStore } from "./store.js";
 
 const SEAT_MAP = "/napi/seatMap/";
 const EMPTY = { bookable: [], unbookable: [], unidentified: [] };
-const EARLIER_KEY = 'seatscout.catalogue.["245569","2026-08-28","75006"]';
+const EARLIER_KEY = 'seatscout.catalogue.["245893","2026-09-20","75006"]';
 const PAST_THE_FIELD_PROBE = {
   id: 561682849,
-  startsAt: "2026-08-28T19:20:00-05:00",
+  startsAt: "2026-09-20T19:20:00-05:00",
   presentation: {
     movie: WIDE_RELEASE,
     theater: { id: "a-theater", name: "Cinemark Dallas XD and IMAX" },
@@ -79,7 +79,7 @@ describe("what the catalogue phase caches", () => {
     });
 
     expect(watched.written.map((entry) => entry.key)).toEqual([
-      'seatscout.catalogue.v1.["245569","2026-08-28","75006"]',
+      'seatscout.catalogue.v1.["245893","2026-09-20","75006"]',
     ]);
     expect(
       [...new Set(fieldsIn(watched.written[0]?.value))].toSorted(),
@@ -172,7 +172,7 @@ describe("what the catalogue phase caches", () => {
     });
 
     expect(counted(await resolve({ ...TERMS, formats: ["IMAX"] }))).toEqual({
-      bookable: 1,
+      bookable: 18,
       unbookable: 0,
       unidentified: 0,
     });
@@ -217,10 +217,10 @@ describe("what the catalogue phase caches", () => {
     const { resolve } = opened();
     const yesterday = payloadOf(await resolve({ ...TERMS, date: YESTERDAY }));
 
-    expect(yesterday.bookable).toEqual([]);
+    expect(yesterday.bookable).toHaveLength(252);
     expect(
       yesterday.unbookable.filter((entry) => entry.reason === "started").length,
-    ).toBe(77);
+    ).toBe(201);
   });
 
   it("hands the store the whole listing and nothing besides, then narrows on the way out", async () => {
@@ -238,9 +238,9 @@ describe("what the catalogue phase caches", () => {
       bookable: stored.catalogue.bookable.length,
       unbookable: stored.catalogue.unbookable.length,
       unidentified: stored.catalogue.unidentified.length,
-    }).toEqual({ bookable: 172, unbookable: 4, unidentified: 0 });
+    }).toEqual({ bookable: 494, unbookable: 12, unidentified: 0 });
     expect(counted(reading)).toEqual({
-      bookable: 1,
+      bookable: 18,
       unbookable: 0,
       unidentified: 0,
     });

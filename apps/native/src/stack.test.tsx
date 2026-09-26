@@ -46,7 +46,7 @@ jest.mock("./host/source.js", () => {
 });
 
 const LISTED =
-  "/?movie=246427&date=2026-08-28&area=75006&partySize=2&from=19:00&until=19:20";
+  "/?movie=246473&date=2026-09-20&area=75006&partySize=2&from=19:00&until=19:20";
 
 beforeAll(warmTheCorpus, WARM_UP);
 

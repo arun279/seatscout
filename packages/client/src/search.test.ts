@@ -1,3 +1,4 @@
+import { SOLD_OUT } from "@seatscout/core/testing";
 import { describe, expect, it } from "vitest";
 import {
   AT,
@@ -10,7 +11,7 @@ import {
   routesTo,
   STONEBRIAR,
   searching,
-  stoppedSelling,
+  unbookableAs,
   VILLAGE,
   withoutIdentity,
 } from "./search.fixtures.js";
@@ -22,9 +23,9 @@ describe("a search", () => {
 
     expect(settled.phase).toBe("settled");
     expect(settled.coverage).toEqual({
-      candidates: 5,
-      checked: 4,
-      soldOut: [expect.objectContaining({ id: 561549583 })],
+      candidates: 18,
+      checked: 18,
+      soldOut: [],
       noSeatMap: [],
       started: [],
       salesOff: [],
@@ -32,14 +33,12 @@ describe("a search", () => {
       failed: [],
     });
     expect(idsIn(settled)).toEqual([
-      558117351, 558782900, 558782901, 557985744,
+      564362530, 564362581, 562047986, 562047987, 564362580, 562047989,
+      564362532, 562047988, 562047983, 562047982, 564362541, 564362531,
+      562047992, 562047991, 562047990, 564362582, 562047984, 562047985,
     ]);
     expect(run.snapshots.map((snapshot) => snapshot.phase)).toEqual([
-      "searching",
-      "searching",
-      "searching",
-      "searching",
-      "searching",
+      ...Array.from({ length: 19 }, () => "searching"),
       "settled",
     ]);
   });
@@ -49,10 +48,14 @@ describe("a search", () => {
     const settled = await run.search.done;
 
     expect(run.requested()).toEqual([
-      558117351, 558782900, 558782901, 557985744,
+      564362581, 562047986, 562047987, 562047988, 562047989, 564362580,
+      562047983, 562047982, 562047984, 562047985, 564362541, 564362582,
+      564362531, 562047990, 564362532, 562047991, 564362530, 562047992,
     ]);
     expect(arrivalIn(run.snapshots)).toEqual([
-      558117351, 557985744, 558782901, 558782900,
+      564362581, 562047992, 562047991, 562047982, 562047988, 562047983,
+      564362582, 564362530, 562047984, 564362580, 564362541, 562047985,
+      562047987, 564362532, 564362531, 562047986, 562047989, 562047990,
     ]);
     expect(idsIn(settled)).not.toEqual(arrivalIn(run.snapshots));
     for (const snapshot of run.snapshots)
@@ -81,8 +84,10 @@ describe("a search", () => {
       }
     }
 
-    expect(held.size).toBe(4);
-    expect([...scores.values()].map((seen) => seen.size)).toEqual([1, 1, 1, 1]);
+    expect(held.size).toBe(18);
+    expect([...scores.values()].map((seen) => seen.size)).toEqual([
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    ]);
   });
 
   it("never lets a Coverage outcome go backwards", async () => {
@@ -98,7 +103,7 @@ describe("a search", () => {
       snapshot.coverage.failed.length,
     ]);
 
-    expect(counts.length).toBe(174);
+    expect(counts.length).toBe(496);
     expect(
       counts.filter((row, at) =>
         row.some((count, outcome) => count < (counts[at - 1]?.[outcome] ?? 0)),
@@ -115,17 +120,17 @@ describe("a search", () => {
         snapshot.coverage.candidates - accountedIn(snapshot.coverage),
     );
 
-    expect(run.snapshots).toHaveLength(174);
+    expect(run.snapshots).toHaveLength(496);
     expect(left.filter((over) => over < 0)).toEqual([]);
     expect(left.filter((now, at) => now > (left[at - 1] ?? now))).toEqual([]);
-    expect(left[0]).toBe(172);
+    expect(left[0]).toBe(494);
     expect(left.at(-1)).toBe(0);
     expect(
       run.snapshots.map((snapshot) =>
         snapshot.days.reduce((sum, day) => sum + day.reading + day.unread, 0),
       ),
     ).toEqual(left);
-    expect(settled.coverage.candidates).toBe(176);
+    expect(settled.coverage.candidates).toBe(506);
   });
 
   it("does not change a snapshot a caller is still holding", async () => {
@@ -136,7 +141,7 @@ describe("a search", () => {
           bookable.slice(0, 1),
           refusalNamed("GeneralAdmissionShowtimeError"),
         ),
-        ...routesTo(bookable.slice(1, 2), refusalNamed("PerformanceSoldOut")),
+        ...routesTo(bookable.slice(1, 2), SOLD_OUT),
       }),
     });
     await run.search.done;
@@ -151,11 +156,9 @@ describe("a search", () => {
     const run = await searching({ at: [INWOOD, STONEBRIAR] });
     const settled = await run.search.done;
 
-    expect(settled.coverage.candidates).toBe(8);
+    expect(settled.coverage.candidates).toBe(21);
     expect(settled.coverage.noSeatMap).toHaveLength(3);
-    expect(settled.coverage.soldOut).toHaveLength(1);
-    expect(run.requested()).toHaveLength(4);
-    expect(run.requested()).not.toContain(561549583);
+    expect(run.requested()).toHaveLength(18);
   });
 
   it("names a Showtime that has begun as started rather than as failed", async () => {
@@ -170,7 +173,7 @@ describe("a search", () => {
       settled.coverage.started.map((showtime) => showtime.startsAt),
     ).toEqual([run.candidates.bookable[0]?.startsAt]);
     expect(settled.coverage.failed).toEqual([]);
-    expect(settled.coverage.checked).toBe(3);
+    expect(settled.coverage.checked).toBe(17);
   });
 
   it("names a general admission Showtime and a sold out one from the seat map itself", async () => {
@@ -181,17 +184,17 @@ describe("a search", () => {
           bookable.slice(0, 1),
           refusalNamed("GeneralAdmissionShowtimeError"),
         ),
-        ...routesTo(bookable.slice(1, 2), refusalNamed("PerformanceSoldOut")),
+        ...routesTo(bookable.slice(1, 2), SOLD_OUT),
       }),
     });
     const settled = await run.search.done;
 
     expect(settled.coverage.noSeatMap).toHaveLength(1);
-    expect(settled.coverage.soldOut).toHaveLength(2);
+    expect(settled.coverage.soldOut).toHaveLength(1);
     expect(settled.coverage.failed).toEqual([]);
-    expect(settled.coverage.checked).toBe(2);
-    expect(accountedIn(settled.coverage)).toBe(5);
-    expect(new Set(namedIn(settled.coverage)).size).toBe(3);
+    expect(settled.coverage.checked).toBe(16);
+    expect(accountedIn(settled.coverage)).toBe(18);
+    expect(new Set(namedIn(settled.coverage)).size).toBe(2);
   });
 
   it("carries the Showtimes the listing could not identify and spends no request on them", async () => {
@@ -208,11 +211,11 @@ describe("a search", () => {
     });
     const settled = await run.search.done;
 
-    expect(settled.coverage.candidates).toBe(8);
+    expect(settled.coverage.candidates).toBe(21);
     expect(settled.coverage.unidentified).toHaveLength(1);
     expect(settled.coverage.failed).toEqual([]);
-    expect(run.requested()).toHaveLength(3);
-    expect(accountedIn(settled.coverage)).toBe(8);
+    expect(run.requested()).toHaveLength(17);
+    expect(accountedIn(settled.coverage)).toBe(21);
   });
 
   it("names a Theater that has stopped selling and offers it neither a request nor a retry", async () => {
@@ -224,7 +227,7 @@ describe("a search", () => {
           bookable: catalogue.bookable.slice(1),
           unbookable: [
             ...catalogue.unbookable,
-            ...catalogue.bookable.slice(0, 1).map(stoppedSelling),
+            ...catalogue.bookable.slice(0, 1).map(unbookableAs("salesOff")),
           ],
           unidentified: catalogue.unidentified,
         },
@@ -233,12 +236,12 @@ describe("a search", () => {
     const settled = await run.search.done;
     const stopped = run.candidates.bookable[0];
 
-    expect(settled.coverage.candidates).toBe(8);
+    expect(settled.coverage.candidates).toBe(21);
     expect(settled.coverage.salesOff).toEqual([stopped]);
     expect(settled.coverage.failed).toEqual([]);
-    expect(run.requested()).toHaveLength(3);
+    expect(run.requested()).toHaveLength(17);
     expect(run.requested()).not.toContain(stopped?.id);
-    expect(accountedIn(settled.coverage)).toBe(8);
+    expect(accountedIn(settled.coverage)).toBe(21);
   });
 
   it("closes the ledger with every outcome in it at once", async () => {
@@ -247,17 +250,18 @@ describe("a search", () => {
       cached: (catalogue) => ({
         fetchedAt: AT,
         catalogue: {
-          bookable: catalogue.bookable.slice(2),
+          bookable: catalogue.bookable.slice(3),
           unbookable: [
             ...catalogue.unbookable,
-            ...catalogue.bookable.slice(1, 2).map(stoppedSelling),
+            ...catalogue.bookable.slice(1, 2).map(unbookableAs("salesOff")),
+            ...catalogue.bookable.slice(2, 3).map(unbookableAs("soldOut")),
           ],
           unidentified: catalogue.bookable.slice(0, 1).map(withoutIdentity),
         },
       }),
       answers: (bookable) => ({
-        ...routesTo(bookable.slice(2, 3), refusalNamed("ExpiredPerformance")),
-        ...routesTo(bookable.slice(3, 4), { status: 500, body: "" }),
+        ...routesTo(bookable.slice(3, 4), refusalNamed("ExpiredPerformance")),
+        ...routesTo(bookable.slice(4, 5), { status: 500, body: "" }),
       }),
     });
     const settled = await run.search.done;
@@ -272,8 +276,8 @@ describe("a search", () => {
       unidentified: settled.coverage.unidentified.length,
       failed: settled.coverage.failed.length,
     }).toEqual({
-      candidates: 12,
-      checked: 4,
+      candidates: 31,
+      checked: 23,
       soldOut: 1,
       noSeatMap: 3,
       started: 1,
@@ -281,8 +285,8 @@ describe("a search", () => {
       unidentified: 1,
       failed: 1,
     });
-    expect(accountedIn(settled.coverage)).toBe(12);
-    expect(settled.results).toHaveLength(4);
+    expect(accountedIn(settled.coverage)).toBe(31);
+    expect(settled.results).toHaveLength(23);
     expect(
       run.snapshots.filter(
         (snapshot) =>

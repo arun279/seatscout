@@ -12,11 +12,11 @@ describe("the Source the journey reads", () => {
       random: () => 0,
     });
 
-    const reading = await seatscout.programme("75006", "2026-08-28");
+    const reading = await seatscout.programme("75006", "2026-09-20");
 
     expect(reading).toMatchObject({ ok: true });
     expect(
       reading.ok && reading.payload.movies.map((movie) => movie.title),
-    ).toContain("The Dog Stars (2026)");
+    ).toContain("Practical Magic 2 (2026)");
   });
 });

@@ -19,14 +19,14 @@ const searched = () =>
     fetch: fakeUpstream({
       seed: 4,
       standInAuditoriums: true,
-      sequences: { "/napi/seatMap/558117351": [500, 500, 500] },
+      sequences: { "/napi/seatMap/564362581": [500, 500, 500] },
     }),
     now: () => 0,
     wait: () => Promise.resolve(),
     random: () => 0.5,
   }).search({
-    movie: "245569",
-    dates: ["2026-08-28"],
+    movie: "245893",
+    dates: ["2026-09-20"],
     area: "75006",
     partySize: 2,
     accessibleSeating: false,
@@ -80,10 +80,10 @@ describe("what the screen derives from a snapshot", () => {
     );
     if (lower === undefined || higher === undefined)
       throw new Error("two results went missing");
-    const later = at(first, "2026-08-28T20:00:00-05:00", true);
-    const sixHigher = at(higher, "2026-08-28T18:00:00-05:00", true);
-    const sixLower = at(lower, "2026-08-28T18:00:00-05:00", true);
-    const ranked = at(first, "2026-08-28T10:00:00-05:00", false);
+    const later = at(first, "2026-09-20T20:00:00-05:00", true);
+    const sixHigher = at(higher, "2026-09-20T18:00:00-05:00", true);
+    const sixLower = at(lower, "2026-09-20T18:00:00-05:00", true);
+    const ranked = at(first, "2026-09-20T10:00:00-05:00", false);
     const results = [ranked, later, sixHigher, sixLower];
 
     expect(tiedIn(results)).toBe(3);

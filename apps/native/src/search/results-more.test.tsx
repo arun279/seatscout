@@ -31,10 +31,11 @@ const SEAT_MAP = "/napi/seatMap/";
 const STILL: Clock = { now: () => NOW, subscribe: () => () => undefined };
 
 const TWO_DAYS: SearchTerms = {
-  movie: "245569",
-  dates: ["2026-08-27", TODAY],
+  movie: "245893",
+  dates: ["2026-09-19", TODAY],
   area: "75006",
   partySize: 2,
+  until: "17:55",
   accessibleSeating: false,
 };
 
@@ -84,19 +85,19 @@ describe("a search over several days with more to read", () => {
 
     expect(seatMaps()).toBe(48);
     expect(
-      screen.getByText("Thu 27 Aug: no seat map to read"),
+      screen.getByText("Sat 19 Sep: no seat map to read"),
     ).toBeOnTheScreen();
     expect(
-      screen.getByText("Today: 48 read · 124 not read yet"),
+      screen.getByText("Today: 48 read · 248 not read yet"),
     ).toBeOnTheScreen();
     expect(screen.getByRole("status")).toHaveTextContent(
-      "256 candidates · 48 checked · 124 not read yet",
+      "505 candidates · 48 checked · 248 not read yet",
     );
 
     await fireEvent.press(more);
 
     expect(
-      await screen.findByText("256 candidates · 96 checked · 76 not read yet"),
+      await screen.findByText("505 candidates · 96 checked · 200 not read yet"),
     ).toBeOnTheScreen();
     expect(seatMaps()).toBe(96);
   });
@@ -114,13 +115,13 @@ describe("a search over several days with more to read", () => {
 
 describe("a search whose showtimes have all begun", () => {
   it("says no showtime matched, never that no seats were free, when no seat map was checked", async () => {
-    const seatMaps = await shown({ ...TWO_DAYS, dates: ["2026-08-27"] });
+    const seatMaps = await shown({ ...TWO_DAYS, dates: ["2026-09-19"] });
 
     expect(
       await screen.findByText(/^No showtime matches this query/),
     ).toBeOnTheScreen();
     expect(screen.getByRole("status")).toHaveTextContent(
-      "80 candidates · 0 checked",
+      "201 candidates · 0 checked",
     );
     expect(screen.queryByText(/^No two seats together/)).toBeNull();
     expect(seatMaps()).toBe(0);

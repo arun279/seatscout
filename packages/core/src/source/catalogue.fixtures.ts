@@ -23,14 +23,14 @@ import type { Reading, Source } from "./port.js";
 
 export const NEARBY = "/napi/nearbyTheaters";
 export const AREA = "75006";
-export const TODAY = "2026-08-28";
-export const WIDE_RELEASE = "245569";
+export const TODAY = "2026-09-20";
+export const WIDE_RELEASE = "245893";
 export const GROUPINGS: readonly (readonly [string, string])[] = [
   ["243819", TODAY],
-  [WIDE_RELEASE, "2026-08-27"],
+  ["245699", TODAY],
+  [WIDE_RELEASE, "2026-09-19"],
   [WIDE_RELEASE, TODAY],
-  ["246329", TODAY],
-  ["246427", TODAY],
+  ["246473", TODAY],
 ] as const;
 
 export const rig = (

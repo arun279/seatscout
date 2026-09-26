@@ -9,12 +9,13 @@ import {
 } from "./search.fixtures.js";
 import type { Snapshot } from "./search.js";
 
-const EARLIER = "2026-08-27";
-const LATER = "2026-08-29";
+const EARLIER = "2026-09-19";
+const LATER = "2026-09-21";
+const LATEST = "2026-09-22";
 const ACROSS = {
   days: [
-    [LATER, "246329/2026-08-28"],
-    [EARLIER, "245569/2026-08-27"],
+    [LATEST, "243819/2026-09-20"],
+    [LATER, "246473/2026-09-20"],
   ],
   script: { standInAuditoriums: true },
 } as const;
@@ -35,9 +36,9 @@ describe("a search's budget", () => {
     const run = await searching({});
     const settled = await run.search.done;
 
-    expect(run.requested()).toHaveLength(172);
+    expect(run.requested()).toHaveLength(494);
     expect(settled.days).toEqual([
-      { date: TODAY, read: 172, reading: 0, unread: 0 },
+      { date: TODAY, read: 494, reading: 0, unread: 0 },
     ]);
   });
 
@@ -57,14 +58,14 @@ describe("a search's budget", () => {
     await run.search.done;
 
     expect(run.snapshots[0]?.days).toEqual([
-      { date: EARLIER, read: 0, reading: 0, unread: 0 },
-      { date: TODAY, read: 0, reading: 48, unread: 124 },
-      { date: LATER, read: 0, reading: 0, unread: 172 },
+      { date: TODAY, read: 0, reading: 48, unread: 446 },
+      { date: LATER, read: 0, reading: 0, unread: 163 },
+      { date: LATEST, read: 0, reading: 0, unread: 120 },
     ]);
     expect(run.snapshots.at(-2)?.days).toEqual([
-      { date: EARLIER, read: 0, reading: 0, unread: 0 },
-      { date: TODAY, read: 48, reading: 0, unread: 124 },
-      { date: LATER, read: 0, reading: 0, unread: 172 },
+      { date: TODAY, read: 48, reading: 0, unread: 446 },
+      { date: LATER, read: 0, reading: 0, unread: 163 },
+      { date: LATEST, read: 0, reading: 0, unread: 120 },
     ]);
   });
 
@@ -78,11 +79,11 @@ describe("a search's budget", () => {
       run.candidates.bookable.slice(0, 96).map((showtime) => showtime.id),
     );
     expect(more.coverage.checked).toBe(96);
-    expect(more.days[1]).toEqual({
+    expect(more.days[0]).toEqual({
       date: TODAY,
       read: 96,
       reading: 0,
-      unread: 76,
+      unread: 398,
     });
     expect(run.search.snapshot()).toBe(more);
   });
@@ -93,7 +94,7 @@ describe("a search's budget", () => {
     const seen = run.snapshots.length;
 
     expect(await run.search.readMore()).toBe(settled);
-    expect(run.requested()).toHaveLength(4);
+    expect(run.requested()).toHaveLength(18);
     expect(run.snapshots).toHaveLength(seen);
   });
 });
@@ -105,9 +106,9 @@ describe("a search over several days", () => {
     const asked = run.paths();
 
     expect(asked.slice(0, 3).toSorted()).toEqual([
-      "/napi/theaterShowtimeGroupings/245569/2026-08-27",
       LISTING,
-      "/napi/theaterShowtimeGroupings/245569/2026-08-29",
+      "/napi/theaterShowtimeGroupings/245893/2026-09-21",
+      "/napi/theaterShowtimeGroupings/245893/2026-09-22",
     ]);
     expect(asked.slice(3).every((path) => path.startsWith(SEAT_MAP))).toBe(
       true,
@@ -118,11 +119,11 @@ describe("a search over several days", () => {
     const run = await searching(ACROSS);
     const settled = await run.search.done;
 
-    expect(settled.coverage.candidates).toBe(431);
+    expect(settled.coverage.candidates).toBe(792);
     expect(settled.days).toEqual([
-      { date: EARLIER, read: 0, reading: 0, unread: 0 },
-      { date: TODAY, read: 48, reading: 0, unread: 124 },
-      { date: LATER, read: 0, reading: 0, unread: 172 },
+      { date: TODAY, read: 48, reading: 0, unread: 446 },
+      { date: LATER, read: 0, reading: 0, unread: 163 },
+      { date: LATEST, read: 0, reading: 0, unread: 120 },
     ]);
     expect(new Set(datesIn(settled))).toEqual(new Set([TODAY]));
   });
@@ -131,17 +132,16 @@ describe("a search over several days", () => {
     const run = await searching(ACROSS);
     await run.search.done;
 
-    await run.search.readMore();
-    await run.search.readMore();
+    for (let step = 1; step < 10; step += 1) await run.search.readMore();
     const more = await run.search.readMore();
     const dates = datesIn(more);
 
-    expect(run.requested()).toHaveLength(192);
-    expect(new Set(run.requested()).size).toBe(192);
+    expect(run.requested()).toHaveLength(528);
+    expect(new Set(run.requested()).size).toBe(528);
     expect(more.days).toEqual([
-      { date: EARLIER, read: 0, reading: 0, unread: 0 },
-      { date: TODAY, read: 172, reading: 0, unread: 0 },
-      { date: LATER, read: 20, reading: 0, unread: 152 },
+      { date: TODAY, read: 494, reading: 0, unread: 0 },
+      { date: LATER, read: 34, reading: 0, unread: 129 },
+      { date: LATEST, read: 0, reading: 0, unread: 120 },
     ]);
     expect(dates).toEqual(dates.toSorted());
     expect(dates.at(-1)).toBe(LATER);
@@ -159,7 +159,7 @@ describe("a search's time window", () => {
     const listed = await listing();
     const run = await searching({
       window: { from: "21:00", until: "22:00" },
-      days: [[LATER, "246329/2026-08-28"]],
+      days: [[LATER, "246473/2026-09-20"]],
       script: { standInAuditoriums: true },
     });
     const settled = await run.search.done;
@@ -167,15 +167,15 @@ describe("a search's time window", () => {
       listed.bookable.map((showtime) => [showtime.id, showtime.startsAt]),
     );
 
-    expect(settled.coverage.candidates).toBe(15);
+    expect(settled.coverage.candidates).toBe(40);
     expect(settled.days).toEqual([
-      { date: TODAY, read: 15, reading: 0, unread: 0 },
+      { date: TODAY, read: 39, reading: 0, unread: 0 },
       { date: LATER, read: 0, reading: 0, unread: 0 },
     ]);
     expect(
       run.requested().filter((id) => {
         const at = startsAt.get(id) ?? "";
-        return at < "2026-08-28T21:00" || at >= "2026-08-28T22:00";
+        return at < "2026-09-20T21:00" || at >= "2026-09-20T22:00";
       }),
     ).toEqual([]);
   });
@@ -184,17 +184,17 @@ describe("a search's time window", () => {
 describe("a search's days without a window", () => {
   it("keeps every showtime a day's listing names, whatever date it starts on, and reads that nearer day first", async () => {
     const run = await searching({
-      days: [[EARLIER, "246329/2026-08-28"]],
+      days: [[EARLIER, "246473/2026-09-20"]],
       script: { standInAuditoriums: true },
     });
     const settled = await run.search.done;
 
-    expect(settled.coverage.candidates).toBe(351);
+    expect(settled.coverage.candidates).toBe(672);
     expect(settled.days[0]).toEqual({
       date: EARLIER,
       read: 48,
       reading: 0,
-      unread: 124,
+      unread: 115,
     });
   });
 
@@ -222,7 +222,7 @@ describe("a search the Source refuses", () => {
     expect(settled.coverage.checked).toBe(0);
     expect(settled.coverage.failed).toEqual([]);
     expect(settled.days).toEqual([
-      { date: TODAY, read: 0, reading: 0, unread: 172 },
+      { date: TODAY, read: 0, reading: 0, unread: 494 },
     ]);
   });
 
@@ -249,8 +249,8 @@ describe("a search the Source refuses", () => {
     expect(settled.refused).toBe(true);
     expect(settled.coverage.checked).toBe(30);
     expect(settled.results.length).toBeGreaterThan(0);
-    expect(day).toEqual({ date: TODAY, read: 30, reading: 0, unread: 142 });
-    expect(run.requested().length).toBeLessThan(172);
+    expect(day).toEqual({ date: TODAY, read: 30, reading: 0, unread: 464 });
+    expect(run.requested().length).toBeLessThan(494);
     expect(await run.search.readMore()).toBe(settled);
   });
 

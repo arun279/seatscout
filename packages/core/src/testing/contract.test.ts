@@ -4,6 +4,7 @@ import type { CapturedSeat, CapturedSeatMap } from "../corpus/types.js";
 import { seatFrom } from "../source/seat-map.js";
 import { answerOf, FETCHED_AT } from "./contract.fixtures.js";
 import { type Answer, divergencesIn, SETTLED_STATUSES } from "./contract.js";
+import { SOLD_OUT } from "./fake-upstream.js";
 
 interface Found {
   readonly map: CapturedSeatMap;
@@ -207,10 +208,7 @@ describe("the contract the corpus recorded", () => {
         404,
         '[{"id":"ExpiredPerformance","message":""}]',
       ),
-      "a screening that sold out": refused(
-        410,
-        '[{"id":"PerformanceSoldOut","message":""}]',
-      ),
+      "a screening that sold out": refused(SOLD_OUT.status, SOLD_OUT.body),
       "a reason the corpus never met": refused(
         404,
         '[{"id":"ShowtimeNotFound","message":""}]',

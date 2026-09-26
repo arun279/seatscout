@@ -6,9 +6,9 @@ import type { Source } from "./port.js";
 import type { Designation, Seat } from "./seat-map.js";
 
 const FETCHED_AT = 1000;
-const AUDITORIUM_WITH_ACCESSIBLE_SPACES = "561462741";
-const AUDITORIUM_WITH_ALMOST_NO_NEIGHBOUR_LINKS = "561230736";
-const AUDITORIUM_THE_SOURCE_MISCOUNTS = "561865199";
+const AUDITORIUM_WITH_ACCESSIBLE_SPACES = "562247516";
+const AUDITORIUM_WITH_ALMOST_NO_NEIGHBOUR_LINKS = "564402231";
+const AUDITORIUM_THE_SOURCE_MISCOUNTS = "562212808";
 
 const sourceOf = (routes?: UpstreamScript["routes"]) =>
   openSource({
@@ -115,7 +115,7 @@ describe("the seat map path", () => {
     );
 
     expect(seatCalled(asSent, "A30")?.bookable).toBe(true);
-    expect(asSent.filter((seat) => seat.bookable)).toHaveLength(291);
+    expect(asSent.filter((seat) => seat.bookable)).toHaveLength(245);
 
     expect(seatCalled(asInvented, "A30")).toEqual({
       ...seatCalled(asSent, "A30"),
@@ -126,21 +126,21 @@ describe("the seat map path", () => {
         upstreamStatus: "H",
       },
     });
-    expect(asInvented.filter((seat) => seat.bookable)).toHaveLength(290);
+    expect(asInvented.filter((seat) => seat.bookable)).toHaveLength(244);
   });
 
   it("holds every captured Seat to the same known-bookable list", async () => {
     const seats = await everyCapturedSeat();
 
-    expect(seats).toHaveLength(6771);
-    expect(seats.filter((seat) => seat.bookable)).toHaveLength(6113);
+    expect(seats).toHaveLength(7390);
+    expect(seats.filter((seat) => seat.bookable)).toHaveLength(6822);
     expect(
       new Set(
         seats
           .filter((seat) => !seat.bookable)
           .map((seat) => seat.provenance.upstreamStatus),
       ),
-    ).toEqual(new Set(["R", "O", "X"]));
+    ).toEqual(new Set(["R", "O", "X", "H"]));
   });
 
   it("carries wheelchair and companion designations through translation", async () => {
@@ -148,19 +148,19 @@ describe("the seat map path", () => {
     const tally = (designation: Designation) =>
       seats.filter((seat) => seat.designation === designation).length;
 
-    expect(seats).toHaveLength(6771);
+    expect(seats).toHaveLength(7390);
     expect({
       standard: tally("standard"),
       wheelchair: tally("wheelchair"),
       companion: tally("companion"),
-    }).toEqual({ standard: 6407, wheelchair: 179, companion: 185 });
+    }).toEqual({ standard: 6988, wheelchair: 198, companion: 204 });
   });
 
   it("counts the Seats the Source sent rather than the seat count it claims", async () => {
     const seats = await seatsOf(AUDITORIUM_THE_SOURCE_MISCOUNTS);
 
-    expect(seats).toHaveLength(304);
-    expect(seats.filter((seat) => seat.bookable)).toHaveLength(25);
+    expect(seats).toHaveLength(303);
+    expect(seats.filter((seat) => seat.bookable)).toHaveLength(266);
   });
 
   it("carries the neighbour links the Source gave, absent ones included", async () => {

@@ -2,9 +2,9 @@ import * as fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import type { Seat } from "../source/seat-map.js";
 import {
-  FETCHED_AT,
   depthsOf,
   extentOf,
+  FETCHED_AT,
   lateralsOf,
 } from "./auditorium.fixtures.js";
 import {

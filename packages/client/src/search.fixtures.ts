@@ -20,10 +20,10 @@ import { type CachedCatalogue, inMemoryStore } from "./store.js";
 
 export const SEAT_MAP = "/napi/seatMap/";
 const LISTINGS = "/napi/theaterShowtimeGroupings/";
-export const LISTING: string = `${LISTINGS}245569/2026-08-28`;
+export const LISTING: string = `${LISTINGS}245893/2026-09-20`;
 const AREA = "75006";
-export const TODAY = "2026-08-28";
-const WIDE_RELEASE = "245569";
+export const TODAY = "2026-09-20";
+const WIDE_RELEASE = "245893";
 export const AT = 1000;
 export const STONEBRIAR = "AMC Stonebriar 24";
 export const INWOOD = "Landmark Inwood Theatre";
@@ -217,6 +217,11 @@ export const searching = async (options: Options = {}): Promise<SearchRun> => {
   };
 };
 
+export const byStart = (showtimes: readonly Showtime[]): Showtime[] =>
+  showtimes.toSorted((left, right) =>
+    left.startsAt.localeCompare(right.startsAt),
+  );
+
 export const idsIn = (snapshot: Snapshot): Showtime["id"][] =>
   snapshot.results.map((result) => result.showtime.id);
 
@@ -244,9 +249,11 @@ export const withoutIdentity = (showtime: Showtime): Unidentified => ({
   ticketing: showtime.ticketing,
 });
 
-export const stoppedSelling = (
-  showtime: Showtime,
-): { readonly showtime: Showtime; readonly reason: UnbookableReason } => ({
-  showtime,
-  reason: "salesOff",
-});
+export const unbookableAs =
+  (reason: UnbookableReason) =>
+  (
+    showtime: Showtime,
+  ): { readonly showtime: Showtime; readonly reason: UnbookableReason } => ({
+    showtime,
+    reason,
+  });

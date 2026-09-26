@@ -16,7 +16,7 @@ import {
   spokenOf,
   whyOf,
 } from "./phrases.js";
-import { openedRooms, WEST_PLANO_28 } from "./rooms.fixtures.js";
+import { openedRooms, WEST_PLANO_10 } from "./rooms.fixtures.js";
 import { dayOf, whenOf } from "./when-phrases.js";
 
 const REASONS = {
@@ -142,38 +142,38 @@ describe("the words a card uses", () => {
     const alone = { ...first.result, seats: first.result.seats.slice(0, 1) };
 
     expect(rooms.map(({ result }) => labelOf(result))).toEqual([
-      "H14·H13",
-      "L11·L10",
-      "G14·G13",
+      "N14·N13",
+      "K11·K10",
+      "D18·D17",
       "608·609",
-      "D8·D7",
+      "G10·G9",
     ]);
     expect(rooms.map(({ result }) => spokenOf(result))).toEqual([
-      "H14 and H13",
-      "L11 and L10",
-      "G14 and G13",
+      "N14 and N13",
+      "K11 and K10",
+      "D18 and D17",
       "608 and 609",
-      "D8 and D7",
+      "G10 and G9",
     ]);
-    expect(labelOf(alone)).toBe("H14");
-    expect(spokenOf(alone)).toBe("H14");
+    expect(labelOf(alone)).toBe("N14");
+    expect(spokenOf(alone)).toBe("N14");
   });
 
   it("puts a comma between every Seat of a larger group but the last, which keeps the and", async () => {
     const [room] = await openedRooms(
       {
-        movie: "245569",
-        dates: ["2026-08-28"],
+        movie: "245893",
+        dates: ["2026-09-20"],
         area: "75006",
         partySize: 3,
         accessibleSeating: false,
       },
-      [WEST_PLANO_28],
+      [WEST_PLANO_10],
     );
     if (room === undefined) throw new Error("no room was opened");
 
-    expect(labelOf(room.result)).toBe("H15·H14·H13");
-    expect(spokenOf(room.result)).toBe("H15, H14 and H13");
+    expect(labelOf(room.result)).toBe("N15·N14·N13");
+    expect(spokenOf(room.result)).toBe("N15, N14 and N13");
   });
 
   it("names the Seat Profile as the Reference seat only while every part of it is the Reference's", () => {

@@ -82,7 +82,7 @@ stale reading can never reach a hand-off and there is nothing for a threshold to
 is the predicate, and it is deliberately not "the room still offers this Group". A run yields
 one Group, the window of that run crossing the fewest consoles and then nearest its middle, so
 a Seat coming free *beside* a Group moves the window the run offers: in the captured Auditorium
-the suite uses, freeing one Seat shifts the offered pair from `F9+F8` to `F8+F7` while both of
+the suite uses, freeing one Seat shifts the offered pair from `F5+F6` to `F7+F8` while both of
 the Seats someone is holding are free. Looking the Group up among the offered ones would call
 that taken and send someone to alternatives they did not need.
 

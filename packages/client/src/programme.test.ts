@@ -1,33 +1,37 @@
 import { openSource, type Reading } from "@seatscout/core";
-import { type UpstreamScript, fakeUpstream } from "@seatscout/core/testing";
+import { fakeUpstream, type UpstreamScript } from "@seatscout/core/testing";
 import { describe, expect, it } from "vitest";
 import { openProgramme, type Programme } from "./programme.js";
 import { inMemoryStore, type KeyValueStore, type Stored } from "./store.js";
 
 const AREA = "75006";
-const TODAY = "2026-08-28";
-const TOMORROW = "2026-08-29";
+const TODAY = "2026-09-20";
+const TOMORROW = "2026-09-21";
 const AT = 1000;
 const TWO_HOURS = 7_200_000;
 const NEARBY = "/napi/nearbyTheaters";
 const SCHEDULES = "/napi/theaterMovieShowtimes/";
 
 const PLAYING_AT_THE_ANCHOR = [
-  "American Martyr: The Stanley Rother Story (2026)",
-  "Colony (2026)",
+  "Batman: Mask of the Phantasm (1993)",
+  "Buddy (2026)",
   "Coyote vs. Acme",
-  "GHOST: 2 Big To Rig (2026)",
-  "Harry Potter and the Sorcerer's Stone (2001)",
+  "Forgotten Island - Early Access Screening (2026)",
+  "Ghost in the Shell 30th Anniversary - 4K (2026)",
+  "Hanuman Ansh (2026)", // cspell:words Ansh
+  "Happy Journey (2026)",
+  "Heaven in Stone and Glass (2026)",
+  "Hope (2026)",
   "Insidious: Out of the Further (2026)",
-  "Irumudi (2026)",
-  "Mutiny (2026)",
-  "PAW Patrol: The Dino Movie (2026)",
+  "NCT 127 5TH TOUR ‘NEO CITY : SEOUL - THE REDLINE’ in CINEMAS (2026)",
+  "Practical Magic 2 (2026)",
+  "Resident Evil (2026)",
+  "Runner (2026)",
+  "Shaun the Sheep: The Beast of Mossy Bottom (2026)",
   "Spider-Man: Brand New Day (2026)",
-  "The Dog Stars (2026)",
-  "The End of Oak Street (2026)",
-  "The Fast And The Furious: 25th Anniversary (2026)",
   "The Odyssey (2026)",
-  "Toxic: A Fairytale for Grownups (2026)",
+  "The Transformers: The Movie 40th Anniversary (2026)",
+  "The Uprising (2026)",
 ];
 
 const fieldsIn = (value: unknown, at = ""): readonly string[] =>
@@ -102,8 +106,8 @@ describe("the programme near an area on a date", () => {
       PLAYING_AT_THE_ANCHOR,
     );
     expect(
-      read.movies.find((movie) => movie.title === "The Dog Stars (2026)"),
-    ).toEqual({ id: "245569", title: "The Dog Stars (2026)" });
+      read.movies.find((movie) => movie.title === "Resident Evil (2026)"),
+    ).toEqual({ id: "245893", title: "Resident Evil (2026)" });
     expect(read.unreached).toEqual([]);
     expect(requested()).toEqual({ areas: 1, schedules: 25 });
   });
@@ -193,7 +197,7 @@ describe("the programme near an area on a date", () => {
     await programme(AREA, TODAY);
 
     expect(watched.written.map((entry) => entry.key)).toEqual([
-      'seatscout.programme.v1.["2026-08-28","75006"]',
+      'seatscout.programme.v1.["2026-09-20","75006"]',
     ]);
     expect(
       [...new Set(fieldsIn(watched.written[0]?.value))].toSorted(),

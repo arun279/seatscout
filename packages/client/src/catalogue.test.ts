@@ -1,14 +1,14 @@
 import type { Catalogue } from "@seatscout/core";
 import { describe, expect, it } from "vitest";
 import {
+  answering,
+  counted,
   FETCHED_AT,
+  opened,
+  payloadOf,
   TERMS,
   TODAY,
   YESTERDAY,
-  answering,
-  counted,
-  opened,
-  payloadOf,
 } from "./catalogue.fixtures.js";
 import type { CachedCatalogue } from "./store.js";
 
@@ -32,22 +32,22 @@ describe("the catalogue phase", () => {
     const { resolve } = opened();
 
     expect(counted(await resolve(TERMS))).toEqual({
-      bookable: 172,
-      unbookable: 4,
+      bookable: 494,
+      unbookable: 12,
       unidentified: 0,
     });
     expect(
       counted(await resolve({ ...TERMS, formats: ["IMAX", "ScreenX"] })),
-    ).toEqual({ bookable: 3, unbookable: 0, unidentified: 0 });
+    ).toEqual({ bookable: 31, unbookable: 0, unidentified: 0 });
     expect(
       counted(
         await resolve({
           ...TERMS,
-          from: "2026-08-28T19:00",
-          until: "2026-08-28T22:00",
+          from: "2026-09-20T19:00",
+          until: "2026-09-20T22:00",
         }),
       ),
-    ).toEqual({ bookable: 46, unbookable: 0, unidentified: 0 });
+    ).toEqual({ bookable: 115, unbookable: 4, unidentified: 0 });
   });
 
   it("answers a second read inside the TTL from the cache, with the age it actually has", async () => {
@@ -105,8 +105,8 @@ describe("the catalogue phase", () => {
     const narrowed = counted(await resolve({ ...TERMS, formats: ["IMAX"] }));
 
     expect(listings()).toBe(1);
-    expect(whole).toEqual({ bookable: 172, unbookable: 4, unidentified: 0 });
-    expect(narrowed).toEqual({ bookable: 1, unbookable: 0, unidentified: 0 });
+    expect(whole).toEqual({ bookable: 494, unbookable: 12, unidentified: 0 });
+    expect(narrowed).toEqual({ bookable: 18, unbookable: 0, unidentified: 0 });
   });
 
   it("answers a Query with the Showtimes the Source could not identify, narrowed like the rest", async () => {
@@ -118,12 +118,12 @@ describe("the catalogue phase", () => {
     expect(counted(await resolve(TERMS))).toEqual({
       bookable: 0,
       unbookable: 0,
-      unidentified: 172,
+      unidentified: 494,
     });
     expect(counted(await resolve({ ...TERMS, formats: ["IMAX"] }))).toEqual({
       bookable: 0,
       unbookable: 0,
-      unidentified: 1,
+      unidentified: 18,
     });
     expect(listings()).toBe(0);
   });

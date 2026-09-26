@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { type Catalogue, narrowed } from "./catalogue.js";
 import { captured, counted, everyShowtime } from "./catalogue.fixtures.js";
+import { type Catalogue, narrowed } from "./catalogue.js";
 
 const startsAt = (catalogue: Catalogue): readonly string[] =>
   everyShowtime(catalogue)
@@ -12,17 +12,17 @@ describe("narrowing a catalogue to a time window", () => {
     const catalogue = captured();
 
     expect([startsAt(catalogue)[0], startsAt(catalogue).at(-1)]).toEqual([
-      "2026-08-28T09:00",
-      "2026-08-28T23:25",
+      "2026-09-20T09:00",
+      "2026-09-20T23:40",
     ]);
     expect(
       [
-        { from: "2026-08-28T09:00" },
-        { from: "2026-08-28T09:01" },
-        { until: "2026-08-28T23:25" },
-        { until: "2026-08-28T23:26" },
+        { from: "2026-09-20T09:00" },
+        { from: "2026-09-20T09:01" },
+        { until: "2026-09-20T23:40" },
+        { until: "2026-09-20T23:41" },
       ].map((window) => everyShowtime(narrowed(catalogue, window)).length),
-    ).toEqual([176, 175, 175, 176]);
+    ).toEqual([506, 504, 504, 506]);
   });
 
   it("keeps a Showtime the window opens on to the instant, and drops the one it closes on", () => {
@@ -33,7 +33,7 @@ describe("narrowing a catalogue to a time window", () => {
     if (first === undefined) throw new Error("the capture holds no Showtime");
 
     expect(everyShowtime(narrowed(catalogue, { from: first })).length).toBe(
-      176,
+      506,
     );
     expect(everyShowtime(narrowed(catalogue, { until: first })).length).toBe(0);
   });
@@ -41,13 +41,13 @@ describe("narrowing a catalogue to a time window", () => {
   it("narrows to an evening window across every Theater at once, by each Theater's own clock", () => {
     const catalogue = captured();
     const kept = narrowed(catalogue, {
-      from: "2026-08-28T19:00",
-      until: "2026-08-28T22:00",
+      from: "2026-09-20T19:00",
+      until: "2026-09-20T22:00",
     });
 
     expect(counted(kept)).toEqual({
-      bookable: 46,
-      unbookable: 0,
+      bookable: 115,
+      unbookable: 4,
       unidentified: 0,
     });
   });
@@ -56,16 +56,16 @@ describe("narrowing a catalogue to a time window", () => {
     const [first] = captured().bookable;
     if (first === undefined) throw new Error("the capture holds no Showtimes");
     const late: Catalogue = {
-      bookable: [{ ...first, startsAt: "2026-08-29T00:15:00-05:00" }],
+      bookable: [{ ...first, startsAt: "2026-09-21T00:15:00-05:00" }],
       unbookable: [],
       unidentified: [],
     };
 
     expect(
       [
-        { from: "2026-08-28T22:00" },
-        { until: "2026-08-28T23:00" },
-        { from: "2026-08-28T22:00", until: "2026-08-29T01:00" },
+        { from: "2026-09-20T22:00" },
+        { until: "2026-09-20T23:00" },
+        { from: "2026-09-20T22:00", until: "2026-09-21T01:00" },
       ].map((window) => narrowed(late, window).bookable.length),
     ).toEqual([1, 0, 1]);
   });

@@ -29,11 +29,12 @@ import type { Unreadable } from "./port.js";
 
 const SEAT_MAP = "/napi/seatMap/";
 
-const THEATER_THE_SOURCE_STOPPED_SELLING = "Cinemark Dallas XD and IMAX";
+const THEATER_MADE_TO_STOP_SELLING = "Cinemark Dallas XD and IMAX";
+const THEATER_THE_SOURCE_STOPPED_SELLING = "Studio Movie Grill Spring Valley";
 const A_THEATER_STILL_SELLING = "AMC Village on the Parkway 9";
 
 const withOneTheaterOffSale = () =>
-  asTheSourceAnswersFor([THEATER_THE_SOURCE_STOPPED_SELLING], (showtimes) =>
+  asTheSourceAnswersFor([THEATER_MADE_TO_STOP_SELLING], (showtimes) =>
     instead(showtimes, "type", "disabled"),
   );
 
@@ -85,19 +86,25 @@ describe("the catalogue's sellability", () => {
       soldOut: counted(catalogue, "soldOut"),
       salesOff: counted(catalogue, "salesOff"),
     }).toEqual({
-      bookable: 158,
+      bookable: 447,
       noSeatMap: 3,
       started: 0,
-      soldOut: 1,
-      salesOff: 14,
+      soldOut: 0,
+      salesOff: 56,
     });
     expect([
       ...new Set(
         offSale.map((entry) => entry.showtime.presentation.theater.name),
       ),
-    ]).toEqual([THEATER_THE_SOURCE_STOPPED_SELLING]);
+    ]).toEqual([
+      THEATER_MADE_TO_STOP_SELLING,
+      THEATER_THE_SOURCE_STOPPED_SELLING,
+    ]);
     expect(offSale.map((entry) => entry.showtime.ticketing).toSorted()).toEqual(
-      rowsAt(THEATER_THE_SOURCE_STOPPED_SELLING)
+      [
+        ...rowsAt(THEATER_MADE_TO_STOP_SELLING),
+        ...rowsAt(THEATER_THE_SOURCE_STOPPED_SELLING),
+      ]
         .map((row) => row.ticketingJumpPageURL)
         .toSorted(),
     );
@@ -115,18 +122,18 @@ describe("the catalogue's sellability", () => {
       };
     };
 
-    expect(await tally("available")).toEqual({ bookable: 172, salesOff: 0 });
-    expect(await tally("pastshowtime")).toEqual({ bookable: 172, salesOff: 0 });
-    expect(await tally("soldout")).toEqual({ bookable: 172, salesOff: 0 });
+    expect(await tally("available")).toEqual({ bookable: 503, salesOff: 0 });
+    expect(await tally("pastshowtime")).toEqual({ bookable: 503, salesOff: 0 });
+    expect(await tally("soldout")).toEqual({ bookable: 503, salesOff: 0 });
     expect(await tally("a word nobody has met")).toEqual({
-      bookable: 172,
+      bookable: 503,
       salesOff: 0,
     });
-    expect(await tally("disabled")).toEqual({ bookable: 0, salesOff: 173 });
+    expect(await tally("disabled")).toEqual({ bookable: 0, salesOff: 503 });
   });
 
   it("keeps the reason that outlives sales being off, and takes the one that does not", async () => {
-    const yesterday = "2026-08-27";
+    const yesterday = "2026-09-19";
     const offSaleOn = async (date: string) => {
       const catalogue = payloadOf(
         await sourced(
@@ -148,13 +155,13 @@ describe("the catalogue's sellability", () => {
       noSeatMap: 3,
       started: 0,
       soldOut: 0,
-      salesOff: 173,
+      salesOff: 503,
     });
     expect(await offSaleOn(yesterday)).toEqual({
       noSeatMap: 3,
-      started: 77,
+      started: 201,
       soldOut: 0,
-      salesOff: 0,
+      salesOff: 256,
     });
   });
 
@@ -166,7 +173,7 @@ describe("the catalogue's sellability", () => {
     expect({
       bookable: catalogue.bookable.length,
       salesOff: counted(catalogue, "salesOff"),
-    }).toEqual({ bookable: 172, salesOff: 0 });
+    }).toEqual({ bookable: 503, salesOff: 0 });
   });
 
   it("refuses a whole listing whose word is there and is not one", async () => {
@@ -191,16 +198,16 @@ describe("the catalogue's sellability", () => {
     const listed = (body: unknown) => sellabilityFrom(JSON.stringify(body));
 
     expect(listed(capture)).toEqual({
-      rows: 176,
-      notRefused: new Array(172).fill("available"),
+      rows: 506,
+      notRefused: new Array(494).fill("available"),
     });
     expect(listed(withOneTheaterOffSale())).toEqual({
-      rows: 176,
-      notRefused: new Array(158).fill("available"),
+      rows: 506,
+      notRefused: new Array(447).fill("available"),
     });
     expect(listed(without(capture, "type"))).toEqual({
-      rows: 176,
-      notRefused: new Array(172).fill(undefined),
+      rows: 506,
+      notRefused: new Array(503).fill(undefined),
     });
     expect(sellabilityFrom("not a listing at all")).toBeNull();
   });
@@ -209,14 +216,11 @@ describe("the catalogue's sellability", () => {
     const whole = await catalogueOf(WIDE_RELEASE, TODAY);
     const terms = {
       theaters: [
-        theaterIn(whole, THEATER_THE_SOURCE_STOPPED_SELLING),
+        theaterIn(whole, THEATER_MADE_TO_STOP_SELLING),
         theaterIn(whole, A_THEATER_STILL_SELLING),
       ],
     };
-    const offSale = idsAt(
-      narrowed(whole, terms),
-      THEATER_THE_SOURCE_STOPPED_SELLING,
-    );
+    const offSale = idsAt(narrowed(whole, terms), THEATER_MADE_TO_STOP_SELLING);
     const onSale = idsAt(narrowed(whole, terms), A_THEATER_STILL_SELLING);
     const spentOn = async (listing: unknown) => {
       const run = rig({
@@ -248,10 +252,10 @@ describe("the catalogue's sellability", () => {
     const before = await spentOn(groupingCapture(WIDE_RELEASE, TODAY));
     const after = await spentOn(withOneTheaterOffSale());
 
-    expect([offSale.length, onSale.length]).toEqual([14, 4]);
-    expect(before.attempts).toEqual([3, 3, 3, ...new Array(15).fill(0)]);
+    expect([offSale.length, onSale.length]).toEqual([47, 10]);
+    expect(before.attempts).toEqual([3, 3, 3, ...new Array(54).fill(0)]);
     expect(new Set(before.asked)).toEqual(new Set(offSale.slice(0, 3)));
-    expect(after.attempts).toEqual([1, 1, 1, 1]);
+    expect(after.attempts).toEqual([1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
     expect(after.asked).toEqual(onSale);
   });
 });

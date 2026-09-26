@@ -7,7 +7,7 @@ import {
 import { fakeUpstream, type UpstreamScript } from "@seatscout/client/testing";
 import type { ProgrammeState, Terms } from "@seatscout/view-logic";
 
-export const TODAY = "2026-08-28";
+export const TODAY = "2026-09-20";
 
 export const NOW = 1_789_000_000_000;
 
@@ -18,7 +18,7 @@ export const NOTHING_READ: ProgrammeState = {
 };
 
 export const TONIGHT: Terms = {
-  movie: "246427",
+  movie: "246473",
   date: TODAY,
   area: "75006",
   partySize: 2,
@@ -27,7 +27,7 @@ export const TONIGHT: Terms = {
 };
 
 export const ASKED: SearchTerms = {
-  movie: "246427",
+  movie: "246473",
   dates: [TODAY],
   area: "75006",
   partySize: 2,

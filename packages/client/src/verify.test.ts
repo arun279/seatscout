@@ -1,3 +1,4 @@
+import { SOLD_OUT } from "@seatscout/core/testing";
 import { describe, expect, it } from "vitest";
 import { inMemoryStore } from "./store.js";
 import {
@@ -32,7 +33,7 @@ describe("re-verifying a Seat Group", () => {
 
     expect(supplied).toHaveLength(1);
     expect(verified.ok && verified.ticketing).toBe(supplied[0]);
-    expect(elsewhere).toHaveLength(175);
+    expect(elsewhere).toHaveLength(505);
     expect(elsewhere).not.toContain(supplied[0]);
   });
 
@@ -62,35 +63,47 @@ describe("re-verifying a Seat Group", () => {
     const alternatives = alternativesIn(verified);
     const scores = alternatives.map((alternative) => alternative.score);
 
-    expect(seatsIn(run.result)).toEqual(["F9", "F8"]);
+    expect(seatsIn(run.result)).toEqual(["F5", "F6"]);
     expect(verified.ok).toBe(false);
     expect(verified.ok || verified.reason).toBe("taken");
     expect(alternatives.map((alternative) => alternative.key)).toEqual([
-      "557985744:F8+F7",
-      "557985744:G9+G8",
-      "557985744:D9+D8",
-      "557985744:C9+C8",
-      "557985744:H10+H9",
-      "557985744:B9+B8",
-      "557985744:F12+F11",
-      "557985744:A8+A7",
-      "557985744:G12+G11",
-      "557985744:D12+D11",
-      "557985744:C12+C11",
-      "557985744:B12+B11",
+      "562047982:F7+F8",
+      "562047982:G7+G8",
+      "562047982:F3+F4",
+      "562047982:H10+H11",
+      "562047982:E4+E5",
+      "562047982:C8+C9",
+      "562047982:F11+F12",
+      "562047982:I10+I11",
+      "562047982:E10+E11",
+      "562047982:B8+B9",
+      "562047982:H3+H4",
+      "562047982:G1+G2",
+      "562047982:F1+F2",
+      "562047982:A8+A9",
+      "562047982:E1+E2",
+      "562047982:G13+G14",
+      "562047982:H16+H17",
+      "562047982:F13+F14",
+      "562047982:E13+E14",
+      "562047982:D9+D10",
+      "562047982:C15+C16",
+      "562047982:C1+C2",
+      "562047982:B15+B16",
+      "562047982:B1+B2",
     ]);
-    expect(alternatives.flatMap(seatsIn)).not.toContain("F9");
+    expect(alternatives.flatMap(seatsIn)).not.toContain("F5");
     expect(new Set(scores).size).toBe(scores.length);
   });
 
   it("does not call a Seat Group taken because a Seat beside it came free", async () => {
-    const freed = (room: string) => roomWhere(room, { F5: "A" });
+    const freed = (room: string) => roomWhere(room, { F10: "A" });
     const run = await verifying({ answer: (_, room) => freed(room) });
     const shifted = await verifying({ searchedIn: freed });
     const verified = await run.verify();
 
-    expect(seatsIn(shifted.result)).toEqual(["F8", "F7"]);
-    expect(verified.ok && seatsIn(verified.result)).toEqual(["F9", "F8"]);
+    expect(seatsIn(shifted.result)).toEqual(["F7", "F8"]);
+    expect(verified.ok && seatsIn(verified.result)).toEqual(["F5", "F6"]);
     expect(verified.ok && verified.result.key).toBe(run.result.key);
     expect(verified.ok && verified.result.removed.unavailable).toBe(
       run.result.removed.unavailable - 1,
@@ -100,10 +113,10 @@ describe("re-verifying a Seat Group", () => {
   it("answers taken and offers no alternative when the Auditorium refuses the read", async () => {
     const runs = await Promise.all(
       [
-        "PerformanceSoldOut",
-        "ExpiredPerformance",
-        "GeneralAdmissionShowtimeError",
-      ].map((reason) => verifying({ answer: () => refusalNamed(reason) })),
+        SOLD_OUT,
+        refusalNamed("ExpiredPerformance"),
+        refusalNamed("GeneralAdmissionShowtimeError"),
+      ].map((refusal) => verifying({ answer: () => refusal })),
     );
     const verified = await Promise.all(runs.map((run) => run.verify()));
 

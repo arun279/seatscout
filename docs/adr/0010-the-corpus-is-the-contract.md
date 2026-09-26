@@ -98,8 +98,12 @@ would reproduce them. Pathname alone is a distinct key for every capture, which
 `fake-upstream.test.ts` asserts rather than assumes, because two captures of one route would
 otherwise leave the map holding whichever was indexed last. A route the corpus never recorded
 rejects rather than answering, which is what a real `fetch` does with a request it cannot
-satisfy, so nothing under test behaves differently for being under test. The three refusals
-the capture met arrive as themselves rather than as an invented failure payload.
+satisfy, so nothing under test behaves differently for being under test. The two refusals
+the capture met arrive as themselves rather than as an invented failure payload. A sold-out
+room is the one refusal a refresh can lose, because it is only met when a listed screening has
+sold out by the time the capture reads it, and the refresh of 2026-09-20 met none. The harness
+therefore exports `SOLD_OUT`, the answer the capture of 2026-08-28 recorded, byte for byte, and
+every test of a sold-out room reads that one value rather than writing its own.
 
 Faults are scripted as a status and a share of requests in percent, drawn against a
 hundred-slot table. A script totalling more than a hundred is refused rather than quietly

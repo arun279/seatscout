@@ -15,7 +15,7 @@ import {
 
 const scheduleCapture = () => {
   const capture = theaterMovieShowtimesCaptures.get(
-    "showtimes/theater-showtimes-aacbt-2026-08-28.json",
+    "showtimes/theater-showtimes-aacbt-2026-09-20.json",
   );
   if (capture === undefined) throw new Error("the schedule was never captured");
   return capture.body;
@@ -23,7 +23,7 @@ const scheduleCapture = () => {
 
 const listingCapture = () => {
   const capture = showtimeGroupingCaptures.get(
-    "showtimes/grouping-245569-2026-08-28.json",
+    "showtimes/grouping-245893-2026-09-20.json",
   );
   if (capture === undefined) throw new Error("the listing was never captured");
   return capture.body;

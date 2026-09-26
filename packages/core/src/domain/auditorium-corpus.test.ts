@@ -3,23 +3,23 @@ import { seatMapCaptures } from "../corpus/captures.js";
 import type { CapturedSeatMap } from "../corpus/types.js";
 import { type Seat, seatsFrom } from "../source/seat-map.js";
 import {
-  FETCHED_AT,
   depthsOf,
   extentOf,
+  FETCHED_AT,
   lateralsOf,
 } from "./auditorium.fixtures.js";
 import { type NormalisedPosition, normalised } from "./auditorium.js";
 
 type Positioned = Seat & NormalisedPosition;
 
-const AUDITORIUM_WHOSE_ROW_LETTERS_SKIP_ONE = "561462741";
-const AUDITORIUM_WITH_NO_ROW_LETTERS = "561505814";
+const AUDITORIUM_WHOSE_ROW_LETTERS_SKIP_ONE = "562247516";
+const AUDITORIUM_WITH_NO_ROW_LETTERS = "564216396";
 const NAMED_SEATS = [
-  ["561230736", "L11"],
-  ["561505814", "607"],
-  ["561462741", "WC17"],
-  ["561865199", "A21"],
-  ["561562293", "F8"],
+  ["564402231", "L11"],
+  ["564216396", "607"],
+  ["562247516", "WC17"],
+  ["562212808", "A21"],
+  ["564442282", "F8"],
 ] as const;
 
 const auditoriumOf = (body: CapturedSeatMap) => {
@@ -58,10 +58,10 @@ describe("the normalised Auditorium over the captured corpus", () => {
       ]),
     ).toEqual([
       ["L11", -0.03264604810996329],
-      ["607", -0.004306171843486634],
+      ["607", -0.5088105726872252],
       ["WC17", -7.293109491097717],
       ["A21", -8.333333333333334],
-      ["F8", -2.616702355460384],
+      ["F8", 2.617773019271951],
     ]);
   });
 
@@ -113,11 +113,11 @@ describe("the normalised Auditorium over the captured corpus", () => {
     expect(positionOf(auditorium, "919")).toEqual({ depth: 1, lateral: 1 });
     expect(positionOf(auditorium, "501")).toEqual({
       depth: 0.5,
-      lateral: -0.5998052030430885,
+      lateral: -0.6063325431764308,
     });
     expect(positionOf(auditorium, "901")).toEqual({
       depth: 1,
-      lateral: -0.7983589584092127,
+      lateral: -0.7008127328140875,
     });
   });
 });

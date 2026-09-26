@@ -101,7 +101,7 @@ nearly every row, and weak against a further rare word at a rare Theater, which 
 this case had.
 
 **The neighbour links are the live half of an invariant the corpus already carries.** The
-Seat Group test holds all 10,974 captured links to the geometric bands; that guards the
+Seat Group test holds all 10,686 captured links to the geometric bands; that guards the
 fixtures. Here every link a live map sends must name the Seat immediately beside it in the
 same row, on the side it claims, across a gap the same band rule calls contiguous. It is the
 adapter's own rule applied to today's rooms, not a second copy of it.

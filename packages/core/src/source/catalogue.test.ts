@@ -32,7 +32,7 @@ describe("the catalogue", () => {
     expect(first).toBeDefined();
     expect(catalogue.bookable[0]).toEqual({
       id: first?.id,
-      startsAt: "2026-08-28T19:20:00-05:00",
+      startsAt: "2026-09-20T10:00:00-05:00",
       presentation: {
         movie: WIDE_RELEASE,
         theater: {
@@ -40,7 +40,7 @@ describe("the catalogue", () => {
           name: "Cinemark Dallas XD and IMAX",
           chain: "Cinemark Theatres",
         },
-        formats: ["D-BOX", "XD"],
+        formats: ["XD"],
         amenities: ["Recliners"],
       },
       ticketing: first?.ticketingJumpPageURL,
@@ -84,7 +84,7 @@ describe("the catalogue", () => {
       noSeatMap: counted(catalogue, "noSeatMap"),
       started: counted(catalogue, "started"),
       soldOut: counted(catalogue, "soldOut"),
-    }).toEqual({ bookable: 172, noSeatMap: 3, started: 0, soldOut: 1 });
+    }).toEqual({ bookable: 494, noSeatMap: 3, started: 0, soldOut: 0 });
   });
 
   it("does not call a Showtime bookable because the Source calls it available", async () => {
@@ -121,7 +121,7 @@ describe("the catalogue", () => {
   });
 
   it("prefers the reason that outlives the screening when more than one applies", async () => {
-    const yesterday = "2026-08-27";
+    const yesterday = "2026-09-19";
     const past = await catalogueOf(WIDE_RELEASE, yesterday);
     const alsoSoldOut = payloadOf(
       await sourced(
@@ -139,11 +139,16 @@ describe("the catalogue", () => {
     });
 
     expect(tally(past)).toEqual({
-      bookable: 0,
+      bookable: 252,
       noSeatMap: 3,
-      started: 77,
+      started: 201,
       soldOut: 0,
     });
-    expect(tally(alsoSoldOut)).toEqual(tally(past));
+    expect(tally(alsoSoldOut)).toEqual({
+      bookable: 0,
+      noSeatMap: 3,
+      started: 201,
+      soldOut: 252,
+    });
   });
 });

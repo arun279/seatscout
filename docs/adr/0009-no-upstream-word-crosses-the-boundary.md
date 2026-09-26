@@ -70,8 +70,8 @@ captured seat maps, `totalAvailableSeatCount` against the Seats that array repor
 available in eleven, ten of which are among the same twenty six, and five report more
 available seats than the whole array holds. The parse narrows the answer to its `seats` array and to
 `UpstreamSeat`, neither of which declares a count, so reading one is a compile error rather
-than a convention. The test reads the Auditorium whose count field says twenty five and whose
-array holds three hundred and four.
+than a convention. The test reads the Auditorium whose count field says two hundred and seventy eight
+and whose array holds three hundred and three.
 
 **Neighbour links are carried, never believed.** `leftNeighbour` and `rightNeighbour` are
 whatever the aggregator sent, with its empty string translated to absence. They are a

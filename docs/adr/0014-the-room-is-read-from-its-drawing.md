@@ -12,11 +12,11 @@ A seat map arrives as a list of rectangles with labels, a row index, and links t
 either side. Every one of those except the rectangle is a shortcut, and every one of them is
 wrong somewhere in the corpus.
 
-The row index skips a value in 14 of the 42 captured seat maps, and Cinemark West Plano
-screen 28 holds 14 rows while that index runs to 16. One chain's four rooms label their seats
-`101` to `919` with no letter anywhere, 6 of the 376 rows carry no agreed label prefix, and
-33 of the 42 maps number the seats of a row against the direction they are drawn in. Of the
-10,974 neighbour links the aggregator sent, none is wrong, but 279 contiguous gaps carry no
+The row index skips a value in 19 of the 42 captured seat maps, and Cinemark West Plano
+screen 10 holds 14 rows while that index runs to 16. One chain's four rooms label their seats
+`101` to `1112` with no letter anywhere, 6 of the 404 rows carry no agreed label prefix, and
+29 of the 42 maps number the seats of a row against the direction they are drawn in. Of the
+10,686 neighbour links the aggregator sent, none is wrong, but 1,220 contiguous gaps carry no
 link at all, and in one captured Auditorium of three hundred Seats, two hundred and ninety
 carry no link while its drawn geometry is perfectly regular.
 
@@ -41,7 +41,7 @@ own pass over the distinct `y` values, because that pass is what depth is derive
 
 Depth is the row's rank over the last row's rank rather than its distance down the room,
 because rows are not evenly spaced: 41 of the 42 maps draw at least two different row gaps,
-14 of them draw their widest gap at least half again as wide as their narrowest, and one
+19 of them draw their widest gap at least half again as wide as their narrowest, and one
 twelve row house draws one gap 2.11 times another. Under a depth measured in map units an
 aisle would push the row behind it further back than a row deserves, and "eighth row of
 fourteen" would stop meaning eight fourteenths. A property test draws each generated room
@@ -54,8 +54,8 @@ the screen glyph, and it ranges from 1.9 to 11.4 seat widths across the corpus.
 
 **The centreline and the span belong to the room, never to a row.** A Seat's lateral is its
 own centre placed on the extent of every Seat centre in the Auditorium. Rows are neither
-alike nor concentric: 25 of the 42 maps widen toward the back, 15 narrow, 2 are equal, and one
-room spreads its row midpoints across 4.6 seat widths. Normalising a row against its own
+alike nor concentric: 20 of the 42 maps widen toward the back, 21 narrow, 1 is equal, and one
+room spreads its row midpoints across 8 seat widths. Normalising a row against its own
 extent would put the outermost Seat of a row of four exactly where it puts the outermost Seat
 of a row of thirty two, which is the opposite of what a normalised position is for.
 
@@ -75,16 +75,16 @@ relabels every generated room with a generated function and holds every position
 **Adjacency is three bands measured centre to centre.** The spacing between two neighbours,
 centre to centre and divided by a Seat's width, lands in one of three bands: up to 1.45 is
 contiguous, up to 2.05 is the console between two recliners, and above that is an aisle. Over
-the 6,395 in-row gaps the corpus holds, that is 5,688, 540 and 167. The two boundaries are
+the 6,986 in-row gaps the corpus holds, that is 6,469, 363 and 154. The two boundaries are
 cuts through a continuous distribution rather than gaps in it, which is why a console is
 recorded rather than treated as a break: a run never crosses an aisle, may cross a console,
 and says how many, because three people can sit either side of one.
 
-A gap beside an accessible space is that space's own width, not a console. 78 of the 540 sit
+A gap beside an accessible space is that space's own width, not a console. 94 of the 363 sit
 next to a wheelchair or companion Seat, and the Seats either side of one are contiguous, which
-leaves 462 real consoles.
+leaves 269 real consoles.
 
-**The neighbour links are held to the geometry rather than read.** All 10,974 the aggregator
+**The neighbour links are held to the geometry rather than read.** All 10,686 the aggregator
 sent name the immediately adjacent Seat in the same row, on the side they claim, and not one
 crosses a console or an aisle. A test asserts the agreement over the corpus, the nightly
 contract test asserts it over today's rooms, and no code builds a run from a link.
@@ -92,15 +92,18 @@ contract test asserts it over today's rooms, and no code builds a run from a lin
 **A Row's number is its place in the order, and it is contiguous by construction.** The
 Source's own row index is unreachable as well as wrong: `UpstreamSeat` never declared it, so no
 Seat carries it and ordering by one would not compile. What the corpus test asserts instead is
-that Cinemark West Plano screen 28's fourteen Rows are numbered one to fourteen while the
+that Cinemark West Plano screen 10's fourteen Rows are numbered one to fourteen while the
 capture's own index reaches sixteen, and, over all 42, that the count of Rows equals the count
 of distinct `y` the room draws.
 
-**A Row's label is the initial its Seats agree on, or nothing.** Six of the 376 captured Rows
-agree on none, all of them accessible Rows putting a wheelchair Seat in a lettered Row, and
-those Rows have no label to show. One initial is enough because it tells every Row of every
-captured Auditorium apart, which a test asserts rather than assumes. The whole agreed prefix is
-not the answer, because eight Seats numbered `401` to `408` agree on `40` and sit in row 4.
+**A Row's label is the row part its Seats agree on, or nothing.** A lettered Seat's row part is
+its letters, and a numbered Seat's is its number less the last two digits, because the numbered
+rooms count a Row's Seats from `01` and reach row 11. Six of the 404 captured Rows agree on
+none, all of them accessible Rows putting a wheelchair Seat in a lettered Row, and those Rows
+have no label to show. The labels tell every Row of every captured Auditorium apart, which a
+test asserts rather than assumes. The initial alone is not the answer, because it calls rows 1,
+10 and 11 of one room all `1`, and the whole agreed prefix is not either, because eight Seats
+numbered `401` to `408` agree on `40` and sit in row 4.
 
 **The room's order comes from the same place.** `auditorium-map.ts` is the ordering a view
 reads the room in, supplied by the domain model so the view improvises none of it. It
@@ -119,7 +122,7 @@ can reach is a mutant nothing kills.
 The gap after each Seat is the Seat Group bands, not a second opinion. `gapBetween` is shared
 with `seat-group.ts`, so a console is a console in both, and it measures centre to centre so
 that it agrees with the order a Row is taken in whatever the Seats' widths. Over the corpus
-that is 5,766 contiguous gaps, 462 consoles and 167 aisles: one per adjacent pair, so a Row of
+that is 6,563 contiguous gaps, 269 consoles and 154 aisles: one per adjacent pair, so a Row of
 *n* Seats carries *n* − 1 of them and the last Seat has no gap after it.
 
 ## Consequences

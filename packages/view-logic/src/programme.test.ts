@@ -42,7 +42,7 @@ const near = (
       },
     },
     area,
-    "2026-08-28",
+    "2026-09-20",
   );
   return { held, asked, read: () => Promise.all(readings) };
 };
@@ -61,8 +61,8 @@ describe("the films playing near an area", () => {
   });
 
   it("takes a film's number only where the whole of what was typed is one", () => {
-    expect(movieOf(" 245569 ", PLAYING)).toBe("245569");
-    for (const almost of ["245569x", "x245569", "24 5569", ""])
+    expect(movieOf(" 245893 ", PLAYING)).toBe("245893");
+    for (const almost of ["245893x", "x245893", "24 5569", ""])
       expect(movieOf(almost, PLAYING)).toBeUndefined();
   });
 
@@ -115,7 +115,7 @@ describe("the programme held for an area and a date", () => {
     const { held, asked } = near(undefined);
 
     expect(held.area).toBeUndefined();
-    expect(held.date).toBe("2026-08-28");
+    expect(held.date).toBe("2026-09-20");
     expect(held.snapshot()).toEqual({
       phase: "none",
       theaters: [],
@@ -128,13 +128,13 @@ describe("the programme held for an area and a date", () => {
     const { held, asked } = near("75006");
 
     expect(held.area).toBe("75006");
-    expect(held.date).toBe("2026-08-28");
+    expect(held.date).toBe("2026-09-20");
     expect(held.snapshot()).toEqual({
       phase: "reading",
       theaters: [],
       movies: [],
     });
-    expect(asked).toEqual([["75006", "2026-08-28"]]);
+    expect(asked).toEqual([["75006", "2026-09-20"]]);
   });
 
   it("names the Theaters and the Movies once the programme is read, and tells a listener once, after it holds them", async () => {
@@ -148,8 +148,8 @@ describe("the programme held for an area and a date", () => {
     expect(heard).toEqual(["read"]);
     expect(phase).toBe("read");
     expect(theaters).toHaveLength(25);
-    expect(movies).toHaveLength(15);
-    expect(titleOf(movies, "245569")).toBe("The Dog Stars (2026)");
+    expect(movies).toHaveLength(19);
+    expect(titleOf(movies, "245893")).toBe("Resident Evil (2026)");
   });
 
   it("names a Theater a query asks for, and states its identity where the programme does not hold it", async () => {

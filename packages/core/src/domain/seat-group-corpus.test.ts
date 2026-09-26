@@ -46,17 +46,17 @@ describe("Seat Group construction over the captured corpus", () => {
     const drawnRows = capturedAuditoriums().flatMap(rowsOf);
     const pairs = drawnRows.flatMap(pairsIn);
 
-    expect(drawnRows).toHaveLength(376);
-    expect(pairs).toHaveLength(6395);
+    expect(drawnRows).toHaveLength(404);
+    expect(pairs).toHaveLength(6986);
     expect(tallyBands(pairs.map(asStandard))).toEqual({
-      contiguous: 5688,
-      pod: 540,
-      aisle: 167,
+      contiguous: 6469,
+      pod: 363,
+      aisle: 154,
     });
     expect(tallyBands(pairs)).toEqual({
-      contiguous: 5766,
-      pod: 462,
-      aisle: 167,
+      contiguous: 6563,
+      pod: 269,
+      aisle: 154,
     });
   });
 
@@ -83,7 +83,7 @@ describe("Seat Group construction over the captured corpus", () => {
       auditoriums: 42,
       withThreeFreeSeatsInARow: 42,
       seatingThem: 42,
-      seatingThemOnlyAcrossAConsole: 5,
+      seatingThemOnlyAcrossAConsole: 3,
     });
   });
 
@@ -112,10 +112,10 @@ describe("Seat Group construction over the captured corpus", () => {
         (pair) => linksAcross(pair) === 0 && bandBetween(pair) === "contiguous",
       ).length,
     }).toEqual({
-      links: 10974,
-      namingAnImmediateNeighbour: 10974,
-      acrossAContiguousGap: 10974,
-      contiguousGapsCarryingNoLink: 279,
+      links: 10686,
+      namingAnImmediateNeighbour: 10686,
+      acrossAContiguousGap: 10686,
+      contiguousGapsCarryingNoLink: 1220,
     });
   });
 
@@ -138,8 +138,8 @@ describe("Seat Group construction over the captured corpus", () => {
         .flatMap((seats) => groupsFor(seats, false))
         .reduce((total, group) => total + accessibleIn(group.seats), 0),
     }).toEqual({
-      withABookableAccessibleSeat: 40,
-      answeringWithOne: 40,
+      withABookableAccessibleSeat: 42,
+      answeringWithOne: 42,
       groupsCarryingNone: 0,
       offeredOrdinarily: 0,
     });

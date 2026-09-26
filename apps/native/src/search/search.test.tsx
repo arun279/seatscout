@@ -231,14 +231,14 @@ describe("a query that spans more than one day", () => {
       terms: {
         ...TONIGHT,
         until: "19:20",
-        when: { kind: "range", first: TODAY, last: "2026-08-31" },
+        when: { kind: "range", first: TODAY, last: "2026-09-23" },
       },
       today: TODAY,
     });
 
     await waitFor(() => {
       expect(
-        ["2026-08-28", "2026-08-29", "2026-08-30", "2026-08-31"].map((day) =>
+        ["2026-09-20", "2026-09-21", "2026-09-22", "2026-09-23"].map((day) =>
           reads.some((url) => url.includes(`/${day}?`)),
         ),
       ).toEqual([true, true, true, true]);

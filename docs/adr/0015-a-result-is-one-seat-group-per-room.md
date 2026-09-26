@@ -81,7 +81,7 @@ is or which of two Groups is better.
 ## Consequences
 
 Two measurements are what the Seat Group rule is judged by. All 42 captured seat maps have
-three free Seats in one row, and a party of three can be seated in all 42. Five of them can
+three free Seats in one row, and a party of three can be seated in all 42. Three of them can
 only do it across a console, which is what treating a console as an aisle would silently cost.
 
 A result carries no ticketing URL, which is
