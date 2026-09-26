@@ -6,34 +6,31 @@ import {
   it,
   jest,
 } from "@jest/globals";
+import { REFERENCE } from "@seatscout/client";
 import { BACK_TO_THE_LIST } from "@seatscout/view-logic";
 import { act, fireEvent, screen, within } from "@testing-library/react-native";
 import { renderRouter } from "expo-router/testing-library";
 import { StyleSheet } from "react-native";
 import { nearby as mockNearby, phone as mockPhone } from "../test/phone.js";
 import { WARM_UP, warmTheCorpus } from "../test/rooms.js";
-import { REFERENCE } from "@seatscout/client";
-import { heldProfile as mockHeldProfile } from "./host/profile.js";
-import { seatProfile } from "./host/source.js";
 import Layout, { unstable_settings } from "./app/_layout.js";
 import Ask from "./app/ask.js";
 import HandOffRoute from "./app/hand-off.js";
 import Index from "./app/index.js";
 import LedgerRoute from "./app/ledger.js";
 import RoomRoute from "./app/room.js";
+import { seatProfile } from "./host/source.js";
 
 const mockLoading = jest.fn<() => [boolean, Error | null]>(() => [true, null]);
 
 jest.mock("expo-font", () => ({ useFonts: () => mockLoading() }));
-jest.mock("react-native-reanimated", () =>
-  require("react-native-reanimated/mock"),
-);
 
 jest.mock("expo-network", () => ({
   useNetworkState: () => ({ isConnected: true, isInternetReachable: true }),
 }));
 
 jest.mock("./host/source.js", () => {
+  const { heldProfile } = require("./host/profile.js");
   const { seatscout } = mockPhone([], {
     script: {},
     playing: {
@@ -46,7 +43,7 @@ jest.mock("./host/source.js", () => {
       },
     },
   });
-  return { seatscout, seatProfile: mockHeldProfile(seatscout) };
+  return { seatscout, seatProfile: heldProfile(seatscout) };
 });
 
 const LISTED =

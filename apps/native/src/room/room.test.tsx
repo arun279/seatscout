@@ -19,9 +19,6 @@ import {
 const mockTicked = jest.fn();
 
 jest.mock("react-native/Libraries/Utilities/useColorScheme");
-jest.mock("react-native-reanimated", () =>
-  require("react-native-reanimated/mock"),
-);
 jest.mock("expo-haptics", () => ({ selectionAsync: () => mockTicked() }));
 
 beforeEach(() => {

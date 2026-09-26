@@ -1,5 +1,5 @@
-import type { RecentSearch } from "@seatscout/client";
 import { describe, expect, it, jest } from "@jest/globals";
+import type { RecentSearch } from "@seatscout/client";
 import type { Terms } from "@seatscout/view-logic";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";

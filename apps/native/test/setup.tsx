@@ -17,6 +17,10 @@ jest.mock("@react-native-async-storage/async-storage", () =>
   ),
 );
 
+jest.mock("react-native-reanimated", () =>
+  jest.requireActual("react-native-reanimated/mock"),
+);
+
 const mockPicker = (props: Readonly<Record<string, unknown>>) =>
   createElement("RNDateTimePicker", props);
 

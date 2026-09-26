@@ -1,5 +1,5 @@
-import type { SeatGroupResult } from "@seatscout/client";
 import { describe, expect, it, jest } from "@jest/globals";
+import type { SeatGroupResult } from "@seatscout/client";
 import { labelOf, roomNameOf } from "@seatscout/view-logic";
 import {
   cleanup,

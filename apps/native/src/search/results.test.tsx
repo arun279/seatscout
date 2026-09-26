@@ -1,4 +1,3 @@
-import { REFERENCE, type SearchTerms } from "@seatscout/client";
 import {
   afterEach,
   beforeAll,
@@ -8,6 +7,7 @@ import {
   it,
   jest,
 } from "@jest/globals";
+import { REFERENCE, type SearchTerms } from "@seatscout/client";
 import type { Terms } from "@seatscout/view-logic";
 import {
   cleanup,
@@ -15,10 +15,12 @@ import {
   render,
   screen,
 } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 import {
   everyControlReachesTheTouchFloor,
   everyControlSaysWhatItIs,
 } from "../../test/floors.js";
+import { houseLights } from "../../test/lights.js";
 import { type Fetch, phone, type Upstream } from "../../test/phone.js";
 import {
   ASKED,
@@ -29,8 +31,6 @@ import {
   WARM_UP,
 } from "../../test/rooms.js";
 import type { Clock } from "../host/clock.js";
-import { StyleSheet } from "react-native";
-import { houseLights } from "../../test/lights.js";
 import { themeFor } from "../theme.js";
 import { Results } from "./results.js";
 

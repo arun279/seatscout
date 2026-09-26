@@ -22,9 +22,6 @@ import { otherThan, refusedIn, seatNamed, shown } from "./room.fixtures.js";
 import { RowBar } from "./row-bar.js";
 
 jest.mock("react-native/Libraries/Utilities/useColorScheme");
-jest.mock("react-native-reanimated", () =>
-  require("react-native-reanimated/mock"),
-);
 jest.mock("expo-haptics", () => ({ selectionAsync: jest.fn() }));
 
 const flat = (id: string) =>

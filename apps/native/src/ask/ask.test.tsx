@@ -2,11 +2,11 @@ import { describe, expect, it, jest } from "@jest/globals";
 import { REFERENCE } from "@seatscout/client";
 import { fireEvent, screen } from "@testing-library/react-native";
 import { AccessibilityInfo } from "react-native";
+import { asking, NEAR, PLAYING, submit, TODAY } from "../../test/ask.js";
 import {
   everyControlReachesTheTouchFloor,
   everyControlSaysWhatItIs,
 } from "../../test/floors.js";
-import { asking, NEAR, PLAYING, submit, TODAY } from "../../test/ask.js";
 
 describe("the Ask sheet", () => {
   it("asks what a person is seeing, under the terms it already holds", async () => {

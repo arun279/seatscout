@@ -18,9 +18,6 @@ import RoomRoute from "../app/room.js";
 import { listLink, roomLink } from "./room.fixtures.js";
 
 jest.mock("expo-font", () => ({ useFonts: () => [true, null] }));
-jest.mock("react-native-reanimated", () =>
-  require("react-native-reanimated/mock"),
-);
 jest.mock("expo-haptics", () => ({ selectionAsync: jest.fn() }));
 jest.mock("expo-network", () => ({
   useNetworkState: () => ({ isInternetReachable: true }),

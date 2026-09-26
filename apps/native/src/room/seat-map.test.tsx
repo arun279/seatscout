@@ -8,9 +8,6 @@ import { themeFor } from "../theme.js";
 import { seatNamed, seatsOnScreen, shown } from "./room.fixtures.js";
 
 jest.mock("react-native/Libraries/Utilities/useColorScheme");
-jest.mock("react-native-reanimated", () =>
-  require("react-native-reanimated/mock"),
-);
 jest.mock("expo-haptics", () => ({ selectionAsync: jest.fn() }));
 
 const DOWN = themeFor("down").colours;
