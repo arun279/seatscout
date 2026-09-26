@@ -11,6 +11,6 @@
     "@types/node": "26.6.1",
     "fast-check": "4.10.1",
     "mutation-testing-metrics": "3.9.0",
-    "vitest": "4.1.11"
+    "vitest": "5.0.1"
   }
 }
