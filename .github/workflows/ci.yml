@@ -411,7 +411,7 @@ jobs:
       - name: Let the reading decide whether a regression fails this
         run: |
           steady="$(grep -oE '[0-9]+(\.[0-9]+)?%' "$RUNNER_TEMP/stability.md" | tr -d '%' | sort -rn | head -n 1)"
-          regressed="$(jq '[.significant // [] | .[]] | length' apps/native/.reassure/output.json 2>/dev/null || echo unknown)"
+          regressed="$(jq '[.significant // [] | .[] | select(.current.meanDuration > .baseline.meanDuration or .current.meanCount > .baseline.meanCount)] | length' apps/native/.reassure/output.json 2>/dev/null || echo unknown)"
           echo "Widest random change on this runner: ${steady:-none read} per cent. Significant changes: $regressed."
           if [ -z "$steady" ]; then
             echo "::error::The stability run left no reading, so nothing decides whether this gates."
