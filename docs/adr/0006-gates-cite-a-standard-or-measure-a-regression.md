@@ -836,17 +836,15 @@ says which figures that would hold: on the first reading frame rate spread 0.3 p
 and CPU 4.7 across ten iterations, under the 5 per cent Reassure calls steady, while start-up spread
 7.9 and the walk's own time 5.7, over it.
 
-**The app's web build is held to the same accessibility standard and the same journey as the web
-app.** `tests/app` runs as a Playwright project of its own over Vercel's `serve`: axe scans every screen
-from the Ask sheet to the Room against WCAG 2.2 at A and AA, and the Core Web Vitals journey runs
-under the same mobile emulation and network profile as `tests/e2e`, held to Google's thresholds and
-to its merge base by `pnpm journey --no-gesture`. The flag says the journey makes no gesture, as
-`--no-baseline` says there is no merge base; leaving both out is refused, so a dropped gesture file
-cannot quietly skip the gesture gate. Its first run found a real violation: the film list in the Ask
+**The app's web build is held to the same accessibility standard as the web app.** `tests/app` runs
+as a Playwright project of its own over Vercel's `serve`, which compresses what it sends as any host
+does: axe scans every screen from the Ask sheet to the Room against WCAG 2.2 at A and AA. Its first run
+found a real violation: the film list in the Ask
 sheet was a list with no items in it (axe's `aria-required-children`), so each film is now a list item.
-The build is served compressed because every host compresses what it sends. `expo serve` does not,
-and the first journeys through it read a p75 LCP of 8,500 and 8,692 ms, the 1.3 MB script arriving
-whole over Slow 4G; `serve` gzips on the fly, which is no smaller than the brotli Cloudflare sends.
+The Core Web Vitals journey is not held over the app's web build yet. It was built and run, and it
+reads a p75 LCP of 3,304 ms against the 2,500 ms Google publishes as good, on a runner where the web
+app reads 1,648 ms: the app's 1.3 MB script has to run before the first paint. The gate arrives with
+the web build work that passes it, at Google's threshold, rather than now at a looser one.
 
 **The app's bundles are four more ratchets.** The Hermes bytecode for iOS and for Android, the web
 build's scripts, and the faces and images every platform ships, each against its own figure in

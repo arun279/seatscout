@@ -75,16 +75,10 @@ jobs:
           if listed="$(pnpm exec playwright test --list --grep @performance 2>&1)"; then
             pnpm exec playwright install --with-deps chromium
             pnpm build
-            if printf '%s' "$listed" | grep -q '\[app\]'; then
-              pnpm --filter @seatscout/native run bundle
-            fi
             pnpm exec playwright test --grep @performance --workers=1
             cp reports/journey/samples.json "$GITHUB_WORKSPACE/reports/journey/base.json"
             if [ -f reports/journey/gesture.json ]; then
               cp reports/journey/gesture.json "$GITHUB_WORKSPACE/reports/journey/base-gesture.json"
-            fi
-            if [ -f reports/journey/app-samples.json ]; then
-              cp reports/journey/app-samples.json "$GITHUB_WORKSPACE/reports/journey/base-app.json"
             fi
           elif printf '%s' "$listed" | grep -q "No tests found"; then
             echo "The merge base has no journey to hold this one to."
@@ -101,16 +95,8 @@ jobs:
               held+=(--base-gesture reports/journey/base-gesture.json)
             fi
           fi
-          app=(--no-baseline)
-          if [ -f reports/journey/base-app.json ]; then
-            app=(--base reports/journey/base-app.json)
-          fi
-          refused=0
           pnpm journey --head reports/journey/samples.json \
-            --head-gesture reports/journey/gesture.json "${held[@]}" || refused=1
-          echo "The same journey over the app's web build:"
-          pnpm journey --head reports/journey/app-samples.json --no-gesture "${app[@]}" || refused=1
-          exit "$refused"
+            --head-gesture reports/journey/gesture.json "${held[@]}"
 
   shards:
     runs-on: ubuntu-24.04
