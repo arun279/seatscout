@@ -11,9 +11,10 @@ import { animatedTo } from "../../test/reanimated.js";
 import { type Shown, seatNamed, shown } from "./room.fixtures.js";
 
 jest.mock("react-native/Libraries/Utilities/useColorScheme");
-jest.mock("react-native-reanimated", () =>
-  require("../../test/reanimated.js").onTheJsThread(),
-);
+jest.mock("react-native-reanimated", () => {
+  const { onTheJsThread } = require("../../test/reanimated.js");
+  return onTheJsThread();
+});
 jest.mock("expo-haptics", () => ({ selectionAsync: jest.fn() }));
 
 const drawnAt = () => {
