@@ -98,6 +98,7 @@ const Lit = ({
         filter="url(#map-glow)"
         height={DRAWN.edge.height}
         rx={DRAWN.edge.radius}
+        testID="edge"
         width={edge.width}
         x={edge.left}
         y={DRAWN.edge.top}

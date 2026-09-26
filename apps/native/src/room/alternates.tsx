@@ -94,9 +94,13 @@ export const Alternates = ({
                 styles.dot,
                 { borderColor: on ? colours.beam : colours.silverFaint },
               ]}
+              testID="dot"
             >
               {on && (
-                <View style={[styles.pip, { backgroundColor: colours.beam }]} />
+                <View
+                  style={[styles.pip, { backgroundColor: colours.beam }]}
+                  testID="pip"
+                />
               )}
             </View>
             <View style={styles.lines}>
