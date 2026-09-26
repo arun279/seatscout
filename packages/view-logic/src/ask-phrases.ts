@@ -1,5 +1,5 @@
-import type { Kind } from "./when.js";
-import { whenOf } from "./when-phrases.js";
+import type { Kind, Span } from "./when.js";
+import { whenOf, whenSaidOf } from "./when-phrases.js";
 import type { ProgrammeState } from "./programme.js";
 
 export interface PlayingStatus {
@@ -68,13 +68,16 @@ const missing = (words: string): PlayingStatus => ({
   unreadable: true,
 });
 
+const nearestOf = (span: Span, today: string) =>
+  span.when === undefined ? "" : `, the nearest of ${whenSaidOf(span, today)}`;
+
 const countOf = (count: number, one: string) =>
   `${count} ${one}${count === 1 ? "" : "s"}`;
 
 export const playingStatusOf = (
   programme: ProgrammeState,
   area: string | undefined,
-  date: string,
+  span: Span,
   today: string,
 ): PlayingStatus => {
   switch (programme.phase) {
@@ -91,7 +94,7 @@ export const playingStatusOf = (
             `Films at ${countOf(unreached.length, "theater")} could not be read: ${unreached.join(", ")}.`,
           )
         : read(
-            `${countOf(programme.movies.length, "film")} playing near ${area} ${whenOf(date, today)}`,
+            `${countOf(programme.movies.length, "film")} playing near ${area} ${whenOf(span.date, today)}${nearestOf(span, today)}`,
           );
     }
   }
