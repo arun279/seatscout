@@ -44,7 +44,11 @@ function mockSource() {
   });
 }
 
-jest.mock("../host/source.js", () => ({ seatscout: mockSource() }));
+jest.mock("../host/source.js", () => {
+  const { heldProfile } = require("../host/profile.js");
+  const seatscout = mockSource();
+  return { seatscout, seatProfile: heldProfile(seatscout) };
+});
 
 const THEATER = "Cinemark Frisco Square and XD";
 
