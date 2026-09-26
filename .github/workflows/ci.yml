@@ -57,9 +57,10 @@ jobs:
       - name: Check the same source exports to the same bytes, so a size ratchet weighs the change and not the build
         working-directory: apps/native
         run: |
-          pnpm exec expo export --platform ios --platform android --platform web --output-dir "$RUNNER_TEMP/again"
-          diff -r dist/_expo/static/js "$RUNNER_TEMP/again/_expo/static/js"
-          rm -rf "$RUNNER_TEMP/again"
+          mv dist "$RUNNER_TEMP/first"
+          pnpm run bundle
+          diff -r "$RUNNER_TEMP/first/_expo/static/js" dist/_expo/static/js
+          rm -rf "$RUNNER_TEMP/first"
       - run: pnpm counts
       - run: pnpm claims
       - run: pnpm test:unit
