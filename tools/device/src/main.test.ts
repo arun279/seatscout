@@ -120,6 +120,21 @@ describe("what the emulator measured, each measure held to the merge base while 
     );
   });
 
+  it("names every measure it leaves out, and draws no table when nothing is left to hold", () => {
+    const report = ran(
+      "--head-startup",
+      "unsteady-startup.json",
+      "--head-journey",
+      "all-unsteady-walk.json",
+      "--no-baseline",
+    );
+
+    expect(report.out).not.toContain("| Measure |");
+    expect(report.out).toContain(
+      `Left out, too unsteady to hold: ${START} (40.8%), Walk, as Maestro makes it (40.8%), Frame rate over the walk (40.8%), CPU over the walk (40.8%), Memory over the walk (40.8%).\n\nThe merge base has no walk`,
+    );
+  });
+
   it("leaves out an unsteady walk time the same way", () => {
     const report = ran(
       "--head-startup",
@@ -211,6 +226,14 @@ describe("what the emulator measured, each measure held to the merge base while 
     ["no-launch.json", "no-launch.json holds no cold launch it timed"],
     ["zero-launch.json", "zero-launch.json holds no cold launch it timed"],
     ["word-launch.json", "word-launch.json holds no cold launch it timed"],
+    [
+      "zero-among-launches.json",
+      "zero-among-launches.json holds no cold launch it timed",
+    ],
+    [
+      "text-number-launch.json",
+      "text-number-launch.json holds no cold launch it timed",
+    ],
     ["head-walk.json", "head-walk.json holds no cold launch it timed"],
   ])(
     "refuses cold launches in %s rather than report over them",

@@ -45,6 +45,21 @@ const FILES: Readonly<Record<string, string>> = {
   "unsteady-startup.json": "[500, 1500, 1000]",
   "edge-startup.json": "[950, 1050]",
   "even-startup.json": "[990, 1010]",
+  "zero-among-launches.json": "[1000, 0]",
+  "text-number-launch.json": '["1000", 1010]',
+  "all-unsteady-walk.json": run(
+    ...[
+      [10000, 30, 100, 10],
+      [30000, 90, 300, 30],
+      [20000, 60, 200, 20],
+    ].map(([time, fps, ram, cpu]) => ({
+      time,
+      status: "SUCCESS",
+      measures: [
+        { cpu: { perName: { ui: cpu }, perCore: {} }, fps, ram, time: 500 },
+      ],
+    })),
+  ),
   "no-launch.json": "[]",
   "zero-launch.json": "[0]",
   "word-launch.json": '["fast"]',
