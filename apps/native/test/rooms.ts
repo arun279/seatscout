@@ -6,10 +6,16 @@ import {
 } from "@seatscout/client";
 import { fakeUpstream, type UpstreamScript } from "@seatscout/client/testing";
 import type { ProgrammeState, Terms } from "@seatscout/view-logic";
+import type { Clock } from "../src/host/clock.js";
 
 export const TODAY = "2026-08-28";
 
 export const NOW = 1_789_000_000_000;
+
+export const still = (at: number): Clock => ({
+  now: () => at,
+  subscribe: () => () => undefined,
+});
 
 export const NOTHING_READ: ProgrammeState = {
   phase: "none",

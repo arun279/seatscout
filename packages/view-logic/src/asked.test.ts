@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { REFERENCE } from "@seatscout/client";
-import { askedFrom } from "./asked.js";
+import { askedFrom, keyOf } from "./asked.js";
 import { termsFrom } from "./terms.js";
 import { EVERY_PARAMETER, TODAY } from "./terms.fixtures.js";
 
@@ -67,5 +67,25 @@ describe("the search a query becomes", () => {
       "partySize",
       "profile",
     ]);
+  });
+});
+
+describe("the key a Query is known by", () => {
+  const asked = askedFrom(termsFrom(EVERY_PARAMETER, TODAY), REFERENCE);
+
+  it("is the same for the same Query read twice", () => {
+    const again = askedFrom(termsFrom(EVERY_PARAMETER, TODAY), REFERENCE);
+    if (asked === null || again === null)
+      throw new Error("the query cannot run");
+
+    expect(keyOf(again)).toBe(keyOf(asked));
+  });
+
+  it("differs when any one term does", () => {
+    if (asked === null) throw new Error("the query cannot run");
+
+    expect(keyOf({ ...asked, partySize: asked.partySize + 1 })).not.toBe(
+      keyOf(asked),
+    );
   });
 });

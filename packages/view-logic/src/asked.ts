@@ -30,3 +30,5 @@ export const askedFrom = (
         profile,
         ...narrowingOf(terms),
       };
+
+export const keyOf = (asked: SearchTerms): string => JSON.stringify(asked);

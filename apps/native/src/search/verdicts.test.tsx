@@ -1,5 +1,5 @@
-import type { Snapshot } from "@seatscout/client";
 import { describe, expect, it, jest } from "@jest/globals";
+import type { Snapshot } from "@seatscout/client";
 import type { Term, Terms } from "@seatscout/view-logic";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import {

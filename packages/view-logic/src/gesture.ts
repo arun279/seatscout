@@ -18,25 +18,33 @@ export interface Box extends Point, Extent {}
 
 type Pair = readonly [Point, Point];
 
-const TAP_TARGET = 44;
-
 export const FITTED: View = { scale: 1, tx: 0, ty: 0 };
 
-const clamped = (value: number, low: number, high: number) =>
-  Math.min(high, Math.max(low, value));
+export const TOUCH_SLOP = 8;
 
-const bounded = (view: View, extent: Extent): View => ({
-  scale: view.scale,
-  tx: clamped(view.tx, extent.width * (1 - view.scale), 0),
-  ty: clamped(view.ty, extent.height * (1 - view.scale), 0),
-});
+const clamped = (value: number, low: number, high: number) => {
+  "worklet";
+  return Math.min(high, Math.max(low, value));
+};
+
+const bounded = (view: View, extent: Extent): View => {
+  "worklet";
+  return {
+    scale: view.scale,
+    tx: clamped(view.tx, extent.width * (1 - view.scale), 0),
+    ty: clamped(view.ty, extent.height * (1 - view.scale), 0),
+  };
+};
 
 export const panned = (
   view: View,
   dx: number,
   dy: number,
   extent: Extent,
-): View => bounded({ ...view, tx: view.tx + dx, ty: view.ty + dy }, extent);
+): View => {
+  "worklet";
+  return bounded({ ...view, tx: view.tx + dx, ty: view.ty + dy }, extent);
+};
 
 export const zoomed = (
   view: View,
@@ -45,6 +53,7 @@ export const zoomed = (
   extent: Extent,
   mostZoom: number,
 ): View => {
+  "worklet";
   const scale = clamped(view.scale * factor, 1, mostZoom);
   const grown = scale / view.scale;
   return bounded(
@@ -83,10 +92,13 @@ export const pinched = (
   );
 };
 
-const shiftInto = (low: number, high: number, limit: number) =>
-  low < 0 ? -low : Math.min(0, limit - high);
+const shiftInto = (low: number, high: number, limit: number) => {
+  "worklet";
+  return low < 0 ? -low : Math.min(0, limit - high);
+};
 
 export const revealed = (view: View, seat: Box, extent: Extent): View => {
+  "worklet";
   const left = view.tx + view.scale * seat.x;
   const top = view.ty + view.scale * seat.y;
   return panned(
@@ -97,12 +109,15 @@ export const revealed = (view: View, seat: Box, extent: Extent): View => {
   );
 };
 
+export const revealedIn = (view: View, seat: Box, frame: Box): View =>
+  revealed(view, { ...seat, x: seat.x - frame.x, y: seat.y - frame.y }, frame);
+
 export const mostZoomFor = (
   seatWidth: number,
   extentWidth: number,
   clientWidth: number,
-): number =>
-  Math.max(1, TAP_TARGET / ((seatWidth * clientWidth) / extentWidth));
+  floor: number,
+): number => Math.max(1, floor / ((seatWidth * clientWidth) / extentWidth));
 
 export const transformOf = (view: View): string =>
   `translate(${view.tx} ${view.ty}) scale(${view.scale})`;

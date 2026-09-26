@@ -8,3 +8,4 @@ export { WEST_PLANO_28 } from "./rooms.fixtures.js";
 export { openedRooms } from "./rooms.fixtures.js";
 export { roomRoutes } from "./rooms.fixtures.js";
 export { searched } from "./rooms.fixtures.js";
+export type { OpenedRoom } from "./rooms.fixtures.js";

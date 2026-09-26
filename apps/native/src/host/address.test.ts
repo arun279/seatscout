@@ -18,7 +18,9 @@ import {
   askAbout,
   askedIn,
   goTo,
+  handOff,
   keepAsItWas,
+  openRoom,
   pairsOf,
   runInstead,
   useFocus,
@@ -158,6 +160,38 @@ describe("opening the Ask sheet over the query it is editing", () => {
 
     mockParams.mockReturnValue({});
     expect(useFocus()).toBeUndefined();
+  });
+});
+
+describe("opening the Room from a Seat Group", () => {
+  it("carries the Query, the showtime and the Seat Group, so the Room reads as a deep link", () => {
+    openRoom(
+      { date: "2026-09-19", area: "75234", partySize: 2 },
+      4102,
+      "H13-H14",
+    );
+
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: "/room",
+      params: {
+        date: "2026-09-19",
+        area: "75234",
+        partySize: "2",
+        showtime: "4102",
+        group: "H13-H14",
+      },
+    });
+  });
+});
+
+describe("handing a Seat Group off", () => {
+  it("names the Seat Group the hand-off will verify", () => {
+    handOff("H13-H14");
+
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: "/hand-off",
+      params: { group: "H13-H14" },
+    });
   });
 });
 

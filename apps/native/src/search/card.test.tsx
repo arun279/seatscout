@@ -1,5 +1,5 @@
-import type { SeatGroupResult } from "@seatscout/client";
 import { describe, expect, it, jest } from "@jest/globals";
+import type { SeatGroupResult } from "@seatscout/client";
 import { labelOf, roomNameOf } from "@seatscout/view-logic";
 import {
   cleanup,
@@ -14,7 +14,7 @@ import {
   everyControlSaysWhatItIs,
 } from "../../test/floors.js";
 import { houseLights } from "../../test/lights.js";
-import { first, formatted, NOW, settled } from "../../test/rooms.js";
+import { first, formatted, NOW, settled, still } from "../../test/rooms.js";
 import type { Clock } from "../host/clock.js";
 import { type Appearance, themeFor } from "../theme.js";
 import { Card } from "./card.js";
@@ -40,11 +40,6 @@ const shown = async (result: SeatGroupResult, over: Over = {}) => {
     />,
   );
 };
-
-const still = (at: number): Clock => ({
-  now: () => at,
-  subscribe: () => () => undefined,
-});
 
 const body = (result: SeatGroupResult) =>
   screen.getByRole("button", { name: roomNameOf(result) });

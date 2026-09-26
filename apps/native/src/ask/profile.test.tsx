@@ -1,8 +1,8 @@
 import { describe, expect, it } from "@jest/globals";
 import { REFERENCE } from "@seatscout/client";
 import { act, fireEvent, screen } from "@testing-library/react-native";
-import { asking, NEAR, submit } from "../../test/ask.js";
 import { StyleSheet } from "react-native";
+import { asking, NEAR, submit } from "../../test/ask.js";
 import { houseLights } from "../../test/lights.js";
 import { TOUCH_FLOOR } from "../design-system/touch.js";
 

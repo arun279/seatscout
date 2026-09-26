@@ -47,3 +47,5 @@ export const deviceClock = (): Clock => {
     },
   };
 };
+
+export const clock: Clock = deviceClock();

@@ -1,11 +1,11 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import { Platform, StyleSheet } from "react-native";
+import { contrastOf } from "../../test/contrast.js";
 import {
   everyControlReachesTheTouchFloor,
   everyControlSaysWhatItIs,
 } from "../../test/floors.js";
-import { contrastOf } from "../../test/contrast.js";
 import { houseLights } from "../../test/lights.js";
 import { themeFor } from "../theme.js";
 import { Segments } from "./segments.js";
