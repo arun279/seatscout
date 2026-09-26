@@ -109,5 +109,5 @@ export { spanOf } from "./when.js";
 export { valuesOf } from "./when.js";
 export { costOf } from "./when-phrases.js";
 export { dayOf } from "./when-phrases.js";
-export { whenOf } from "./when-phrases.js";
+export { whenSaidOf } from "./when-phrases.js";
 export { whenWordsOf } from "./when-phrases.js";

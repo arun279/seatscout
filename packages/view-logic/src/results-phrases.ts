@@ -177,11 +177,11 @@ export const emptyOf = (
   terms: Terms,
   when: string,
 ): Verdict =>
-  snapshot.coverage.candidates === 0
+  snapshot.coverage.checked === 0
     ? {
         said: `No showtime matches this query ${when}.`,
         ledes: [
-          `Nothing listed near ${terms.area} carries every term at once, so nothing was checked. Fewer terms would change it.`,
+          `Nothing listed near ${terms.area} that is still to come carries every term at once, so nothing was checked. Fewer terms or another day would change it.`,
         ],
       }
     : {

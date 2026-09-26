@@ -132,7 +132,7 @@ describe("what the first screen says when the answer is not a list", () => {
     expect(screen.queryByText(/anywhere/)).toBeNull();
     expect(
       screen.getByText(
-        "Nothing listed near 75006 carries every term at once, so nothing was checked. Fewer terms would change it.",
+        "Nothing listed near 75006 that is still to come carries every term at once, so nothing was checked. Fewer terms or another day would change it.",
       ),
     ).toBeVisible();
     expect(screen.queryByRole("button", { name: /retry/i })).toBeNull();

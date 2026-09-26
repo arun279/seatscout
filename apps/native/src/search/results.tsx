@@ -18,7 +18,7 @@ import {
   tiedIn,
   tiedOf,
   unreachedIn,
-  whenOf,
+  whenSaidOf,
 } from "@seatscout/view-logic";
 import { type ReactElement, useState, useSyncExternalStore } from "react";
 import { FlatList, StyleSheet, View } from "react-native";
@@ -240,7 +240,7 @@ export const Results = ({
             session={session}
             terms={terms}
             tie={tie}
-            when={whenOf(terms.date, today)}
+            when={whenSaidOf(terms, today)}
           />
         </>
       }

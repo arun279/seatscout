@@ -111,3 +111,18 @@ describe("a search over several days with more to read", () => {
     expect(screen.queryByText(/^Today: /)).toBeNull();
   });
 });
+
+describe("a search whose showtimes have all begun", () => {
+  it("says no showtime matched, never that no seats were free, when no seat map was checked", async () => {
+    const seatMaps = await shown({ ...TWO_DAYS, dates: ["2026-08-27"] });
+
+    expect(
+      await screen.findByText(/^No showtime matches this query/),
+    ).toBeOnTheScreen();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "80 candidates · 0 checked",
+    );
+    expect(screen.queryByText(/^No two seats together/)).toBeNull();
+    expect(seatMaps()).toBe(0);
+  });
+});

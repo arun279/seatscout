@@ -108,7 +108,7 @@ describe("starting the application in a browser", () => {
       expect(
         screen.getByRole("heading", {
           level: 2,
-          name: "No three seats together, anywhere on Thu 27 Aug.",
+          name: "No showtime matches this query on Thu 27 Aug.",
         }),
       ).toBeVisible(),
     );
@@ -208,7 +208,7 @@ describe("starting the application in a browser", () => {
       expect(
         screen.getByRole("heading", {
           level: 2,
-          name: "No two seats together, anywhere on Thu 27 Aug.",
+          name: "No showtime matches this query on Thu 27 Aug.",
         }),
       ).toBeVisible(),
     );

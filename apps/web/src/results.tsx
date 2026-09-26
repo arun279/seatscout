@@ -14,7 +14,7 @@ import {
   tiedIn,
   tiedOf,
   unreachedIn,
-  whenOf,
+  whenSaidOf,
 } from "@seatscout/view-logic";
 import { Empty, Partial, Unreachable } from "./verdicts.js";
 
@@ -72,7 +72,7 @@ export const Results = ({
   onRoom,
   onHandOff,
 }: ResultsProps): ReactElement => {
-  const when = whenOf(terms.date, today);
+  const when = whenSaidOf(terms, today);
   const settled = snapshot.phase === "settled";
   const results = painted === null ? [] : listed(painted.results);
   const tied = tiedIn(results);
