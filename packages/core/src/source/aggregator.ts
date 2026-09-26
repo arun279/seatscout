@@ -12,7 +12,10 @@ type Refusals = Readonly<Record<number, Unreadable>>;
 
 type Translate<Payload> = (body: string, fetchedAt: number) => Payload | null;
 
+const EVERY_ROUTE_REFUSES: Refusals = { 403: "refused" };
+
 const SEAT_MAP_REFUSALS: Refusals = {
+  ...EVERY_ROUTE_REFUSES,
   400: "noSeatMap",
   404: "started",
   410: "soldOut",
@@ -81,7 +84,7 @@ export const openSource = (deps: SourceDependencies): Source => {
   const read = async <Payload>(
     path: string,
     translate: Translate<Payload>,
-    refusals: Refusals = {},
+    refusals: Refusals = EVERY_ROUTE_REFUSES,
   ) => {
     for (let attempt = 1; attempt <= policy.attempts; attempt += 1) {
       if (breaker.refuses()) return unreachable(attempt - 1);

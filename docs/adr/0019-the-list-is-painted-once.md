@@ -53,10 +53,10 @@ a time. A pair astride the centreline is called central, because half a seat off
 a pair can do.
 
 **Coverage on this screen is counts and never a bar.** An in-flight search is Coverage: its
-ledger closes in every snapshot, so the strip reads candidates, checked and to go, and the
-ledger is a dialog with a count per outcome, the named rows with their Theater and time, a link
-to the operator's page where that is the remedy, and an arithmetic line that adds to the
-candidates. A search that settles with rooms unreached says so in its heading before it shows a
+ledger closes in every snapshot, so the strip reads candidates, checked, to go and not read
+yet, and the ledger is a dialog with a count per outcome, the named rows with their Theater and
+time, a link to the operator's page where that is the remedy, and an arithmetic line that adds
+to the candidates. A search that settles with rooms unreached says so in its heading before it shows a
 card, names those rooms, and offers the retry before it offers to change the query; a search
 that settles with every room answered and nothing to offer says that in a different heading; a
 search whose listing could not be read says the listing could not be read. The retry re-reads only the rooms the search could

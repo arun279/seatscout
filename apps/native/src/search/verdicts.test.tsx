@@ -1,4 +1,4 @@
-import type { Snapshot } from "@seatscout/client";
+import type { SearchTerms, Snapshot } from "@seatscout/client";
 import { describe, expect, it, jest } from "@jest/globals";
 import type { Term, Terms } from "@seatscout/view-logic";
 import { fireEvent, render, screen } from "@testing-library/react-native";
@@ -7,9 +7,9 @@ import { Empty, Partial, Unreachable } from "./verdicts.js";
 
 const FAILING = { "/napi/seatMap/558117351": [500, 500, 500] };
 
-const WHOLE_LISTING = {
+const WHOLE_LISTING: SearchTerms = {
   movie: "245569",
-  date: TODAY,
+  dates: [TODAY],
   area: "75006",
   partySize: 2,
   accessibleSeating: false,
@@ -135,6 +135,8 @@ describe("the search that found nothing", () => {
   const whole = (candidates: number): Snapshot => ({
     results: [],
     phase: "settled",
+    days: [],
+    refused: false,
     coverage: {
       started: [],
       noSeatMap: [],

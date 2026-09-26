@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { daysIn, spanIn, spanOf, valuesOf } from "./when.js";
+import { daysIn, isPast, spanIn, spanOf, valuesOf } from "./when.js";
 
 const TODAY = "2026-09-03";
 
@@ -119,5 +119,18 @@ describe("the days a Query's when term holds", () => {
     expect(spanOf(["2026-09-04..2026-09-13", "2026-09-05"], TODAY)).toEqual({
       date: "2026-09-05",
     });
+  });
+});
+
+describe("a remembered search's days against today", () => {
+  it("is past only once its last day is before today", () => {
+    const today = "2026-08-28";
+
+    expect(isPast(["2026-08-27"], today)).toBe(true);
+    expect(isPast([today], today)).toBe(false);
+    expect(isPast(["2026-08-20", today], today)).toBe(false);
+    expect(isPast(["2026-08-20..2026-08-27"], today)).toBe(true);
+    expect(isPast(["2026-08-20..2026-08-28"], today)).toBe(false);
+    expect(isPast(["any"], today)).toBe(false);
   });
 });

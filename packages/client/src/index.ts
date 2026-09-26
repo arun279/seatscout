@@ -16,11 +16,13 @@ export {
   type TheaterId,
   type TicketingUrl,
 } from "@seatscout/core";
+export { SEAT_MAP_BUDGET } from "./budget.js";
 export { isReference } from "./profile.js";
 export type { Programme } from "./programme.js";
 export type { SeatGroupResult } from "./ranking.js";
 export type { Auditorium } from "./search.js";
 export type { Coverage } from "./search.js";
+export type { Day } from "./days.js";
 export type { Search } from "./search.js";
 export type { SearchTerms } from "./search.js";
 export type { Snapshot } from "./search.js";

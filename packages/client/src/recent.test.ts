@@ -5,21 +5,35 @@ import { openRecentSearches } from "./recent.js";
 import type { SearchTerms } from "./search.js";
 import { inMemoryStore, type RecentSearch } from "./store.js";
 
-const KEY = "seatscout.recent.v1";
+const KEY = "seatscout.recent.v2";
+const ONE_DATE_KEY = "seatscout.recent.v1";
 
 const TONIGHT: RecentSearch = {
   movie: "245569",
-  date: "2026-08-28",
+  dates: ["2026-08-28"],
   area: "75006",
   partySize: 2,
 };
 
 const searches: fc.Arbitrary<RecentSearch> = fc.record({
   movie: fc.constantFrom("245569", "243819", "246329"),
-  date: fc.constantFrom("2026-08-28", "2026-08-29"),
+  dates: fc.constantFrom<RecentSearch["dates"]>(
+    ["2026-08-28"],
+    ["2026-08-28", "2026-08-29"],
+    ["2026-08-28..2026-08-30"],
+    ["any"],
+  ),
   area: fc.constantFrom("75006", "75234"),
   partySize: fc.integer({ min: 1, max: 3 }),
 });
+
+const holding = (held: Readonly<Record<string, unknown>>) => {
+  const store = inMemoryStore();
+  return openRecentSearches({
+    read: (key) => Promise.resolve(held[key]),
+    write: store.write,
+  });
+};
 
 const lastDistinct = (asked: readonly RecentSearch[], kept: number) =>
   asked
@@ -71,8 +85,9 @@ describe("the searches a device remembers", () => {
 
   it("keeps the four terms that make a search and nothing else it was asked with", async () => {
     const store = inMemoryStore();
-    const asked: SearchTerms = {
+    const asked: RecentSearch & SearchTerms = {
       ...TONIGHT,
+      dates: ["2026-08-28"],
       accessibleSeating: true,
       profile: { ...REFERENCE, targetDepth: 0.4 },
       theaters: [],
@@ -88,20 +103,52 @@ describe("the searches a device remembers", () => {
       { ...TONIGHT },
       [TONIGHT, { ...TONIGHT, partySize: "2" }],
       [{ ...TONIGHT, movie: 245569 }],
-      [{ ...TONIGHT, date: 20260828 }],
+      [{ ...TONIGHT, dates: "2026-08-28" }],
+      [{ ...TONIGHT, dates: [] }],
+      [{ ...TONIGHT, dates: [20260828] }],
+      [{ ...TONIGHT, dates: ["2026-08-28", 20260829] }],
       [{ ...TONIGHT, area: 75006 }],
       [null],
     ];
     const read: unknown[] = [];
     for (const value of held) {
-      const store = inMemoryStore();
-      const recent = openRecentSearches({
-        read: () => Promise.resolve(value),
-        write: store.write,
-      });
+      const recent = holding({ [KEY]: value, [ONE_DATE_KEY]: [TONIGHT] });
       read.push([await recent.remembered(), await recent.remember(TONIGHT)]);
     }
 
     expect(read).toEqual(held.map(() => [[], [TONIGHT]]));
+  });
+
+  it("carries a history kept one date to a search, each search on its own date", async () => {
+    const recent = holding({
+      [ONE_DATE_KEY]: [
+        { movie: "245569", date: "2026-08-28", area: "75006", partySize: 2 },
+        { movie: "243819", date: "2026-08-29", area: "75234", partySize: 1 },
+      ],
+    });
+
+    expect(await recent.remembered()).toEqual([
+      TONIGHT,
+      {
+        movie: "243819",
+        dates: ["2026-08-29"],
+        area: "75234",
+        partySize: 1,
+      },
+    ]);
+  });
+
+  it("forgets a history kept one date to a search that this build cannot read", async () => {
+    const earlier: unknown[] = [
+      "245569",
+      [{ movie: "245569", date: 20260828, area: "75006", partySize: 2 }],
+      [{ movie: "245569", area: "75006", partySize: 2 }],
+      [null],
+    ];
+    const read: unknown[] = [];
+    for (const value of earlier)
+      read.push(await holding({ [ONE_DATE_KEY]: value }).remembered());
+
+    expect(read).toEqual(earlier.map(() => []));
   });
 });

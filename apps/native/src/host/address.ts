@@ -10,13 +10,25 @@ const FOCUSED: readonly Term[] = ["area", "movie"];
 
 type Given = Readonly<Record<string, string | readonly string[] | undefined>>;
 
-const paired = (name: string, value: string): [string, string] => [name, value];
+const LISTS: readonly string[] = [
+  "date",
+  "chain",
+  "theater",
+  "format",
+  "amenity",
+];
+
+const valuesOf = (name: string, value: string) =>
+  LISTS.includes(name) ? value.split(",") : [value];
+
+const paired = (name: string, value: string): [string, string][] =>
+  valuesOf(name, value).map((one) => [name, one]);
 
 export const pairsOf = (given: Given): readonly [string, string][] =>
   Object.entries(given).flatMap(([name, value]) =>
     typeof value === "string"
-      ? [paired(name, value)]
-      : (value ?? []).map((one) => paired(name, one)),
+      ? paired(name, value)
+      : (value ?? []).flatMap((one) => paired(name, one)),
   );
 
 export const askedIn = (

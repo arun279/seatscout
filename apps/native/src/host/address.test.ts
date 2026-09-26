@@ -36,6 +36,32 @@ describe("the route's parameters read as a list of pairs", () => {
     ]);
   });
 
+  it("reads a list the router carried joined by commas as one pair each, and only a list", () => {
+    expect(
+      pairsOf({
+        date: "2026-09-28,2026-09-30",
+        format: "IMAX,Dolby Cinema",
+        theater: "aacbt,aaxju",
+        amenity: "Recliners,Dine-In",
+        movie: "Crazy, Stupid, Love",
+      }),
+    ).toEqual([
+      ["date", "2026-09-28"],
+      ["date", "2026-09-30"],
+      ["format", "IMAX"],
+      ["format", "Dolby Cinema"],
+      ["theater", "aacbt"],
+      ["theater", "aaxju"],
+      ["amenity", "Recliners"],
+      ["amenity", "Dine-In"],
+      ["movie", "Crazy, Stupid, Love"],
+    ]);
+    expect(pairsOf({ chain: ["AMC,Landmark"] })).toEqual([
+      ["chain", "AMC"],
+      ["chain", "Landmark"],
+    ]);
+  });
+
   it("reads a parameter the router left out as no pair at all", () => {
     expect(pairsOf({ movie: undefined, area: "75234" })).toEqual([
       ["area", "75234"],

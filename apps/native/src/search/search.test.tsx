@@ -9,7 +9,12 @@ import {
   jest,
 } from "@jest/globals";
 import type { Term, Terms } from "@seatscout/view-logic";
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import { phone, type Upstream } from "../../test/phone.js";
 import {
@@ -175,7 +180,7 @@ describe("what this phone remembers", () => {
       remembered: [
         {
           movie: "One Battle After Another",
-          date: PROMPT_DAY,
+          dates: [PROMPT_DAY],
           area: "75201",
           partySize: 4,
         },
@@ -220,7 +225,7 @@ describe("the face the Search screen wears", () => {
 });
 
 describe("a query that spans more than one day", () => {
-  it("searches the nearest day alone, and says the days after it are not read yet", async () => {
+  it("reads the listing of every day it names before any seat map", async () => {
     const { reads } = await showing({
       upstream: { script: {} },
       terms: {
@@ -231,23 +236,13 @@ describe("a query that spans more than one day", () => {
       today: TODAY,
     });
 
-    expect(await screen.findByText("Best seats first")).toBeOnTheScreen();
-    expect(
-      screen.getByText("Sat 29 to Mon 31 Aug not read yet"),
-    ).toBeOnTheScreen();
-    expect(reads.some((url) => url.includes(TODAY))).toBe(true);
-    expect(reads.filter((url) => /2026-08-(29|30|31)/.test(url))).toEqual([]);
-  });
-
-  it("says nothing is left unread when the query holds one day", async () => {
-    await showing({
-      upstream: { script: {} },
-      terms: { ...TONIGHT, until: "19:20" },
-      today: TODAY,
+    await waitFor(() => {
+      expect(
+        ["2026-08-28", "2026-08-29", "2026-08-30", "2026-08-31"].map((day) =>
+          reads.some((url) => url.includes(`/${day}?`)),
+        ),
+      ).toEqual([true, true, true, true]);
     });
-
-    expect(await screen.findByText("Best seats first")).toBeOnTheScreen();
-    expect(screen.queryByText(/not read yet/)).toBeNull();
   });
 });
 

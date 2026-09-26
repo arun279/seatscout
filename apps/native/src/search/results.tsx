@@ -18,8 +18,7 @@ import {
   tiedIn,
   tiedOf,
   unreachedIn,
-  unreadOf,
-  whenOf,
+  whenSaidOf,
 } from "@seatscout/view-logic";
 import { type ReactElement, useState, useSyncExternalStore } from "react";
 import { FlatList, StyleSheet, View } from "react-native";
@@ -73,7 +72,6 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   beam: { flex: 1, height: 1.5 },
-  unread: { paddingHorizontal: 22, paddingTop: 8 },
 });
 
 const opened = (seatscout: SeatScout, asked: SearchTerms): Session => {
@@ -123,6 +121,82 @@ const TieRule = ({ tied }: { readonly tied: number }) => {
   );
 };
 
+interface VerdictProps {
+  readonly session: Session;
+  readonly results: readonly SeatGroupResult[];
+  readonly tie: boolean;
+  readonly terms: Terms;
+  readonly when: string;
+  readonly online: boolean;
+  readonly onEdit: (term: Term) => void;
+}
+
+const useShown = ({ held }: Session) =>
+  useSyncExternalStore(held.subscribe, held.snapshot);
+
+const LiveStrip = ({
+  session,
+  today,
+  onLedger,
+}: {
+  readonly session: Session;
+  readonly today: string;
+  readonly onLedger: () => void;
+}) => (
+  <Strip
+    onLedger={onLedger}
+    onReadMore={() => {
+      void session.search.readMore();
+    }}
+    snapshot={useShown(session)}
+    today={today}
+  />
+);
+
+const Verdict = ({
+  session,
+  results,
+  tie,
+  terms,
+  when,
+  online,
+  onEdit,
+}: VerdictProps) => {
+  const snapshot = useShown(session);
+  const settled = snapshot.phase === "settled";
+  const partial = settled && unreachedIn(snapshot) > 0;
+  const retry = () => {
+    void session.search.retry();
+  };
+
+  if (snapshot.phase === "unreachable")
+    return (
+      <Unreachable
+        onEdit={onEdit}
+        online={online}
+        onRetry={retry}
+        when={when}
+      />
+    );
+  return (
+    <>
+      {partial && (
+        <Partial
+          onEdit={onEdit}
+          online={online}
+          onRetry={retry}
+          snapshot={snapshot}
+        />
+      )}
+      {settled && !partial && results.length === 0 ? (
+        <Empty onEdit={onEdit} snapshot={snapshot} terms={terms} when={when} />
+      ) : (
+        <Head snapshot={snapshot} tie={tie} />
+      )}
+    </>
+  );
+};
+
 export const Results = ({
   seatscout,
   asked,
@@ -138,55 +212,13 @@ export const Results = ({
   onLedger,
 }: ResultsProps): ReactElement => {
   const [session] = useState(() => opened(seatscout, asked));
-  const snapshot = useSyncExternalStore(
-    session.held.subscribe,
-    session.held.snapshot,
-  );
   const painted = useSyncExternalStore(
     session.held.subscribe,
     session.held.painted,
   );
-  const when = whenOf(terms.date, today);
-  const unread = unreadOf(terms, today);
-  const settled = snapshot.phase === "settled";
   const results = painted === null ? [] : listed(painted.results);
   const tied = tiedIn(results);
   const tie = tied > 1;
-  const partial = settled && unreachedIn(snapshot) > 0;
-  const retry = () => {
-    void session.search.retry();
-  };
-
-  const verdict =
-    snapshot.phase === "unreachable" ? (
-      <Unreachable
-        onEdit={onEdit}
-        online={online}
-        onRetry={retry}
-        when={when}
-      />
-    ) : (
-      <>
-        {partial && (
-          <Partial
-            onEdit={onEdit}
-            online={online}
-            onRetry={retry}
-            snapshot={snapshot}
-          />
-        )}
-        {settled && !partial && results.length === 0 ? (
-          <Empty
-            onEdit={onEdit}
-            snapshot={snapshot}
-            terms={terms}
-            when={when}
-          />
-        ) : (
-          <Head snapshot={snapshot} tie={tie} />
-        )}
-      </>
-    );
 
   return (
     <FlatList
@@ -200,13 +232,16 @@ export const Results = ({
             terms={terms}
             today={today}
           />
-          <Strip onLedger={onLedger} snapshot={snapshot} />
-          {unread !== undefined && (
-            <Type set="ledgerRow" style={styles.unread} tone="silverFaint">
-              {unread}
-            </Type>
-          )}
-          {verdict}
+          <LiveStrip onLedger={onLedger} session={session} today={today} />
+          <Verdict
+            onEdit={onEdit}
+            online={online}
+            results={results}
+            session={session}
+            terms={terms}
+            tie={tie}
+            when={whenSaidOf(terms, today)}
+          />
         </>
       }
       contentContainerStyle={styles.list}

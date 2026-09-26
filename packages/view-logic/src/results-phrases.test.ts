@@ -1,12 +1,12 @@
-import type { Coverage, SeatGroupResult, Snapshot } from "@seatscout/client";
+import type { SeatGroupResult } from "@seatscout/client";
 import { createSeatScout } from "@seatscout/client";
 import { fakeUpstream } from "@seatscout/client/testing";
 import { describe, expect, it } from "vitest";
 import { OFFLINE } from "./phrases.js";
 import {
   BELOW_THE_TIE,
-  cardNameOf,
   CHANGE_THE_QUERY,
+  cardNameOf,
   coverageOf,
   designationsOf,
   emptyOf,
@@ -27,24 +27,8 @@ import {
   WAITING_TO_RETRY,
   WIDEN,
 } from "./results-phrases.js";
+import { covering, reading } from "./results-phrases.fixtures.js";
 import { ANGELIKA_5, searched } from "./rooms.fixtures.js";
-
-const covering = (candidates: number, checked: number): Coverage => ({
-  started: [],
-  noSeatMap: [],
-  soldOut: [],
-  salesOff: [],
-  unidentified: [],
-  failed: [],
-  candidates,
-  checked,
-});
-
-const reading = (coverage: Coverage, phase: Snapshot["phase"]): Snapshot => ({
-  results: [],
-  coverage,
-  phase,
-});
 
 const stonebriarFailed = () =>
   createSeatScout({
@@ -58,7 +42,7 @@ const stonebriarFailed = () =>
     random: () => 0.5,
   }).search({
     movie: "245569",
-    date: "2026-08-28",
+    dates: ["2026-08-28"],
     area: "75006",
     partySize: 2,
     accessibleSeating: false,
@@ -245,9 +229,21 @@ describe("the three ways a search can end without a whole list", () => {
     ).toEqual({
       said: "No showtime matches this query today.",
       ledes: [
-        "Nothing listed near 75234 carries every term at once, so nothing was checked. Fewer terms would change it.",
+        "Nothing listed near 75234 that is still to come carries every term at once, so nothing was checked. Fewer terms or another day would change it.",
       ],
     });
+  });
+
+  it("never says no seats when it checked no seat map, however many showtimes were listed", () => {
+    const passed = reading(covering(60, 0), "settled");
+
+    expect(
+      emptyOf(
+        passed,
+        { date: "2026-08-28", area: "75010", partySize: 2 },
+        "today",
+      ).said,
+    ).toBe("No showtime matches this query today.");
   });
 });
 

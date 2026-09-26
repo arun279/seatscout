@@ -92,16 +92,3 @@ export const whenSaidOf = (span: Span, today: string): string => {
       return whenWordsOf(span, today);
   }
 };
-
-export const unreadOf = (span: Span, today: string): string | undefined => {
-  const [, first = span.date, ...more] = daysIn(span, today);
-  const last = more.at(-1) ?? first;
-  switch (span.when?.kind) {
-    case undefined:
-      return undefined;
-    case "days":
-      return `${namedOrCounted([first, ...more], "days")} not read yet`;
-    default:
-      return `${first === last ? listed([first]) : between(first, last)} not read yet`;
-  }
-};

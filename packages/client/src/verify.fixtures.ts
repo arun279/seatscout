@@ -1,23 +1,23 @@
 import {
   type Catalogue,
+  narrowed,
+  openSource,
   type Reading,
   type SeatProfile,
   type Showtime,
-  narrowed,
-  openSource,
 } from "@seatscout/core";
 import {
   type FakeUpstream,
-  type UpstreamScript,
   fakeUpstream,
   recordedCaptures,
   routeOf,
   seatMapCaptures,
+  type UpstreamScript,
 } from "@seatscout/core/testing";
 import type { SeatGroupResult } from "./ranking.js";
-import { type SearchTerms, openSearch } from "./search.js";
-import { type KeyValueStore, inMemoryStore } from "./store.js";
-import { type Verified, openVerification } from "./verify.js";
+import { openSearch, type SearchTerms } from "./search.js";
+import { inMemoryStore, type KeyValueStore } from "./store.js";
+import { openVerification, type Verified } from "./verify.js";
 
 export const SEAT_MAP = "/napi/seatMap/";
 export const LISTING = "/napi/theaterShowtimeGroupings/245569/2026-08-28";
@@ -159,7 +159,7 @@ const searching = async (options: Options) => {
   const listed = await listing();
   const terms: SearchTerms = {
     movie: WIDE_RELEASE,
-    date: TODAY,
+    dates: [TODAY],
     area: AREA,
     partySize: options.partySize ?? 2,
     accessibleSeating: options.accessibleSeating ?? false,

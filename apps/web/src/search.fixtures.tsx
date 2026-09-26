@@ -46,7 +46,10 @@ export const NOTHING_READ: ProgrammeState = {
 };
 
 export const ASKED: SearchTerms = {
-  ...TONIGHT,
+  movie: TONIGHT.movie,
+  dates: ["2026-08-28"],
+  area: TONIGHT.area,
+  partySize: TONIGHT.partySize,
   accessibleSeating: false,
   profile: REFERENCE,
 };

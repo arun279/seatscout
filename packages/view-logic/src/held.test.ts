@@ -15,6 +15,8 @@ const EMPTY: Snapshot = {
     failed: [],
   },
   phase: "resolving",
+  days: [],
+  refused: false,
 };
 
 const searching = () => {
@@ -29,6 +31,7 @@ const searching = () => {
     },
     done: Promise.resolve(EMPTY),
     retry: () => Promise.resolve(EMPTY),
+    readMore: () => Promise.resolve(EMPTY),
     abort: () => aborted.push(true),
     auditorium: () => {
       throw new Error("no room was read");

@@ -3,14 +3,16 @@ import { fakeUpstream } from "@seatscout/core/testing";
 import { describe, expect, it } from "vitest";
 import type { SearchTerms } from "./search.js";
 import { createSeatScout, type SeatScoutDependencies } from "./seatscout.js";
-import { inMemoryStore } from "./store.js";
+import { inMemoryStore, type RecentSearch } from "./store.js";
 
 const AT = 1000;
 const LISTING = "/napi/theaterShowtimeGroupings/245569/2026-08-28";
 
-const TONIGHT: SearchTerms = {
+const ON_THE_DATE: [string] = ["2026-08-28"];
+
+const TONIGHT: SearchTerms & RecentSearch = {
   movie: "245569",
-  date: "2026-08-28",
+  dates: ON_THE_DATE,
   area: "75006",
   partySize: 2,
   accessibleSeating: false,
@@ -122,8 +124,8 @@ describe("a SeatScout", () => {
 
     expect(await relaunched.profile.remembered()).toEqual(closer);
     expect(await relaunched.recent.remembered()).toEqual([
-      { movie: "245569", date: "2026-08-28", area: "75006", partySize: 2 },
-      { movie: "245569", date: "2026-08-28", area: "75006", partySize: 3 },
+      { movie: "245569", dates: ON_THE_DATE, area: "75006", partySize: 2 },
+      { movie: "245569", dates: ON_THE_DATE, area: "75006", partySize: 3 },
     ]);
   });
 

@@ -45,8 +45,15 @@ const PROFILE: Sample<SeatProfile> = {
 
 const RECENT: Sample<readonly RecentSearch[]> = {
   named: "history of searches",
-  value: [{ movie: "245569", date: "2026-08-28", area: "75006", partySize: 2 }],
-  text: '[{"movie":"245569","date":"2026-08-28","area":"75006","partySize":2}]',
+  value: [
+    {
+      movie: "245569",
+      dates: ["2026-08-28"],
+      area: "75006",
+      partySize: 2,
+    },
+  ],
+  text: '[{"movie":"245569","dates":["2026-08-28"],"area":"75006","partySize":2}]',
 };
 
 const sample = (fetchedAt: number): Sample<CachedCatalogue> => ({

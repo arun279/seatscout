@@ -99,7 +99,7 @@ export const Search = ({
   );
   const programme = useSyncExternalStore(playing.subscribe, playing.snapshot);
   const remembered = useRemembered(seatscout, terms);
-  const asked = askedFrom(terms, profile);
+  const asked = askedFrom(terms, profile, today);
 
   return (
     <SafeAreaView

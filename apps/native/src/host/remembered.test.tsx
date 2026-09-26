@@ -11,7 +11,7 @@ const SHORT: Terms = { date: TODAY, partySize: 2 };
 
 const KEPT: RecentSearch = {
   movie: "One Battle After Another",
-  date: "2026-09-19",
+  dates: ["2026-09-19"],
   area: "75201",
   partySize: 4,
 };
@@ -99,7 +99,7 @@ describe("the search a complete query is remembered as", () => {
       expect(result.current).toEqual([
         {
           movie: "One Battle After Another",
-          date: TODAY,
+          dates: [TODAY],
           area: "75201",
           partySize: 2,
         },
@@ -132,11 +132,36 @@ describe("the search a complete query is remembered as", () => {
 
     await waitFor(() => {
       expect(result.current).toEqual([
-        { movie: "Sinners", date: TODAY, area: "75010", partySize: 2 },
+        { movie: "Sinners", dates: [TODAY], area: "75010", partySize: 2 },
         {
           movie: "One Battle After Another",
-          date: TODAY,
+          dates: [TODAY],
           area: "75201",
+          partySize: 2,
+        },
+      ]);
+    });
+  });
+
+  it("keeps every day a query spans, as the address writes them", async () => {
+    const seatscout = keeping();
+
+    const { result } = await renderHook(() =>
+      useRemembered(seatscout, {
+        movie: "Sinners",
+        date: TODAY,
+        when: { kind: "days", dates: [TODAY, "2026-09-21"] },
+        area: "75010",
+        partySize: 2,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(result.current).toEqual([
+        {
+          movie: "Sinners",
+          dates: [TODAY, "2026-09-21"],
+          area: "75010",
           partySize: 2,
         },
       ]);

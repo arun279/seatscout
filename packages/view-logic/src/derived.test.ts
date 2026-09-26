@@ -11,6 +11,7 @@ import {
   listed,
   tiedIn,
   unreachedIn,
+  unreadIn,
 } from "./derived.js";
 
 const searched = () =>
@@ -25,7 +26,7 @@ const searched = () =>
     random: () => 0.5,
   }).search({
     movie: "245569",
-    date: "2026-08-28",
+    dates: ["2026-08-28"],
     area: "75006",
     partySize: 2,
     accessibleSeating: false,
@@ -66,7 +67,7 @@ describe("what the screen derives from a snapshot", () => {
       checked: 10,
       remaining: 9,
     });
-    expect(unreachedIn({ ...settled, coverage })).toBe(15);
+    expect(unreachedIn({ ...settled, coverage, days: [] })).toBe(15);
   });
 
   it("lists the results at the room's resolution first, soonest first and the lower Showtime first at one time, then the rest as ranked", async () => {
@@ -118,7 +119,61 @@ describe("what the screen derives from a snapshot", () => {
       failed: repeated(showtime, 3),
     };
 
-    expect(beingReadIn({ ...settled, coverage: stillToCome })).toBe(2);
-    expect(beingReadIn({ ...settled, coverage: retrying })).toBe(3);
+    expect(beingReadIn({ ...settled, coverage: stillToCome, days: [] })).toBe(
+      2,
+    );
+    expect(beingReadIn({ ...settled, coverage: retrying, days: [] })).toBe(3);
+  });
+
+  it("counts what is not read yet as neither being read nor unreached", async () => {
+    const settled = await searched();
+    const [showtime] = settled.coverage.failed;
+    if (showtime === undefined) throw new Error("no room failed");
+    const coverage: Coverage = {
+      started: [],
+      noSeatMap: [],
+      soldOut: [],
+      salesOff: [],
+      unidentified: [],
+      candidates: 176,
+      checked: 20,
+      failed: repeated(showtime, 2),
+    };
+    const days = [
+      { date: "2026-08-28", read: 22, reading: 26, unread: 100 },
+      { date: "2026-08-29", read: 0, reading: 0, unread: 28 },
+    ];
+
+    expect(unreadIn({ ...settled, coverage, days })).toBe(128);
+    expect(beingReadIn({ ...settled, coverage, days })).toBe(26);
+    expect(unreachedIn({ ...settled, coverage, days })).toBe(28);
+  });
+
+  it("lists each day as a band of its own, nearest first, ties at the top of each, and counts the ties of the first band", async () => {
+    const settled = await searched();
+    const [first, second, third] = settled.results;
+    if (first === undefined || second === undefined || third === undefined)
+      throw new Error("the search found fewer than three results");
+    const on = (result: SeatGroupResult, date: string, tied: boolean) => ({
+      ...at(result, `${date}T20:00:00-05:00`, tied),
+      terms: { ...result.terms, date },
+    });
+    const results = [
+      on(first, "2026-08-28", false),
+      on(second, "2026-08-28", true),
+      on(third, "2026-08-29", false),
+      on(first, "2026-08-29", true),
+      on(second, "2026-08-29", true),
+    ];
+
+    expect(tiedIn(results)).toBe(1);
+    expect(tiedIn([])).toBe(0);
+    expect(listed(results)).toEqual([
+      results[1],
+      results[0],
+      results[3],
+      results[4],
+      results[2],
+    ]);
   });
 });

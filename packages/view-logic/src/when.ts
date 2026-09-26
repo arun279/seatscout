@@ -93,3 +93,6 @@ export const daysIn = (
       return run(today, HORIZON);
   }
 };
+
+export const isPast = (asked: readonly string[], today: string): boolean =>
+  daysIn(spanOf(asked, today), today).every((date) => date < today);

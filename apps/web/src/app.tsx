@@ -168,7 +168,7 @@ const Screen = ({
   checkout,
   online,
 }: ScreenProps) => {
-  const asked = askedFrom(terms, profile);
+  const asked = askedFrom(terms, profile, today);
   const overlays = useOverlays();
   const openAsk = (focus: Term) => overlays.open({ kind: "ask", focus });
   const programme = useSyncExternalStore(held.subscribe, held.snapshot);

@@ -9,14 +9,14 @@ const TODAY = "2026-09-19";
 
 const ONE: RecentSearch = {
   movie: "One Battle After Another",
-  date: TODAY,
+  dates: [TODAY],
   area: "75201",
   partySize: 4,
 };
 
 const ANOTHER: RecentSearch = {
   movie: "Spider-Man: Brand New Day",
-  date: "2026-09-20",
+  dates: ["2026-09-20"],
   area: "75234",
   partySize: 1,
 };
@@ -106,7 +106,7 @@ describe("the searches this phone remembers", () => {
   });
 
   it("never offers a search for a date that has passed", async () => {
-    await listed([{ ...ONE, date: "2026-09-05" }]);
+    await listed([{ ...ONE, dates: ["2026-09-05"] }]);
 
     expect(
       screen.queryByText("One Battle After Another"),

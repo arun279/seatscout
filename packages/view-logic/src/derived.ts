@@ -24,18 +24,31 @@ export const accountOf = (coverage: Coverage): Account => {
 export const seatsOf = (result: SeatGroupResult): readonly string[] =>
   result.seats.map((seat) => seat.id);
 
+export const unreadIn = (snapshot: Snapshot): number =>
+  snapshot.days.reduce((unread, day) => unread + day.unread, 0);
+
+export const toGoIn = (snapshot: Snapshot): number =>
+  accountOf(snapshot.coverage).remaining - unreadIn(snapshot);
+
 export const unreachedIn = (snapshot: Snapshot): number =>
-  snapshot.coverage.failed.length + accountOf(snapshot.coverage).remaining;
+  snapshot.coverage.failed.length + toGoIn(snapshot);
 
 export const beingReadIn = (snapshot: Snapshot): number => {
-  const { remaining } = accountOf(snapshot.coverage);
-  return remaining > 0 ? remaining : snapshot.coverage.failed.length;
+  const toGo = toGoIn(snapshot);
+  return toGo > 0 ? toGo : snapshot.coverage.failed.length;
 };
 
 const tied = (result: SeatGroupResult) => result.reasons.tiedAtRoomResolution;
 
+const bandsOf = (
+  results: readonly SeatGroupResult[],
+): readonly (readonly SeatGroupResult[])[] =>
+  [...new Set(results.map((result) => result.terms.date))].map((date) =>
+    results.filter((result) => result.terms.date === date),
+  );
+
 export const tiedIn = (results: readonly SeatGroupResult[]): number =>
-  results.filter(tied).length;
+  (bandsOf(results)[0] ?? []).filter(tied).length;
 
 const soonest = (left: SeatGroupResult, right: SeatGroupResult) =>
   left.showtime.startsAt.localeCompare(right.showtime.startsAt) ||
@@ -43,7 +56,8 @@ const soonest = (left: SeatGroupResult, right: SeatGroupResult) =>
 
 export const listed = (
   results: readonly SeatGroupResult[],
-): readonly SeatGroupResult[] => [
-  ...results.filter(tied).sort(soonest),
-  ...results.filter((result) => !tied(result)),
-];
+): readonly SeatGroupResult[] =>
+  bandsOf(results).flatMap((band) => [
+    ...band.filter(tied).sort(soonest),
+    ...band.filter((result) => !tied(result)),
+  ]);

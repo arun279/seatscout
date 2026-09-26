@@ -40,7 +40,7 @@ const heldBy = (
   remembered: readonly RecentSearch[],
   playing: Playing | undefined,
 ): KeyValueStore => {
-  const kept = new Map<string, unknown>([["seatscout.recent.v1", remembered]]);
+  const kept = new Map<string, unknown>([["seatscout.recent.v2", remembered]]);
   if (playing !== undefined)
     kept.set(
       `seatscout.programme.v1.${JSON.stringify([playing.date, playing.area])}`,

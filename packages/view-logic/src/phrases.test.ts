@@ -163,7 +163,7 @@ describe("the words a card uses", () => {
     const [room] = await openedRooms(
       {
         movie: "245569",
-        date: "2026-08-28",
+        dates: ["2026-08-28"],
         area: "75006",
         partySize: 3,
         accessibleSeating: false,
@@ -208,7 +208,7 @@ describe("the words a card uses", () => {
   });
 
   it("says a remembered search as its party, its day in the running text and its area", () => {
-    const search = { movie: "243819", date: "2026-08-29", area: "75234" };
+    const search = { movie: "243819", dates: ["2026-08-29"], area: "75234" };
 
     expect(saidOf({ ...search, partySize: 4 }, "2026-08-28")).toBe(
       "4 seats · tomorrow · 75234",
@@ -219,5 +219,14 @@ describe("the words a card uses", () => {
     expect(saidOf({ ...search, partySize: 2 }, "2026-08-22")).toBe(
       "2 seats · Sat 29 Aug · 75234",
     );
+    expect(
+      saidOf(
+        { ...search, dates: ["2026-08-29", "2026-08-30"], partySize: 2 },
+        "2026-08-22",
+      ),
+    ).toBe("2 seats · Sat 29, Sun 30 Aug · 75234");
+    expect(
+      saidOf({ ...search, dates: ["any"], partySize: 2 }, "2026-08-22"),
+    ).toBe("2 seats · Any day in the next 7 days · 75234");
   });
 });
