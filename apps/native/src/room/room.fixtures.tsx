@@ -1,4 +1,5 @@
 import type {
+  Auditorium,
   PositionedSeat,
   SearchTerms,
   SeatGroupResult,
@@ -38,6 +39,13 @@ const ACCESSIBLE: SearchTerms = {
   accessibleSeating: true,
 };
 
+const measured = async (stage: LayoutRectangle | null = STAGE) => {
+  if (stage !== null)
+    await fireEvent(screen.getByTestId("scroll"), "layout", {
+      nativeEvent: { layout: stage },
+    });
+};
+
 export const shown = async (
   over: {
     readonly room?: CapturedRoom;
@@ -45,6 +53,7 @@ export const shown = async (
     readonly accessibleSeating?: boolean;
     readonly opening?: (opened: OpenedRoom) => SeatGroupResult;
     readonly stage?: LayoutRectangle | null;
+    readonly reshaped?: (auditorium: Auditorium) => Auditorium;
   } = {},
 ): Promise<Shown> => {
   const [opened] = await openedRooms(
@@ -52,12 +61,13 @@ export const shown = async (
     [over.room ?? VILLAGE_1],
   );
   if (opened === undefined) throw new Error("the room was never opened");
+  const auditorium = over.reshaped?.(opened.auditorium) ?? opened.auditorium;
   const handedOff: SeatGroupResult[] = [];
   const left: string[] = [];
 
   await render(
     <Room
-      auditorium={opened.auditorium}
+      auditorium={auditorium}
       clock={still(NOW)}
       onBack={() => left.push("back")}
       onHandOff={(chosen) => handedOff.push(chosen)}
@@ -67,13 +77,9 @@ export const shown = async (
       today={TODAY}
     />,
   );
-  const stage = over.stage === undefined ? STAGE : over.stage;
-  if (stage !== null)
-    await fireEvent(screen.getByTestId("scroll"), "layout", {
-      nativeEvent: { layout: stage },
-    });
+  await measured(over.stage);
 
-  return { ...opened, handedOff, left };
+  return { ...opened, auditorium, handedOff, left };
 };
 
 export const seatsOnScreen = (): readonly string[] =>

@@ -16,10 +16,13 @@ jest.mock("react-native-reanimated", () =>
 );
 jest.mock("expo-haptics", () => ({ selectionAsync: jest.fn() }));
 
-const matrix = (): number[] => {
+const drawnAt = () => {
   const drawn = animatedTo("drawing")?.["matrix"];
   if (!Array.isArray(drawn)) throw new Error("the drawing carries no matrix");
-  return drawn.map(Number);
+  const [scale, , , , tx, ty] = drawn.map(Number);
+  if (scale === undefined || tx === undefined || ty === undefined)
+    throw new Error("the matrix is short");
+  return { scale, tx, ty };
 };
 
 const perUnitIn = (room: Shown) =>
@@ -61,7 +64,7 @@ describe("the map under the fingers", () => {
 
     await pinched(3, 100, 60);
 
-    const [scale, , , , tx, ty] = matrix();
+    const { scale, tx, ty } = drawnAt();
     expect(scale).toBe(3);
     expect(3 * (100 / perUnit) + tx).toBeCloseTo(100 / perUnit);
     expect(3 * (60 / perUnit) + ty).toBeCloseTo(60 / perUnit);
@@ -71,12 +74,12 @@ describe("the map under the fingers", () => {
     const room = await shown();
     const perUnit = perUnitIn(room);
     await pinched(3, 100, 60);
-    const [, , , , tx, ty] = matrix();
+    const before = drawnAt();
 
     await dragged(-30, -20);
 
-    expect(matrix()[4] - tx).toBeCloseTo(-30 / perUnit);
-    expect(matrix()[5] - ty).toBeCloseTo(-20 / perUnit);
+    expect(drawnAt().tx - before.tx).toBeCloseTo(-30 / perUnit);
+    expect(drawnAt().ty - before.ty).toBeCloseTo(-20 / perUnit);
   });
 
   it("shows the Seat ids at the closest the map comes", async () => {
@@ -97,7 +100,7 @@ describe("the map under the fingers", () => {
         seat.x + seat.y > most.x + most.y ? seat : most,
       );
     const inView = () => {
-      const [scale, , , , tx, ty] = matrix();
+      const { scale, tx, ty } = drawnAt();
       const at = (along: number, from: number, moved: number) =>
         scale * (along - from) + moved;
       return (
