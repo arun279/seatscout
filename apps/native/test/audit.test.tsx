@@ -198,6 +198,29 @@ describe("the accessibility audit every rendered screen passes through", () => {
     expect(await audited(surface(true))).toBe("");
   });
 
+  it("lets a row that only widens where a finger lands carry no role, when a named control inside it does", async () => {
+    const row = (inner: ReactElement) => (
+      <Pressable accessible={false} onPress={() => undefined} style={REACHING}>
+        {inner}
+      </Pressable>
+    );
+
+    expect(
+      await audited(
+        row(
+          <TouchableOpacity
+            accessibilityLabel="Accessible seating"
+            accessibilityRole="button"
+            onPress={() => undefined}
+          />,
+        ),
+      ),
+    ).toBe("");
+    expect(
+      await audited(row(<Text style={{ color: "#ffffff" }}>a row</Text>)),
+    ).toContain("can be pressed and has no role");
+  });
+
   it("refuses a text field with no label", async () => {
     expect(await audited(<TextInput />)).toContain(
       "WCAG 2.2 3.3.2 Labels or Instructions: a text field with no label",

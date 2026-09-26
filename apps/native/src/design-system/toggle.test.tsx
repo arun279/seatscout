@@ -21,8 +21,7 @@ const toggling = async (on: boolean) => {
 
 const toggle = () => screen.getByRole("switch", { name: "Accessible seating" });
 
-const track = () =>
-  screen.getByTestId("toggle-switch", { includeHiddenElements: true });
+const track = () => screen.getByTestId("toggle-switch");
 
 describe("a term that is on or off", () => {
   (Platform.OS === "ios" ? it : it.skip)(
@@ -34,11 +33,12 @@ describe("a term that is on or off", () => {
     },
   );
 
-  it("is one switch to a screen reader, its whole row, named and checked", async () => {
+  it("is one switch to a screen reader, named and checked, with its row only widening where a finger lands", async () => {
     await toggling(true);
 
     expect(toggle()).toBeChecked();
     expect(screen.queryAllByRole("switch")).toHaveLength(1);
+    expect(screen.getByTestId("toggle-row").props["accessible"]).toBe(false);
   });
 
   it("hands out the state its switch was moved to, with a selection tick", async () => {

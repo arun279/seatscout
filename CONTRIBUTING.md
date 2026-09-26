@@ -220,8 +220,8 @@ Each of these has one way through and no exemption to grant.
   WCAG's 18 and 14 points in the units React Native lays out in (WCAG 2.2 1.4.3);
   a chosen button, radio, tab or checkbox under 3 to 1 against its ground and its unchosen
   neighbours (1.4.11); something that can be pressed or answers touch directly with no role or no
-  name, unless it is hidden from screen readers because a control beside it does the same job
-  (4.1.2); a control short of the platform's own touch floor, 44 pt on iOS and 48 dp on Android,
+  name, unless it is hidden from screen readers because a control beside it does the same job,
+  or it only widens where a finger lands around a named control inside it (4.1.2); a control short of the platform's own touch floor, 44 pt on iOS and 48 dp on Android,
   counting its `hitSlop` (2.5.8, pressable words inside a sentence excepted as that criterion
   excepts them); a text field with no label (3.3.2); words with
   `allowFontScaling` off (1.4.4); and a control that changes what is chosen, or the velvet commit,

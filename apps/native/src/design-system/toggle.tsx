@@ -36,9 +36,7 @@ export const Toggle = ({
   return (
     <View style={[SECTION, styles.toggle]}>
       <Pressable
-        accessibilityLabel={label}
-        accessibilityRole="switch"
-        accessibilityState={{ checked: on }}
+        accessible={false}
         onPress={() => flip(!on)}
         style={styles.row}
         testID="toggle-row"
@@ -47,9 +45,9 @@ export const Toggle = ({
           {label}
         </Type>
         <Switch
-          accessibilityRole="none"
-          accessible={false}
-          importantForAccessibility="no-hide-descendants"
+          accessibilityLabel={label}
+          accessibilityState={{ checked: on }}
+          accessible
           onValueChange={flip}
           testID="toggle-switch"
           trackColor={{ false: colours.high, true: colours.velvet }}

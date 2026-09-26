@@ -90,10 +90,24 @@ const reaches = (node: Host) => {
   return down >= TOUCH_FLOOR && across >= TOUCH_FLOOR;
 };
 
+const saysItself = (node: Host) => roleOf(node) !== undefined && named(node);
+
+const widensANamedControl = (node: Host) =>
+  node.props["accessible"] === false &&
+  hosts(node)
+    .slice(1)
+    .some((inner) => pressable(inner) && saysItself(inner));
+
+const withinAReachingControl = (node: Host) => {
+  for (let at = node.parent; at !== null; at = at.parent)
+    if (pressable(at) && reaches(at)) return true;
+  return false;
+};
+
 const control = (node: Host): readonly string[] => {
   if (!pressable(node)) return [];
   const role = roleOf(node);
-  const read = !hiddenFromReaders(node);
+  const read = !hiddenFromReaders(node) && !widensANamedControl(node);
   return [
     ...(read && role === undefined
       ? [`${NAME_ROLE}: "${nameOf(node)}" can be pressed and has no role`]
@@ -101,7 +115,7 @@ const control = (node: Host): readonly string[] => {
     ...(!read || named(node)
       ? []
       : [`${NAME_ROLE}: a ${String(role)} with no accessible name`]),
-    ...(inSentence(node) || reaches(node)
+    ...(inSentence(node) || reaches(node) || withinAReachingControl(node)
       ? []
       : [
           `${TARGET}: "${nameOf(node)}" reaches less than ${TOUCH_FLOOR} by ${TOUCH_FLOOR}`,
