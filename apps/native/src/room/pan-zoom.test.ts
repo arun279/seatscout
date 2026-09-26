@@ -5,7 +5,6 @@ import {
   matrixOf,
   pannedBy,
   perUnitOf,
-  revealedIn,
   zoomedBy,
 } from "./pan-zoom.js";
 
@@ -69,24 +68,6 @@ describe("what a finger does to the drawing", () => {
 describe("the frame the drawing is fitted into", () => {
   it("counts the points one room unit is drawn at", () => {
     expect(perUnitOf(FRAME, DRAWN)).toBe(PER_UNIT);
-  });
-
-  it("brings a Seat outside the view back in, measured from the frame's own corner", () => {
-    expect(
-      revealedIn(
-        { scale: 2, tx: -250, ty: -150 },
-        { x: 580, y: 60, width: 18, height: 18 },
-        FRAME,
-      ),
-    ).toEqual({ scale: 2, tx: -496, ty: -20 });
-  });
-
-  it("leaves a Seat already in view where it is", () => {
-    const held = { scale: 2, tx: -250, ty: -150 };
-
-    expect(
-      revealedIn(held, { x: 340, y: 190, width: 18, height: 18 }, FRAME),
-    ).toEqual(held);
   });
 
   it("spells the drawing's transform as the matrix the group carries", () => {

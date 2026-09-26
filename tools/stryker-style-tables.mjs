@@ -5,7 +5,6 @@ const DECLARED_IN = [
   "apps/native/src/app/_layout.tsx",
   "apps/native/src/design-system/screen-band.tsx",
   "apps/native/src/design-system/room-plan.tsx",
-  "apps/native/src/design-system/banner.tsx",
   "apps/native/src/room/room.tsx",
   "apps/native/src/room/seat-map.tsx",
   "apps/native/src/room/row-bar.tsx",

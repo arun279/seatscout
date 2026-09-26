@@ -35,8 +35,12 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: DRAWN.edge.top,
   },
-  word: { position: "absolute", top: DRAWN.band.word, width: "100%" },
-  centred: { textAlign: "center" },
+  word: {
+    position: "absolute",
+    textAlign: "center",
+    top: DRAWN.band.word,
+    width: "100%",
+  },
 });
 
 const edgeOn = (span: number) => ({
@@ -121,17 +125,12 @@ export const ScreenEdge = ({
         <View
           style={[
             styles.unlit,
-            edgeOn(span),
-            { backgroundColor: colours.beam },
+            { ...edgeOn(span), backgroundColor: colours.beam },
           ]}
           testID="lamp"
         />
       )}
-      <Type
-        set="ledgerBand"
-        style={[styles.word, styles.centred]}
-        tone="silverFaint"
-      >
+      <Type set="ledgerBand" style={styles.word} tone="silverFaint">
         Screen
       </Type>
     </View>

@@ -1,16 +1,22 @@
 import {
-  type Box,
   type Cursor,
   FITTED,
   type Frame,
   mostZoomFor,
   panned,
-  revealed,
+  revealedIn,
+  TOUCH_SLOP,
   type View,
   zoomed,
 } from "@seatscout/view-logic";
 import { useEffect, useMemo } from "react";
-import { type ComposedGesture, Gesture } from "react-native-gesture-handler";
+import {
+  type ComposedGesture,
+  Gesture,
+  type PanGestureChangeEventPayload,
+  type PinchGestureChangeEventPayload,
+  type PinchGestureHandlerEventPayload,
+} from "react-native-gesture-handler";
 import { useAnimatedProps, useSharedValue } from "react-native-reanimated";
 import type { GProps } from "react-native-svg";
 import { TOUCH_FLOOR } from "../design-system/touch.js";
@@ -26,14 +32,12 @@ export interface PanZoom {
   readonly labels: Partial<GProps>;
 }
 
-const TOUCH_SLOP = 8;
-
 export const perUnitOf = (frame: Frame, drawn: Drawn): number =>
   drawn.width / frame.width;
 
 export const pannedBy = (
   view: View,
-  moved: { readonly changeX: number; readonly changeY: number },
+  moved: PanGestureChangeEventPayload,
   perUnit: number,
   frame: Frame,
 ): View => {
@@ -43,11 +47,8 @@ export const pannedBy = (
 
 export const zoomedBy = (
   view: View,
-  spread: {
-    readonly scaleChange: number;
-    readonly focalX: number;
-    readonly focalY: number;
-  },
+  spread: PinchGestureChangeEventPayload &
+    Pick<PinchGestureHandlerEventPayload, "focalX" | "focalY">,
   perUnit: number,
   frame: Frame,
   mostZoom: number,
@@ -61,9 +62,6 @@ export const zoomedBy = (
     mostZoom,
   );
 };
-
-export const revealedIn = (view: View, seat: Box, frame: Frame): View =>
-  revealed(view, { ...seat, x: seat.x - frame.x, y: seat.y - frame.y }, frame);
 
 export const matrixOf = (view: View): number[] => {
   "worklet";

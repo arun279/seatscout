@@ -22,6 +22,7 @@ import {
   shownIn,
   UNCONFIRMED,
 } from "@seatscout/view-logic";
+import { selectionAsync } from "expo-haptics";
 import { type ReactElement, useState, useSyncExternalStore } from "react";
 import {
   type LayoutRectangle,
@@ -32,7 +33,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Banner } from "../design-system/banner.js";
-import { useSelectionTick } from "../design-system/haptics.js";
 import { useSpoken } from "../design-system/live.js";
 import { SLOP, TOUCH_FLOOR } from "../design-system/touch.js";
 import { Type } from "../design-system/type.js";
@@ -48,7 +48,15 @@ import { SeatMap } from "./seat-map.js";
 
 const DRAWN = {
   across: 18,
-  map: { across: 14, inset: 12, foot: 14, top: 8, radius: 14, tall: 0.52 },
+  map: {
+    across: 14,
+    inset: 12,
+    edge: 1,
+    foot: 14,
+    top: 8,
+    radius: 14,
+    tall: 0.52,
+  },
   gap: { head: 10, section: 14, line: 4, credit: 5, fact: 16 },
 } as const;
 
@@ -70,7 +78,7 @@ const styles = StyleSheet.create({
   frame: {
     alignItems: "center",
     borderRadius: DRAWN.map.radius,
-    borderWidth: 1,
+    borderWidth: DRAWN.map.edge,
     marginHorizontal: DRAWN.map.across,
     marginTop: DRAWN.gap.head,
     paddingBottom: DRAWN.map.foot,
@@ -127,7 +135,7 @@ const drawnIn = (stage: LayoutRectangle, frame: Frame): Drawn => {
   const width = Math.max(
     0,
     Math.min(
-      stage.width - 2 * (DRAWN.map.across + DRAWN.map.inset + 1),
+      stage.width - 2 * (DRAWN.map.across + DRAWN.map.inset + DRAWN.map.edge),
       (stage.height * DRAWN.map.tall * frame.width) / frame.height,
     ),
   );
@@ -179,7 +187,6 @@ export const Room = ({
   onHandOff,
 }: RoomProps): ReactElement => {
   const { colours } = useTheme();
-  const tick = useSelectionTick();
   const [frame] = useState(() => frameOf(auditorium));
   const [stage, setStage] = useState<LayoutRectangle>({
     x: 0,
@@ -187,7 +194,7 @@ export const Room = ({
     width: 0,
     height: 0,
   });
-  const [cursor, holdCursor] = useState<Cursor>(() => opened(auditorium));
+  const [cursor, setCursor] = useState<Cursor>(() => opened(auditorium));
   const [chosen, setChosen] = useState(opening);
   const [notice, setNotice] = useState<string | null>(null);
   const { theater, formats, amenities } = result.showtime.presentation;
@@ -197,13 +204,13 @@ export const Room = ({
   useSpoken(notice);
 
   const choose = (group: SeatGroupResult) => {
-    if (group.key !== chosen.key) tick();
+    if (group.key !== chosen.key) void selectionAsync();
     setChosen(group);
     setNotice(chosenOf(group));
   };
 
   const activate = (place: Place) => {
-    holdCursor(placed(place));
+    setCursor(placed(place));
     const group = groupHolding(auditorium, place.seat);
     if (group === undefined)
       setNotice(refusalOf(place.seat, partySize, accessibleSeating));
@@ -270,7 +277,7 @@ export const Room = ({
         <TouchableOpacity
           accessibilityRole="button"
           onPress={() => {
-            holdCursor(opened(auditorium));
+            setCursor(opened(auditorium));
             setNotice(null);
           }}
           style={[styles.return, { borderColor: colours.hairline }]}

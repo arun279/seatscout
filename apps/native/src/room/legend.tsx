@@ -15,6 +15,13 @@ const DRAWN = {
   tick: { stroke: 2 },
 } as const;
 
+const SWATCH = {
+  borderRadius: DRAWN.radius,
+  height: DRAWN.swatch,
+  marginRight: DRAWN.beside,
+  width: DRAWN.swatch,
+} as const;
+
 const styles = StyleSheet.create({
   legend: {
     columnGap: DRAWN.gap.across,
@@ -23,15 +30,19 @@ const styles = StyleSheet.create({
     rowGap: DRAWN.gap.down,
   },
   entry: { alignItems: "center", flexDirection: "row" },
-  swatch: {
-    borderRadius: DRAWN.radius,
-    height: DRAWN.swatch,
-    marginRight: DRAWN.beside,
-    width: DRAWN.swatch,
+  lit: SWATCH,
+  forSale: SWATCH,
+  notBookable: { ...SWATCH, borderWidth: DRAWN.space.stroke },
+  space: { ...SWATCH, borderStyle: "dashed", borderWidth: DRAWN.space.stroke },
+  console: {
+    ...SWATCH,
+    borderLeftWidth: DRAWN.tick.stroke,
+    borderRadius: 0,
+    width: DRAWN.tick.stroke,
   },
 });
 
-const swatchesOf = (
+const tonesOf = (
   colours: Palette,
   lit: boolean,
 ): Readonly<Record<Mark, ViewStyle>> => ({
@@ -40,21 +51,9 @@ const swatchesOf = (
     ...(lit && { boxShadow: `0 0 ${DRAWN.glow.blur}px ${colours.beam}` }),
   },
   forSale: { backgroundColor: colours.seatFree },
-  notBookable: {
-    borderColor: colours.seatGone,
-    borderWidth: DRAWN.space.stroke,
-  },
-  space: {
-    borderColor: colours.beamDim,
-    borderStyle: "dashed",
-    borderWidth: DRAWN.space.stroke,
-  },
-  console: {
-    borderLeftColor: colours.seatTick,
-    borderLeftWidth: DRAWN.tick.stroke,
-    borderRadius: 0,
-    width: DRAWN.tick.stroke,
-  },
+  notBookable: { borderColor: colours.seatGone },
+  space: { borderColor: colours.beamDim },
+  console: { borderLeftColor: colours.seatTick },
 });
 
 export interface LegendProps {
@@ -69,14 +68,14 @@ export const Legend = ({
   consoles,
 }: LegendProps): ReactElement => {
   const { appearance, colours } = useTheme();
-  const swatches = swatchesOf(colours, appearance === "down");
+  const tones = tonesOf(colours, appearance === "down");
 
   return (
     <View style={styles.legend} testID="legend">
       {legendOf(chosen, accessibleSeating, consoles).map((entry) => (
         <View key={entry.mark} style={styles.entry}>
           <View
-            style={[styles.swatch, swatches[entry.mark]]}
+            style={[styles[entry.mark], tones[entry.mark]]}
             testID={`mark-${entry.mark}`}
           />
           <Type set="ledgerRow" tone="silverDim">

@@ -7,6 +7,7 @@ import type { ProgrammeState, Term, Terms } from "@seatscout/view-logic";
 import {
   askedFrom,
   FIND_SEATS,
+  keyOf,
   ledeOf,
   programmeNear,
 } from "@seatscout/view-logic";
@@ -120,7 +121,7 @@ export const Search = ({
         <Results
           asked={asked}
           clock={clock}
-          key={JSON.stringify(asked)}
+          key={keyOf(asked)}
           onEdit={onAsk}
           onHandOff={onHandOff}
           online={online}

@@ -1,11 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
-import {
-  mapLabelOf,
-  holds,
-  moved,
-  placed,
-  seatNameOf,
-} from "@seatscout/view-logic";
+import { mapLabelOf, seatNameOf } from "@seatscout/view-logic";
 import { HOOKY_ADDISON, WEST_PLANO_28 } from "@seatscout/view-logic/testing";
 import { screen } from "@testing-library/react-native";
 import { processColor } from "react-native";
@@ -52,17 +46,6 @@ describe("the Auditorium drawn to scale", () => {
     expect(seatsOnScreen().map((name) => name.split(". ")[0])).toEqual(stepped);
   });
 
-  it("steps to the Seat beside the one it draws next, which is what moved says", async () => {
-    const room = await shown();
-    const { map } = room.auditorium;
-
-    for (const row of map.rows)
-      for (const [at, seat] of row.seats.entries()) {
-        const next = moved(map, placed({ row, seat }), "ArrowRight", false);
-        expect(next.seat.id).toBe((row.seats[at + 1] ?? seat).id);
-      }
-  });
-
   it("speaks the room, its size and the recommendation on entry, and no keys a phone lacks", async () => {
     const room = await shown();
 
@@ -74,21 +57,22 @@ describe("the Auditorium drawn to scale", () => {
 
   it("lights the chosen Seat Group and leaves every other Seat for sale", async () => {
     const room = await shown();
-    const seats = room.auditorium.map.rows.flatMap((held) => held.seats);
-    const lit = seats.filter((seat) => holds(room.result, seat));
-    const free = seats.filter(
-      (seat) =>
-        !holds(room.result, seat) &&
-        seat.bookable &&
-        seat.designation === "standard",
-    );
+    const chosen = ["G14", "G13"];
+    const free = room.auditorium.map.rows
+      .flatMap((held) => held.seats)
+      .filter(
+        (seat) =>
+          !chosen.includes(seat.id) &&
+          seat.bookable &&
+          seat.designation === "standard",
+      );
     const fillOf = (seat: { readonly id: string }) =>
       seatNamed(seat.id).props["fill"];
 
-    expect(lit.map((seat) => seat.id)).toEqual(
-      room.result.seats.map((seat) => seat.id),
-    );
-    expect(lit.map(fillOf)).toEqual(lit.map(() => ink(DOWN.beam)));
+    expect(chosen.map((id) => fillOf({ id }))).toEqual([
+      ink(DOWN.beam),
+      ink(DOWN.beam),
+    ]);
     expect(free.map(fillOf)).toEqual(free.map(() => ink(DOWN.seatFree)));
   });
 

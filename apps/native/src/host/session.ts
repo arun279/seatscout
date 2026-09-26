@@ -1,5 +1,9 @@
 import type { Search, SearchTerms, SeatScout } from "@seatscout/client";
-import { type HeldSnapshots, heldSnapshots } from "@seatscout/view-logic";
+import {
+  type HeldSnapshots,
+  heldSnapshots,
+  keyOf,
+} from "@seatscout/view-logic";
 import { useEffect, useState } from "react";
 
 export interface Session {
@@ -25,7 +29,7 @@ export const useSession = (
   asked: SearchTerms,
 ): Session => {
   const [holding] = useState(() => {
-    const key = JSON.stringify(asked);
+    const key = keyOf(asked);
     return (
       live.get(key) ?? { key, session: opened(seatscout, asked), holders: 0 }
     );

@@ -82,14 +82,9 @@ describe("the Room a Seat Group opens", () => {
   });
 
   it("counts the Seats the room will not sell", async () => {
-    const room = await shown();
-    const { map } = room.auditorium;
+    await shown();
 
-    expect(
-      screen.getByText(
-        `${map.seatCount - map.bookableCount} of ${map.seatCount} not bookable`,
-      ),
-    ).toBeOnTheScreen();
+    expect(screen.getByText("3 of 294 not bookable")).toBeOnTheScreen();
   });
 
   it("gives every control a name and the platform's own touch floor", async () => {

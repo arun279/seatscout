@@ -11,7 +11,7 @@ const held = (asked = ASKED) => renderHook(() => useSession(seatscout, asked));
 describe("the search a screen holds", () => {
   it("is the search another screen already holds for the same Query", async () => {
     const list = await held();
-    const room = await held();
+    const room = await held({ ...ASKED });
 
     expect(room.result.current).toBe(list.result.current);
   });

@@ -242,23 +242,20 @@ export const SeatMap = ({
                 </Row>
               ))}
               <AnimatedG animatedProps={labels}>
-                {auditorium.map.rows
-                  .flatMap((row) => row.seats)
-                  .filter((held) => holds(chosen, held))
-                  .map((held) => (
-                    <SvgText
-                      key={held.id}
-                      alignmentBaseline="central"
-                      fill={theme.colours.houseDeep}
-                      fontFamily={theme.type.ledgerRow.family}
-                      fontSize={DRAWN.id.size * held.width}
-                      textAnchor="middle"
-                      x={held.x + held.width / 2}
-                      y={held.y + held.height / 2}
-                    >
-                      {held.id}
-                    </SvgText>
-                  ))}
+                {chosen.seats.map((held) => (
+                  <SvgText
+                    key={held.id}
+                    alignmentBaseline="central"
+                    fill={theme.colours.houseDeep}
+                    fontFamily={theme.type.ledgerRow.family}
+                    fontSize={DRAWN.id.size * held.width}
+                    textAnchor="middle"
+                    x={held.x + held.width / 2}
+                    y={held.y + held.height / 2}
+                  >
+                    {held.id}
+                  </SvgText>
+                ))}
               </AnimatedG>
             </G>
           </AnimatedG>

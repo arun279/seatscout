@@ -5,6 +5,7 @@ import {
   panned,
   pinched,
   revealed,
+  revealedIn,
   transformOf,
   zoomed,
 } from "./gesture.js";
@@ -158,5 +159,27 @@ describe("panning and zooming the room", () => {
     expect(transformOf({ scale: 2, tx: -250, ty: -150 })).toBe(
       "translate(-250 -150) scale(2)",
     );
+  });
+});
+
+describe("bringing a Seat into view, measured from the room's own corner", () => {
+  const FRAME = { x: 100, y: 50, width: 500, height: 300 };
+
+  it("brings a Seat outside the view back in", () => {
+    expect(
+      revealedIn(
+        { scale: 2, tx: -250, ty: -150 },
+        { x: 580, y: 60, width: 18, height: 18 },
+        FRAME,
+      ),
+    ).toEqual({ scale: 2, tx: -496, ty: -20 });
+  });
+
+  it("leaves a Seat already in view where it is", () => {
+    const held = { scale: 2, tx: -250, ty: -150 };
+
+    expect(
+      revealedIn(held, { x: 340, y: 190, width: 18, height: 18 }, FRAME),
+    ).toEqual(held);
   });
 });

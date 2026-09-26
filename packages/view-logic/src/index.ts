@@ -1,5 +1,5 @@
 export { ASKING, playingStatusOf } from "./ask-phrases.js";
-export { askedFrom } from "./asked.js";
+export { askedFrom, keyOf } from "./asked.js";
 export type { Mark } from "./auditorium-phrases.js";
 export {
   BACK_TO_THE_LIST,
@@ -25,13 +25,14 @@ export {
 } from "./auditorium-phrases.js";
 export { toggled } from "./chips.js";
 export { accountOf, listed, tiedIn, unreachedIn } from "./derived.js";
-export type { Box, Point, View } from "./gesture.js";
+export type { Point, View } from "./gesture.js";
 export {
   FITTED,
   mostZoomFor,
   panned,
   pinched,
-  revealed,
+  revealedIn,
+  TOUCH_SLOP,
   transformOf,
   zoomed,
 } from "./gesture.js";

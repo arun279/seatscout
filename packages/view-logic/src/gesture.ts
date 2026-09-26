@@ -20,6 +20,8 @@ type Pair = readonly [Point, Point];
 
 export const FITTED: View = { scale: 1, tx: 0, ty: 0 };
 
+export const TOUCH_SLOP = 8;
+
 const clamped = (value: number, low: number, high: number) => {
   "worklet";
   return Math.min(high, Math.max(low, value));
@@ -106,6 +108,9 @@ export const revealed = (view: View, seat: Box, extent: Extent): View => {
     extent,
   );
 };
+
+export const revealedIn = (view: View, seat: Box, frame: Box): View =>
+  revealed(view, { ...seat, x: seat.x - frame.x, y: seat.y - frame.y }, frame);
 
 export const mostZoomFor = (
   seatWidth: number,
