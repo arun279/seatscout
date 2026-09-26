@@ -83,6 +83,12 @@ describe("a search over several days with more to read", () => {
     });
 
     expect(seatMaps()).toBe(48);
+    expect(
+      screen.getByText("Thu 27 Aug: no seat map to read"),
+    ).toBeOnTheScreen();
+    expect(
+      screen.getByText("Today: 48 read · 124 not read yet"),
+    ).toBeOnTheScreen();
     expect(screen.getByRole("status")).toHaveTextContent(
       "256 candidates · 48 checked · 124 not read yet",
     );
@@ -102,5 +108,6 @@ describe("a search over several days with more to read", () => {
     expect(
       screen.queryByRole("button", { name: /^Read \d+ more rooms/ }),
     ).toBeNull();
+    expect(screen.queryByText(/^Today: /)).toBeNull();
   });
 });

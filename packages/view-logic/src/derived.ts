@@ -27,7 +27,7 @@ export const seatsOf = (result: SeatGroupResult): readonly string[] =>
 export const unreadIn = (snapshot: Snapshot): number =>
   snapshot.days.reduce((unread, day) => unread + day.unread, 0);
 
-const toGoIn = (snapshot: Snapshot): number =>
+export const toGoIn = (snapshot: Snapshot): number =>
   accountOf(snapshot.coverage).remaining - unreadIn(snapshot);
 
 export const unreachedIn = (snapshot: Snapshot): number =>

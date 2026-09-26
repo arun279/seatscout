@@ -64,6 +64,7 @@ export { BELOW_THE_TIE } from "./results-phrases.js";
 export { cardNameOf } from "./results-phrases.js";
 export { CHANGE_THE_QUERY } from "./results-phrases.js";
 export { coverageOf } from "./results-phrases.js";
+export { dayCoverageOf } from "./results-phrases.js";
 export { designationsOf } from "./results-phrases.js";
 export { emptyOf } from "./results-phrases.js";
 export { headOf } from "./results-phrases.js";

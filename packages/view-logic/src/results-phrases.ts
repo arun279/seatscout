@@ -5,7 +5,13 @@ import {
   type SeatGroupResult,
   type Snapshot,
 } from "@seatscout/client";
-import { accountOf, beingReadIn, unreachedIn, unreadIn } from "./derived.js";
+import {
+  accountOf,
+  beingReadIn,
+  toGoIn,
+  unreachedIn,
+  unreadIn,
+} from "./derived.js";
 import { clockOf, noneOf, spokenOf, wordOf } from "./phrases.js";
 import { dayOf, whenOf } from "./when-phrases.js";
 import type { Terms } from "./terms.js";
@@ -20,7 +26,7 @@ const REFUSED = "the source refused, so the search stopped";
 const countsOf = (snapshot: Snapshot): string => {
   const account = accountOf(snapshot.coverage);
   const unread = unreadIn(snapshot);
-  const toGo = account.remaining - unread;
+  const toGo = toGoIn(snapshot);
   return [
     `${account.candidates} candidates`,
     `${account.checked} checked`,
@@ -65,11 +71,9 @@ export const readMoreOf = (
           : taken,
       { count: 0, dates: [] },
     );
-  const days = next.dates.map((date) => whenOf(date, today));
-  const last = days.pop();
-  return last === undefined
+  return next.dates.length === 0
     ? null
-    : `Read ${next.count} more rooms ${[...days, last].join(" and ")}`;
+    : `Read ${next.count} more rooms ${next.dates.map((date) => whenOf(date, today)).join(" and ")}`;
 };
 
 export const LEDGER = "ledger ›";

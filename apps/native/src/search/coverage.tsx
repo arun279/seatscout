@@ -2,6 +2,7 @@ import type { Snapshot } from "@seatscout/client";
 import {
   accountOf,
   coverageOf,
+  dayCoverageOf,
   LEDGER,
   readMoreOf,
 } from "@seatscout/view-logic";
@@ -42,6 +43,7 @@ const styles = StyleSheet.create({
   },
   read: { borderRadius: 1, height: "100%" },
   more: { marginHorizontal: 18, marginTop: 8 },
+  day: { marginHorizontal: 22, marginTop: 4 },
 });
 
 const shareOf = (snapshot: Snapshot) => {
@@ -105,6 +107,17 @@ export const Strip = ({
           />
         </View>
       )}
+      {snapshot.days.length > 1 &&
+        snapshot.days.map((day) => (
+          <Type
+            key={day.date}
+            set="ledgerRow"
+            style={styles.day}
+            tone="silverFaint"
+          >
+            {dayCoverageOf(day, today)}
+          </Type>
+        ))}
       {more !== null && (
         <View style={styles.more}>
           <Ghost label={more} onPress={onReadMore} />

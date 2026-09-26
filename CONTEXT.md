@@ -49,9 +49,9 @@ five reasons there is none.
 The reasons are `noSeatMap`, `started`, `soldOut`, `unreachable` and `refused`, and each names
 its own remedy: the operator's own page, the next screening, another time at that Theater, a
 retry, and waiting. A read is **refused** when the Source has stopped answering this client for
-a while; asking again lengthens that, so it is never retried. Only a seat map read ever answers with the first three. A 404 on a showtime listing
-is not a screening that has begun, so on the other operations those statuses are failures
-like any other.
+a while; asking again lengthens that, so it is never retried. Only a seat map read ever answers
+with the first three. A 404 on a showtime listing is not a screening that has begun, so on the
+other operations those statuses are failures like any other.
 
 Every Reading carries the moment it was fetched and how many attempts it took, for one that
 failed as much as for one that read.
