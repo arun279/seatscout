@@ -43,7 +43,6 @@ export const TimeField = ({
         <PickerField
           at={timeAt(clock ?? opensAt)}
           label={label}
-          mode="time"
           onPicked={(at) => onClock(clockFor(at))}
           words={words}
         />

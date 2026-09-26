@@ -6,16 +6,16 @@ import { asking, NEAR, PLAYING, submit, TODAY } from "../../test/ask.js";
 
 describe("the Ask sheet", () => {
   it("asks what a person is seeing, under the terms it already holds", async () => {
-    await asking({ terms: NEAR });
+    await asking({ terms: { ...NEAR, partySize: 37 } });
 
     expect(screen.getByText("What are we seeing?")).toBeOnTheScreen();
     expect(screen.getByLabelText("Near, by postal code")).toHaveDisplayValue(
       "75234",
     );
     expect(
-      screen.getByRole("button", { name: "When, Today" }),
-    ).toBeOnTheScreen();
-    expect(screen.getByText("2")).toBeOnTheScreen();
+      screen.getByRole("button", { name: "Today, Saturday 19 September" }),
+    ).toBeSelected();
+    expect(screen.getByText("37")).toBeOnTheScreen();
   });
 
   it("names the film the query already carries by its title", async () => {
@@ -91,15 +91,8 @@ describe("the Ask sheet", () => {
   it("hands out the date a person picked", async () => {
     const { found } = await asking({ terms: NEAR });
 
-    await fireEvent.press(screen.getByRole("button", { name: "When, Today" }));
-    await fireEvent(
-      screen.getByTestId("date-picker"),
-      "change",
-      {
-        type: "set",
-        nativeEvent: {},
-      },
-      new Date(2026, 8, 26),
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Saturday 26 September" }),
     );
     await submit();
 
@@ -207,12 +200,8 @@ describe("the Ask sheet", () => {
     await asking({ terms: NEAR, playing: PLAYING });
     await screen.findByRole("button", { name: "Akira" });
 
-    await fireEvent.press(screen.getByRole("button", { name: "When, Today" }));
-    await fireEvent(
-      screen.getByTestId("date-picker"),
-      "change",
-      { type: "set", nativeEvent: {} },
-      new Date(2026, 8, 26),
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Saturday 26 September" }),
     );
 
     expect(await screen.findByRole("status")).toHaveTextContent(
