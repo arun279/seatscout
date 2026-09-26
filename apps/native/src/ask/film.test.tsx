@@ -45,7 +45,7 @@ const showing = async (
   await render(
     <Film
       area={over.area ?? "75234"}
-      date={TODAY}
+      span={{ date: TODAY }}
       focused={false}
       onTyped={over.onTyped ?? (() => undefined)}
       programme={over.programme ?? READ}
