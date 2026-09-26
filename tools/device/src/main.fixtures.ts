@@ -43,6 +43,7 @@ const FILES: Readonly<Record<string, string>> = {
     [200, 202, 201],
   ),
   "unsteady-startup.json": times([500, 1500, 1000]),
+  "edge-startup.json": times([950, 1050]),
   "skewed-startup.json": times([1000, 1010, 1040]),
   "startup.json": run(iteration(900, 60, 100), iteration(1100, 60, 100)),
   "journey.json": run(iteration(20000, 60, 200), iteration(30000, 50, 300)),

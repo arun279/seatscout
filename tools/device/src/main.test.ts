@@ -57,6 +57,27 @@ describe("what the emulator measured, held to the merge base", () => {
     );
   });
 
+  it("counts a spread of exactly 5 per cent as unsteady, since Reassure calls steady only what is below it", () => {
+    expect(heldWith("--base-startup", "edge-startup.json").code).toBe(3);
+  });
+
+  it("names every figure that got worse", () => {
+    const report = ran(
+      "--head-startup",
+      "slower-startup.json",
+      "--head-journey",
+      "fewer-frames.json",
+      "--base-startup",
+      "base-startup.json",
+      "--base-journey",
+      "base-walk.json",
+    );
+
+    expect(report.out).toContain(
+      "Worse than the merge base's worst iteration: Start-up, launch to the first frame, Frame rate over the walk.",
+    );
+  });
+
   it("fails as unmeasurable, never passes, when the second reading is still unsteady", () => {
     const report = ran(
       "--head-startup",
@@ -86,7 +107,9 @@ describe("what the emulator measured, held to the merge base", () => {
     );
 
     expect(report.code).toBe(0);
-    expect(report.out).toContain("| Measure | This branch, median | Spread |");
+    expect(report.out).toContain(
+      "| Measure | This branch, median | Spread |\n| --- | --- | --- |\n",
+    );
     expect(report.out).toContain(
       "| Start-up, launch to the first frame | 1000 ms | 40.8% |",
     );
