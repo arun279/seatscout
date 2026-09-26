@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 import { fireEvent, screen } from "@testing-library/react-native";
-import { asking, NEAR, submit, TODAY } from "../../test/ask.js";
+import { asking, NEAR, PLAYING, submit, TODAY } from "../../test/ask.js";
 
 const press = async (name: string) => {
   await fireEvent.press(screen.getByRole("button", { name }));
@@ -8,6 +8,9 @@ const press = async (name: string) => {
 
 const handedOut = (found: Awaited<ReturnType<typeof asking>>["found"]) =>
   found.mock.calls.at(-1)?.[0];
+
+const DAY_NAMED =
+  /\b(?:Sun|Mon|Tue|Wed|Thu|Fri|Sat) \d+|\btoday\b|\btomorrow\b/i;
 
 const READING = /days of reading\. The nearest day comes back first\.$/;
 
@@ -195,5 +198,21 @@ describe("the when term in the Ask sheet", () => {
     expect(
       screen.getByRole("button", { name: "Monday 21 September" }),
     ).toBeSelected();
+  });
+
+  it("names every day picked wherever the sheet speaks of a day, never one day alone", async () => {
+    const picked = [TODAY, "2026-09-22", "2026-09-24"];
+    await asking({
+      terms: { ...NEAR, when: { kind: "days", dates: picked } },
+      playing: PLAYING,
+    });
+    await screen.findByText(/films playing near 75234/);
+    const whole = "Sat 19, Tue 22, Thu 24 Sep";
+    const naming = screen
+      .getAllByText(DAY_NAMED)
+      .map((node) => [node.props["children"]].flat().join(""));
+
+    expect(naming.length).toBeGreaterThan(1);
+    expect(naming.filter((words) => !words.includes(whole))).toEqual([]);
   });
 });
