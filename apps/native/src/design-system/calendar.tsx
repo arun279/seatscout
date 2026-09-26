@@ -1,5 +1,12 @@
 import { dayNameOf, type Mark, monthNameOf } from "@seatscout/view-logic";
-import { createContext, type ReactElement, useContext, useMemo } from "react";
+import {
+  createContext,
+  type MemoExoticComponent,
+  memo,
+  type ReactElement,
+  useContext,
+  useMemo,
+} from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Calendar as MonthGrid, type DateData } from "react-native-calendars";
 import { type Palette, useTheme } from "../theme.js";
@@ -133,52 +140,47 @@ const toneOf = (marked: Mark, past: boolean): keyof Palette => {
   return past ? "silverFaint" : "silver";
 };
 
-const DayCell = ({
-  day,
-  number,
-  marked,
-  today,
-  colours,
-  onDay,
-}: DayCellProps) => {
-  const past = day < today;
-  const fill = {
-    none: undefined,
-    picked: colours.chosen,
-    between: colours.beam,
-  }[marked];
-  const edge = day === today && marked === "none" ? colours.beam : fill;
-  const drawn = [
-    styles.day,
-    { backgroundColor: fill, borderColor: edge ?? colours.house },
-  ];
-  const said = (
-    <Type set="sentence" tone={toneOf(marked, past)}>
-      {number}
-    </Type>
-  );
-  return past || onDay === undefined ? (
-    <View
-      accessibilityLabel={dayNameOf(day, today)}
-      accessibilityState={{ disabled: true }}
-      accessible
-      style={drawn}
-    >
-      {said}
-    </View>
-  ) : (
-    <TouchableOpacity
-      accessibilityLabel={dayNameOf(day, today)}
-      accessibilityRole="button"
-      accessibilityState={{ selected: marked !== "none" }}
-      hitSlop={SLOP}
-      onPress={felt(() => onDay(day))}
-      style={drawn}
-    >
-      {said}
-    </TouchableOpacity>
-  );
-};
+const DayCell = memo(
+  ({ day, number, marked, today, colours, onDay }: DayCellProps) => {
+    const past = day < today;
+    const fill = {
+      none: undefined,
+      picked: colours.chosen,
+      between: colours.beam,
+    }[marked];
+    const edge = day === today && marked === "none" ? colours.beam : fill;
+    const drawn = [
+      styles.day,
+      { backgroundColor: fill, borderColor: edge ?? colours.house },
+    ];
+    const said = (
+      <Type set="sentence" tone={toneOf(marked, past)}>
+        {number}
+      </Type>
+    );
+    return past || onDay === undefined ? (
+      <View
+        accessibilityLabel={dayNameOf(day, today)}
+        accessibilityState={{ disabled: true }}
+        accessible
+        style={drawn}
+      >
+        {said}
+      </View>
+    ) : (
+      <TouchableOpacity
+        accessibilityLabel={dayNameOf(day, today)}
+        accessibilityRole="button"
+        accessibilityState={{ selected: marked !== "none" }}
+        hitSlop={SLOP}
+        onPress={felt(() => onDay(day))}
+        style={drawn}
+      >
+        {said}
+      </TouchableOpacity>
+    );
+  },
+);
 
 const Day = ({ date }: { readonly date?: DateData }) => {
   const { mark, onDay, today } = useContext(Chosen);
@@ -196,12 +198,9 @@ const Day = ({ date }: { readonly date?: DateData }) => {
   );
 };
 
-export const Calendar = ({
-  today,
-  opensOn,
-  mark,
-  onDay,
-}: CalendarProps): ReactElement => {
+export const Calendar: MemoExoticComponent<
+  (props: CalendarProps) => ReactElement
+> = memo(({ today, opensOn, mark, onDay }: CalendarProps): ReactElement => {
   const { colours } = useTheme();
   const theme = useMemo(
     () => ({ calendarBackground: colours.house, weekVerticalMargin: 2 }),
@@ -220,4 +219,4 @@ export const Calendar = ({
       />
     </Chosen.Provider>
   );
-};
+});
