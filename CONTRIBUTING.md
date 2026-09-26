@@ -76,9 +76,10 @@ pnpm test:e2e
 pnpm test:journey
 pnpm journey --head reports/journey/samples.json \
   --head-gesture reports/journey/gesture.json --no-baseline
+pnpm journey --head reports/journey/app-samples.json --no-gesture --no-baseline
 ```
 
-`pnpm test:e2e` serves the app's web build from `apps/native/dist` with
+`pnpm test:e2e` and `pnpm test:journey` serve the app's web build from `apps/native/dist` with
 `serve`, compressed as a host would send it, so the bundle step comes first. Playwright runs `tests/e2e` over `apps/web` as
 the `web` project and `tests/app` over the app's web build as the `app` project.
 

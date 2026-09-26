@@ -14,13 +14,13 @@ interface Writer {
 
 interface Paths {
   readonly head: string;
-  readonly headGesture: string;
+  readonly headGesture: string | null;
   readonly base: string | null;
   readonly baseGesture: string | null;
 }
 
 const USAGE =
-  "usage: journey --head <samples.json> --head-gesture <gesture.json> (--base <samples.json> [--base-gesture <gesture.json>] | --no-baseline)\n";
+  "usage: journey --head <samples.json> (--head-gesture <gesture.json> | --no-gesture) (--base <samples.json> [--base-gesture <gesture.json>] | --no-baseline)\n";
 
 const argumentAfter = (argv: readonly string[], flag: string) => {
   const at = argv.indexOf(flag);
@@ -33,12 +33,13 @@ const pathsIn = (given: readonly string[]): Paths | null => {
   const base = argumentAfter(given, "--base");
   const baseGesture = argumentAfter(given, "--base-gesture");
   const alone = given.includes("--no-baseline");
-  if (head === undefined || headGesture === undefined) return null;
+  const still = given.includes("--no-gesture");
+  if (head === undefined || still === (headGesture !== undefined)) return null;
   if (alone === (base !== undefined)) return null;
-  if (alone && baseGesture !== undefined) return null;
+  if ((alone || still) && baseGesture !== undefined) return null;
   return {
     head,
-    headGesture,
+    headGesture: headGesture ?? null,
     base: base ?? null,
     baseGesture: baseGesture ?? null,
   };
@@ -46,10 +47,18 @@ const pathsIn = (given: readonly string[]): Paths | null => {
 
 interface Subjects {
   readonly head: readonly Sample[];
-  readonly headGesture: readonly Gesture[];
+  readonly headGesture: readonly Gesture[] | null;
   readonly base: readonly Sample[] | null;
   readonly baseGesture: readonly Gesture[] | null;
 }
+
+const REFUSED: unique symbol = Symbol();
+
+const readIf = <Reading>(
+  path: string | null,
+  at: (path: string) => Reading | null,
+): Reading | null | typeof REFUSED =>
+  path === null ? null : (at(path) ?? REFUSED);
 
 const subjectsIn = (
   paths: Paths,
@@ -57,13 +66,12 @@ const subjectsIn = (
   gesturesAt: (path: string) => readonly Gesture[] | null,
 ): Subjects | null => {
   const head = journeysAt(paths.head);
-  const headGesture = gesturesAt(paths.headGesture);
-  if (head === null || headGesture === null) return null;
-  const base = paths.base === null ? null : journeysAt(paths.base);
-  if (paths.base !== null && base === null) return null;
-  const baseGesture =
-    paths.baseGesture === null ? null : gesturesAt(paths.baseGesture);
-  if (paths.baseGesture !== null && baseGesture === null) return null;
+  if (head === null) return null;
+  const headGesture = readIf(paths.headGesture, gesturesAt);
+  const base = readIf(paths.base, journeysAt);
+  const baseGesture = readIf(paths.baseGesture, gesturesAt);
+  if (headGesture === REFUSED || base === REFUSED || baseGesture === REFUSED)
+    return null;
   return { head, headGesture, base, baseGesture };
 };
 
@@ -108,7 +116,7 @@ export const main = (
     vitalsJudged(head),
     judged(head, base),
     blockingJudged(head, base),
-    framesJudged(headGesture, baseGesture),
+    ...(headGesture === null ? [] : [framesJudged(headGesture, baseGesture)]),
   ];
   const passed = verdicts.every((verdict) => verdict.passed);
   (passed ? out : err).write(
