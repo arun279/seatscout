@@ -88,7 +88,7 @@ export const When = ({
   const [kind, setKind] = useState<Kind>(draft.when?.kind ?? "day");
   const latest = useRef(onSpan);
   latest.current = onSpan;
-  const spanned = useCallback((span: Span) => latest.current(span), []);
+  const [spanned] = useState(() => (span: Span) => latest.current(span));
 
   return (
     <Section label={ASKING.when}>
