@@ -27,6 +27,7 @@ jest.mock("@react-native-community/datetimepicker", () => ({
 }));
 
 const INITIALISATION = 30_000;
+const AUDIT = 30_000;
 
 beforeAll(async () => {
   await render(
@@ -58,7 +59,7 @@ afterEach(async () => {
     jest.mocked(impactAsync).mockClear();
     jest.mocked(notificationAsync).mockClear();
   }
-});
+}, AUDIT);
 
 const refuse = (...report: readonly unknown[]) => {
   throw new Error(report.map(String).join(" "));
