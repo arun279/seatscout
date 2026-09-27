@@ -1,5 +1,5 @@
-import type { SeatGroupResult } from "@seatscout/client";
 import { describe, expect, it } from "@jest/globals";
+import type { SeatGroupResult } from "@seatscout/client";
 import { render, screen } from "@testing-library/react-native";
 import { houseLights } from "../../test/lights.js";
 import { first, settled } from "../../test/rooms.js";

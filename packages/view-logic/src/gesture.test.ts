@@ -5,6 +5,7 @@ import {
   panned,
   pinched,
   revealed,
+  revealedIn,
   transformOf,
   zoomed,
 } from "./gesture.js";
@@ -141,9 +142,16 @@ describe("panning and zooming the room", () => {
   });
 
   it("derives the most zoom from the tap target a Seat has to reach", () => {
-    expect(mostZoomFor(18, 500, 340)).toBeCloseTo(3.595, 3);
-    expect(mostZoomFor(82.6, 1189.1, 340)).toBeCloseTo(1.863, 3);
-    expect(mostZoomFor(82.6, 1189.1, 1000)).toBe(1);
+    expect(mostZoomFor(18, 500, 340, 44)).toBeCloseTo(3.595, 3);
+    expect(mostZoomFor(82.6, 1189.1, 340, 44)).toBeCloseTo(1.863, 3);
+    expect(mostZoomFor(82.6, 1189.1, 1000, 44)).toBe(1);
+  });
+
+  it("zooms further where the platform's own touch floor is higher", () => {
+    expect(mostZoomFor(18, 500, 340, 48)).toBeCloseTo(3.922, 3);
+    expect(mostZoomFor(18, 500, 340, 48)).toBeGreaterThan(
+      mostZoomFor(18, 500, 340, 44),
+    );
   });
 
   it("spells the transform the wrapping group carries", () => {
@@ -151,5 +159,27 @@ describe("panning and zooming the room", () => {
     expect(transformOf({ scale: 2, tx: -250, ty: -150 })).toBe(
       "translate(-250 -150) scale(2)",
     );
+  });
+});
+
+describe("bringing a Seat into view, measured from the room's own corner", () => {
+  const FRAME = { x: 100, y: 50, width: 500, height: 300 };
+
+  it("brings a Seat outside the view back in", () => {
+    expect(
+      revealedIn(
+        { scale: 2, tx: -250, ty: -150 },
+        { x: 580, y: 60, width: 18, height: 18 },
+        FRAME,
+      ),
+    ).toEqual({ scale: 2, tx: -496, ty: -20 });
+  });
+
+  it("leaves a Seat already in view where it is", () => {
+    const held = { scale: 2, tx: -250, ty: -150 };
+
+    expect(
+      revealedIn(held, { x: 340, y: 190, width: 18, height: 18 }, FRAME),
+    ).toEqual(held);
   });
 });

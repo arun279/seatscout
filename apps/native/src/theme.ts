@@ -27,6 +27,7 @@ export interface Palette {
   readonly seatGone: string;
   readonly chosen: string;
   readonly onChosen: string;
+  readonly seatTick: string;
 }
 
 const DOWN: Palette = {
@@ -48,6 +49,7 @@ const DOWN: Palette = {
   seatGone: "#697187",
   chosen: "#e6ecf2",
   onChosen: "#06070e",
+  seatTick: "#768099",
 };
 
 const UP: Palette = {
@@ -69,6 +71,7 @@ const UP: Palette = {
   seatGone: "#8e7c6b",
   chosen: "#231e17",
   onChosen: "#f3ece0",
+  seatTick: "#778099",
 };
 
 const DISPLAY = "BigShouldersDisplay-SemiBold";

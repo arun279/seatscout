@@ -74,6 +74,14 @@ describe("every appearance carries its own room past the standard", () => {
       ).toBeGreaterThanOrEqual(4.5);
     });
 
+    it(`separates the console tick from the map's ground at 3 to 1 with the lights ${appearance}`, () => {
+      const { colours } = themeFor(appearance);
+
+      expect(
+        contrastOf(colours.seatTick, colours.houseDeep),
+      ).toBeGreaterThanOrEqual(3);
+    });
+
     it(`keeps seats for sale the more present mark with the lights ${appearance}`, () => {
       const { colours } = themeFor(appearance);
 
