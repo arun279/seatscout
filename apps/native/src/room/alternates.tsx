@@ -79,6 +79,7 @@ export const Alternates = ({
             key={group.key}
             accessibilityRole="radio"
             accessibilityState={{ checked: on }}
+            aria-checked={on}
             hitSlop={SLOP}
             onPress={() => onChoose(group)}
             style={[
