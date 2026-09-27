@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { dayNameOf, markOf, monthNameOf, tapped } from "./calendar.js";
+import {
+  dayNameOf,
+  markOf,
+  monthAfter,
+  monthNameOf,
+  tapped,
+  weekdaysOf,
+  weeksOf,
+} from "./calendar.js";
 import { spanOf } from "./when.js";
 
 const TODAY = "2026-09-26";
@@ -159,5 +167,86 @@ describe("the words the calendar says", () => {
       "November 2027",
       "December 2027",
     ]);
+  });
+});
+
+describe("a month laid out as six weeks", () => {
+  const days = (from: number, to: number) =>
+    Array.from(
+      { length: to - from + 1 },
+      (_, at) => `2026-09-${String(from + at).padStart(2, "0")}`,
+    );
+
+  it("starts on Sunday where the week does, with the days before the first left empty", () => {
+    const weeks = weeksOf("2026-09", 0);
+
+    expect(weeks).toHaveLength(6);
+    expect(weeks.map((week) => week.length)).toEqual([7, 7, 7, 7, 7, 7]);
+    expect(weeks[0]).toEqual([null, null, ...days(1, 5)]);
+    expect(weeks[4]).toEqual([...days(27, 30), null, null, null]);
+    expect(weeks[5]).toEqual([null, null, null, null, null, null, null]);
+  });
+
+  it("starts on Monday where the week does", () => {
+    const weeks = weeksOf("2026-09", 1);
+
+    expect(weeks[0]).toEqual([null, ...days(1, 6)]);
+    expect(weeks[4]).toEqual([...days(28, 30), null, null, null, null]);
+  });
+
+  it("fills a month that begins on the week's first day from its first slot", () => {
+    expect(weeksOf("2026-11", 0)[0]?.[0]).toBe("2026-11-01");
+    expect(weeksOf("2026-06", 1)[0]?.[0]).toBe("2026-06-01");
+  });
+
+  it("uses all six weeks for a long month that starts late in the week", () => {
+    expect(weeksOf("2026-08", 0)[5]).toEqual([
+      "2026-08-30",
+      "2026-08-31",
+      null,
+      null,
+      null,
+      null,
+      null,
+    ]);
+  });
+
+  it("knows February's length in a leap year and outside one", () => {
+    const last = (month: string) =>
+      weeksOf(month, 0)
+        .flat()
+        .filter((date) => date !== null)
+        .at(-1);
+
+    expect(last("2028-02")).toBe("2028-02-29");
+    expect(last("2027-02")).toBe("2027-02-28");
+  });
+
+  it("names the weekdays from the week's first day", () => {
+    expect(
+      weekdaysOf(0)
+        .map(([, letter]) => letter)
+        .join(" "),
+    ).toBe("S M T W T F S");
+    expect(
+      weekdaysOf(1)
+        .map(([, letter]) => letter)
+        .join(" "),
+    ).toBe("M T W T F S S");
+    expect(weekdaysOf(6).map(([key]) => key)).toEqual([
+      "sat",
+      "sun",
+      "mon",
+      "tue",
+      "wed",
+      "thu",
+      "fri",
+    ]);
+  });
+
+  it("moves a month forward and back across the year", () => {
+    expect(monthAfter("2026-12", 1)).toBe("2027-01");
+    expect(monthAfter("2027-01", -1)).toBe("2026-12");
+    expect(monthAfter("2026-09", 0)).toBe("2026-09");
   });
 });

@@ -23,7 +23,13 @@ const drawn = async (
   onDay?: (date: string) => void,
 ) => {
   await render(
-    <Calendar mark={mark} onDay={onDay} opensOn={TODAY} today={TODAY} />,
+    <Calendar
+      firstWeekday={0}
+      mark={mark}
+      onDay={onDay}
+      opensOn={TODAY}
+      today={TODAY}
+    />,
   );
 };
 
