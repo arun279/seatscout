@@ -27,6 +27,9 @@ import { Section } from "../design-system/field.js";
 import { Segments } from "../design-system/segments.js";
 import { TimeField } from "../design-system/time-field.js";
 import { Type } from "../design-system/type.js";
+import { firstWeekday } from "../host/week.js";
+
+const WEEK_STARTS = firstWeekday();
 
 export interface WhenProps {
   readonly draft: Terms;
@@ -64,6 +67,7 @@ const Days = memo(({ values, kind, today, onSpan }: DaysProps) => {
   );
   return (
     <Calendar
+      firstWeekday={WEEK_STARTS}
       mark={mark}
       onDay={kind === "any" ? undefined : onDay}
       opensOn={span.date}

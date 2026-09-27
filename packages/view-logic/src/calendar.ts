@@ -78,3 +78,48 @@ export const monthNameOf = (date: string): string => {
   const day = new Date(utcOf(date));
   return `${MONTHS[day.getUTCMonth()]} ${day.getUTCFullYear()}`;
 };
+
+const WEEK: readonly (readonly [string, string])[] = [
+  ["sun", "S"],
+  ["mon", "M"],
+  ["tue", "T"],
+  ["wed", "W"],
+  ["thu", "T"],
+  ["fri", "F"],
+  ["sat", "S"],
+];
+
+const DAYS_A_WEEK = 7;
+const WEEKS_SHOWN = 6;
+
+export const weekdaysOf = (
+  firstWeekday: number,
+): readonly (readonly [string, string])[] => [
+  ...WEEK.slice(firstWeekday),
+  ...WEEK.slice(0, firstWeekday),
+];
+
+const firstOf = (month: string) => new Date(utcOf(`${month}-01`));
+
+export const monthAfter = (month: string, count: number): string => {
+  const first = firstOf(month);
+  first.setUTCMonth(first.getUTCMonth() + count);
+  return first.toISOString().slice(0, 7);
+};
+
+export const weeksOf = (
+  month: string,
+  firstWeekday: number,
+): readonly (readonly (string | null)[])[] => {
+  const first = firstOf(month);
+  const lead = (first.getUTCDay() - firstWeekday + DAYS_A_WEEK) % DAYS_A_WEEK;
+  const slots = Array.from({ length: DAYS_A_WEEK * WEEKS_SHOWN }, (_, at) => {
+    const day = new Date(first);
+    day.setUTCDate(1 + at - lead);
+    const date = day.toISOString().slice(0, 10);
+    return date.startsWith(month) ? date : null;
+  });
+  return Array.from({ length: WEEKS_SHOWN }, (_, week) =>
+    slots.slice(week * DAYS_A_WEEK, (week + 1) * DAYS_A_WEEK),
+  );
+};
