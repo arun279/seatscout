@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import type { ReactElement } from "react";
-import { askAbout, goTo, useTerms } from "../host/address.js";
+import { askAbout, goTo, handOff, useTerms } from "../host/address.js";
 import { deviceClock, today } from "../host/clock.js";
 import { useOnline } from "../host/online.js";
 import { useProfile } from "../host/profile.js";
@@ -19,7 +19,7 @@ export default function Index(): ReactElement | null {
     <Search
       clock={clock}
       onAsk={(term) => askAbout(terms, term)}
-      onHandOff={() => router.push("/hand-off")}
+      onHandOff={handOff}
       onLedger={() => router.push("/ledger")}
       online={online}
       onRoom={() => router.push("/room")}

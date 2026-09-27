@@ -99,4 +99,21 @@ describe("the room a card draws to scale", () => {
     expect(propAt("target", "propList")).toContain("stroke");
     expect(propAt("pair", "propList")).not.toContain("stroke");
   });
+
+  it("marks nothing lost unless it is told where lost seats were", async () => {
+    await drawn("down");
+
+    expect(screen.queryByTestId("lost", hidden)).toBeNull();
+  });
+
+  it("rings where the lost seats were, in outline so the lit pair still reads as the one on offer", async () => {
+    const result = first(await settled());
+    await render(<RoomPlan across={ACROSS} lost={result} result={result} />);
+
+    expect(numberAt("lost", "cx")).toBe(numberAt("pair", "cx"));
+    expect(numberAt("lost", "cy")).toBe(numberAt("pair", "cy"));
+    expect(numberAt("lost", "r")).toBeLessThan(numberAt("pair", "r"));
+    expect(propAt("lost", "propList")).toContain("stroke");
+    expect(propAt("lost", "fill")).toBeNull();
+  });
 });

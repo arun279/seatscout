@@ -19,3 +19,7 @@ export const committed =
     void notificationAsync(NotificationFeedbackType.Success);
     act();
   };
+
+export const warned = (): void => {
+  void notificationAsync(NotificationFeedbackType.Warning);
+};

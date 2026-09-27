@@ -259,7 +259,7 @@ describe("a deep link that carries a whole query", () => {
     if (seats === undefined) throw new Error("no Seat label was drawn");
 
     await fireEvent.press(seats);
-    await screen.findByText("Taking the seats");
+    await screen.findByRole("button", { name: /^Take / });
 
     expect(listed.at()).toBe("/hand-off");
   });

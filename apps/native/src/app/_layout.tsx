@@ -32,7 +32,7 @@ export default function Layout(): ReactElement | null {
       <Stack.Screen name="index" />
       <Stack.Screen name="room" />
       <Stack.Screen name="ask" options={ASK} />
-      <Stack.Screen name="hand-off" options={RESTING} />
+      <Stack.Screen dangerouslySingular name="hand-off" options={RESTING} />
       <Stack.Screen name="ledger" options={RESTING} />
     </Stack>
   );
