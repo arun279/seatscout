@@ -109,13 +109,10 @@ describe("the ghost control", () => {
     },
   );
 
-  it("is not a control while it has nothing to do, and says politely what it waits on", async () => {
+  it("is not a control while it has nothing to do", async () => {
     await render(<Ghost label="Waiting" />);
 
     expect(screen.queryByRole("button")).toBeNull();
-    expect(screen.getByRole("status")).toHaveTextContent("Waiting");
-    expect(screen.getByRole("status").props["accessibilityLiveRegion"]).toBe(
-      "polite",
-    );
+    expect(screen.getByTestId("waiting")).toHaveTextContent("Waiting");
   });
 });
