@@ -26,7 +26,7 @@ test("every screen of the app's web build, from Ask to the Room, carries no WCAG
   expect(await violationsOn(page)).toEqual([]);
 
   await seats.click();
-  await expect(page.getByText("Taking the seats")).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Take / })).toBeVisible();
   expect(await violationsOn(page)).toEqual([]);
 
   await page.goBack();

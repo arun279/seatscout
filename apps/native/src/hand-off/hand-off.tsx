@@ -41,7 +41,6 @@ interface Held {
 }
 
 const styles = StyleSheet.create({
-  sheet: { flex: 1 },
   body: { gap: 10, paddingHorizontal: 18, paddingTop: 12 },
 });
 
@@ -151,10 +150,11 @@ export const HandOff = ({
   };
 
   return (
-    <View ref={bound} style={styles.sheet} testID="hand-off">
+    <View ref={bound} testID="hand-off">
       <Sheet
         claimed={false}
         dock={dock()}
+        fitted
         heading={headingOf(held)}
         keep={BACK_TO_THE_LIST}
         onKeep={onClose}
