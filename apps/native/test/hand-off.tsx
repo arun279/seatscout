@@ -29,7 +29,7 @@ const WHOLE_LISTING: SearchTerms = {
   accessibleSeating: false,
 };
 
-const TODAY = "2026-08-28";
+export const TODAY = "2026-08-28";
 
 const HOOKY_ADDISON_9AM = 561527980;
 

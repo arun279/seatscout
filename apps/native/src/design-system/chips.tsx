@@ -34,7 +34,7 @@ interface Choice<Value> {
 export interface ChoicesProps<Value> {
   readonly choices: readonly Choice<Value>[];
   readonly chosen: string;
-  readonly onChoose?: ((value: Value) => void) | undefined;
+  readonly onChoose: (value: Value) => void;
 }
 
 const styles = StyleSheet.create({
@@ -59,27 +59,35 @@ interface FaceProps {
   readonly sub?: string | undefined;
   readonly role: AccessibilityRole;
   readonly state: AccessibilityState;
-  readonly onPress?: (() => void) | undefined;
+  readonly onPress: () => void;
 }
 
 const Face = ({ on, text, sub, role, state, onPress }: FaceProps) => {
   const { colours } = useTheme();
-  const ink = on ? "onChosen" : "silver";
-  const drawn = [
-    styles.chip,
-    ON_ANDROID ? styles.filter : styles.square,
-    on
-      ? { backgroundColor: colours.chosen, borderColor: colours.chosen }
-      : { backgroundColor: colours.raised, borderColor: colours.silverFaint },
-  ];
-  const said = (
-    <>
+
+  return (
+    <TouchableOpacity
+      accessibilityLabel={sub === undefined ? text : `${text}, ${sub}`}
+      accessibilityRole={role}
+      accessibilityState={state}
+      onPress={felt(onPress)}
+      style={[
+        styles.chip,
+        ON_ANDROID ? styles.filter : styles.square,
+        on
+          ? { backgroundColor: colours.chosen, borderColor: colours.chosen }
+          : {
+              backgroundColor: colours.raised,
+              borderColor: colours.silverFaint,
+            },
+      ]}
+    >
       {on && ON_ANDROID && (
         <Type set="sentence" tone="onChosen">
           ✓
         </Type>
       )}
-      <Type set="sentence" tone={ink}>
+      <Type set="sentence" tone={on ? "onChosen" : "silver"}>
         {text}
       </Type>
       {sub !== undefined && (
@@ -87,22 +95,6 @@ const Face = ({ on, text, sub, role, state, onPress }: FaceProps) => {
           {sub}
         </Type>
       )}
-    </>
-  );
-
-  return onPress === undefined ? (
-    <View style={drawn} testID="waiting">
-      {said}
-    </View>
-  ) : (
-    <TouchableOpacity
-      accessibilityLabel={sub === undefined ? text : `${text}, ${sub}`}
-      accessibilityRole={role}
-      accessibilityState={state}
-      onPress={felt(onPress)}
-      style={drawn}
-    >
-      {said}
     </TouchableOpacity>
   );
 };
@@ -143,7 +135,7 @@ export const Choices = <Value,>({
       <Face
         key={key}
         on={key === chosen}
-        onPress={onChoose && (() => onChoose(value))}
+        onPress={() => onChoose(value)}
         role="radio"
         state={{ checked: key === chosen }}
         sub={sub}

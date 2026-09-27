@@ -28,7 +28,7 @@ describe("the checkout on a phone", () => {
     expect(mockOpen.mock.calls).toEqual([[HOOKY_TICKETING]]);
   });
 
-  it("settles only once the browser has been closed", async () => {
+  it("settles when the browser says it is done, which on iOS is when the moviegoer closes it", async () => {
     let close = (): void => undefined;
     mockOpen.mockReturnValue(
       new Promise((closed) => {

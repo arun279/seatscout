@@ -19,6 +19,7 @@ export default function HandOffRoute(): ReactElement {
     <HandOff
       checkout={inAppBrowser}
       chosen={chosen}
+      key={chosen.key}
       clock={clock}
       onClose={router.back}
       online={online}

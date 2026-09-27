@@ -1,4 +1,6 @@
 import {
+  ImpactFeedbackStyle,
+  impactAsync,
   NotificationFeedbackType,
   notificationAsync,
   selectionAsync,
@@ -16,7 +18,7 @@ export const felt =
 export const committed =
   (act: () => void): (() => void) =>
   () => {
-    void notificationAsync(NotificationFeedbackType.Success);
+    void impactAsync(ImpactFeedbackStyle.Medium);
     act();
   };
 

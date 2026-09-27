@@ -1,6 +1,6 @@
 import { afterEach, beforeAll, jest } from "@jest/globals";
 import { cleanup, render } from "@testing-library/react-native/pure";
-import { notificationAsync, selectionAsync } from "expo-haptics";
+import { impactAsync, notificationAsync, selectionAsync } from "expo-haptics";
 import { createElement, type ReactNode } from "react";
 import {
   ScrollView,
@@ -54,6 +54,7 @@ beforeAll(async () => {
 jest.mock("expo-haptics", () => ({
   ...jest.requireActual<object>("expo-haptics"),
   selectionAsync: jest.fn(() => Promise.resolve()),
+  impactAsync: jest.fn(() => Promise.resolve()),
   notificationAsync: jest.fn(() => Promise.resolve()),
 }));
 
@@ -64,6 +65,7 @@ afterEach(async () => {
   } finally {
     await cleanup();
     jest.mocked(selectionAsync).mockClear();
+    jest.mocked(impactAsync).mockClear();
     jest.mocked(notificationAsync).mockClear();
   }
 });

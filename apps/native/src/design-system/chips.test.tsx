@@ -99,8 +99,8 @@ const GROUPS = [
 ] as const;
 
 const choosing = async (
-  onChoose?: (value: number) => void,
-  chosen: string = "f",
+  onChoose: (value: number) => void = () => undefined,
+  chosen = "f",
 ) => {
   await render(
     <Choices choices={GROUPS} chosen={chosen} onChoose={onChoose} />,
@@ -109,7 +109,7 @@ const choosing = async (
 
 describe("a group of chips, exactly one of them chosen", () => {
   it("offers each as a radio named by its words and its sub-line", async () => {
-    await choosing(() => undefined);
+    await choosing();
 
     expect(
       screen
@@ -122,7 +122,7 @@ describe("a group of chips, exactly one of them chosen", () => {
   });
 
   it("checks the chosen one alone", async () => {
-    await choosing(() => undefined, "g");
+    await choosing(undefined, "g");
 
     expect(screen.getByRole("radio", { name: /^G8·G9/ })).toBeChecked();
     expect(screen.getByRole("radio", { name: /^F6·F7/ })).not.toBeChecked();
@@ -140,19 +140,11 @@ describe("a group of chips, exactly one of them chosen", () => {
 
   it("inks the sub-line as the chip it sits in is inked", async () => {
     houseLights("down");
-    await choosing(() => undefined);
+    await choosing();
     const ink = (text: string) =>
       StyleSheet.flatten(screen.getByText(text).props["style"]).color;
 
     expect(ink("Row 6 · on the centreline")).toBe("#06070e");
     expect(ink("Row 7 · three seats right of centre")).toBe("#aab2bd");
-  });
-
-  it("stays drawn but takes no press while it waits on something outside the app", async () => {
-    await choosing(undefined);
-
-    expect(screen.queryAllByRole("radio")).toEqual([]);
-    expect(screen.getAllByTestId("waiting")).toHaveLength(2);
-    expect(screen.getByText("G8·G9")).toBeOnTheScreen();
   });
 });
