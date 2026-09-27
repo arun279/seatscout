@@ -108,6 +108,7 @@ const Seat = ({
     accessibilityLabel={name}
     accessible
     height={seat.height}
+    role="img"
     rx={seat.width * DRAWN.seat.radius}
     vectorEffect="non-scaling-stroke"
     width={seat.width}
