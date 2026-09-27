@@ -8,7 +8,8 @@ import {
   useMemo,
 } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
-import { Calendar as MonthGrid, type DateData } from "react-native-calendars";
+import MonthGrid from "react-native-calendars/src/calendar";
+import type { DateData } from "react-native-calendars/src/types";
 import { type Palette, useTheme } from "../theme.js";
 import { felt } from "./feedback.js";
 import { TOUCH_FLOOR } from "./touch.js";
