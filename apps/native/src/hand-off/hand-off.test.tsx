@@ -71,6 +71,9 @@ describe("no ticketing URL opens before Re-verification confirms", () => {
     expect(await screen.findByRole("status")).toHaveTextContent(
       "Checking G6 and G7 with the Source",
     );
+    expect(screen.getByRole("status").props["accessibilityLiveRegion"]).toBe(
+      "polite",
+    );
     expect(screen.queryByRole("button", { name: /^Take/ })).toBeNull();
     expect(counter.checkout).not.toHaveBeenCalled();
 

@@ -172,7 +172,11 @@ export const CommitZone = ({
     case "opening":
       return <Status>{openingOf(chosen)}</Status>;
     case "checking":
-      return <Ghost label={checkingOf(chosen)} />;
+      return (
+        <View accessibilityLiveRegion="polite" accessible role="status">
+          <Ghost label={checkingOf(chosen)} />
+        </View>
+      );
     case "idle":
       return (
         <>

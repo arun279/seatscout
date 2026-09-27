@@ -106,13 +106,7 @@ export const Ghost = ({ label, onPress }: GhostProps): ReactElement => {
   );
 
   return onPress === undefined ? (
-    <View
-      accessibilityLiveRegion="polite"
-      accessible
-      role="status"
-      style={drawn}
-      testID="waiting"
-    >
+    <View style={drawn} testID="waiting">
       {said}
     </View>
   ) : (
