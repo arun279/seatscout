@@ -87,7 +87,7 @@ how a contributor arrives red on a pull request, which is what this list is for.
 line is the half of the journey gate a checkout can run alone; the job also builds the merge
 base in a worktree, runs its journey, and holds this one to it.
 
-Nine further jobs run beside it. `verdicts` runs first and names what `quality`, `apk` and
+Ten further jobs run beside it. `verdicts` runs first and names what `quality`, `apk` and
 `performance` would judge by the git trees they read; a job an earlier run of the same pull
 request passed on exactly those trees is skipped, and says so. `apk` builds the app for Android
 with the Source answered from the corpus (`SEATSCOUT_UPSTREAM=corpus`, which Metro reads to swap
@@ -96,8 +96,9 @@ leaves. `device` walks `apps/native/e2e/journey.yaml` over that app with Maestro
 once, and the walk gates. The Flashlight reading of the walk's frame rate, CPU and memory runs
 on main instead, in the Baseline workflow, held to the run before it; ADR 6 says why. `shards`
 reads the workspaces the mutation gate is divided into out of `stryker.shards.json`, and
-`mutation` judges one of them per runner, in parallel. `footprint` waits for every other job,
-reports what the change weighs and which jobs were reused, and refuses a run that took more than
+`mutation` judges one of them per runner, in parallel. `weigh` measures what the change weighs
+once the shards are done. `footprint` waits for every other job, reports what `weigh` measured and
+which jobs were reused, and refuses a run that took more than
 20 minutes from its first job starting. `secrets` scans the pull request's commits with gitleaks. `dependencies`
 scans the lockfile against the OSV database and fails on any advisory, then reads every
 dependency's licence and fails on any SPDX identifier outside the allowlist that job
@@ -108,7 +109,7 @@ steady the runner is before it judges either.
 One hook runs before CI. The pre-commit hook runs five checks over staged files,
 `lefthook.yml` declares it, and nothing else runs on this machine unasked. CI is the
 judge of the whole tree, because a hook can be skipped. `quality`, `apk`, `performance`,
-`device` and `footprint` judge a tree once: a push that changes nothing one of them reads
+`device` and `weigh` judge a tree once: a push that changes nothing one of them reads
 reuses its earlier verdict, and a push that fixes one of them reruns that one and what waits
 for it. The mutation shards start from the report their tree left. `secrets` reads commits, and
 `dependencies` an advisory database that changes without the tree, so those two run on every

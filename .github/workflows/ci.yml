@@ -387,23 +387,21 @@ jobs:
           job: device
           key: ${{ steps.earlier.outputs.key }}
 
-  footprint:
-    needs: [verdicts, quality, mutation, apk, device, performance, secrets, dependencies]
+  weigh:
+    needs: mutation
     if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 45
-    permissions:
-      contents: read
-      actions: read
-      pull-requests: write
+    outputs:
+      reported: ${{ steps.reports.outcome }}
+      collection: ${{ steps.reused.outputs.outcome || steps.collection.outcome }}
+      measured: ${{ steps.reused.outputs.outcome || steps.footprint.outcome }}
+      counted: ${{ steps.reused.outputs.counted || steps.collection.outputs.counted }}
+      held: ${{ steps.reused.outputs.held || steps.collection.outputs.held }}
+      reused: ${{ steps.earlier.outputs.run }}
     env:
       BASE: ${{ github.event.pull_request.base.sha }}
       HEAD: ${{ github.event.pull_request.head.sha }}
-      GH_TOKEN: ${{ github.token }}
-      VERDICTS: ${{ needs.verdicts.result }}
-      JUDGED: ${{ needs.mutation.result }}
-      WALKED: ${{ needs.device.outputs.journey }}
-      WALL_MINUTES: 20
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -419,7 +417,7 @@ jobs:
         id: earlier
         uses: ./.github/actions/earlier-verdict
         with:
-          job: footprint
+          job: weigh
           paths: .
           base: ${{ env.BASE }}
       - if: steps.earlier.outputs.run == ''
@@ -497,26 +495,57 @@ jobs:
           COUNTED: ${{ steps.collection.outputs.counted }}
           HELD: ${{ steps.collection.outputs.held }}
         run: |
-          mkdir -p .verdict/footprint
-          cp footprint.md .verdict/footprint/footprint.md
-          printf 'counted=%s\nheld=%s\n' "$COUNTED" "$HELD" > .verdict/footprint/collection
+          mkdir -p .verdict/weigh
+          cp footprint.md .verdict/weigh/footprint.md
+          printf 'counted=%s\nheld=%s\n' "$COUNTED" "$HELD" > .verdict/weigh/collection
       - if: ${{ !cancelled() && steps.earlier.outputs.run == '' && steps.collection.outcome == 'success' && steps.footprint.outcome == 'success' }}
         uses: ./.github/actions/leave-verdict
         with:
-          job: footprint
+          job: weigh
           key: ${{ steps.earlier.outputs.key }}
       - name: Take the measurement and the test count from the earlier run on this same tree
         id: reused
         if: steps.earlier.outputs.run != ''
         run: |
-          cp .verdict/footprint/footprint.md footprint.md
+          cp .verdict/weigh/footprint.md footprint.md
           {
-            cat .verdict/footprint/collection
+            cat .verdict/weigh/collection
             echo "outcome=success"
           } >> "$GITHUB_OUTPUT"
+      - name: Hand the measurement to the job that reports every gate
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: footprint
+          path: footprint.md
+          if-no-files-found: ignore
+
+  footprint:
+    needs: [verdicts, quality, mutation, apk, device, performance, secrets, dependencies, weigh]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VERDICTS: ${{ needs.verdicts.result }}
+      JUDGED: ${{ needs.mutation.result }}
+      WALKED: ${{ needs.device.outputs.journey }}
+      REPORTED: ${{ needs.weigh.outputs.reported }}
+      COLLECTION: ${{ needs.weigh.outputs.collection }}
+      MEASURED: ${{ needs.weigh.outputs.measured }}
+      WALL_MINUTES: 20
+    steps:
+      - name: Collect what the change weighs
+        continue-on-error: true
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: footprint
       - name: Read how long this attempt has taken since its first job started
         id: wall
-        if: ${{ !cancelled() }}
         run: |
           attempt="$(date -d "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" --jq .run_started_at)" +%s)"
           first="$(date -d "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT/jobs?per_page=100" --jq '[.jobs[].started_at] | min')" +%s)"
@@ -526,16 +555,12 @@ jobs:
             echo "minutes=$(awk -v seconds="$seconds" 'BEGIN { printf "%.1f", seconds / 60 }')"
           } >> "$GITHUB_OUTPUT"
       - name: Say what every gate did, so a red run reports as fully as a green one
-        if: ${{ !cancelled() }}
         env:
-          REPORTED: ${{ steps.reports.outcome }}
-          COLLECTION: ${{ steps.reused.outputs.outcome || steps.collection.outcome }}
-          MEASURED: ${{ steps.reused.outputs.outcome || steps.footprint.outcome }}
-          COUNTED: ${{ steps.reused.outputs.counted || steps.collection.outputs.counted }}
-          HELD: ${{ steps.reused.outputs.held || steps.collection.outputs.held }}
+          COUNTED: ${{ needs.weigh.outputs.counted }}
+          HELD: ${{ needs.weigh.outputs.held }}
           MINUTES: ${{ steps.wall.outputs.minutes }}
           REUSED: >-
-            ${{ needs.verdicts.outputs.quality && format('quality (run {0}) ', needs.verdicts.outputs.quality) }}${{ needs.verdicts.outputs.apk && format('apk (run {0}) ', needs.verdicts.outputs.apk) }}${{ needs.verdicts.outputs.performance && format('performance (run {0}) ', needs.verdicts.outputs.performance) }}${{ needs.device.outputs.reused && format('device (run {0}) ', needs.device.outputs.reused) }}${{ steps.earlier.outputs.run && format('footprint (run {0}) ', steps.earlier.outputs.run) }}
+            ${{ needs.verdicts.outputs.quality && format('quality (run {0}) ', needs.verdicts.outputs.quality) }}${{ needs.verdicts.outputs.apk && format('apk (run {0}) ', needs.verdicts.outputs.apk) }}${{ needs.verdicts.outputs.performance && format('performance (run {0}) ', needs.verdicts.outputs.performance) }}${{ needs.device.outputs.reused && format('device (run {0}) ', needs.device.outputs.reused) }}${{ needs.weigh.outputs.reused && format('weigh (run {0}) ', needs.weigh.outputs.reused) }}
         run: |
           {
             echo "## What the gates did"
@@ -543,9 +568,9 @@ jobs:
             echo "| gate | verdict |"
             echo "| --- | --- |"
             echo "| Mutation runs, one per workspace | $JUDGED |"
-            echo "| Every shard left a report | $REPORTED |"
-            echo "| Test collection | $COLLECTION, the shards reached ${COUNTED:-an uncounted number of} test files between them, and the runners collect ${HELD:-an uncounted number} |"
-            echo "| Footprint measurement | $MEASURED |"
+            echo "| Every shard left a report | ${REPORTED:-not read} |"
+            echo "| Test collection | ${COLLECTION:-not read}, the shards reached ${COUNTED:-an uncounted number of} test files between them, and the runners collect ${HELD:-an uncounted number} |"
+            echo "| Footprint measurement | ${MEASURED:-not read} |"
             echo "| Journey over the built app on an Android emulator | ${WALKED:-not walked} |"
             echo "| Judged green before on this same tree, so not judged again | ${REUSED:-none} |"
             echo "| Wall time of this run | ${MINUTES:-an unread number of} minutes, held under $WALL_MINUTES |"
@@ -558,10 +583,9 @@ jobs:
           fi
           mv verdict.md footprint.md
       - name: Add the report to the run summary
-        if: ${{ !cancelled() }}
         run: cat footprint.md >> "$GITHUB_STEP_SUMMARY"
       - name: Post the report on the pull request
-        if: ${{ !cancelled() && github.event.pull_request.head.repo.full_name == github.repository }}
+        if: github.event.pull_request.head.repo.full_name == github.repository
         uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
         with:
           header: footprint
@@ -569,15 +593,12 @@ jobs:
       - name: Refuse the change if a gate refused it or the run took too long, now that the report is posted
         if: ${{ !cancelled() }}
         env:
-          REPORTED: ${{ steps.reports.outcome }}
-          COLLECTION: ${{ steps.reused.outputs.outcome || steps.collection.outcome }}
-          MEASURED: ${{ steps.reused.outputs.outcome || steps.footprint.outcome }}
           SECONDS_TAKEN: ${{ steps.wall.outputs.seconds }}
         run: |
           if [ "$VERDICTS" = success ] && [ "$JUDGED" = success ] && [ "$REPORTED" = success ] && [ "$COLLECTION" = success ] && [ "$MEASURED" = success ] && [ "$WALKED" = passed ] && [ -n "$SECONDS_TAKEN" ] && [ "$SECONDS_TAKEN" -le $((WALL_MINUTES * 60)) ]; then
             exit 0
           fi
-          echo "::error::Earlier verdicts read $VERDICTS, mutation runs $JUDGED, every shard reported $REPORTED, test collection $COLLECTION, footprint measurement $MEASURED, the journey on the emulator ${WALKED:-not walked}, and the run took ${SECONDS_TAKEN:-an unread number of} seconds against $((WALL_MINUTES * 60)). The report on the pull request says what each one measured."
+          echo "::error::Earlier verdicts read $VERDICTS, mutation runs $JUDGED, every shard reported ${REPORTED:-nothing}, test collection ${COLLECTION:-nothing}, footprint measurement ${MEASURED:-nothing}, the journey on the emulator ${WALKED:-not walked}, and the run took ${SECONDS_TAKEN:-an unread number of} seconds against $((WALL_MINUTES * 60)). The report on the pull request says what each one measured."
           exit 1
 
   performance:

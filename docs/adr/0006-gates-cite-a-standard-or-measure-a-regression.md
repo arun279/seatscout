@@ -1015,7 +1015,7 @@ eight byte-identical bundles and one size.
 checks over the staged files (secrets, format, lint, spelling and complexity) take seconds and are
 the only thing that runs before CI. CI is the judge of the whole tree, because
 a hook can be skipped, and it judges each tree once. Each job names what it judges by the git tree
-ids of the paths it reads: the whole tree and the merge base's for `quality` and `footprint`; the
+ids of the paths it reads: the whole tree and the merge base's for `quality` and `weigh`; the
 app, its workspace packages, the lockfile, the workspace and compiler settings and `.github` for
 `apk`, and the same at the merge base as well for `performance`; for `device`, the walk, `.github`
 and the SHA-256 of the app it walks, since the build is not the same twice. Before it works it
@@ -1034,8 +1034,13 @@ see the whole run. It counts from the earliest start among the jobs of the run's
 or from the attempt's own start when a re-run carries earlier jobs over, which leaves out the time
 a run waits for its first runner but counts any later job's wait, and prints the elapsed minutes in its report, and refuses the run
 when they pass 20. After the reading moved to main, the longest path is the build, then one walk,
-then the report. 20 minutes is that path measured with margin, and the limit this project sets
-for a pull request's checks.
+then the report. The first run of that shape (36293222998), with no Gradle cache yet on main, took
+1,306 seconds: 935 to build, 146 to boot the emulator, install and walk, and 200 for `footprint`,
+which then still measured the footprint itself after the walk. The gate refused it at 21.8
+minutes, so the measuring moved to `weigh`, which starts when the shards finish and is done long
+before the walk, and `footprint` only reports. That takes about three minutes off the path,
+leaving a cold build about four minutes of margin. 20 minutes is the limit this project sets for
+a pull request's checks.
 
 The line counter is [cloc](https://github.com/AlDanial/cloc), pinned to a released version
 and checked against its SHA-256 before use. scc and tokei were the alternatives for that
