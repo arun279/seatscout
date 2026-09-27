@@ -1,37 +1,26 @@
-import type { PositionedSeat } from "@seatscout/client";
-import { useEffect, useRef, useState } from "react";
-import type { Dispatch, PointerEvent, SetStateAction } from "react";
 import {
-  type Box,
   type Cursor,
   FITTED,
+  type Frame,
   mostZoomFor,
+  type Point,
   panned,
   pinched,
-  type Point,
-  revealed,
+  revealedIn,
+  TOUCH_SLOP,
   transformOf,
   type View,
   zoomed,
 } from "@seatscout/view-logic";
-
-export interface Frame extends Box {
-  readonly seatWidth: number;
-}
+import type { Dispatch, PointerEvent, SetStateAction } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface Tracked extends Point {
   readonly from: Point;
 }
 
-const TOUCH_SLOP = 8;
 const WHEEL_TRAVEL_PER_DOUBLING = 240;
-
-const boxOf = (seat: PositionedSeat, frame: Frame): Box => ({
-  x: seat.x - frame.x,
-  y: seat.y - frame.y,
-  width: seat.width,
-  height: seat.height,
-});
+const POINTER_TAP_TARGET = 44;
 
 const measured = (target: SVGGElement, frame: Frame, view: View) => {
   const bounds = target.getBoundingClientRect();
@@ -42,6 +31,7 @@ const measured = (target: SVGGElement, frame: Frame, view: View) => {
       frame.seatWidth,
       frame.width,
       bounds.width / view.scale,
+      POINTER_TAP_TARGET,
     ),
     inView: (client: Point): Point => ({
       x: (client.x - bounds.left) / perUnit + view.tx,
@@ -75,7 +65,7 @@ export const usePanZoom = (frame: Frame, cursor: Cursor): PanZoom => {
       '[role="gridcell"][tabindex="0"]',
     ))
       cell.focus({ preventScroll: true });
-    view.current = revealed(view.current, boxOf(cursor.seat, frame), frame);
+    view.current = revealedIn(view.current, cursor.seat, frame);
     group.setAttribute("transform", transformOf(view.current));
   }, [group, cursor, frame]);
 

@@ -1,22 +1,23 @@
 import "./seat-map.css";
-import type {
-  Auditorium,
-  PositionedSeat,
-  SeatGroupResult,
-  SeatRow,
-} from "@seatscout/client";
+import type { Auditorium, SeatGroupResult, SeatRow } from "@seatscout/client";
 import type { ReactElement } from "react";
 import { type KeyboardEvent, type ReactNode, useState } from "react";
 import {
   type Cursor,
+  dividersIn,
+  type Frame,
+  frameOf,
   gridLabelOf,
+  holds,
   isMove,
   moved,
+  offeredIn,
   type Place,
   placed,
   seatNameOf,
+  stateOf,
 } from "@seatscout/view-logic";
-import { type Frame, usePanZoom } from "./pan-zoom.js";
+import { usePanZoom } from "./pan-zoom.js";
 
 interface SeatMapProps {
   readonly auditorium: Auditorium;
@@ -33,34 +34,6 @@ interface RowProps {
   readonly frame: Frame;
   readonly children: ReactNode;
 }
-
-const frameOf = (auditorium: Auditorium): Frame => {
-  const seats = auditorium.map.rows.flatMap((row) => row.seats);
-  const seatWidth = Math.max(...seats.map((seat) => seat.width));
-  const left = Math.min(...seats.map((seat) => seat.x)) - 1.6 * seatWidth;
-  const top = Math.min(...seats.map((seat) => seat.y)) - 0.5 * seatWidth;
-  return {
-    x: left,
-    y: top,
-    width:
-      Math.max(...seats.map((seat) => seat.x + seat.width)) -
-      left +
-      0.5 * seatWidth,
-    height:
-      Math.max(...seats.map((seat) => seat.y + seat.height)) -
-      top +
-      0.5 * seatWidth,
-    seatWidth,
-  };
-};
-
-export const holds = (group: SeatGroupResult, seat: PositionedSeat): boolean =>
-  group.seats.some((held) => held.id === seat.id);
-
-const stateOf = (seat: PositionedSeat, lit: boolean) => {
-  if (lit) return "lit";
-  return seat.bookable ? "bookable" : "unbookable";
-};
 
 const Spaces = () => (
   <defs>
@@ -101,21 +74,16 @@ const Row = ({ row, frame, children }: RowProps) => (
         {row.label}
       </text>
     )}
-    {row.seats.flatMap((left, at) => {
-      const right = row.seats[at + 1];
-      if (row.gapAfter[at] !== "pod" || right === undefined) return [];
-      const x = (left.x + left.width + right.x) / 2;
-      return [
-        <line
-          key={left.id}
-          className="tick"
-          x1={x}
-          x2={x}
-          y1={left.y + 0.2 * left.height}
-          y2={left.y + 0.8 * left.height}
-        />,
-      ];
-    })}
+    {dividersIn(row).map((divider) => (
+      <line
+        key={divider.x}
+        className="tick"
+        x1={divider.x}
+        x2={divider.x}
+        y1={divider.y1}
+        y2={divider.y2}
+      />
+    ))}
     {children}
   </g>
 );
@@ -132,9 +100,7 @@ export const SeatMap = ({
   const { map } = auditorium;
   const [{ frame, offered }] = useState(() => ({
     frame: frameOf(auditorium),
-    offered: new Set(
-      auditorium.offered.flatMap((group) => group.seats.map((seat) => seat.id)),
-    ),
+    offered: offeredIn(auditorium),
   }));
   const { setGroup, handlers, dragged } = usePanZoom(frame, cursor);
   const recommended = result.seats.map((seat) => seat.id);

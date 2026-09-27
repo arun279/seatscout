@@ -1,9 +1,9 @@
 import "@testing-library/jest-dom/vitest";
 import { readFile } from "node:fs/promises";
+import { HOOKY_ADDISON, WEST_PLANO_28 } from "@seatscout/view-logic/testing";
 import { cleanup } from "@testing-library/react";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { opened } from "./auditorium.fixtures.js";
-import { WEST_PLANO_28 } from "@seatscout/view-logic/testing";
 
 const SOURCE = "apps/web/src";
 const SHEET = /^import "\.\/([\w-]+\.css)";$/gm;
@@ -58,5 +58,17 @@ describe("the room, as the stylesheets it is served with draw it", () => {
     expect(list.padding).toBe("9px 2px 0px");
     expect(chosen.minHeight).toBe("44px");
     expect(chosen.alignSelf).toBe("auto");
+  });
+
+  it("draws the legend's console mark as the map's thin tick and its space mark as a ring round a dot", async () => {
+    const stage = await opened(HOOKY_ADDISON);
+    const off = served();
+    const [, , , space, tick] = [
+      ...stage.dialog.querySelectorAll(".legend i"),
+    ].map(drawn);
+    const read = [space?.position, tick?.width];
+    off();
+
+    expect(read).toEqual(["relative", "2px"]);
   });
 });

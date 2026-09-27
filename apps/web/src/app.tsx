@@ -17,6 +17,7 @@ import {
   type HeldProgramme,
   type HeldSnapshots,
   heldSnapshots,
+  keyOf,
   ledeOf,
   OFFLINE,
   programmeNear,
@@ -195,7 +196,7 @@ const Screen = ({
         />
       ) : (
         <Searching
-          key={JSON.stringify(asked)}
+          key={keyOf(asked)}
           seatscout={seatscout}
           asked={asked}
           terms={terms}

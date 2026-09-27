@@ -8,6 +8,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import {
   chosenOf,
   gridLabelOf,
+  mapLabelOf,
   groupsOf,
   ordinalOf,
   refusalOf,
@@ -135,6 +136,14 @@ describe("what the room calls things", () => {
 
     expect(gridLabelOf(opened.auditorium, opened.result)).toBe(
       "Seat map of Cinemark Frisco Square and XD at 10:10p. 304 seats in 14 rows, 25 bookable. Recommended: H14 and H13, 8th row of 14, on the centreline. Arrow keys move one seat.",
+    );
+  });
+
+  it("labels a map with no keyboard the same way, less the keys it cannot offer", () => {
+    const opened = openedRoom(WEST_PLANO_28);
+
+    expect(mapLabelOf(opened.auditorium, opened.result)).toBe(
+      "Seat map of Cinemark Frisco Square and XD at 10:10p. 304 seats in 14 rows, 25 bookable. Recommended: H14 and H13, 8th row of 14, on the centreline.",
     );
   });
 

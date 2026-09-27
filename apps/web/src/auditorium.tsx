@@ -5,26 +5,39 @@ import type { Search, SeatGroupResult } from "@seatscout/client";
 import type { ReactElement } from "react";
 import { useState } from "react";
 import {
-  ageOf,
+  BACK_TO_THE_LIST,
+  backToOf,
   capitalised,
   chosenOf,
+  CLEAR_OF_THE_FRONT,
   clockOf,
+  consolesIn,
   type Cursor,
   dayOf,
+  groupHolding,
   groupsOf,
+  heldWhileOfflineOf,
   labelOf,
   lateralOf,
+  legendOf,
+  type Mark,
+  notBookableIn,
   opened,
   partyOf,
   penaltiesOf,
   type Place,
+  RE_CHECKED_ON_THE_TAP,
+  readingOf,
   refusalOf,
-  spokenOf,
+  shownIn,
+  UNCONFIRMED,
+  WAITS_FOR_THE_CONNECTION,
   whyOf,
+  YOUR_SEATS_IN_THIS_ROOM,
 } from "@seatscout/view-logic";
 import { modal } from "./modal.js";
 import { RowBar } from "./row-bar.js";
-import { holds, SeatMap } from "./seat-map.js";
+import { SeatMap } from "./seat-map.js";
 
 interface RoomProps {
   readonly result: SeatGroupResult;
@@ -36,7 +49,13 @@ interface RoomProps {
   readonly onHandOff: (chosen: SeatGroupResult) => void;
 }
 
-const ALTERNATES_SHOWN = 3;
+const MARKS: Readonly<Record<Mark, string>> = {
+  lit: "lit",
+  forSale: "for-sale",
+  notBookable: "not-bookable",
+  space: "space",
+  console: "tick",
+};
 
 const Billing = ({ result }: { readonly result: SeatGroupResult }) => {
   const penalties = penaltiesOf(result.reasons, result.podDividers);
@@ -49,7 +68,7 @@ const Billing = ({ result }: { readonly result: SeatGroupResult }) => {
         {capitalised(lateralOf(result.reasons.seatsOffCentre))}
       </span>
       {penalties.length === 0 ? (
-        <span className="credit">Clear of the front rows and the walls</span>
+        <span className="credit">{CLEAR_OF_THE_FRONT}</span>
       ) : (
         penalties.map((penalty) => (
           <span key={penalty} className="credit">
@@ -71,29 +90,12 @@ const Legend = ({
   readonly consoles: boolean;
 }) => (
   <ul className="legend">
-    <li>
-      <i className="lit" />
-      {labelOf(chosen)}, yours
-    </li>
-    <li>
-      <i className="for-sale" />
-      for sale
-    </li>
-    <li>
-      <i className="not-bookable" />
-      not bookable
-    </li>
-    <li>
-      <i className="space" />
-      wheelchair or companion
-      {accessibleSeating ? "" : ", kept out of ordinary results"}
-    </li>
-    {consoles && (
-      <li>
-        <i className="tick" />
-        console
+    {legendOf(chosen, accessibleSeating, consoles).map((entry) => (
+      <li key={entry.mark}>
+        <i className={MARKS[entry.mark]} />
+        {entry.words}
       </li>
-    )}
+    ))}
   </ul>
 );
 
@@ -113,16 +115,8 @@ export const Room = ({
   const { theater, formats, amenities } = result.showtime.presentation;
   const { partySize, accessibleSeating } = result.terms;
   const row = cursor.row;
-  const alternates = auditorium.offered
-    .filter((offered) => offered.key !== result.key)
-    .slice(0, ALTERNATES_SHOWN);
-  const shown = [result, ...alternates];
-  const listed = shown.some((offered) => offered.key === chosen.key)
-    ? shown
-    : [...shown, chosen];
-  const consoles = auditorium.map.rows.some((drawn) =>
-    drawn.gapAfter.includes("pod"),
-  );
+  const listed = shownIn(auditorium, result, chosen);
+  const consoles = consolesIn(auditorium.map);
 
   const setCursor = (next: Cursor) => {
     holdCursor(next);
@@ -138,7 +132,7 @@ export const Room = ({
 
   const activate = (place: Place) => {
     const seat = place.seat;
-    const group = auditorium.offered.find((offered) => holds(offered, seat));
+    const group = groupHolding(auditorium, seat);
     if (group === undefined)
       setNotice(refusalOf(seat, partySize, accessibleSeating));
     else choose(group);
@@ -153,7 +147,7 @@ export const Room = ({
     >
       <form method="dialog">
         <button type="submit" className="back">
-          ‹ Back to the list
+          ‹ {BACK_TO_THE_LIST}
         </button>
       </form>
       <header className="room-head">
@@ -179,7 +173,7 @@ export const Room = ({
         className="btn-return"
         onClick={() => setCursor(opened(auditorium))}
       >
-        Back to {result.seats.map((seat) => seat.id).join(" ")}
+        {backToOf(result)}
       </button>
       <div className="map-frame">
         <div className="screen-edge" aria-hidden="true">
@@ -203,7 +197,7 @@ export const Room = ({
       />
       <Billing result={chosen} />
       <fieldset className="alternates">
-        <legend className="eyebrow">Your seats in this room</legend>
+        <legend className="eyebrow">{YOUR_SEATS_IN_THIS_ROOM}</legend>
         {listed.map((group) => (
           <label key={group.key} className="chip">
             <input
@@ -224,23 +218,17 @@ export const Room = ({
         </p>
       </fieldset>
       <p className="facts">
-        <span>
-          {auditorium.map.seatCount - auditorium.map.bookableCount} of{" "}
-          {auditorium.map.seatCount} not bookable
-        </span>
+        <span>{notBookableIn(auditorium.map)}</span>
         {amenities.length > 0 && <span>{amenities.join(" · ")}</span>}
       </p>
       <p className="prov">
-        <span>1 source · read {ageOf(result.fetchedAt, now)} ago</span>
-        <span className="unconfirmed">Not confirmed by a second source</span>
+        <span>{readingOf(result.fetchedAt, now)}</span>
+        <span className="unconfirmed">{UNCONFIRMED}</span>
       </p>
       <div className="dock">
         {online ? (
           <>
-            <p className="micro">
-              Availability is re-checked the instant you tap. SeatScout never
-              holds seats.
-            </p>
+            <p className="micro">{RE_CHECKED_ON_THE_TAP}</p>
             <button
               type="button"
               className="btn btn-velvet"
@@ -251,13 +239,8 @@ export const Room = ({
           </>
         ) : (
           <>
-            <p className="held">
-              {spokenOf(chosen)} are here while you are offline.
-            </p>
-            <p className="micro">
-              Continuing re-checks them with the Source, so it waits for the
-              connection.
-            </p>
+            <p className="held">{heldWhileOfflineOf(chosen)}</p>
+            <p className="micro">{WAITS_FOR_THE_CONNECTION}</p>
           </>
         )}
       </div>

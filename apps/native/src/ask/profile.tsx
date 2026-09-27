@@ -17,8 +17,8 @@ import { type GestureResponderEvent, StyleSheet, View } from "react-native";
 import { Ghost } from "../design-system/button.js";
 import { Section } from "../design-system/field.js";
 import { Range } from "../design-system/range.js";
-import { TOUCH_FLOOR } from "../design-system/touch.js";
 import { PLAN_ACROSS, PlanDrawing } from "../design-system/room-plan.js";
+import { TOUCH_FLOOR } from "../design-system/touch.js";
 import { Type } from "../design-system/type.js";
 import { useTheme } from "../theme.js";
 

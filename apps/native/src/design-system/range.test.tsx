@@ -2,8 +2,8 @@ import { describe, expect, it, jest } from "@jest/globals";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import { houseLights } from "../../test/lights.js";
-import { TOUCH_FLOOR } from "./touch.js";
 import { Range } from "./range.js";
+import { TOUCH_FLOOR } from "./touch.js";
 
 const ranging = async (ends?: readonly [string, string]) => {
   const onChange = jest.fn<(value: number) => void>();
