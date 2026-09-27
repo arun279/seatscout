@@ -10,6 +10,7 @@ describe("what the browser gives the application", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   it("tells its watchers the query before when the browser goes back to it", async () => {
@@ -40,6 +41,7 @@ describe("what the browser gives the application", () => {
   });
   it("waits between retries with the page's own timers", async () => {
     vi.useFakeTimers();
+    vi.spyOn(Math, "random").mockReturnValue(0.5);
     vi.stubGlobal(
       "fetch",
       fakeUpstream({
@@ -61,10 +63,10 @@ describe("what the browser gives the application", () => {
         settled = true;
       });
 
-    await vi.advanceTimersByTimeAsync(0);
+    await vi.advanceTimersByTimeAsync(249);
     expect(settled).toBe(false);
 
-    await vi.advanceTimersByTimeAsync(60_000);
-    expect(settled).toBe(true);
+    await vi.advanceTimersByTimeAsync(1);
+    await vi.waitFor(() => expect(settled).toBe(true));
   });
 });

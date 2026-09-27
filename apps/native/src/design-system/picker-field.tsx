@@ -8,31 +8,22 @@ import { fieldBox, fieldColours } from "./field.js";
 import { ON_ANDROID } from "./platform.js";
 import { Type } from "./type.js";
 
-type Mode = "date" | "time";
-
 export interface PickerFieldProps {
   readonly label: string;
   readonly words: string;
-  readonly mode: Mode;
   readonly at: Date;
   readonly onPicked: (at: Date) => void;
 }
 
-const DISPLAY: Readonly<Record<Mode, "inline" | "spinner">> = {
-  date: "inline",
-  time: "spinner",
-};
-
 export const PickerField = ({
   label,
   words,
-  mode,
   at,
   onPicked,
 }: PickerFieldProps): ReactElement => {
   const theme = useTheme();
   const [picking, setPicking] = useState(false);
-  const wheels = !ON_ANDROID && mode === "time";
+  const wheels = !ON_ANDROID;
   const picked = (event: DateTimePickerEvent, chosen: Date | undefined) => {
     if (!wheels) setPicking(false);
     if (event.type === "set" && chosen !== undefined) onPicked(chosen);
@@ -56,10 +47,10 @@ export const PickerField = ({
       </TouchableOpacity>
       {picking && (
         <DateTimePicker
-          display={ON_ANDROID ? "default" : DISPLAY[mode]}
-          mode={mode}
+          display={ON_ANDROID ? "default" : "spinner"}
+          mode="time"
           onChange={picked}
-          testID={`${mode}-picker`}
+          testID="time-picker"
           themeVariant={theme.appearance === "down" ? "dark" : "light"}
           value={at}
         />

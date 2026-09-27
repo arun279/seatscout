@@ -1,7 +1,7 @@
 import { afterEach, beforeAll, jest } from "@jest/globals";
 import { cleanup, render } from "@testing-library/react-native/pure";
 import { notificationAsync, selectionAsync } from "expo-haptics";
-import { createElement, type ReactNode } from "react";
+import { createElement } from "react";
 import {
   ScrollView,
   Text,
@@ -26,17 +26,8 @@ jest.mock("@react-native-community/datetimepicker", () => ({
   default: mockPicker,
 }));
 
-const mockHost = ({ children }: { readonly children: ReactNode }) => children;
-
-const mockRangePicker = (props: Readonly<Record<string, unknown>>) =>
-  createElement("DateRangePickerDialog", { ...props, testID: "range-picker" });
-
-jest.mock("@expo/ui/jetpack-compose", () => ({
-  Host: mockHost,
-  DateRangePickerDialog: mockRangePicker,
-}));
-
 const INITIALISATION = 30_000;
+const AUDIT = 30_000;
 
 beforeAll(async () => {
   await render(
@@ -66,7 +57,7 @@ afterEach(async () => {
     jest.mocked(selectionAsync).mockClear();
     jest.mocked(notificationAsync).mockClear();
   }
-});
+}, AUDIT);
 
 const refuse = (...report: readonly unknown[]) => {
   throw new Error(report.map(String).join(" "));
