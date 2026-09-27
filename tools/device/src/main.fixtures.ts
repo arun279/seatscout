@@ -32,21 +32,35 @@ const times = (
   );
 
 const FILES: Readonly<Record<string, string>> = {
-  "head-startup.json": "[1000, 1020, 1010]",
   "head-walk.json": times([20000, 20400, 20200], [60, 60, 60], [200, 202, 201]),
-  "base-startup.json": "[1000, 1030, 1015]",
   "base-walk.json": times([20100, 20500, 20300], [60, 60, 60], [200, 203, 201]),
-  "slower-startup.json": "[1100, 1120, 1110]",
+  "slower-walk.json": times(
+    [21000, 21400, 21200],
+    [60, 60, 60],
+    [200, 202, 201],
+  ),
   "fewer-frames.json": times(
     [20000, 20400, 20200],
     [55, 55, 55],
     [200, 202, 201],
   ),
-  "unsteady-startup.json": "[500, 1500, 1000]",
-  "edge-startup.json": "[950, 1050]",
-  "even-startup.json": "[990, 1010]",
-  "zero-among-launches.json": "[1000, 0]",
-  "text-number-launch.json": '["1000", 1010]',
+  "slower-fewer.json": times(
+    [21000, 21400, 21200],
+    [55, 55, 55],
+    [200, 202, 201],
+  ),
+  "unsteady-fewer.json": times(
+    [10000, 30000, 20000],
+    [55, 55, 55],
+    [200, 202, 201],
+  ),
+  "edge-walk.json": times([19000, 21000], [60, 60], [200, 203]),
+  "skewed-walk.json": times([20000, 20100, 20400]),
+  "even-walk.json": times(
+    [19000, 20000, 20200, 21000],
+    [60, 60, 60, 60],
+    [100, 100, 100, 100],
+  ),
   "all-unsteady-walk.json": run(
     ...[
       [10000, 30, 100, 10],
@@ -60,9 +74,6 @@ const FILES: Readonly<Record<string, string>> = {
       ],
     })),
   ),
-  "no-launch.json": "[]",
-  "zero-launch.json": "[0]",
-  "word-launch.json": '["fast"]',
   "unsteady-walk.json": times(
     [10000, 30000, 20000],
     [60, 60, 60],
@@ -75,7 +86,6 @@ const FILES: Readonly<Record<string, string>> = {
       { cpu: { perName: {}, perCore: {} }, fps: 60, ram: 100, time: 500 },
     ],
   }),
-  "skewed-startup.json": "[1000, 1010, 1040]",
   "walk-retried.json": run(
     iteration(20000, 60, 200),
     { ...iteration(90000, 60, 200), status: "FAILURE" },
@@ -142,28 +152,14 @@ export const ran = (...argv: string[]): Ran => {
   return { code, out: out.join(""), err: err.join("") };
 };
 
-export const held = (...argv: string[]): Ran =>
-  ran(
-    "--head-startup",
-    "head-startup.json",
-    "--head-journey",
-    "head-walk.json",
-    "--base-startup",
-    "base-startup.json",
-    "--base-journey",
-    "base-walk.json",
-    ...argv,
-  );
+export const held = (): Ran =>
+  ran("--head-journey", "head-walk.json", "--base-journey", "base-walk.json");
 
 export const heldWith = (swap: string, file: string): Ran =>
   ran(
     ...[
-      "--head-startup",
-      "head-startup.json",
       "--head-journey",
       "head-walk.json",
-      "--base-startup",
-      "base-startup.json",
       "--base-journey",
       "base-walk.json",
     ].map((value, at, all) => (all[at - 1] === swap ? file : value)),

@@ -836,23 +836,33 @@ not bundle.
 
 **What the emulator reads is held to the merge base, one measure at a time, while it is steady.**
 The `apk` job builds this branch and its merge base side by side, and `device` reads both on one
-emulator, the merge base first, as Reassure asks of any comparison. Start-up is the platform's own
-cold-launch timing, the `TotalTime` that `am start -W` prints, over twenty cold launches; Flashlight's
-reading of start-up spread 7.9, 19.6 and 12.1 per cent on three runs (36183944292, 36225719569,
-36229377921), too wide to hold anything to. The walk is read by Flashlight for its default ten
-iterations with the app's data cleared before each: the walk's own time, frame rate, CPU and memory.
-A measure fails when this branch's median is worse than the merge base's worst reading, the rule the
-browser journey already holds its first Seat Groups to. Each measure is held only while its spread on
-both sides, the coefficient of variation that Reassure's own glossary names for how steady a run is
-([CONTEXT.md](https://github.com/callstack/reassure/blob/main/CONTEXT.md)), stays below the 5 per
-cent Reassure publishes for a steady runner. When any measure is at or over it, everything is read
-again with twice the launches and iterations, Reassure's own advice for a noisy runner (its README
-suggests raising the runs from the default 10 to 20). A measure still at or over it is left out of
-the report and the verdict, named with its spread, and the rest are still held: a runner too noisy
-for one measure never fails every pull request as unable to measure, and a measure too noisy to hold
-is never printed as though it were held. A reading that measured nothing, failed, carried no frame
-rate or memory, timed no cold launch, or read a figure that was nothing on every iteration is refused.
+emulator, the merge base first, as Reassure asks of any comparison. The walk is read by Flashlight
+for its default ten iterations with the app's data cleared before each: the walk's own time, frame
+rate, CPU and memory. A measure fails when this branch's median is worse than the merge base's worst
+reading, the rule the browser journey already holds its first Seat Groups to. Each measure is held
+only while its spread on both sides, the coefficient of variation that Reassure's own glossary names
+for how steady a run is ([CONTEXT.md](https://github.com/callstack/reassure/blob/main/CONTEXT.md)),
+stays below the 5 per cent Reassure publishes for a steady runner. A measure at or over it is left
+out of the report and the verdict, named with its spread, and the rest are still held: a runner too
+noisy for one measure never fails every pull request as unable to measure, and a measure too noisy
+to hold is never printed as though it were held. A reading that measured nothing, failed, carried no
+frame rate or memory, or read a figure that was nothing on every iteration is refused.
 A merge base with no walk, as on the change that added it, holds this branch to nothing.
+
+**One pass, and no cold-launch measure.** Start-up was measured and never held. Flashlight's reading
+of it spread 7.9, 19.6 and 12.1 per cent on three runs (36183944292, 36225719569, 36229377921), and
+the cold launches `am start -W` timed still spread 8.1 per cent over forty launches on run
+36245321569. So it is not measured. That run read both sides twice: when a measure spread 5 per
+cent or more, everything was read again with twice the launches and iterations, as
+[Reassure's README](https://github.com/callstack/reassure#readme) suggests for a noisy runner. The second pass cost about 45 minutes of the `device` job's 5,455 seconds and
+changed no verdict: the walk's time (6.3 per cent) and CPU (13.5) were still unsteady, and frame rate
+(0.2) and memory (2.4 and 3.7) had been steady after the first. Reassure's README calls more runs "a
+trick of last resort" and a reading of 10 per cent or more a machine to fix, and Flashlight's own
+[page on CI](https://github.com/bamlab/flashlight/blob/main/website/docs/test/ci.md) says an emulator
+on CI is likely too slow and points to a device farm. So the job reads once, and a measure that is
+unsteady on that pass is left out. One pass is about 30 minutes, two sides of ten iterations at about
+72 seconds each plus the emulator's boot and the journey walk, and the job's limit is 60 minutes,
+twice that, so a runaway run hits it and a normal pass does not fill it.
 
 **The app's web build is held to the same accessibility standard as the web app.** `tests/app` runs
 as a Playwright project of its own over Vercel's `serve`, which compresses what it sends as any host

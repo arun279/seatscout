@@ -286,5 +286,9 @@ group runs once under `jest.ios.config.js` and once under `jest.android.config.j
 the two projects `jest.config.js` composes. That halves the cost of every mutant and puts the
 slowest cold shard at about 18 minutes by the same estimate, so the job's limit is 60 minutes:
 twice the slowest estimate plus its fixed cost, rather than a limit set to what the last run
-happened to take. The shards of one suite each see all of that suite's tests, so the sum the
+happened to take. The run that landed this division (36245321569) took 81 to 150 seconds on each
+app shard, but that is not a cold figure: every shard took from the seed each result it counted,
+the two theme shards 13 of their 92 mutants with the other 79 ignored, so their time was the
+initial test run, 50 and 71 seconds, and the set-up. A cold shard is still only the estimate above.
+The shards of one suite each see all of that suite's tests, so the sum the
 footprint job holds counts a suite once however many shards divide it.
