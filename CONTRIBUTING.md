@@ -93,7 +93,8 @@ answered from the corpus (`SEATSCOUT_UPSTREAM=corpus`, which Metro reads to swap
 Maestro on an emulator, then has Flashlight read the walk's time, frame rate, CPU and memory in
 one pass, on this branch and on its merge base, which `apk` builds beside it. The walk gates, and
 so does any measure worse than the merge base's worst reading while that measure is steady; one
-that is unsteady is left out and named. ADR 6 says how. `shards` reads the workspaces the mutation gate is divided
+that is unsteady is left out and named. ADR 6 says how. That job is the longest a pull request
+waits for: 31 minutes on run 36287276171, in a run of 49. `shards` reads the workspaces the mutation gate is divided
 into out of `stryker.shards.json`, and `mutation` judges one of them per runner, in parallel.
 `footprint` gathers what they and `device` wrote and reports what the change weighs. `secrets` scans the
 pull request's commits with gitleaks. `dependencies`

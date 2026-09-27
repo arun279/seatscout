@@ -154,11 +154,13 @@ report the first time. No key a shard saves starts with either, so a fallback ca
 report of the whole tree and never another workspace's, and a cache saved for the other file
 has another version, so the app's seed and the rest never cross. A pull request whose shard
 restores nothing at all is refused rather than left to judge its workspace from nothing, and
-dispatching the Baseline reseeds it. Stryker keeps every file of a restored incremental file in the report it writes, out of scope
+dispatching the Baseline reseeds it. Stryker keeps every file of a restored incremental file in the
+report it writes, out of scope
 or not, so before a shard runs, `tools/mutation.mjs` cuts the restored file down to the files
 that shard mutates. Its report, its score and the seed it saves then hold its own workspace and
 nothing else, and two shards sharing one file would each erase what the other judged; they
-never do, because they run on machines of their own. Five cache entries across the two workflows name one seed file each,
+never do, because they run on machines of their own. Five cache entries across the two workflows
+name one seed file each,
 and a list that grows back to two is a count that no longer matches this sentence.
 
 **Only a run that passed leaves a seed, under every key it writes.** A mutant that runs while
@@ -192,7 +194,8 @@ every mutant would run every test.
 skips the argument of `StyleSheet.create`, and a table declared at the top of the four files that
 declare one: the theme, whose two appearances, type roles and scales are all table; the router's
 layout, whose screen options are a declaration to the platform; and the screen band and the room
-plan, whose tables are the geometry, the stops and the strokes of a drawing. It reaches no other file, so the headers a device
+plan, whose tables are the geometry, the stops and the strokes of a drawing. It reaches no other
+file, so the headers a device
 read carries are judged like any other adapter. A drawn or declared value
 is held by the headed pass and its screenshots: the only test that kills a mutant in one restates
 the value, which is a tautological test. Everything that holds behaviour is judged, screens
@@ -290,5 +293,6 @@ happened to take. The run that landed this division (36245321569) took 81 to 150
 app shard, but that is not a cold figure: every shard took from the seed each result it counted,
 the two theme shards 13 of their 92 mutants with the other 79 ignored, so their time was the
 initial test run, 50 and 71 seconds, and the set-up. A cold shard is still only the estimate above.
-The shards of one suite each see all of that suite's tests, so the sum the
-footprint job holds counts a suite once however many shards divide it.
+A shard's initial run sees only the tests Jest relates to its sources, so each shard records the
+test files it reached, and the footprint job holds their union to every test file in the tree,
+naming any file no shard reaches.

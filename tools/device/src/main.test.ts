@@ -1,11 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { held, heldWith, ran } from "./main.fixtures.ts";
+import { heldWith, ran } from "./main.fixtures.ts";
 
 const WALK = "Walk, as Maestro makes it";
 
 describe("what the emulator measured, each measure held to the merge base while it is steady", () => {
   it("passes a branch no worse than the merge base's worst on a steady runner, saying what it measured", () => {
-    const report = held();
+    const report = ran(
+      "--head-journey",
+      "head-walk.json",
+      "--base-journey",
+      "base-walk.json",
+    );
 
     expect(report.code).toBe(0);
     expect(report.err).toBe("");

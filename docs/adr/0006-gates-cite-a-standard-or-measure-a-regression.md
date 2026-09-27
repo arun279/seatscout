@@ -821,7 +821,8 @@ swipe on the full-screen Ask dialog and the Room is recognised by the system, no
 turns it into the same back event the back key sends; injected edge swipes are not recognised on
 the runner's emulator even with gesture navigation on (run 36223227514 swiped from the edge of
 Settings and opened a subpage instead), so the walk sends that back event itself. Then by the way
-back a person presses: the Ask sheet's own close control, and the Android back key. A step that finds nothing fails the job, and `footprint`, which is
+back a person presses: the Ask sheet's own close control, and the Android back key. A step that
+finds nothing fails the job, and `footprint`, which is
 required, needs it. The corpus stands in through Metro: `SEATSCOUT_UPSTREAM=corpus` swaps
 `src/host/upstream.ts` for `e2e/upstream.ts`, which answers from the same `fakeUpstream` the browser
 suite uses, so the bundle a phone runs never carries the corpus. Any other value is refused, and
@@ -830,7 +831,8 @@ It is Android on an ubuntu runner rather than iOS on a macOS one because the onl
 open-source frame-rate reader, [Flashlight](https://github.com/bamlab/flashlight), reads Android
 only, so one build serves both the walk and the reading, and published prior art for an Expo app on
 a macOS runner puts one run at 15 to 25 minutes (the workflow comment in
-[johntips/react-native-infinite-material-tab](https://github.com/johntips/react-native-infinite-material-tab/blob/main/.github/workflows/e2e.yml)). [Lanterna](https://github.com/rogerfuentes/lanterna)
+[johntips/react-native-infinite-material-tab](https://github.com/johntips/react-native-infinite-material-tab/blob/main/.github/workflows/e2e.yml)).
+[Lanterna](https://github.com/rogerfuentes/lanterna)
 was read and not taken: it is at 0.0.x, and its iOS frame rate needs a native module Expo Go does
 not bundle.
 
@@ -854,15 +856,22 @@ of it spread 7.9, 19.6 and 12.1 per cent on three runs (36183944292, 36225719569
 the cold launches `am start -W` timed still spread 8.1 per cent over forty launches on run
 36245321569. So it is not measured. That run read both sides twice: when a measure spread 5 per
 cent or more, everything was read again with twice the launches and iterations, as
-[Reassure's README](https://github.com/callstack/reassure#readme) suggests for a noisy runner. The second pass cost about 45 minutes of the `device` job's 5,455 seconds and
-changed no verdict: the walk's time (6.3 per cent) and CPU (13.5) were still unsteady, and frame rate
-(0.2) and memory (2.4 and 3.7) had been steady after the first. Reassure's README calls more runs "a
+[Reassure's README](https://github.com/callstack/reassure#readme) suggests for a noisy runner. The
+second pass cost about 59 of the `device` job's 91 minutes (the three APK installs in the log
+are at 13:47, 14:16 and 14:46, and the step ended at 15:15), and its final report still left the
+walk's time (6.3 per cent) and CPU (13.5) out as unsteady while holding frame rate (0.2) and memory
+(2.4 and 3.7). The first pass's report was overwritten by the second, so whether those two were
+already steady after ten iterations cannot be read from that run; the one-pass run that followed
+(36287276171) held them at 0.1 and 0.2, and 2.9 and 4.8. Reassure's README calls more runs "a
 trick of last resort" and a reading of 10 per cent or more a machine to fix, and Flashlight's own
 [page on CI](https://github.com/bamlab/flashlight/blob/main/website/docs/test/ci.md) says an emulator
 on CI is likely too slow and points to a device farm. So the job reads once, and a measure that is
-unsteady on that pass is left out. One pass is about 30 minutes, two sides of ten iterations at about
-72 seconds each plus the emulator's boot and the journey walk, and the job's limit is 60 minutes,
-twice that, so a runaway run hits it and a normal pass does not fill it.
+unsteady on that pass is left out. One pass is about 30 minutes, two sides of ten iterations at 85 to 90
+seconds each plus the emulator's boot and the journey walk, measured at 1,846 seconds on run
+36287276171, and the job's limit is 60 minutes, twice that, so a runaway run hits it and a normal
+pass does not fill it. That run also tried Gradle's build cache on the `apk` job: cold, it saved
+nothing (836 and 623 seconds against 859 and 699) and wrote a 1.79 GB entry per pull request into a
+repository cache already past GitHub's 10 GB, which evicts the mutation seeds, so it is not used.
 
 **The app's web build is held to the same accessibility standard as the web app.** `tests/app` runs
 as a Playwright project of its own over Vercel's `serve`, which compresses what it sends as any host
