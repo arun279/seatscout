@@ -1,3 +1,4 @@
+import type { SeatGroupResult } from "@seatscout/client";
 import {
   parametersOf,
   type Term,
@@ -57,6 +58,18 @@ export const goTo = (terms: Terms): void => {
 
 export const askAbout = (terms: Terms, term: Term): void => {
   router.push({ pathname: "/ask", params: { ...askedIn(terms), term } });
+};
+
+let handed: SeatGroupResult | undefined;
+
+export const handOff = (chosen: SeatGroupResult): void => {
+  handed = chosen;
+  router.push({ pathname: "/hand-off", params: { group: chosen.key } });
+};
+
+export const useHanded = (): SeatGroupResult | undefined => {
+  const { group } = useLocalSearchParams();
+  return handed?.key === group ? handed : undefined;
 };
 
 export const runInstead = (terms: Terms): void => {
