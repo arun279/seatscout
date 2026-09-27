@@ -87,41 +87,32 @@ how a contributor arrives red on a pull request, which is what this list is for.
 line is the half of the journey gate a checkout can run alone; the job also builds the merge
 base in a worktree, runs its journey, and holds this one to it.
 
-Eight further jobs run beside it. `device` builds the app for Android with the Source
-answered from the corpus (`SEATSCOUT_UPSTREAM=corpus`, which Metro reads to swap
-`src/host/upstream.ts` for `e2e/upstream.ts`), walks `apps/native/e2e/journey.yaml` with
-Maestro on an emulator, then has Flashlight read the walk's time, frame rate, CPU and memory in
-one pass, on this branch and on its merge base, which `apk` builds beside it. The walk gates, and
-so does any measure worse than the merge base's worst reading while that measure is steady; one
-that is unsteady is left out and named. ADR 6 says how. That job is the longest a pull request
-waits for: 31 minutes on run 36287276171, in a run of 49. `shards` reads the workspaces the mutation gate is divided
-into out of `stryker.shards.json`, and `mutation` judges one of them per runner, in parallel.
-`footprint` gathers what they and `device` wrote and reports what the change weighs. `secrets` scans the
-pull request's commits with gitleaks. `dependencies`
+Nine further jobs run beside it. `verdicts` runs first and names what `quality`, `apk` and
+`performance` would judge by the git trees they read; a job an earlier run of the same pull
+request passed on exactly those trees is skipped, and says so. `apk` builds the app for Android
+with the Source answered from the corpus (`SEATSCOUT_UPSTREAM=corpus`, which Metro reads to swap
+`src/host/upstream.ts` for `e2e/upstream.ts`), reading the Gradle caches main's Baseline run
+leaves. `device` walks `apps/native/e2e/journey.yaml` over that app with Maestro on an emulator,
+once, and the walk gates. The Flashlight reading of the walk's frame rate, CPU and memory runs
+on main instead, in the Baseline workflow, held to the run before it; ADR 6 says why. `shards`
+reads the workspaces the mutation gate is divided into out of `stryker.shards.json`, and
+`mutation` judges one of them per runner, in parallel. `footprint` waits for every other job,
+reports what the change weighs and which jobs were reused, and refuses a run that took more than
+20 minutes from its first job starting. `secrets` scans the pull request's commits with gitleaks. `dependencies`
 scans the lockfile against the OSV database and fails on any advisory, then reads every
 dependency's licence and fails on any SPDX identifier outside the allowlist that job
 carries, a licence it could not determine included. `performance` measures each screen's
 Testing Library scenario with Reassure on the merge base and on the head, and reads how
 steady the runner is before it judges either.
 
-Two hooks run some of that earlier, and `lefthook.yml` declares both. The pre-commit hook
-runs five checks over staged files. The pre-push hook reads the refs the push carries and
-hands one that sends commits to `push-checks`, which runs eleven checks; a push that only
-deletes a branch sends none, so it runs none of them. `pnpm exec lefthook run push-checks`
-runs the same eleven by hand.
-
-Those eleven are scoped to the change wherever the tool scopes itself. The unit stage runs
-`--changed origin/main`, which is the tests that reach what the branch changed since its merge
-base with `main`. A shared file brings the whole suite back: a Vitest config, `package.json`,
-a `tsconfig*.json`, `pnpm-lock.yaml` or a setup file. Those are `forceRerunTriggers` in
-`vitest.config.ts`, and the list is written out there rather than left to the default, whose
-glob for its own config file matches nothing. The type check reuses the build information
-`tsc --build` leaves behind. The spell check and the dead-code check each reuse a cache of
-their own. The rest read the whole tree, because none of them takes two seconds.
-
-Neither hook is a substitute for the list above. `quality` installs into an empty runner, so
-it reads every file with no cache to reuse and no scope, and it is what a merge waits for.
-The hooks answer on the change; the job answers on the tree.
+Every check runs in one place before CI. The pre-commit hook runs five checks over staged
+files, `lefthook.yml` declares it, and nothing else runs on this machine unasked. CI is the
+judge of the whole tree, because a hook can be skipped. `quality`, `apk`, `performance`,
+`device` and `footprint` judge a tree once: a push that changes nothing one of them reads
+reuses its earlier verdict, and a push that fixes one of them reruns that one and what waits
+for it. The mutation shards start from the report their tree left. `secrets` reads commits, and
+`dependencies` an advisory database that changes without the tree, so those two run on every
+push, in under a minute each.
 
 ## When a gate refuses
 

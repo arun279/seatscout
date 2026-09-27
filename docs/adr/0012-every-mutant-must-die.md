@@ -221,7 +221,7 @@ behaviour most worth proving can fail.
 
 **A test cannot read the repository's own sources**, because the runner hands the suite
 instrumented copies of everything it mutates. The counts gate is held to the tree by
-`pnpm counts` in `quality` and on pre-push rather than by a unit test, for that reason, and
+`pnpm counts` in `quality` rather than by a unit test, for that reason, and
 its table of pairs sits outside `src` for the same one.
 
 **A fixture derived at module scope hides mutants.** A mutant that stops a test file loading

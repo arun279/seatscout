@@ -1,4 +1,4 @@
-import { configDefaults, defaultExclude, defineConfig } from "vitest/config";
+import { defaultExclude, defineConfig } from "vitest/config";
 
 const exclude = [
   ...defaultExclude,
@@ -10,20 +10,12 @@ const screenSetupFiles = [
   "apps/web/test/dialogs.ts",
   "apps/web/test/strict-console.ts",
 ];
-const anywhere = (name: string) => ["**", name, "**"].join("/");
 
 const WEB = "apps/web";
 
 export const configFor = (tests = "{apps,packages,tools}/*") =>
   defineConfig({
     test: {
-      forceRerunTriggers: [
-        ...configDefaults.forceRerunTriggers,
-        ...["vitest*.config.ts", "tsconfig*.json", "pnpm-lock.yaml"].map(
-          anywhere,
-        ),
-        ...screenSetupFiles.map(anywhere),
-      ],
       projects: [
         {
           extends: true,

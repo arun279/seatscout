@@ -1,0 +1,24 @@
+name: Leave this job's verdict for a later run on the same inputs
+description: Writes this run's id beside whatever the job already put under .verdict/<job>, and saves it under the key the earlier-verdict action named, so a later push of the same inputs reuses it rather than judging them again. A job calls it only when it passed.
+inputs:
+  job:
+    description: The job whose verdict this is.
+    required: true
+  key:
+    description: The key the earlier-verdict action named.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Write which run judged it
+      shell: bash
+      env:
+        JOB: ${{ inputs.job }}
+      run: |
+        mkdir -p ".verdict/$JOB"
+        echo "$GITHUB_RUN_ID" > ".verdict/$JOB/run"
+    - name: Save it under its inputs' name
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: .verdict/${{ inputs.job }}
+        key: ${{ inputs.key }}

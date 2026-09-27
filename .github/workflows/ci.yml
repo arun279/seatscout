@@ -10,8 +10,51 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  APP: apps/native packages package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json .github
+
 jobs:
+  verdicts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      BASE: ${{ github.event.pull_request.base.sha }}
+    outputs:
+      quality: ${{ steps.quality.outputs.run }}
+      quality-key: ${{ steps.quality.outputs.key }}
+      apk: ${{ steps.apk.outputs.run }}
+      apk-key: ${{ steps.apk.outputs.key }}
+      performance: ${{ steps.performance.outputs.run }}
+      performance-key: ${{ steps.performance.outputs.key }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Fetch the merge base, which the jobs that compare against it also judge
+        run: git fetch --no-tags --depth=1 origin "$BASE"
+      - name: Find whether an earlier run passed the whole tree against this merge base
+        id: quality
+        uses: ./.github/actions/earlier-verdict
+        with:
+          job: quality
+          paths: .
+          base: ${{ env.BASE }}
+      - name: Find whether an earlier run built the app from these trees
+        id: apk
+        uses: ./.github/actions/earlier-verdict
+        with:
+          job: apk
+          paths: ${{ env.APP }}
+      - name: Find whether an earlier run measured the app's screens from these trees against this merge base
+        id: performance
+        uses: ./.github/actions/earlier-verdict
+        with:
+          job: performance
+          paths: ${{ env.APP }}
+          base: ${{ env.BASE }}
+
   quality:
+    needs: verdicts
+    if: needs.verdicts.outputs.quality == ''
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
@@ -105,6 +148,11 @@ jobs:
           fi
           pnpm journey --head reports/journey/samples.json \
             --head-gesture reports/journey/gesture.json "${held[@]}"
+      - name: Leave this verdict for a later push of the same trees
+        uses: ./.github/actions/leave-verdict
+        with:
+          job: quality
+          key: ${{ needs.verdicts.outputs.quality-key }}
 
   shards:
     runs-on: ubuntu-24.04
@@ -219,124 +267,92 @@ jobs:
           exit 1
 
   apk:
+    needs: verdicts
+    if: needs.verdicts.outputs.apk == ''
     runs-on: ubuntu-24.04
     timeout-minutes: 45
-    strategy:
-      fail-fast: false
-      matrix:
-        side: [head, base]
     env:
       SEATSCOUT_UPSTREAM: corpus
     steps:
-      - name: Check out this branch, or its merge base
+      - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ matrix.side == 'base' && github.event.pull_request.base.sha || '' }}
-      - name: Say whether this side has a walk to build for
-        id: walk
-        run: |
-          if [ -f apps/native/e2e/journey.yaml ]; then
-            echo "present=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "The $MATRIX_SIDE has no walk, so there is nothing to build for it."
-            echo "present=false" >> "$GITHUB_OUTPUT"
-            echo "This side has no walk." > "$RUNNER_TEMP/no-walk.txt"
-          fi
-        env:
-          MATRIX_SIDE: ${{ matrix.side }}
       - name: Set up pnpm and Node.js
-        if: steps.walk.outputs.present == 'true'
         uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
         with:
           runtime: node@24.20.0
           cache: true
           install: false
-      - if: steps.walk.outputs.present == 'true'
-        run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile
       - name: Write the Android project the app's configuration describes
-        if: steps.walk.outputs.present == 'true'
         run: pnpm --filter @seatscout/native exec expo prebuild --platform android --no-install
+      - name: Read Gradle's caches as main's Baseline run left them, writing none from a pull request
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        with:
+          cache-provider: basic
+          cache-read-only: true
       - name: Build the release app for the emulator's processor, with the Source answered from the corpus
-        if: steps.walk.outputs.present == 'true'
+        id: build
         working-directory: apps/native/android
         run: ./gradlew assembleRelease -PreactNativeArchitectures=x86_64 "-Dorg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g"
-      - name: Hand the app and its walk to the emulator
-        if: steps.walk.outputs.present == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - name: Put the app in this job's verdict, which the emulator restores it from
+        run: |
+          mkdir -p .verdict/apk
+          mv apps/native/android/app/build/outputs/apk/release/app-release.apk .verdict/apk/app.apk
+      - name: Leave this verdict and the app for the emulator and for a later push of the same trees
+        uses: ./.github/actions/leave-verdict
         with:
-          name: apk-${{ matrix.side }}
-          path: |
-            apps/native/android/app/build/outputs/apk/release/app-release.apk
-            apps/native/e2e/*.yaml
-          if-no-files-found: error
-      - name: Say to the emulator that this side has no walk, so its absence is never a lost download
-        if: steps.walk.outputs.present != 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: apk-${{ matrix.side }}
-          path: ${{ runner.temp }}/no-walk.txt
-          if-no-files-found: error
+          job: apk
+          key: ${{ needs.verdicts.outputs.apk-key }}
 
   device:
-    needs: apk
+    needs: [verdicts, apk]
+    if: ${{ !cancelled() && needs.verdicts.result == 'success' && contains(fromJSON('["success", "skipped"]'), needs.apk.result) }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 20
     outputs:
       journey: ${{ steps.journey.outputs.outcome }}
-      measured: ${{ steps.measured.outcome }}
+      reused: ${{ steps.earlier.outputs.run }}
     env:
       APP_ID: io.github.arun279.seatscout
       LINK: seatscout:///?area=75006&date=2026-08-28&partySize=2
       OUT: reports/device
+      APK: .verdict/apk/app.apk
+      WALK: apps/native/e2e/journey.yaml
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Set up Node.js for the reading
-        uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
+      - name: Collect the app this tree built, in this run or an earlier one
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          runtime: node@24.20.0
-          cache: false
-          install: false
-      - name: Collect this branch's app and walk
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+          path: .verdict/apk
+          key: ${{ needs.verdicts.outputs.apk-key }}
+          fail-on-cache-miss: true
+      - name: Name the app by its hash
+        id: app
+        run: echo "sha=$(sha256sum "$APK" | cut -c1-64)" >> "$GITHUB_OUTPUT"
+      - name: Find whether an earlier run walked this same app with the same walk
+        id: earlier
+        uses: ./.github/actions/earlier-verdict
         with:
-          name: apk-head
-          path: ${{ runner.temp }}/head
-      - name: Collect the merge base's app and walk, or its word that it has none
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
-        with:
-          name: apk-base
-          path: ${{ runner.temp }}/base
+          job: device
+          paths: apps/native/e2e .github
+          also: ${{ steps.app.outputs.sha }}
       - name: Install Maestro
+        if: steps.earlier.outputs.run == ''
         run: |
           curl -fsSL -o "$RUNNER_TEMP/maestro.zip" https://github.com/mobile-dev-inc/maestro/releases/download/cli-2.10.0/maestro.zip
           echo "29b675e10cc12080e445e9bfb2e2b4e4dfb9c0f2e30d5884120d258b5e1cd991  $RUNNER_TEMP/maestro.zip" | sha256sum --check
           unzip -q "$RUNNER_TEMP/maestro.zip" -d "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/maestro/bin" >> "$GITHUB_PATH"
-      - name: Install Flashlight
-        run: |
-          curl -fsSL -o "$RUNNER_TEMP/flashlight.zip" https://github.com/bamlab/flashlight/releases/download/v0.18.0/flashlight-linux.zip
-          echo "5b9faba6254344d78ee5d0326c293807fcbc43918eb53c272f3c1e054557ea68  $RUNNER_TEMP/flashlight.zip" | sha256sum --check
-          unzip -q "$RUNNER_TEMP/flashlight.zip" -d "$RUNNER_TEMP"
-          sudo install -m 0755 "$RUNNER_TEMP/flashlight-linux" /usr/local/bin/flashlight
-      - name: Let the emulator use the runner's hardware virtualisation, and name the two sides
+      - name: Let the emulator use the runner's hardware virtualisation
+        if: steps.earlier.outputs.run == ''
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
           mkdir -p "$OUT"
-          {
-            echo "HEAD_APK=$RUNNER_TEMP/head/android/app/build/outputs/apk/release/app-release.apk"
-            echo "HEAD_WALK=$RUNNER_TEMP/head/e2e/journey.yaml"
-            if [ -f "$RUNNER_TEMP/base/e2e/journey.yaml" ]; then
-              echo "BASE_APK=$RUNNER_TEMP/base/android/app/build/outputs/apk/release/app-release.apk"
-              echo "BASE_WALK=$RUNNER_TEMP/base/e2e/journey.yaml"
-            elif [ ! -f "$RUNNER_TEMP/base/no-walk.txt" ]; then
-              echo "::error::The merge base's artifact holds neither a walk nor its word that it has none."
-              exit 1
-            fi
-          } >> "$GITHUB_ENV"
-      - name: Walk the journey on an emulator, then measure both sides with Flashlight and hold this one to the merge base
+      - name: Walk the journey on an emulator
+        if: steps.earlier.outputs.run == ''
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         with:
           api-level: 34
@@ -345,42 +361,49 @@ jobs:
           disable-animations: true
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: apps/native/e2e/device.sh
+      - name: Carry the earlier run's walk, which reached every screen on this same app
+        if: steps.earlier.outputs.run != ''
+        run: |
+          mkdir -p "$OUT"
+          echo passed > "$OUT/journey.outcome"
       - name: Say whether the journey reached every screen
         id: journey
         if: ${{ !cancelled() }}
         run: echo "outcome=$(cat "$OUT/journey.outcome" 2>/dev/null || echo failed)" >> "$GITHUB_OUTPUT"
-      - name: Say whether the reading held, refusing one that measured nothing
-        id: measured
-        if: ${{ !cancelled() }}
-        run: |
-          cat "$OUT/device.md" 2>/dev/null || echo "Flashlight left no reading."
-          test "$(cat "$OUT/measured.status" 2>/dev/null)" = 0
-      - name: Hand the reading to the job that reports every gate
-        if: ${{ !cancelled() }}
+      - name: Keep what Maestro wrote of the walk
+        if: ${{ !cancelled() && steps.earlier.outputs.run == '' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: device
           path: |
-            ${{ env.OUT }}/device.md
             ${{ env.OUT }}/journey.xml
             ${{ env.OUT }}/maestro/
           if-no-files-found: ignore
           include-hidden-files: true
+      - name: Leave this verdict for a later push of the same app and walk
+        if: steps.earlier.outputs.run == '' && steps.journey.outputs.outcome == 'passed'
+        uses: ./.github/actions/leave-verdict
+        with:
+          job: device
+          key: ${{ steps.earlier.outputs.key }}
 
   footprint:
-    needs: [mutation, device]
+    needs: [verdicts, quality, mutation, apk, device, performance, secrets, dependencies]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     permissions:
       contents: read
+      actions: read
       pull-requests: write
     env:
       BASE: ${{ github.event.pull_request.base.sha }}
       HEAD: ${{ github.event.pull_request.head.sha }}
+      GH_TOKEN: ${{ github.token }}
+      VERDICTS: ${{ needs.verdicts.result }}
       JUDGED: ${{ needs.mutation.result }}
       WALKED: ${{ needs.device.outputs.journey }}
-      MEASURED_ON_DEVICE: ${{ needs.device.outputs.measured }}
+      WALL_MINUTES: 20
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -392,9 +415,19 @@ jobs:
           runtime: node@24.20.0
           cache: true
           install: false
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm build
+      - name: Find whether an earlier run measured this same tree against this same merge base
+        id: earlier
+        uses: ./.github/actions/earlier-verdict
+        with:
+          job: footprint
+          paths: .
+          base: ${{ env.BASE }}
+      - if: steps.earlier.outputs.run == ''
+        run: pnpm install --frozen-lockfile
+      - if: steps.earlier.outputs.run == ''
+        run: pnpm build
       - name: Export the scripts the app ships for both phones and the web, so they are weighed
+        if: steps.earlier.outputs.run == ''
         run: pnpm --filter @seatscout/native run weigh
       - name: Collect what every shard judged
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
@@ -402,12 +435,6 @@ jobs:
           pattern: mutation-*
           merge-multiple: true
           path: reports/mutation
-      - name: Collect what the emulator walked and measured
-        continue-on-error: true
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
-        with:
-          name: device
-          path: reports/device
       - name: Hold every shard to a report that weighed something
         id: reports
         continue-on-error: true
@@ -419,6 +446,7 @@ jobs:
           exit "$refused"
       - name: Check that every test file in the tree is reached by some shard
         id: collection
+        if: steps.earlier.outputs.run == ''
         continue-on-error: true
         run: |
           set -o pipefail
@@ -453,24 +481,60 @@ jobs:
           echo "::error::These test files are reached by no shard, so nothing judges what they assert: $(echo "$unreached" | tr '\n' ' '). A test file that relates to no mutated source, or a source under no shard, falls between the shards."
           exit 1
       - name: Install the counter
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.earlier.outputs.run == '' }}
         run: |
           curl -fsSL -o "$RUNNER_TEMP/cloc" https://github.com/AlDanial/cloc/releases/download/v2.10/cloc-2.10.pl
           echo "bf59272455172108072a0a106379f7509fd4349bdcfd85203bac038ccd286d83  $RUNNER_TEMP/cloc" | sha256sum --check
           sudo install -m 0755 "$RUNNER_TEMP/cloc" /usr/local/bin/cloc
       - name: Measure the footprint
         id: footprint
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.earlier.outputs.run == '' }}
         continue-on-error: true
         run: pnpm footprint --base "$BASE" --head "$HEAD" --out footprint.md
+      - name: Leave the measurement and the test count for a later push of the same trees
+        if: ${{ !cancelled() && steps.earlier.outputs.run == '' && steps.collection.outcome == 'success' && steps.footprint.outcome == 'success' }}
+        env:
+          COUNTED: ${{ steps.collection.outputs.counted }}
+          HELD: ${{ steps.collection.outputs.held }}
+        run: |
+          mkdir -p .verdict/footprint
+          cp footprint.md .verdict/footprint/footprint.md
+          printf 'counted=%s\nheld=%s\n' "$COUNTED" "$HELD" > .verdict/footprint/collection
+      - if: ${{ !cancelled() && steps.earlier.outputs.run == '' && steps.collection.outcome == 'success' && steps.footprint.outcome == 'success' }}
+        uses: ./.github/actions/leave-verdict
+        with:
+          job: footprint
+          key: ${{ steps.earlier.outputs.key }}
+      - name: Take the measurement and the test count from the earlier run on this same tree
+        id: reused
+        if: steps.earlier.outputs.run != ''
+        run: |
+          cp .verdict/footprint/footprint.md footprint.md
+          {
+            cat .verdict/footprint/collection
+            echo "outcome=success"
+          } >> "$GITHUB_OUTPUT"
+      - name: Read how long this run has taken since its first job started
+        id: wall
+        if: ${{ !cancelled() }}
+        run: |
+          started="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT/jobs?per_page=100" --jq '[.jobs[].started_at] | min')"
+          seconds=$(( $(date +%s) - $(date -d "$started" +%s) ))
+          {
+            echo "seconds=$seconds"
+            echo "minutes=$(awk -v seconds="$seconds" 'BEGIN { printf "%.1f", seconds / 60 }')"
+          } >> "$GITHUB_OUTPUT"
       - name: Say what every gate did, so a red run reports as fully as a green one
         if: ${{ !cancelled() }}
         env:
           REPORTED: ${{ steps.reports.outcome }}
-          COLLECTION: ${{ steps.collection.outcome }}
-          MEASURED: ${{ steps.footprint.outcome }}
-          COUNTED: ${{ steps.collection.outputs.counted }}
-          HELD: ${{ steps.collection.outputs.held }}
+          COLLECTION: ${{ steps.reused.outputs.outcome || steps.collection.outcome }}
+          MEASURED: ${{ steps.reused.outputs.outcome || steps.footprint.outcome }}
+          COUNTED: ${{ steps.reused.outputs.counted || steps.collection.outputs.counted }}
+          HELD: ${{ steps.reused.outputs.held || steps.collection.outputs.held }}
+          MINUTES: ${{ steps.wall.outputs.minutes }}
+          REUSED: >-
+            ${{ needs.verdicts.outputs.quality && format('quality (run {0}) ', needs.verdicts.outputs.quality) }}${{ needs.verdicts.outputs.apk && format('apk (run {0}) ', needs.verdicts.outputs.apk) }}${{ needs.verdicts.outputs.performance && format('performance (run {0}) ', needs.verdicts.outputs.performance) }}${{ needs.device.outputs.reused && format('device (run {0}) ', needs.device.outputs.reused) }}${{ steps.earlier.outputs.run && format('footprint (run {0}) ', steps.earlier.outputs.run) }}
         run: |
           {
             echo "## What the gates did"
@@ -482,18 +546,14 @@ jobs:
             echo "| Test collection | $COLLECTION, the shards reached ${COUNTED:-an uncounted number of} test files between them, and the runners collect ${HELD:-an uncounted number} |"
             echo "| Footprint measurement | $MEASURED |"
             echo "| Journey over the built app on an Android emulator | ${WALKED:-not walked} |"
-            echo "| Start-up and frame rate read on the emulator | ${MEASURED_ON_DEVICE:-not read} |"
+            echo "| Judged green before on this same tree, so not judged again | ${REUSED:-none} |"
+            echo "| Wall time of this run | ${MINUTES:-an unread number of} minutes, held under $WALL_MINUTES |"
             echo
           } > verdict.md
           if [ -s footprint.md ]; then
             cat footprint.md >> verdict.md
           else
             echo "The footprint was not measured on this run, so there are no figures below." >> verdict.md
-          fi
-          if [ -s reports/device/device.md ]; then
-            { echo; cat reports/device/device.md; } >> verdict.md
-          else
-            printf '\nThe emulator measured nothing on this run, so there are no device figures.\n' >> verdict.md
           fi
           mv verdict.md footprint.md
       - name: Add the report to the run summary
@@ -505,20 +565,23 @@ jobs:
         with:
           header: footprint
           path: footprint.md
-      - name: Refuse the change if a gate refused it, now that the report is posted
+      - name: Refuse the change if a gate refused it or the run took too long, now that the report is posted
         if: ${{ !cancelled() }}
         env:
           REPORTED: ${{ steps.reports.outcome }}
-          COLLECTION: ${{ steps.collection.outcome }}
-          MEASURED: ${{ steps.footprint.outcome }}
+          COLLECTION: ${{ steps.reused.outputs.outcome || steps.collection.outcome }}
+          MEASURED: ${{ steps.reused.outputs.outcome || steps.footprint.outcome }}
+          SECONDS_TAKEN: ${{ steps.wall.outputs.seconds }}
         run: |
-          if [ "$JUDGED" = success ] && [ "$REPORTED" = success ] && [ "$COLLECTION" = success ] && [ "$MEASURED" = success ] && [ "$WALKED" = passed ] && [ "$MEASURED_ON_DEVICE" = success ]; then
+          if [ "$VERDICTS" = success ] && [ "$JUDGED" = success ] && [ "$REPORTED" = success ] && [ "$COLLECTION" = success ] && [ "$MEASURED" = success ] && [ "$WALKED" = passed ] && [ -n "$SECONDS_TAKEN" ] && [ "$SECONDS_TAKEN" -le $((WALL_MINUTES * 60)) ]; then
             exit 0
           fi
-          echo "::error::Mutation runs $JUDGED, every shard reported $REPORTED, test collection $COLLECTION, footprint measurement $MEASURED, the journey on the emulator ${WALKED:-not walked}, the reading on the emulator ${MEASURED_ON_DEVICE:-not read}. The report on the pull request says what each one measured."
+          echo "::error::Earlier verdicts read $VERDICTS, mutation runs $JUDGED, every shard reported $REPORTED, test collection $COLLECTION, footprint measurement $MEASURED, the journey on the emulator ${WALKED:-not walked}, and the run took ${SECONDS_TAKEN:-an unread number of} seconds against $((WALL_MINUTES * 60)). The report on the pull request says what each one measured."
           exit 1
 
   performance:
+    needs: verdicts
+    if: needs.verdicts.outputs.performance == ''
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
@@ -612,6 +675,11 @@ jobs:
           else
             echo "::warning::The runner read $steady per cent, at or above the 5 per cent Reassure calls steady, so this job reported rather than gated."
           fi
+      - name: Leave this verdict for a later push of the same trees
+        uses: ./.github/actions/leave-verdict
+        with:
+          job: performance
+          key: ${{ needs.verdicts.outputs.performance-key }}
 
   secrets:
     runs-on: ubuntu-24.04

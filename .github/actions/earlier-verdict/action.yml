@@ -1,0 +1,58 @@
+name: Find the verdict an earlier run left on the same inputs
+description: Names what a job judges by the git trees of the paths it reads, and of the same paths at a second revision when it compares against one, with anything else it judges named by a hash; then restores the verdict an earlier run left on exactly those inputs, so the job need not judge them again.
+inputs:
+  job:
+    description: The job whose verdict this is.
+    required: true
+  paths:
+    description: The paths the job judges, separated by spaces; a lone dot is the whole tree.
+    required: true
+  base:
+    description: A revision the job also judges the same paths at, such as the merge base it holds the change to.
+    default: ""
+  also:
+    description: A hash of anything else the job judges.
+    default: ""
+outputs:
+  key:
+    description: The cache key this job leaves its verdict under when it passes.
+    value: ${{ steps.inputs.outputs.key }}
+  run:
+    description: The run that judged the same inputs green, or nothing when none did.
+    value: ${{ steps.found.outputs.run }}
+runs:
+  using: composite
+  steps:
+    - name: Name the inputs by their trees
+      id: inputs
+      shell: bash
+      env:
+        JOB: ${{ inputs.job }}
+        PATHS: ${{ inputs.paths }}
+        BASE_REVISION: ${{ inputs.base }}
+        ALSO: ${{ inputs.also }}
+      run: |
+        read -r -a paths <<< "$PATHS"
+        for revision in HEAD $BASE_REVISION; do
+          for path in "${paths[@]}"; do
+            [ "$path" = . ] && path=
+            git rev-parse "$revision:$path"
+          done
+        done > "$RUNNER_TEMP/$JOB.inputs"
+        echo "$ALSO" >> "$RUNNER_TEMP/$JOB.inputs"
+        echo "key=verdict-$JOB-$(sha256sum < "$RUNNER_TEMP/$JOB.inputs" | cut -c1-64)" >> "$GITHUB_OUTPUT"
+    - name: Restore the verdict an earlier run left on them
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: .verdict/${{ inputs.job }}
+        key: ${{ steps.inputs.outputs.key }}
+    - name: Say which run judged them
+      id: found
+      shell: bash
+      env:
+        JOB: ${{ inputs.job }}
+      run: |
+        [ -f ".verdict/$JOB/run" ] || exit 0
+        run="$(cat ".verdict/$JOB/run")"
+        echo "run=$run" >> "$GITHUB_OUTPUT"
+        echo "::notice title=$JOB::judged green before on this same tree, run $run"

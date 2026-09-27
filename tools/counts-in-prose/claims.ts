@@ -124,12 +124,6 @@ export const CLAIMS: readonly Claim[] = [
     count: (read) => hookCommands(read, "pre-commit").length,
   },
   {
-    document: CONTRIBUTING,
-    says: /`push-checks`, which runs (\w+) checks/,
-    about: `the commands under push-checks, in ${LEFTHOOK}`,
-    count: (read) => hookCommands(read, "push-checks").length,
-  },
-  {
     document: MUTANTS,
     says: /(\w+) cache entries across the two workflows name one seed file each/,
     about: `the cache entries naming one seed file, in ${CI} and ${BASELINE}`,

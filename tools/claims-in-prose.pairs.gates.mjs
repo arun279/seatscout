@@ -7,6 +7,7 @@ const GESTURE = "tests/e2e/auditorium.spec.ts";
 const DUPLICATION = ".jscpd.json";
 const WORKFLOW = ".github/workflows/ci.yml";
 const COLOURS = "tools/lint/no-colour-literals.grit";
+const BASELINE = ".github/workflows/baseline.yml";
 
 export const GATE_CLAIMS = [
   {
@@ -238,6 +239,55 @@ export const GATE_CLAIMS = [
     holds: "the named colours the screen rule refuses",
     pattern: "rebeccapurple",
     paths: [COLOURS],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /\*\*What the emulator reads is measured on main, held to the run before/,
+    holds: "the Flashlight reading of the walk",
+    pattern: "flashlight test",
+    paths: [".github", "apps/native/e2e"],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /it runs on main as a trend with an alarm/,
+    holds: "a pull request that runs the reading",
+    pattern: "e2e/measure.sh",
+    paths: [WORKFLOW],
+    files: 0,
+    witness: [BASELINE],
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /files an issue labelled `device-red`/,
+    holds: "the alarm the reading on main files",
+    pattern: "gh issue create --label device-red",
+    paths: [BASELINE],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /`apk` job reads them with `cache-read-only`/,
+    holds: "the pull request's read-only Gradle caches",
+    pattern: "cache-read-only: true",
+    paths: [WORKFLOW],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /restores the cache entry `verdict-<job>-<hash of those ids>`/,
+    holds: "the key a job's earlier verdict is found by",
+    pattern: "key=verdict-$JOB-",
+    paths: [".github"],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /\*\*A run is held to 20 minutes\.\*\*/,
+    holds: "the wall time a run is refused over",
+    pattern: "WALL_MINUTES: 20",
+    paths: [WORKFLOW],
     files: 1,
   },
 ];

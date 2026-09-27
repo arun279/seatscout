@@ -65,8 +65,8 @@ const table = (axes: readonly Axis[], head: Reading, base: Reading | null) =>
     ? []
     : [
         base === null
-          ? "| Measure | This branch, median | Spread |"
-          : "| Measure | This branch, median | Spread | Merge base, worst | Spread |",
+          ? "| Measure | This commit, median | Spread |"
+          : "| Measure | This commit, median | Spread | Previous run, worst | Spread |",
         base === null
           ? "| --- | --- | --- |"
           : "| --- | --- | --- | --- | --- |",
@@ -82,7 +82,7 @@ const verdictOf = (
   if (base === null)
     return {
       code: 0,
-      line: "The merge base has no walk to measure, so nothing here is held to one.",
+      line: "No earlier Baseline run left a reading, so nothing here is held to one.",
     };
   const worse = kept.filter((axis) =>
     axis.worse(axis.of(head).median, worstOf(axis, axis.of(base))),
@@ -90,11 +90,11 @@ const verdictOf = (
   return worse.length > 0
     ? {
         code: 1,
-        line: `Worse than the merge base's worst iteration: ${worse.map((axis) => axis.name).join(", ")}.`,
+        line: `Worse than the previous run's worst iteration: ${worse.map((axis) => axis.name).join(", ")}.`,
       }
     : {
         code: 0,
-        line: "No figure held here is worse than the merge base's worst iteration.",
+        line: "No figure held here is worse than the previous run's worst iteration.",
       };
 };
 
@@ -110,7 +110,7 @@ export const judged = (
     report: [
       "### On the Android emulator",
       "",
-      `One emulator, the merge base first. The walk is Flashlight over ${head.iterations} iterations with the app's data cleared before each. This branch's median stands beside the merge base's worst; the spread is the standard deviation as a share of the mean, and a measure is held only while it stays under the ${STEADY} per cent Reassure calls steady.`,
+      `One emulator, one build of main. The walk is Flashlight over ${head.iterations} iterations with the app's data cleared before each. This commit's median stands beside the previous Baseline run's worst; the spread is the standard deviation as a share of the mean, and a measure is held only while it stays under the ${STEADY} per cent Reassure calls steady.`,
       "",
       ...table(kept, head, base),
       ...(unsteady.length === 0

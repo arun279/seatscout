@@ -6,7 +6,7 @@ interface Writer {
 }
 
 const USAGE =
-  "usage: device --head-journey <flashlight.json> (--base-journey <flashlight.json> | --no-baseline)\n";
+  "usage: device --journey <flashlight.json> (--previous <flashlight.json> | --no-previous)\n";
 
 const argumentAfter = (argv: readonly string[], flag: string) => {
   const at = argv.indexOf(flag);
@@ -14,9 +14,9 @@ const argumentAfter = (argv: readonly string[], flag: string) => {
 };
 
 const pathsIn = (argv: readonly string[]) => {
-  const head = argumentAfter(argv, "--head-journey");
-  const base = argumentAfter(argv, "--base-journey") ?? null;
-  const alone = argv.includes("--no-baseline");
+  const head = argumentAfter(argv, "--journey");
+  const base = argumentAfter(argv, "--previous") ?? null;
+  const alone = argv.includes("--no-previous");
   if (head === undefined || alone === (base !== null)) return null;
   return { head, base };
 };
