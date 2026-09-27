@@ -181,8 +181,8 @@ Two rules in `biome.json` are the whole of the gate that keeps the writer the on
 `noRestrictedGlobals` denies the global `caches` under `apps/**`, and the override that
 carries it excludes one file, `apps/web/src/worker/cache.ts`. `noJsRestrictedProperties`
 denies the property `caches` across the workspace, which is the member form the global rule
-cannot see. Both run under `pnpm lint`: over the staged files in the pre-commit hook, over the
-tree on pre-push and again in `quality`.
+cannot see. Both run under `pnpm lint`: over the staged files in the pre-commit hook, and over the
+tree in `quality`.
 
 **It takes both rules, because neither is the whole ban.** The global rule matches a bare
 identifier and nothing else, which is the limit

@@ -254,7 +254,7 @@ because osv-scanner is the job's tool rather than the workspace's.
 One gate is outside all of that and it is worth naming rather than leaving to be found. The
 claims gate is four modules directly under `tools/` rather than a package, so it has no
 planted red, nothing in the unit suite judges it, and the mutation gate's glob does not reach
-it, while it does gate a merge in `quality` and on pre-push. The rest of what sits directly under
+it, while it does gate a merge in `quality`. The rest of what sits directly under
 `tools/` is the corpus capture and the modules it reads, the corpus indexer, the upstream
 constant, the live suite's setup, the nightly alarm and the icon renderer, none of which
 gates a merge.
@@ -427,7 +427,7 @@ The window the percentage is measured over is theirs too. For a language other t
 require "at least 100 successive and duplicated tokens" spread over "10 lines of code for other
 languages", which is `minTokens` 100 and `minLines` 10 in `.jscpd.json`. Sonar hold that percentage
 against new code and this gate holds it against all of it, which is the stricter of the two readings
-and the only one a checkout can reach alone, since nothing measures `main` on a pre-push hook.
+and the only one a checkout can reach alone, since a checkout holds no measurement of `main`.
 
 The subject is `{apps,packages,tools}/*/src` less the test suffixes, which makes `.jscpd.json` the
 fifth place the definition of test code is written down. The tree reads 0.00 percent over 94 sources
@@ -754,7 +754,7 @@ policy of its own. manypkg's documented answer is to write a specifier semver ca
 takes that package out of the gate instead.
 
 syncpack is a compiled binary and answers over this workspace in 0.9 seconds, measured rather than
-assumed, so it joins `push-checks` as `pnpm versions` as well as running in `quality`. It carries no
+assumed, and runs in `quality` as `pnpm versions`. It carries no
 configuration file. The default group is already the policy this workspace wants, and a file
 restating it would be a second place for that policy to drift.
 
@@ -811,17 +811,19 @@ than fails is a merge base with no measurement to compare against, which the ste
 base records for the step that judges. With the reading taken, the same runner reads 3.9 per cent
 and the job gates.
 
-**The app is walked end to end on an emulator, and the walk gates.** The `device` job builds a
-release of the app for Android, with the Source answered in the build from the corpus, and Maestro
-walks it from the Ask sheet through the ranked Seat Groups and the hand-off to the Room
-(`apps/native/e2e/journey.yaml`). It leaves every level it visits twice, and after each it asserts the
-screen beneath is back. First by gesture: a drag down on a sheet, which the app's own sheet answers,
+**The app is walked end to end on an emulator, and the walk gates every push.** The `apk` job
+builds a release of the app for Android, with the Source answered in the build from the corpus, and
+in the `device` job Maestro walks it once from the Ask sheet through the ranked Seat Groups and
+the hand-off to the Room (`apps/native/e2e/journey.yaml`). It leaves every level it visits twice,
+and after each it asserts the screen beneath is back. First by gesture: a drag down on a sheet,
+which the app's own sheet answers,
 and on iOS the edge swipe on a pushed screen and the drag down on the Ask sheet. On Android the edge
 swipe on the full-screen Ask dialog and the Room is recognised by the system, not the app, which
 turns it into the same back event the back key sends; injected edge swipes are not recognised on
 the runner's emulator even with gesture navigation on (run 36223227514 swiped from the edge of
 Settings and opened a subpage instead), so the walk sends that back event itself. Then by the way
-back a person presses: the Ask sheet's own close control, and the Android back key. A step that finds nothing fails the job, and `footprint`, which is
+back a person presses: the Ask sheet's own close control, and the Android back key. A step that
+finds nothing fails the job, and `footprint`, which is
 required, needs it. The corpus stands in through Metro: `SEATSCOUT_UPSTREAM=corpus` swaps
 `src/host/upstream.ts` for `e2e/upstream.ts`, which answers from the same `fakeUpstream` the browser
 suite uses, so the bundle a phone runs never carries the corpus. Any other value is refused, and
@@ -830,39 +832,76 @@ It is Android on an ubuntu runner rather than iOS on a macOS one because the onl
 open-source frame-rate reader, [Flashlight](https://github.com/bamlab/flashlight), reads Android
 only, so one build serves both the walk and the reading, and published prior art for an Expo app on
 a macOS runner puts one run at 15 to 25 minutes (the workflow comment in
-[johntips/react-native-infinite-material-tab](https://github.com/johntips/react-native-infinite-material-tab/blob/main/.github/workflows/e2e.yml)). [Lanterna](https://github.com/rogerfuentes/lanterna)
+[johntips/react-native-infinite-material-tab](https://github.com/johntips/react-native-infinite-material-tab/blob/main/.github/workflows/e2e.yml)).
+[Lanterna](https://github.com/rogerfuentes/lanterna)
 was read and not taken: it is at 0.0.x, and its iOS frame rate needs a native module Expo Go does
 not bundle.
 
-**What the emulator reads is held to the merge base, one measure at a time, while it is steady.**
-The `apk` job builds this branch and its merge base side by side, and `device` reads both on one
-emulator, the merge base first, as Reassure asks of any comparison. The walk is read by Flashlight
-for its default ten iterations with the app's data cleared before each: the walk's own time, frame
-rate, CPU and memory. A measure fails when this branch's median is worse than the merge base's worst
-reading, the rule the browser journey already holds its first Seat Groups to. Each measure is held
-only while its spread on both sides, the coefficient of variation that Reassure's own glossary names
-for how steady a run is ([CONTEXT.md](https://github.com/callstack/reassure/blob/main/CONTEXT.md)),
+**What the emulator reads is measured on main, held to the run before, one measure at a time,
+while it is steady.** The Baseline workflow's `device` job builds main's app on every push to main,
+and not on the nightly schedule, which would read the same commit again. It walks the journey and
+has Flashlight read the walk for its default ten iterations with the app's data cleared before
+each: the walk's own time, frame rate, CPU and memory. A measure is worse when this commit's median
+is worse than the worst iteration of the reading the previous Baseline run left, the rule the
+browser journey already holds its first Seat Groups to. The previous reading is the newest
+`device-reading` artifact a run on main left, collected the way a mutation shard inherits its seed,
+and a first run, with none to collect, is held to nothing. A run keeps its reading only when it
+held, as a shard keeps its seed only when it passed, so a worse reading never becomes the one the
+next run is held to. It stays the reference for the 14 days an artifact is kept; after that the
+next reading is held to nothing and becomes the reference, which is how a cost that was accepted
+stops alarming. Each measure is held
+only while its spread on both readings, the coefficient of variation that Reassure's own glossary
+names for how steady a run is ([CONTEXT.md](https://github.com/callstack/reassure/blob/main/CONTEXT.md)),
 stays below the 5 per cent Reassure publishes for a steady runner. A measure at or over it is left
-out of the report and the verdict, named with its spread, and the rest are still held: a runner too
-noisy for one measure never fails every pull request as unable to measure, and a measure too noisy
-to hold is never printed as though it were held. A reading that measured nothing, failed, carried no
-frame rate or memory, or read a figure that was nothing on every iteration is refused.
-A merge base with no walk, as on the change that added it, holds this branch to nothing.
+out of the report and the verdict, named with its spread, and the rest are still held. A reading
+that measured nothing, failed, carried no frame rate or memory, or read a figure that was nothing
+on every iteration is refused, and the job fails. A steady measure that got worse files an issue
+labelled `device-red`, or comments on the open one, with the report, which names each measure,
+this commit's median and the previous run's worst; a later reading that holds closes it. It is a
+label of its own because the mutation alarm closes the open `baseline-red` issue whenever the
+shards pass. The job stays green on a worse reading: it reports a trend, and it gates no pull
+request.
+
+**Why the reading left the pull request.** On run 36287276171 the two sides' twenty walks took 27
+of the run's 49 minutes. Flashlight's own [page on
+CI](https://github.com/bamlab/flashlight/blob/main/website/docs/test/ci.md) says "An emulator
+running on the CI will likely be too slow" and points to a device farm, and of the one farm it
+names that serves emulators, "using emulators will not accurately reproduce the performance of a
+real device". What this runner's emulator reads bears that out. It draws with a software renderer
+(`-gpu swiftshader_indirect`), and the frame rate sits just under 60 on every run: 58.8 on that
+run's branch and 58.6 at the merge base's worst, spreading 0.1 and 0.2 per cent. Start-up, the
+walk's time and CPU were unsteady and already left out (below). Memory is the one measure that
+moved, from 345.4 MB at the merge base's worst to 323.4 on the branch, at 4.8 and 2.9 per cent,
+and a trend on main shows that movement as well as a gate on the pull request did. So nothing the
+reading held had a reason to stop a pull request, and it runs on main as a trend with an alarm.
+The journey walk, which asserts every screen is reached and every way back works, still gates
+every push, and so does the axe scan of the app's web build.
 
 **One pass, and no cold-launch measure.** Start-up was measured and never held. Flashlight's reading
 of it spread 7.9, 19.6 and 12.1 per cent on three runs (36183944292, 36225719569, 36229377921), and
 the cold launches `am start -W` timed still spread 8.1 per cent over forty launches on run
 36245321569. So it is not measured. That run read both sides twice: when a measure spread 5 per
 cent or more, everything was read again with twice the launches and iterations, as
-[Reassure's README](https://github.com/callstack/reassure#readme) suggests for a noisy runner. The second pass cost about 45 minutes of the `device` job's 5,455 seconds and
-changed no verdict: the walk's time (6.3 per cent) and CPU (13.5) were still unsteady, and frame rate
-(0.2) and memory (2.4 and 3.7) had been steady after the first. Reassure's README calls more runs "a
+[Reassure's README](https://github.com/callstack/reassure#readme) suggests for a noisy runner. The
+second pass cost about 59 of the `device` job's 91 minutes (the three APK installs in the log
+are at 13:47, 14:16 and 14:46, and the step ended at 15:15), and its final report still left the
+walk's time (6.3 per cent) and CPU (13.5) out as unsteady while holding frame rate (0.2) and memory
+(2.4 and 3.7). The first pass's report was overwritten by the second, so whether those two were
+already steady after ten iterations cannot be read from that run; the one-pass run that followed
+(36287276171) held them at 0.1 and 0.2, and 2.9 and 4.8. Reassure's README calls more runs "a
 trick of last resort" and a reading of 10 per cent or more a machine to fix, and Flashlight's own
 [page on CI](https://github.com/bamlab/flashlight/blob/main/website/docs/test/ci.md) says an emulator
 on CI is likely too slow and points to a device farm. So the job reads once, and a measure that is
-unsteady on that pass is left out. One pass is about 30 minutes, two sides of ten iterations at about
-72 seconds each plus the emulator's boot and the journey walk, and the job's limit is 60 minutes,
-twice that, so a runaway run hits it and a normal pass does not fill it.
+unsteady on that pass is left out. One pass of both sides took 1,846 seconds on run 36287276171.
+The Baseline job reads one side, and its limit is 60 minutes. The pull request's `device` job boots
+the emulator, installs the app and walks once, and its limit is 20 minutes. That run also tried
+Gradle's build cache on the `apk` job: cold, it saved nothing (836 and 623 seconds against 859 and
+699) and wrote a 1.79 GB entry per pull request into a repository cache already past GitHub's
+10 GB, which evicts the mutation seeds. So a pull request never writes Gradle's caches. The
+Baseline job sets Gradle up with `gradle/actions/setup-gradle`, whose open-source `basic` provider
+writes the caches from main, and a pull request can read what the default branch saved; the
+`apk` job reads them with `cache-read-only`, so there is one entry for every pull request rather
+than one per pull request.
 
 **The app's web build is held to the same accessibility standard as the web app.** `tests/app` runs
 as a Playwright project of its own over Vercel's `serve`, which compresses what it sends as any host
@@ -971,47 +1010,37 @@ The bundler's determinism is load-bearing for the same reason the counters' is, 
 checked the same way rather than assumed: eight consecutive builds of one tree produced
 eight byte-identical bundles and one size.
 
-**A check on the machine may be scoped to the change; the one that gates a merge may not.**
-The pre-push hook runs the unit tests that reach what the branch changed since its merge base
-with `main`, lets the spell and dead-code checks read a cache, and reuses the build
-information the type check already writes. Each of those is the tool's own documented switch,
-`--changed`, `--cache` and `tsc --build`, rather than a filter written here. None of them
-reaches `quality`, which installs from the lockfile into an empty runner and therefore reads
-every file of every kind with no cache to reuse and nothing scoped. So the fast layer owns
-feedback on the change and the gating layer owns the tree, and a scope that went wrong on
-somebody's machine cannot narrow what a merge is held to. The measurement that made the split
-worth having: on a quiet eight-core machine the whole unit suite takes 87 to 90 seconds on
-three workers, and no other check in the hook takes two seconds once its state is warm.
+**One hook, and a job judges a tree once.** There was a pre-push hook that ran eleven checks
+`quality` also runs, some scoped to the change. It is gone. The pre-commit hook stays, because its
+checks over the staged files (secrets, format, lint, spelling and complexity) take seconds and are
+the only thing that runs before CI. CI is the judge of the whole tree, because
+a hook can be skipped, and it judges each tree once. Each job names what it judges by the git tree
+ids of the paths it reads: the whole tree and the merge base's for `quality` and `weigh`; the
+app, its workspace packages, the lockfile, the workspace and compiler settings and `.github` for
+`apk`, and the same at the merge base as well for `performance`; for `device`, the walk, `.github`
+and the SHA-256 of the app it walks, since the build is not the same twice. Before it works it
+restores the cache entry `verdict-<job>-<hash of those ids>`, and when one exists it carries what
+the jobs after it need, says "judged green before on this same tree" with the run that judged it,
+and skips the work; the `footprint` report names every job reused. A job saves its entry only when
+it passed, so a push that fixes a failure reruns that job and what waits for it. The app's own
+entry carries the app, which is how `device` receives it, in this run or a later one. The mutation
+shards already had the same rule in their seed. Two jobs keep running on every push: `secrets`
+reads the pull request's commits rather than a tree, and `dependencies` reads an advisory database
+that changes without the tree, so a reused verdict could miss what either is for; each takes under
+a minute.
 
-One property of the scoping is worth knowing before it surprises somebody. `--changed` reads
-the module graph, so a change to a file nothing imports selects nothing, however many tests
-read that file from disk. `stylesheets.test.tsx` reads every sheet under `apps/web/src` and
-the planted pair under `apps/web/tests/planted` with `readFile`. The sheets under
-`apps/web/src` are imports of the modules that draw with them, so a change to one of those is
-reached; the planted pair is imported by nothing, so an edit to it selects no test at all
-locally while the suite fails on it. The planted reds have the same property one step along,
-and it is the more useful half to know: `biome.json`, `.oxlintrc.json`, `.jscpd.json` and
-`.size-limit.json` are in no module graph, so loosening a rule in one of them selects no test
-on the hook. That is the hole in the fast layer, it is there by design, and the gating layer
-closes it by running the suite whole.
-
-The trigger list is written out rather than left to the tool's default, because the default
-for the tool's own config file does not work. `**/{vitest,vite}.config.*/**` matches no path
-at all, which was measured against the pinned picomatch rather than assumed, so
-`**/vitest*.config.ts/**` is written beside it and the default is kept for the day it is
-fixed. The setup files are written out for a second reason: Vitest appends a project's setup
-files to that project's triggers, and the list this scoping reads is the root's, which has no
-setup files of its own.
-
-**A push that sends no commits runs none of it.** Git names the refs a push carries on the
-hook's standard input and supplies `(delete)` in place of the local ref for one it is
-deleting, so the hook reads those lines and returns when every one of them is a deletion. It
-used to run the whole suite for a branch deletion instead, because lefthook compares against
-`origin/HEAD` when the current branch has no upstream, which is every branch in a fresh
-worktree, and two such pushes at once put a shared eight-core machine under a load average
-above 300. A hook handed no ref at all runs everything rather than nothing, because a pass has
-to entail a measurement here too, and those checks are their own hook so that
-`lefthook run push-checks` reaches them without going through the reader at all.
+**A run is held to 20 minutes.** The `footprint` job waits for every other job, so its last steps
+see the whole run. It counts from the earliest start among the jobs of the run's current attempt,
+or from the attempt's own start when a re-run carries earlier jobs over, which leaves out the time
+a run waits for its first runner but counts any later job's wait, and prints the elapsed minutes in its report, and refuses the run
+when they pass 20. After the reading moved to main, the longest path is the build, then one walk,
+then the report. The first run of that shape (36293222998), with no Gradle cache yet on main, took
+1,306 seconds: 935 to build, 146 to boot the emulator, install and walk, and 200 for `footprint`,
+which then still measured the footprint itself after the walk. The gate refused it at 21.8
+minutes, so the measuring moved to `weigh`, which starts when the shards finish and is done long
+before the walk, and `footprint` only reports. That takes about three minutes off the path,
+leaving a cold build about four minutes of margin. 20 minutes is the limit this project sets for
+a pull request's checks.
 
 The line counter is [cloc](https://github.com/AlDanial/cloc), pinned to a released version
 and checked against its SHA-256 before use. scc and tokei were the alternatives for that

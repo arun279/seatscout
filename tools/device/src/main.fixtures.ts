@@ -152,15 +152,9 @@ export const ran = (...argv: string[]): Ran => {
   return { code, out: out.join(""), err: err.join("") };
 };
 
-export const held = (): Ran =>
-  ran("--head-journey", "head-walk.json", "--base-journey", "base-walk.json");
-
 export const heldWith = (swap: string, file: string): Ran =>
   ran(
-    ...[
-      "--head-journey",
-      "head-walk.json",
-      "--base-journey",
-      "base-walk.json",
-    ].map((value, at, all) => (all[at - 1] === swap ? file : value)),
+    ...["--journey", "head-walk.json", "--previous", "base-walk.json"].map(
+      (value, at, all) => (all[at - 1] === swap ? file : value),
+    ),
   );

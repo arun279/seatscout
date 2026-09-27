@@ -125,8 +125,8 @@ for its answer by name and gets `undefined` if the setup stopped providing it, w
 maintainer as a type error inside a nightly that then blames the upstream. Vitest types both
 halves against `ProvidedContext`, so the declaration is written once, in
 `packages/core/src/testing/live-context.ts`, and the setup and both live suites import it.
-A name on neither side of it is a compile error at `pnpm typecheck`, which runs on pre-push
-and in `quality`, so a rebase that drops a name fails the pull request instead of the night.
+A name on neither side of it is a compile error at `pnpm typecheck`, which runs in
+`quality`, so a rebase that drops a name fails the pull request instead of the night.
 What that does not reach is a name declared and provided by nobody: it compiles, and the
 `undefined` it hands the test is found on the night. Nothing cheap closes it, and the reason
 is structural rather than a missing feature. An exhaustive loop over the declared names needs
