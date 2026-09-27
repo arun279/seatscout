@@ -16,6 +16,12 @@ const ASK: NativeStackNavigationOptions = {
   sheetGrabberVisible: false,
 };
 
+const FITTED: NativeStackNavigationOptions = {
+  presentation: "formSheet",
+  sheetAllowedDetents: "fitToContents",
+  sheetGrabberVisible: true,
+};
+
 const RESTING: NativeStackNavigationOptions = {
   presentation: "formSheet",
   sheetAllowedDetents: [0.5, 1],
@@ -32,7 +38,7 @@ export default function Layout(): ReactElement | null {
       <Stack.Screen name="index" />
       <Stack.Screen name="room" />
       <Stack.Screen name="ask" options={ASK} />
-      <Stack.Screen name="hand-off" options={RESTING} />
+      <Stack.Screen dangerouslySingular name="hand-off" options={FITTED} />
       <Stack.Screen name="ledger" options={RESTING} />
     </Stack>
   );

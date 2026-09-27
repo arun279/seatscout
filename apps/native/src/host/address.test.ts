@@ -1,4 +1,7 @@
-import { describe, expect, it, jest } from "@jest/globals";
+import { beforeAll, describe, expect, it, jest } from "@jest/globals";
+import type { SeatGroupResult } from "@seatscout/client";
+import { renderHook } from "@testing-library/react-native";
+import { first, settled, WARM_UP } from "../../test/rooms.js";
 
 const mockPush = jest.fn<(to: unknown) => void>();
 const mockReplace = jest.fn<(to: unknown) => void>();
@@ -18,10 +21,12 @@ import {
   askAbout,
   askedIn,
   goTo,
+  handOff,
   keepAsItWas,
   pairsOf,
   runInstead,
   useFocus,
+  useHanded,
 } from "./address.js";
 
 describe("the route's parameters read as a list of pairs", () => {
@@ -203,5 +208,41 @@ describe("the search a Query stated in the sheet runs", () => {
       pathname: "/",
       params: { movie: "218678", date: "2026-09-19", partySize: "2" },
     });
+  });
+});
+
+describe("handing a Seat Group to the hand-off sheet", () => {
+  let chosen: SeatGroupResult;
+
+  beforeAll(async () => {
+    chosen = first(await settled());
+  }, WARM_UP);
+
+  const handed = async (group: string | undefined) => {
+    mockParams.mockReturnValue(group === undefined ? {} : { group });
+    const read = await renderHook(() => useHanded());
+    return read.result.current;
+  };
+
+  it("presents the sheet named by the Seat Group's key", () => {
+    handOff(chosen);
+
+    expect(mockPush).toHaveBeenLastCalledWith({
+      pathname: "/hand-off",
+      params: { group: chosen.key },
+    });
+  });
+
+  it("gives the sheet the Seat Group it was handed, when the route names it", async () => {
+    handOff(chosen);
+
+    expect(await handed(chosen.key)).toBe(chosen);
+  });
+
+  it("gives it nothing when the route names another, or none", async () => {
+    handOff(chosen);
+
+    expect(await handed(`${chosen.key}+`)).toBeUndefined();
+    expect(await handed(undefined)).toBeUndefined();
   });
 });

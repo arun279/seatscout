@@ -22,6 +22,7 @@ const DRAWN = {
   row: { width: 1.6, cap: "round" },
   target: { radius: 4.5, width: 1, dashes: "2 2.5", fill: "none" },
   was: { radius: 2, width: 1 },
+  lost: { radius: 2.6, width: 1.3, fill: "none" },
   pair: { radius: 3, spread: 1.75, lit: 0.9, lamp: "url(#lit)", unlit: "" },
 } as const;
 
@@ -30,6 +31,7 @@ type Target = Pick<SeatProfile, "targetDepth" | "targetLateral">;
 export interface RoomPlanProps {
   readonly result: SeatGroupResult;
   readonly across: number;
+  readonly lost?: SeatGroupResult | undefined;
 }
 
 export interface PlanDrawingProps {
@@ -37,6 +39,7 @@ export interface PlanDrawingProps {
   readonly position: SeatGroupResult["position"];
   readonly target: Target;
   readonly was?: Target | undefined;
+  readonly lost?: SeatGroupResult["position"] | undefined;
   readonly across: number;
 }
 
@@ -47,11 +50,13 @@ export const PlanDrawing = ({
   position,
   target,
   was,
+  lost,
   across,
 }: PlanDrawingProps): ReactElement => {
   const { appearance, colours } = useTheme();
   const marks = marksOf(plan, position, target);
   const reference = was && marksOf(plan, position, was).target;
+  const gone = lost && marksOf(plan, lost, target).pair;
 
   return (
     <View
@@ -126,6 +131,17 @@ export const PlanDrawing = ({
           strokeWidth={DRAWN.target.width}
           testID="target"
         />
+        {gone && (
+          <Circle
+            cx={gone.cx}
+            cy={gone.cy}
+            fill={DRAWN.lost.fill}
+            r={DRAWN.lost.radius}
+            stroke={colours.velvetLit}
+            strokeWidth={DRAWN.lost.width}
+            testID="lost"
+          />
+        )}
         <Circle
           cx={marks.pair.cx}
           cy={marks.pair.cy}
@@ -139,9 +155,14 @@ export const PlanDrawing = ({
   );
 };
 
-export const RoomPlan = ({ result, across }: RoomPlanProps): ReactElement => (
+export const RoomPlan = ({
+  result,
+  across,
+  lost,
+}: RoomPlanProps): ReactElement => (
   <PlanDrawing
     across={across}
+    lost={lost?.position}
     plan={result.plan}
     position={result.position}
     target={result.terms.profile ?? REFERENCE}
