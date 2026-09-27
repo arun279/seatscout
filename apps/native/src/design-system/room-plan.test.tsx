@@ -1,10 +1,10 @@
-import type { SeatGroupResult } from "@seatscout/client";
+import { REFERENCE, type SeatGroupResult } from "@seatscout/client";
 import { describe, expect, it } from "@jest/globals";
 import { render, screen } from "@testing-library/react-native";
 import { houseLights } from "../../test/lights.js";
 import { first, settled } from "../../test/rooms.js";
 import type { Appearance } from "../theme.js";
-import { RoomPlan } from "./room-plan.js";
+import { PlanDrawing, RoomPlan } from "./room-plan.js";
 
 const ACROSS = 54;
 
@@ -107,11 +107,28 @@ describe("the room a card draws to scale", () => {
   });
 
   it("rings where the lost seats were, in outline so the lit pair still reads as the one on offer", async () => {
-    const result = first(await settled());
-    await render(<RoomPlan across={ACROSS} lost={result} result={result} />);
+    const [result, other] = (await settled()).results;
+    if (result === undefined || other === undefined)
+      throw new Error("the corpus ranked fewer than two Seat Groups");
+    const target = result.terms.profile ?? REFERENCE;
+    await render(
+      <PlanDrawing
+        across={ACROSS}
+        plan={result.plan}
+        position={other.position}
+        target={target}
+      />,
+    );
+    const where = { cx: numberAt("pair", "cx"), cy: numberAt("pair", "cy") };
+    await render(<RoomPlan across={ACROSS} lost={other} result={result} />);
 
-    expect(numberAt("lost", "cx")).toBe(numberAt("pair", "cx"));
-    expect(numberAt("lost", "cy")).toBe(numberAt("pair", "cy"));
+    expect({ cx: numberAt("lost", "cx"), cy: numberAt("lost", "cy") }).toEqual(
+      where,
+    );
+    expect(where).not.toEqual({
+      cx: numberAt("pair", "cx"),
+      cy: numberAt("pair", "cy"),
+    });
     expect(numberAt("lost", "r")).toBeLessThan(numberAt("pair", "r"));
     expect(propAt("lost", "propList")).toContain("stroke");
     expect(propAt("lost", "fill")).toBeNull();

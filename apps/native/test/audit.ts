@@ -1,6 +1,6 @@
 import { expect, jest } from "@jest/globals";
 import { fireEvent, screen } from "@testing-library/react-native/pure";
-import { notificationAsync, selectionAsync } from "expo-haptics";
+import { impactAsync, notificationAsync, selectionAsync } from "expo-haptics";
 import { TOUCH_FLOOR } from "../src/design-system/touch.js";
 import {
   chosenIn,
@@ -218,6 +218,7 @@ const feedbackFailures = async (
       continue;
     }
     jest.mocked(selectionAsync).mockClear();
+    jest.mocked(impactAsync).mockClear();
     jest.mocked(notificationAsync).mockClear();
     const name = nameOf(node);
     const group = node.parent;
@@ -229,11 +230,12 @@ const feedbackFailures = async (
     else await fireEvent.press(node);
     const calls =
       jest.mocked(selectionAsync).mock.calls.length +
+      jest.mocked(impactAsync).mock.calls.length +
       jest.mocked(notificationAsync).mock.calls.length;
     if (calls > 0) heard.add(group);
     else
       missing.push(
-        `${FEEDBACK}: "${name}" changes what is chosen or commits and plays no selection or notification feedback`,
+        `${FEEDBACK}: "${name}" changes what is chosen or commits and plays no selection, impact or notification feedback`,
       );
   }
   return missing;

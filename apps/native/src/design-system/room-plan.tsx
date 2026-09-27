@@ -22,7 +22,7 @@ const DRAWN = {
   row: { width: 1.6, cap: "round" },
   target: { radius: 4.5, width: 1, dashes: "2 2.5", fill: "none" },
   was: { radius: 2, width: 1 },
-  lost: { radius: 2.6, width: 1.3 },
+  lost: { radius: 2.6, width: 1.3, fill: "none" },
   pair: { radius: 3, spread: 1.75, lit: 0.9, lamp: "url(#lit)", unlit: "" },
 } as const;
 
@@ -135,7 +135,7 @@ export const PlanDrawing = ({
           <Circle
             cx={gone.cx}
             cy={gone.cy}
-            fill={DRAWN.target.fill}
+            fill={DRAWN.lost.fill}
             r={DRAWN.lost.radius}
             stroke={colours.velvetLit}
             strokeWidth={DRAWN.lost.width}

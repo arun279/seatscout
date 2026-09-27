@@ -2,11 +2,8 @@ import type { SeatGroupResult } from "@seatscout/client";
 import {
   ageOf,
   checkingOf,
-  judgedOf,
-  showingOf,
-  UNCONFIRMED,
-  whyOf,
   handedOffOf,
+  judgedOf,
   labelOf,
   movedOnOf,
   NEXT_BEST,
@@ -17,9 +14,12 @@ import {
   offNowOf,
   openingOf,
   placeOf,
-  RE_CHECKED_THEN_OPENED,
   recheckedOf,
+  showingOf,
+  UNCONFIRMED,
   whereTheyWereOf,
+  whyOf,
+  yoursOf,
 } from "@seatscout/view-logic";
 import { type ReactElement, type ReactNode, useSyncExternalStore } from "react";
 import { StyleSheet, View } from "react-native";
@@ -71,7 +71,7 @@ const Aged = ({
   readonly at: number;
   readonly say: (age: string) => string;
   readonly set: Role;
-}): ReactElement => {
+}) => {
   const now = useSyncExternalStore(clock.subscribe, clock.now);
 
   return (
@@ -87,7 +87,7 @@ const Provenance = ({
 }: {
   readonly line: ReactNode;
   readonly note: string;
-}): ReactElement => {
+}) => {
   const { colours } = useTheme();
 
   return (
@@ -103,17 +103,44 @@ const Provenance = ({
   );
 };
 
-export interface CommitZoneProps {
-  readonly chosen: SeatGroupResult;
-  readonly phase: Phase;
-  readonly online: boolean;
-  readonly label: string;
-  readonly onTake: () => void;
-}
+const Legend = ({
+  lit,
+  lost,
+}: {
+  readonly lit: string;
+  readonly lost?: string | undefined;
+}) => {
+  const { colours } = useTheme();
+
+  return (
+    <View style={styles.legend}>
+      <View style={styles.entry}>
+        <View
+          style={[styles.lit, { backgroundColor: colours.beam }]}
+          testID="lit-mark"
+        />
+        <Type set="ledgerLabel" tone="silverDim">
+          {lit}
+        </Type>
+      </View>
+      {lost !== undefined && (
+        <View style={styles.entry}>
+          <View
+            style={[styles.lost, { borderColor: colours.velvetLit }]}
+            testID="lost-mark"
+          />
+          <Type set="ledgerLabel" tone="silverDim">
+            {lost}
+          </Type>
+        </View>
+      )}
+    </View>
+  );
+};
 
 const Status = ({ children }: { readonly children: string }) => (
   <Type
-    aria-live="polite"
+    accessibilityLiveRegion="polite"
     role="status"
     set="sentenceSmall"
     style={styles.centred}
@@ -123,11 +150,21 @@ const Status = ({ children }: { readonly children: string }) => (
   </Type>
 );
 
+export interface CommitZoneProps {
+  readonly chosen: SeatGroupResult;
+  readonly phase: Phase;
+  readonly online: boolean;
+  readonly label: string;
+  readonly note?: string | undefined;
+  readonly onTake: () => void;
+}
+
 export const CommitZone = ({
   chosen,
   phase,
   online,
   label,
+  note,
   onTake,
 }: CommitZoneProps): ReactElement => {
   if (!online) return <Status>{OFFLINE_AT_HAND_OFF}</Status>;
@@ -139,39 +176,46 @@ export const CommitZone = ({
     case "idle":
       return (
         <>
-          <Status>{RE_CHECKED_THEN_OPENED}</Status>
+          {note !== undefined && <Status>{note}</Status>}
           <Velvet label={label} onPress={onTake} />
         </>
       );
   }
 };
 
-const Legend = ({ lost }: { readonly lost: SeatGroupResult }) => {
-  const { colours } = useTheme();
-
-  return (
-    <View style={styles.legend}>
-      <View style={styles.entry}>
-        <View
-          style={[styles.lit, { backgroundColor: colours.beam }]}
-          testID="lit-mark"
-        />
-        <Type set="ledgerLabel" tone="silverDim">
-          {NEXT_BEST_MARK}
-        </Type>
-      </View>
-      <View style={styles.entry}>
-        <View
-          style={[styles.lost, { borderColor: colours.velvetLit }]}
-          testID="lost-mark"
-        />
-        <Type set="ledgerLabel" tone="silverDim">
-          {whereTheyWereOf(lost)}
-        </Type>
-      </View>
+export const Ready = ({
+  chosen,
+  clock,
+  today,
+}: {
+  readonly chosen: SeatGroupResult;
+  readonly clock: Clock;
+  readonly today: string;
+}): ReactElement => (
+  <>
+    <Type set="ledgerLabel" tone="silverFaint">
+      {showingOf(chosen, today)}
+    </Type>
+    <View style={styles.plan}>
+      <RoomPlan across={PLAN_ACROSS} result={chosen} />
     </View>
-  );
-};
+    <Legend lit={yoursOf(chosen)} />
+    <Type set="sentenceSmall" style={styles.centred} tone="silverDim">
+      {whyOf(chosen.reasons, chosen.podDividers)}
+    </Type>
+    <Provenance
+      line={
+        <Aged
+          at={chosen.fetchedAt}
+          clock={clock}
+          say={judgedOf}
+          set="ledgerLabel"
+        />
+      }
+      note={UNCONFIRMED}
+    />
+  </>
+);
 
 export const Gone = ({
   chosen,
@@ -211,57 +255,28 @@ export const Gone = ({
       <View style={styles.plan}>
         <RoomPlan across={PLAN_ACROSS} lost={lost} result={chosen} />
       </View>
-      <Legend lost={lost} />
-      <Type set="ledgerLabel" tone="silverFaint">
-        {NEXT_BEST}
-      </Type>
-      <Choices
-        choices={alternatives.map((alternative) => ({
-          key: alternative.key,
-          text: labelOf(alternative),
-          sub: placeOf(alternative),
-          value: alternative,
-        }))}
-        chosen={chosen.key}
-        onChoose={onChoose}
-      />
+      <Legend lit={NEXT_BEST_MARK} lost={whereTheyWereOf(lost)} />
+      {onChoose !== undefined && (
+        <>
+          <Type set="ledgerLabel" tone="silverFaint">
+            {NEXT_BEST}
+          </Type>
+          <Choices
+            choices={alternatives.map((alternative) => ({
+              key: alternative.key,
+              text: labelOf(alternative),
+              sub: placeOf(alternative),
+              value: alternative,
+            }))}
+            chosen={chosen.key}
+            onChoose={onChoose}
+          />
+        </>
+      )}
       {provenance}
     </>
   );
 };
-
-export const Ready = ({
-  chosen,
-  clock,
-  today,
-}: {
-  readonly chosen: SeatGroupResult;
-  readonly clock: Clock;
-  readonly today: string;
-}): ReactElement => (
-  <>
-    <Type set="ledgerLabel" tone="silverFaint">
-      {showingOf(chosen, today)}
-    </Type>
-    <View style={styles.plan}>
-      <RoomPlan across={PLAN_ACROSS} result={chosen} />
-    </View>
-    <Type set="sentenceSmall" style={styles.centred} tone="silverDim">
-      {whyOf(chosen.reasons, chosen.podDividers)}
-    </Type>
-    <Provenance
-      line={
-        <Aged
-          at={chosen.fetchedAt}
-          clock={clock}
-          say={judgedOf}
-          set="ledgerLabel"
-        />
-      }
-      note={UNCONFIRMED}
-    />
-  </>
-);
 
 export const Unchecked = ({
   at,

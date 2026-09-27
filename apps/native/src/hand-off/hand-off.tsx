@@ -2,6 +2,7 @@ import type { SeatGroupResult, SeatScout } from "@seatscout/client";
 import {
   BACK_TO_THE_LIST,
   CHECK_AGAIN,
+  RE_CHECKED_THEN_OPENED,
   takeOf,
   UNREACHABLE,
   uncheckedOf,
@@ -71,14 +72,21 @@ export const HandOff = ({
   });
   const { chosen, answer, phase } = held;
 
+  const phased = (next: Phase) => setHeld((now) => ({ ...now, phase: next }));
+
   const take = async () => {
-    setHeld({ ...held, phase: "checking" });
+    phased("checking");
     const verified = await verify(chosen);
     if (gone.current) return;
     if (verified.ok) {
-      setHeld({ ...held, phase: "opening" });
-      await checkout(verified.ticketing);
-      if (!gone.current) onClose();
+      phased("opening");
+      const opened = await checkout(verified.ticketing).then(
+        () => true,
+        () => false,
+      );
+      if (gone.current) return;
+      if (opened) onClose();
+      else phased("idle");
       return;
     }
     const at = clock.now();
@@ -99,10 +107,11 @@ export const HandOff = ({
     });
   };
 
-  const commit = (label: string) => (
+  const commit = (label: string, note?: string) => (
     <CommitZone
       chosen={chosen}
       label={label}
+      note={note}
       online={online}
       onTake={() => void take()}
       phase={phase}
@@ -110,7 +119,7 @@ export const HandOff = ({
   );
 
   const dock = () => {
-    if (answer === null) return commit(takeOf(chosen));
+    if (answer === null) return commit(takeOf(chosen), RE_CHECKED_THEN_OPENED);
     if (answer.kind === "unreachable") return commit(CHECK_AGAIN);
     return answer.alternatives.length === 0 ? (
       <Ghost label={BACK_TO_THE_LIST} onPress={onClose} />
@@ -133,7 +142,8 @@ export const HandOff = ({
         clock={clock}
         onChoose={
           phase === "idle"
-            ? (alternative) => setHeld({ ...held, chosen: alternative })
+            ? (alternative) =>
+                setHeld((now) => ({ ...now, chosen: alternative }))
             : undefined
         }
       />

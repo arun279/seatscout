@@ -24,9 +24,13 @@ describe("the hand-off sheet as it opens", () => {
     expect(
       screen.getByText("Not confirmed by a second Source"),
     ).toBeOnTheScreen();
-    expect(
-      screen.getByText(/^Tapping re-checks these seats with the Source/),
-    ).toBeOnTheScreen();
+    expect(screen.getByText("G6·G7, yours")).toBeOnTheScreen();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      /^Tapping re-checks these seats with the Source/,
+    );
+    expect(screen.getByRole("status").props["accessibilityLiveRegion"]).toBe(
+      "polite",
+    );
     expect(screen.getAllByTestId("velvet")).toHaveLength(1);
     expect(
       screen.getByRole("button", { name: "Take G6 and G7" }),
@@ -64,9 +68,9 @@ describe("no ticketing URL opens before Re-verification confirms", () => {
 
     await take("G6 and G7");
 
-    expect(
-      await screen.findByText("Checking G6 and G7 with the Source"),
-    ).toBeOnTheScreen();
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Checking G6 and G7 with the Source",
+    );
     expect(screen.queryByRole("button", { name: /^Take/ })).toBeNull();
     expect(counter.checkout).not.toHaveBeenCalled();
 
@@ -75,11 +79,9 @@ describe("no ticketing URL opens before Re-verification confirms", () => {
 
     expect(verified.ok).toBe(true);
     expect(counter.checkout.mock.calls).toEqual([[HOOKY_TICKETING]]);
-    expect(
-      screen.getByText(
-        "Still there. Opening the ticketing page for 9:00a at Hooky Entertainment Addison + SDX.",
-      ),
-    ).toBeOnTheScreen();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Still there. Opening the ticketing page for 9:00a at Hooky Entertainment Addison + SDX.",
+    );
   });
 
   it("opens nothing when the Seat Group was taken since the search", async () => {
@@ -134,13 +136,28 @@ describe("closing the in-app browser", () => {
   });
 });
 
+describe("a browser that cannot open", () => {
+  it("offers the take control again and keeps the sheet where it was", async () => {
+    const counter = await opened();
+    counter.checkout.mockRejectedValueOnce(new Error("no browser"));
+
+    await take("G6 and G7");
+    await counter.answered();
+
+    expect(
+      screen.getByRole("button", { name: "Take G6 and G7" }),
+    ).toBeOnTheScreen();
+    expect(counter.onClose).not.toHaveBeenCalled();
+  });
+});
+
 describe("offline", () => {
   it("withdraws the take control and says why in its place", async () => {
     await opened(false);
 
     expect(screen.queryByRole("button", { name: /^Take/ })).toBeNull();
     expect(screen.queryByTestId("velvet")).toBeNull();
-    expect(screen.getByText(OFFLINE_HERE)).toBeOnTheScreen();
+    expect(screen.getByRole("status")).toHaveTextContent(OFFLINE_HERE);
   });
 
   it("gives the control back when the connection returns, and takes it away again when it drops", async () => {

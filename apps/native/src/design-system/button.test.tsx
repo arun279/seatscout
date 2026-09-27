@@ -1,6 +1,6 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { fireEvent, render, screen } from "@testing-library/react-native";
-import { notificationAsync, selectionAsync } from "expo-haptics";
+import { impactAsync, notificationAsync, selectionAsync } from "expo-haptics";
 import { Platform, StyleSheet } from "react-native";
 import { contrastOf } from "../../test/contrast.js";
 import { houseLights } from "../../test/lights.js";
@@ -41,12 +41,13 @@ describe("the velvet control", () => {
     expect(pressed).toHaveBeenCalledTimes(1);
   });
 
-  it("plays the success notification a commit earns, and no selection tick", async () => {
+  it("plays the medium impact a commit earns, and neither a selection tick nor a success, because the app hands off and never books", async () => {
     await drawn("down", jest.fn());
 
     await fireEvent.press(screen.getByRole("button", { name: "Find seats" }));
 
-    expect(jest.mocked(notificationAsync).mock.calls).toEqual([["success"]]);
+    expect(jest.mocked(impactAsync).mock.calls).toEqual([["medium"]]);
+    expect(notificationAsync).not.toHaveBeenCalled();
     expect(selectionAsync).not.toHaveBeenCalled();
   });
 
@@ -108,10 +109,13 @@ describe("the ghost control", () => {
     },
   );
 
-  it("is not a control while it has nothing to do", async () => {
+  it("is not a control while it has nothing to do, and says politely what it waits on", async () => {
     await render(<Ghost label="Waiting" />);
 
     expect(screen.queryByRole("button")).toBeNull();
-    expect(screen.getByTestId("waiting")).toHaveTextContent("Waiting");
+    expect(screen.getByRole("status")).toHaveTextContent("Waiting");
+    expect(screen.getByRole("status").props["accessibilityLiveRegion"]).toBe(
+      "polite",
+    );
   });
 });

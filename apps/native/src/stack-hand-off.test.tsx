@@ -6,7 +6,7 @@ import {
   it,
   jest,
 } from "@jest/globals";
-import { act, fireEvent, screen } from "@testing-library/react-native";
+import { act, fireEvent, screen, within } from "@testing-library/react-native";
 import { router } from "expo-router";
 import { renderRouter } from "expo-router/testing-library";
 import { WARM_UP, warmTheCorpus } from "../test/rooms.js";
@@ -113,11 +113,16 @@ describe("the hand-off over the list", () => {
   it("stands only one sheet on the list, however often a Seat label is pressed", async () => {
     const app = await ranked();
     const [one, other] = [seatLabel(0), seatLabel(1)];
+    const later = String(within(other).getByText(/·/).props["children"]);
 
     await fireEvent.press(one);
     await fireEvent.press(other);
-    await screen.findAllByRole("button", { name: /^Take / });
 
+    expect(
+      await screen.findByRole("button", {
+        name: `Take ${later.split("·").join(" and ")}`,
+      }),
+    ).toBeOnTheScreen();
     expect(app.routes()).toEqual(["index", "hand-off"]);
 
     await act(() => router.back());

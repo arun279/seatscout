@@ -24,6 +24,7 @@ import {
   UNREACHABLE,
   wentOf,
   whereTheyWereOf,
+  yoursOf,
 } from "./hand-off-phrases.js";
 import { searched } from "./rooms.fixtures.js";
 
@@ -58,6 +59,7 @@ describe("what the hand-off says of the Seat Group it takes", () => {
     const chosen = at(HOOKY_ADDISON_9AM);
 
     expect(takeOf(chosen)).toBe("Take G6 and G7");
+    expect(yoursOf(chosen)).toBe("G6·G7, yours");
     expect(checkingOf(chosen)).toBe("Checking G6 and G7 with the Source");
     expect(openingOf(chosen)).toBe(
       "Still there. Opening the ticketing page for 9:00a at Hooky Entertainment Addison + SDX.",

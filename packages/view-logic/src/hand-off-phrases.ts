@@ -60,6 +60,9 @@ export const offNowOf = (age: string, partySize: number): string => {
   return `The Source answered ${age} ago and offered nothing else in this room for ${party}. This screening is no longer on offer to you: sold out, no longer offered by the listing, already begun, off sale, without a seat map, or simply short of ${party}, and the Source does not say which. seatscout never holds seats.`;
 };
 
+export const yoursOf = (chosen: SeatGroupResult): string =>
+  `${labelOf(chosen)}, yours`;
+
 export const whereTheyWereOf = (lost: SeatGroupResult): string =>
   `where ${labelOf(lost)} were`;
 

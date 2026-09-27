@@ -2,7 +2,7 @@ import { test } from "@jest/globals";
 import { fireEvent, screen } from "@testing-library/react-native";
 import { measureRenders } from "reassure";
 import { HandOff } from "../src/hand-off/hand-off.js";
-import { atTheCounter, type Counter } from "./hand-off.js";
+import { atTheCounter, type Counter, TODAY } from "./hand-off.js";
 
 const drawn = (counter: Counter) => (
   <HandOff
@@ -11,7 +11,7 @@ const drawn = (counter: Counter) => (
     clock={counter.clock}
     onClose={() => undefined}
     online
-    today="2026-08-28"
+    today={TODAY}
     verify={counter.seatscout.verify}
   />
 );

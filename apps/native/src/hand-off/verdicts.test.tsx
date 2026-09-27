@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it, jest } from "@jest/globals";
+import { beforeAll, describe, expect, it } from "@jest/globals";
 import { act, fireEvent, screen, within } from "@testing-library/react-native";
 import {
   NotificationFeedbackType,
@@ -14,6 +14,7 @@ import {
   taken,
 } from "../../test/hand-off.js";
 import { houseLights } from "../../test/lights.js";
+import { StyleSheet } from "react-native";
 import { WARM_UP, warmTheCorpus } from "../../test/rooms.js";
 import type { Appearance } from "../theme.js";
 
@@ -21,7 +22,7 @@ const BEST = "F6·F7, Row 6 · on the centreline";
 
 const SECOND = "G8·G9, Row 7 · three seats right of centre";
 
-const NEXT_BEST = [
+const RANKED_ALTERNATIVES = [
   BEST,
   SECOND,
   "G3·G4, Row 7 · three and a half seats left of centre",
@@ -41,7 +42,30 @@ const NEXT_BEST = [
 const NOTHING_LEFT =
   "The Source answered 0s ago and offered nothing else in this room for two seats together. This screening is no longer on offer to you: sold out, no longer offered by the listing, already begun, off sale, without a seat map, or simply short of two seats together, and the Source does not say which. seatscout never holds seats.";
 
-const APPEARANCES: readonly Appearance[] = ["down", "up"];
+interface Inks {
+  readonly appearance: Appearance;
+  readonly beam: string;
+  readonly velvetLit: string;
+  readonly hairline: string;
+}
+
+const INKS: readonly Inks[] = [
+  {
+    appearance: "down",
+    beam: "#b3dff5",
+    velvetLit: "#f798a4",
+    hairline: "#323748",
+  },
+  {
+    appearance: "up",
+    beam: "#213a53",
+    velvetLit: "#940331",
+    hairline: "#cabdaa",
+  },
+];
+
+const styled = (testID: string) =>
+  StyleSheet.flatten(screen.getByTestId(testID).props["style"]);
 
 const hidden = { includeHiddenElements: true } as const;
 
@@ -70,7 +94,7 @@ describe("the taken verdict", () => {
       screen
         .getAllByRole("radio")
         .map((chip) => String(chip.props["accessibilityLabel"])),
-    ).toEqual(NEXT_BEST);
+    ).toEqual(RANKED_ALTERNATIVES);
     expect(screen.getByRole("radio", { name: BEST })).toBeChecked();
     expect(screen.getAllByRole("radio", { checked: true })).toHaveLength(1);
     expect(
@@ -93,7 +117,6 @@ describe("the taken verdict", () => {
 
   it("takes a chosen alternative as the Chosen with a tick, and verifies it in turn before opening", async () => {
     const counter = await taken({ statuses: { G6: "X" } });
-    jest.mocked(selectionAsync).mockClear();
 
     await fireEvent.press(screen.getByRole("radio", { name: SECOND }));
 
@@ -106,7 +129,8 @@ describe("the taken verdict", () => {
     await screen.findByText("Checking G8 and G9 with the Source");
 
     expect(screen.queryAllByRole("radio")).toEqual([]);
-    expect(screen.getByText("G3·G4")).toBeOnTheScreen();
+    expect(screen.queryByText("Next best in this room")).toBeNull();
+    expect(screen.getByTestId("lost", hidden)).toBeOnTheScreen();
     expect(counter.checkout).not.toHaveBeenCalled();
 
     counter.releaseSeatMaps();
@@ -142,6 +166,7 @@ describe("the unreachable verdict", () => {
     const counter = await taken({ status: 500 });
 
     expect(heading()).toHaveTextContent("The Source could not be reached.");
+    expect(screen.queryByText(/^Tapping re-checks/)).toBeNull();
     expect(notificationAsync).not.toHaveBeenCalledWith(
       NotificationFeedbackType.Warning,
     );
@@ -168,7 +193,18 @@ describe("the unreachable verdict", () => {
   });
 });
 
-describe.each(APPEARANCES)("under house lights %s", (appearance) => {
+describe.each(INKS)("under house lights $appearance", (inks) => {
+  const { appearance } = inks;
+
+  it("keys the plan in the ink the plan draws in, and rules the provenance off", async () => {
+    houseLights(appearance);
+    await taken({ statuses: { G6: "X" } });
+
+    expect(styled("lit-mark").backgroundColor).toBe(inks.beam);
+    expect(styled("lost-mark").borderColor).toBe(inks.velvetLit);
+    expect(styled("provenance").borderTopColor).toBe(inks.hairline);
+  });
+
   it("draws the sheet as it opens", async () => {
     houseLights(appearance);
     await opened();
