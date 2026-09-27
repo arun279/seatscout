@@ -105,8 +105,8 @@ carries, a licence it could not determine included. `performance` measures each 
 Testing Library scenario with Reassure on the merge base and on the head, and reads how
 steady the runner is before it judges either.
 
-Every check runs in one place before CI. The pre-commit hook runs five checks over staged
-files, `lefthook.yml` declares it, and nothing else runs on this machine unasked. CI is the
+One hook runs before CI. The pre-commit hook runs five checks over staged files,
+`lefthook.yml` declares it, and nothing else runs on this machine unasked. CI is the
 judge of the whole tree, because a hook can be skipped. `quality`, `apk`, `performance`,
 `device` and `footprint` judge a tree once: a push that changes nothing one of them reads
 reuses its earlier verdict, and a push that fixes one of them reruns that one and what waits

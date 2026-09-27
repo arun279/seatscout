@@ -103,6 +103,7 @@ jobs:
           key: stryker-shard-${{ matrix.shard }}-tree-${{ steps.tree.outputs.main }}
 
   device:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     permissions:
@@ -192,8 +193,8 @@ jobs:
             exit 1
           fi
           echo "regressed=$([ "$verdict" = 0 ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
-      - name: Keep the reading and its report for the next run to be held to
-        if: steps.held.outcome == 'success'
+      - name: Keep a reading that held for the next run to be held to
+        if: steps.held.outputs.regressed == 'false'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: device-reading

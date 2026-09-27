@@ -839,12 +839,17 @@ not bundle.
 
 **What the emulator reads is measured on main, held to the run before, one measure at a time,
 while it is steady.** The Baseline workflow's `device` job builds main's app on every push to main,
-walks the journey, and has Flashlight read the walk for its default ten iterations with the app's
-data cleared before each: the walk's own time, frame rate, CPU and memory. A measure is worse when
-this commit's median is worse than the worst iteration of the reading the previous Baseline run
-left, the rule the browser journey already holds its first Seat Groups to. The previous reading is
-the newest `device-reading` artifact a run on main left, collected the way a mutation shard
-inherits its seed, and a first run, with none to collect, is held to nothing. Each measure is held
+and not on the nightly schedule, which would read the same commit again. It walks the journey and
+has Flashlight read the walk for its default ten iterations with the app's data cleared before
+each: the walk's own time, frame rate, CPU and memory. A measure is worse when this commit's median
+is worse than the worst iteration of the reading the previous Baseline run left, the rule the
+browser journey already holds its first Seat Groups to. The previous reading is the newest
+`device-reading` artifact a run on main left, collected the way a mutation shard inherits its seed,
+and a first run, with none to collect, is held to nothing. A run keeps its reading only when it
+held, as a shard keeps its seed only when it passed, so a worse reading never becomes the one the
+next run is held to. It stays the reference for the 14 days an artifact is kept; after that the
+next reading is held to nothing and becomes the reference, which is how a cost that was accepted
+stops alarming. Each measure is held
 only while its spread on both readings, the coefficient of variation that Reassure's own glossary
 names for how steady a run is ([CONTEXT.md](https://github.com/callstack/reassure/blob/main/CONTEXT.md)),
 stays below the 5 per cent Reassure publishes for a steady runner. A measure at or over it is left
@@ -855,7 +860,7 @@ labelled `device-red`, or comments on the open one, with the report, which names
 this commit's median and the previous run's worst; a later reading that holds closes it. It is a
 label of its own because the mutation alarm closes the open `baseline-red` issue whenever the
 shards pass. The job stays green on a worse reading: it reports a trend, and it gates no pull
-request. The reading and its report are kept for 14 days.
+request.
 
 **Why the reading left the pull request.** On run 36287276171 the two sides' twenty walks took 27
 of the run's 49 minutes. Flashlight's own [page on
@@ -1005,10 +1010,10 @@ The bundler's determinism is load-bearing for the same reason the counters' is, 
 checked the same way rather than assumed: eight consecutive builds of one tree produced
 eight byte-identical bundles and one size.
 
-**No check runs in two places, and a job judges a tree once.** There was a pre-push hook that
-ran eleven checks `quality` also runs, some scoped to the change. It is gone. The pre-commit hook
-stays, because its checks over the staged files (secrets, format, lint, spelling and complexity)
-take seconds and are the only place they run before CI. CI is the judge of the whole tree, because
+**One hook, and a job judges a tree once.** There was a pre-push hook that ran eleven checks
+`quality` also runs, some scoped to the change. It is gone. The pre-commit hook stays, because its
+checks over the staged files (secrets, format, lint, spelling and complexity) take seconds and are
+the only thing that runs before CI. CI is the judge of the whole tree, because
 a hook can be skipped, and it judges each tree once. Each job names what it judges by the git tree
 ids of the paths it reads: the whole tree and the merge base's for `quality` and `footprint`; the
 app, its workspace packages, the lockfile, the workspace and compiler settings and `.github` for
@@ -1025,8 +1030,9 @@ that changes without the tree, so a reused verdict could miss what either is for
 a minute.
 
 **A run is held to 20 minutes.** The `footprint` job waits for every other job, so its last steps
-see the whole run. It reads the earliest start among the run's jobs, which leaves out the time a
-run waits for GitHub to start it, prints the elapsed minutes in its report, and refuses the run
+see the whole run. It counts from the earliest start among the jobs of the run's current attempt,
+or from the attempt's own start when a re-run carries earlier jobs over, which leaves out the time
+a run waits for its first runner but counts any later job's wait, and prints the elapsed minutes in its report, and refuses the run
 when they pass 20. After the reading moved to main, the longest path is the build, then one walk,
 then the report. 20 minutes is that path measured with margin, and the limit this project sets
 for a pull request's checks.

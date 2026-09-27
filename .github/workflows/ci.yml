@@ -514,12 +514,13 @@ jobs:
             cat .verdict/footprint/collection
             echo "outcome=success"
           } >> "$GITHUB_OUTPUT"
-      - name: Read how long this run has taken since its first job started
+      - name: Read how long this attempt has taken since its first job started
         id: wall
         if: ${{ !cancelled() }}
         run: |
-          started="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT/jobs?per_page=100" --jq '[.jobs[].started_at] | min')"
-          seconds=$(( $(date +%s) - $(date -d "$started" +%s) ))
+          attempt="$(date -d "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" --jq .run_started_at)" +%s)"
+          first="$(date -d "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT/jobs?per_page=100" --jq '[.jobs[].started_at] | min')" +%s)"
+          seconds=$(( $(date +%s) - (attempt > first ? attempt : first) ))
           {
             echo "seconds=$seconds"
             echo "minutes=$(awk -v seconds="$seconds" 'BEGIN { printf "%.1f", seconds / 60 }')"

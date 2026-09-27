@@ -14,11 +14,11 @@ const argumentAfter = (argv: readonly string[], flag: string) => {
 };
 
 const pathsIn = (argv: readonly string[]) => {
-  const head = argumentAfter(argv, "--journey");
-  const base = argumentAfter(argv, "--previous") ?? null;
+  const latest = argumentAfter(argv, "--journey");
+  const previous = argumentAfter(argv, "--previous") ?? null;
   const alone = argv.includes("--no-previous");
-  if (head === undefined || alone === (base !== null)) return null;
-  return { head, base };
+  if (latest === undefined || alone === (previous !== null)) return null;
+  return { latest, previous };
 };
 
 export const main = (
@@ -36,13 +36,13 @@ export const main = (
     const text = read(path);
     return text === null ? `${path} was never written` : readingOf(path, text);
   };
-  const head = at(paths.head);
-  const base = paths.base === null ? null : at(paths.base);
-  if (typeof head === "string" || typeof base === "string") {
-    err.write(`${typeof head === "string" ? head : base}\n`);
+  const latest = at(paths.latest);
+  const previous = paths.previous === null ? null : at(paths.previous);
+  if (typeof latest === "string" || typeof previous === "string") {
+    err.write(`${typeof latest === "string" ? latest : previous}\n`);
     return 1;
   }
-  const { code, report } = judged(head, base);
+  const { code, report } = judged(latest, previous);
   out.write(report);
   return code;
 };
