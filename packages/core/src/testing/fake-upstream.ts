@@ -94,10 +94,7 @@ const recordOf = (path: string, init?: FetchInit): RecordedRequest => ({
   body: init?.body ?? null,
 });
 
-export const SOLD_OUT: Required<ScriptedRoute> = {
-  status: 410,
-  body: '[{"id":"PerformanceSoldOut","message":"This showtime is sold out, please choose another."}]',
-};
+export const SOLD_OUT: ScriptedRoute = { status: 410 };
 
 export const routeOf = (url: string): string =>
   new URL(url, "https://upstream.invalid").pathname;

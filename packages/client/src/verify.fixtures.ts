@@ -33,10 +33,7 @@ export const VERIFIED_AT = 61000;
 export const AN_HOUR: number = 60 * 60 * 1000;
 const SEED = 4;
 
-interface Answer {
-  readonly status: number;
-  readonly body: string;
-}
+type Answer = NonNullable<UpstreamScript["routes"]>[string];
 
 type Script = Omit<UpstreamScript, "seed" | "routes">;
 

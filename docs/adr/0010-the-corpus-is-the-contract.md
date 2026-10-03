@@ -102,8 +102,9 @@ satisfy, so nothing under test behaves differently for being under test. The two
 the capture met arrive as themselves rather than as an invented failure payload. A sold-out
 room is the one refusal a refresh can lose, because it is only met when a listed screening has
 sold out by the time the capture reads it, and the refresh of 2026-09-20 met none. The harness
-therefore exports `SOLD_OUT`, the answer the capture of 2026-08-28 recorded, byte for byte, and
-every test of a sold-out room reads that one value rather than writing its own.
+therefore exports `SOLD_OUT`, the 410 status the capture of 2026-08-28 recorded, and every test
+of a sold-out room reads that one value rather than writing its own. It carries no body, because
+nothing reads the body of a refusal: the adapter names a refused seat map from its status alone.
 
 Faults are scripted as a status and a share of requests in percent, drawn against a
 hundred-slot table. A script totalling more than a hundred is refused rather than quietly

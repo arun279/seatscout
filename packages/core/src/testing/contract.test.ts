@@ -208,7 +208,10 @@ describe("the contract the corpus recorded", () => {
         404,
         '[{"id":"ExpiredPerformance","message":""}]',
       ),
-      "a screening that sold out": refused(SOLD_OUT.status, SOLD_OUT.body),
+      "a screening that sold out": refused(
+        SOLD_OUT.status,
+        '[{"id":"PerformanceSoldOut","message":""}]',
+      ),
       "a reason the corpus never met": refused(
         404,
         '[{"id":"ShowtimeNotFound","message":""}]',
