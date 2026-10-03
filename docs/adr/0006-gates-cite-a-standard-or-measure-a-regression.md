@@ -398,11 +398,7 @@ is on. That is the only rule turned off for the whole workspace out of Biome's r
 this is the reason it is off. The two `a11y` rules ADR 14 turns off are an override over one file.
 
 `isolatedDeclarations` reaches every project that emits, and reaches the ones that do not as well.
-`skipLibCheck` is set for `tools/footprint` alone, because `mutation-testing-metrics` 3.8.4 ships
-declarations that are inconsistent with themselves under `exactOptionalPropertyTypes`: its
-`MutantModel` declares `coveredBy?: string[]` and implements a `MutantResult` that declares
-`coveredBy: string[]`. That is a third party's declaration file rather than this tree's code, there is
-nothing here to fix, and the option is the one TypeScript documents for it. `tests/e2e` already set it.
+`skipLibCheck` is set only in `tests/e2e`.
 
 **Imports may not form a cycle**, by Biome's
 [`noImportCycles`](https://biomejs.dev/linter/rules/no-import-cycles/), whose documentation gives its

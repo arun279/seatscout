@@ -23,8 +23,8 @@ moment somebody least wants to have it.
 `stryker.shards.json` names one run for each workspace, and `stryker.config.mjs` takes the
 shard named in `MUTATION_SHARD` out of that list: it mutates that workspace's `src`, runs that
 workspace's own tests and nothing else, and breaks below a score of 100. The Expo app is the
-one workspace divided further, into five file groups on each of its two platforms, for the
-reason the amendment below measures. A file the unit suite
+one workspace divided further, into five file groups, for the reason the amendment below
+measures. A file the unit suite
 does not judge shows up as an uncovered mutant and fails the run just as a survivor does.
 
 **The gate is divided by workspace because a static mutant costs the whole suite.** A mutant
@@ -63,13 +63,18 @@ nothing. The answer is the test the workspace was missing, never a shard widened
 the tree.
 
 **A pull request judges the files it changes.** The `changes` job lists the source files the
-pull request adds or modifies, plus the source beside any test file it touches, and
+pull request adds or modifies, plus the sources any changed test or fixture file imports, and
 `tools/mutation.mjs --plan` splits them by shard into jobs of a few files each. Each job runs
 Stryker with `--mutate` set to exactly those files, under its shard's runner and test
 configuration, and breaks below 100 like a whole run. The job also holds Stryker's own count of
 the files it found to the number it was handed, so a path that reaches nothing fails rather than
-passing over less than it was given. A pull request that touches no source file runs no
-mutation job.
+passing over less than it was given, and refuses a job in which every mutant errored, since
+that scores NaN and NaN is never below a threshold; a file whose mutants are all ignored, or that
+has none, has nothing to judge. A pull request that touches no source file runs no mutation job,
+except that a change to the mutation machinery itself (the shard list, the Stryker and Vitest
+configurations, the Jest configuration, the style-table ignorer, `tools/mutation.mjs` or the
+lockfile) judges the `canary` file each shard names, so a machinery change is seen killing
+mutants in every shard before it merges.
 
 Stryker.NET ships this scope as its
 [`since`](https://stryker-mutator.io/docs/stryker-net/configuration/) option, which tests only

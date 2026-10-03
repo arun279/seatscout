@@ -87,7 +87,7 @@ how a contributor arrives red on a pull request, which is what this list is for.
 line is the half of the journey gate a checkout can run alone; the job also builds the merge
 base in a worktree, runs its journey, and holds this one to it.
 
-Seven further jobs run beside it. `changes` lists the source files the pull request touches and
+Eight further jobs run beside it. `changes` lists the source files the pull request touches, and those its changed tests import, and
 says whether it touches the app. `mutation` mutates those files, a few per runner, in parallel,
 and is skipped when no source file changed. `android` builds the app for Android with the Source
 answered from the corpus (`SEATSCOUT_UPSTREAM=corpus`, which Metro reads to swap
