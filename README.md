@@ -56,6 +56,22 @@ and `pnpm claims` refuses the pair until they agree. Neither changes when an upd
 published, so they are worth keeping. Each run of the publish prints them again in its own
 summary.
 
+### Installing the app itself
+
+Expo Go is the quickest way in. To install SeatScout as its own app, build it on Expo's servers
+from `apps/native`; nothing is built on your machine. Each build follows the same `preview`
+channel, so every merge that changes the app reaches it as an update, and a new build is needed
+only when a native dependency or the SDK changes.
+
+```sh
+npx eas-cli@latest build --platform android --profile preview   # an APK to install from its link
+npx eas-cli@latest build --platform ios --profile preview       # an iPhone build, for devices you register
+npx eas-cli@latest build --platform ios --profile simulator     # an iOS Simulator build
+```
+
+The iPhone build needs an Apple developer account. The first run asks you to sign in to it and
+to register each iPhone with `npx eas-cli@latest device:create`.
+
 ## What makes it different
 
 **Results are seats, not screenings.** A screening with nothing but front-row singles left
