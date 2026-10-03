@@ -149,6 +149,10 @@ Each of these has one way through and no exemption to grant.
   lines under `{apps,packages,tools}/*/src` duplicated, which is the figure SonarSource
   publish in the Sonar way quality gate. The failure names both files and the lines they
   share. Take the duplication out; there is no list to add a file to.
+- **A dependency's advisory.** Update the package, or pin the fixed release under `overrides` in
+  `pnpm-workspace.yaml` when only a transitive dependency carries it. When no release fixes it,
+  add it to `osv-scanner.toml` with the reason it cannot reach the app and an `ignoreUntil` about
+  a month out, so the scan raises it again.
 - **A dependency's licence.** The `dependencies` job holds every licence in the lockfile to
   the SPDX allowlist written into `.github/workflows/ci.yml`. A licence osv-scanner cannot
   determine reads as `UNKNOWN` and fails like any other identifier that is not on the list.
