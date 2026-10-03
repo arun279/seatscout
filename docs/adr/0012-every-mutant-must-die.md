@@ -128,17 +128,17 @@ assertions would otherwise have caught.
 numbers mutants in file order and records per-test coverage in a plain object keyed by the
 mutant id as a string. V8 keeps such an object's numeric keys in fast elements only while the
 first index written stays under `JSObject::kMaxGap`, which V8 sets at 1,024, and falls to
-dictionary elements otherwise, which made every coverage increment about six times slower
-when benchmarked (34 ms against 211 ms per five million). `apps` sorts before `packages`, so
-when the first screen of the web application this repository then held added about 700
-mutants under `apps/web`, Core's ids moved from the hundreds past 1,250 and the Seat Profile
-sweep, unchanged, went from 1.6 s to 5.8 s under the dry run and timed out. It is now five sweeps of one benchmark room each rather than one of
-five, with the same assertions partitioned. The remedy is to divide the test's work, not to
-raise the timeout.
+dictionary elements otherwise, which made every coverage increment about six times slower when
+benchmarked (34 ms against 211 ms per five million). `apps` sorts before `packages`, so when
+the first screen of the web application this repository then held added about 700 mutants under
+`apps/web`, Core's ids moved from the hundreds past 1,250 and the Seat Profile sweep,
+unchanged, went from 1.6 s to 5.8 s under the dry run and timed out. It is now five sweeps of
+one benchmark room each rather than one of five, with the same assertions partitioned. The
+remedy is to divide the test's work, not to raise the timeout.
 
 **The allowance the dry run does get has to reach every test.**
 `vitest.stryker.config.ts` merges 30 seconds into the root configuration. That configuration
-declares no projects, because in the pinned Vitest a project declared inline inherits nothing
+declares zero inline projects, because in the pinned Vitest a project declared inline inherits nothing
 from the root unless it says `extends: true`. When it held two, the merge reached no test until
 both said it, every test ran at the default 5 seconds under the instrumentation, and the sweep
 above timed out again on 2026-09-19 on a tree whose own pull request was green.

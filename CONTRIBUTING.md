@@ -206,9 +206,10 @@ compiles for iOS and for Android, and the faces and images every platform ships.
 prints each measured figure beside its own ratchet.
 
 A pull request that changes what a person sees or does carries its headed pass as images or
-video: run the app on a phone or a simulator, screenshot each state the change adds or alters, and attach them with `gh pr create --attach`, `gh pr edit --attach` or
-`gh pr comment --attach`, one flag per file with alt text after a `#`, so a reviewer sees the
-screen rather than reads about it. The flag needs GitHub CLI 2.99 or later.
+video: run the app on a phone or a simulator, screenshot each state the change adds or alters,
+and attach them with `gh pr create --attach`, `gh pr edit --attach` or `gh pr comment
+--attach`, one flag per file with alt text after a `#`, so a reviewer sees the screen rather
+than reads about it. The flag needs GitHub CLI 2.99 or later.
 
 One class of mistake in `apps/native` has no gate here, and it is written down rather than left
 to be found. Raw text outside a `<Text>` element, a `StyleSheet` entry nothing uses, and a
@@ -346,9 +347,9 @@ above [GHSA-vcc3-ghjq-m6fr](https://github.com/advisories/GHSA-vcc3-ghjq-m6fr), 
 it through the query parser inside Expo Router. Two more entries are there for reasons of
 their own: `exit` is aliased to `exit-x`, because the package Jest's own runner pulls in
 states its licence in npm's pre-SPDX form and so reads as undetermined, and `exit-x` is the
-maintained fork Jest itself moved to; and `@types/jsdom` is held at the version matching the
-`jsdom` this workspace installs, because the older types that arrive with the Jest jsdom
-environment do not type-check. `pnpm versions` holds that file and every
+maintained fork Jest itself moved to; and `@types/jsdom` is held at 30.0.0, because the version 20
+types `jest-expo` brings with the Jest jsdom environment do not type-check, which
+`pnpm typecheck` shows the moment the entry is removed. `pnpm versions` holds that file and every
 `package.json` to one version of each dependency, so the React pin and the app that names
 `react` cannot drift apart. `uuid` is held at 11.1.1
 rather than at the newest patched release because that parser loads it with `require` and

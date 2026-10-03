@@ -24,6 +24,7 @@ const SEAT_MAP = "packages/core/src/source/seat-map.ts";
 const VERIFY = "packages/client/src/verify.ts";
 
 const WORKSPACE = "pnpm-workspace.yaml";
+const VITEST = "vitest.config.ts";
 const blockUnder = (read: Read, path: string, heading: string) => {
   const lines = read(path).split("\n");
   const rest = lines.slice(lines.indexOf(heading) + 1);
@@ -78,6 +79,7 @@ const CONTEXT = "CONTEXT.md";
 const CONTRIBUTING = "CONTRIBUTING.md";
 const DRAWING = "docs/adr/0014-the-room-is-read-from-its-drawing.md";
 const LAYERS = "docs/adr/0003-separate-view-layers-shared-core.md";
+const MUTANTS = "docs/adr/0012-every-mutant-must-die.md";
 const NIGHTLY = "docs/adr/0011-a-nightly-reading-judges-the-world.md";
 const PROFILE_RECORD =
   "docs/adr/0018-good-seats-are-scored-against-a-reference.md";
@@ -89,6 +91,12 @@ export const CLAIMS: readonly Claim[] = [
     says: /The pre-commit hook runs (\w+) checks over staged files/,
     about: `the commands under pre-commit, in ${LEFTHOOK}`,
     count: (read) => hookCommands(read, "pre-commit").length,
+  },
+  {
+    document: MUTANTS,
+    says: /That configuration declares (\w+) inline projects/,
+    about: `the inline projects declared in ${VITEST}, each of which the dry run's timeout would miss`,
+    count: (read) => [...read(VITEST).matchAll(/\bprojects\s*:/g)].length,
   },
   {
     document: GATES,

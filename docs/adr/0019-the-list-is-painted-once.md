@@ -48,8 +48,8 @@ centreline in seats, why it ranked where it did as the penalties it was charged,
 is as an age that keeps counting, and that it came from one Source. That last line is stated
 rather than counted, because a Seat's Provenance names exactly one Source and a count over it
 cannot come out otherwise; a type test binds the statement to that type, so widening Provenance
-to a second Source fails a test that points at the card. A pair astride the centreline is called central, because half a seat off is the finest
-a pair can do.
+to a second Source fails a test that points at the card. A pair astride the centreline is
+called central, because half a seat off is the finest a pair can do.
 
 **Coverage on this screen is counts and never a bar.** An in-flight search is Coverage: its
 ledger closes in every snapshot, so the strip reads candidates, checked, to go and not read

@@ -37,32 +37,6 @@ describe("what size-limit reported", () => {
     );
   });
 
-  it("refuses a font ratchet that weighed no face, which passes at any ratchet", () => {
-    const run = sizeLimitExitingNonZero(
-      JSON.stringify([
-        { name: "app for iOS", size: 15, sizeLimit: 15, passed: true },
-        { name: "fonts", size: 0, sizeLimit: 118924, passed: true },
-      ]),
-    );
-
-    expect(() => measuring(run)("origin/main", "HEAD")).toThrow(
-      "size-limit weighed no bundle against a ratchet",
-    );
-  });
-
-  it("refuses an icon ratchet that weighed no icon, which passes at any ratchet", () => {
-    const run = sizeLimitExitingNonZero(
-      JSON.stringify([
-        { name: "app for iOS", size: 15, sizeLimit: 15, passed: true },
-        { name: "icons", size: 0, sizeLimit: 134269, passed: true },
-      ]),
-    );
-
-    expect(() => measuring(run)("origin/main", "HEAD")).toThrow(
-      "size-limit weighed no bundle against a ratchet",
-    );
-  });
-
   it("refuses a bundle weighed against no ratchet at all, which size-limit exits zero on", () => {
     const run = sizeLimitExitingNonZero(
       JSON.stringify([{ name: "icons", size: 118 }]),

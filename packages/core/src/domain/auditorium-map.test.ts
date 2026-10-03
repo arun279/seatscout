@@ -114,7 +114,7 @@ const auditoriums = layouts.map(drawn).chain((seats) =>
 
 const accessibleLabel = (seat: Seat) => seat.id.startsWith("WC");
 
-describe("the Auditorium map the keyboard walks", () => {
+describe("the Auditorium map, its rows front to back and its Seats left to right", () => {
   it("reaches every Seat exactly once, in rows from the front", () => {
     const shapes = { oneRow: 0, oneSeat: 0, oneSeatPerRow: 0, ragged: 0 };
 

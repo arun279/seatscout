@@ -231,22 +231,23 @@ rule and the bundle ratchets. That whole set answers in about seven seconds on t
 which is why it sits in `pnpm test:unit` beside everything else rather than in a job of its
 own. The fixtures live outside `src`, where they are neither product code nor mutated.
 
-Not every gate here has one, and naming what does not is better than leaving the sentence
-above to be read as covering everything. The Grit plugin that refuses a collected response,
-the two React hook rules and the undeclared import rule were each watched failing by hand on the day they landed. Every one
-of them could carry a planted red instead, and none does yet.
+Not every gate here has one, and naming what does not is better than leaving the sentence above
+to be read as covering everything. The Grit plugin that refuses a collected response, the two
+React hook rules and the undeclared import rule were each watched failing by hand on the day
+they landed. Every one of them could carry a planted red instead, and none does yet.
 
 **A planted red holds the gate. A pair holds this record's wording, and neither does the
-other's job.** A fixture proves a rule fires. It cannot prove that this document still says
-300 where the tool says 300, because a fixture has no opinion about prose, so each sentence
-here that carries a number or a rule name is also paired with a search of the tree in
-`tools/claims-in-prose.pairs.gates.mjs`. Some of those pairs sit beside a planted red as
-well, and two sentences that carried neither a number nor a name were dropped along with the
-grep that was their only witness, since the red beside them says everything they said. Others
-are sentences no fixture can reach at all: the mutation gate's break threshold, which nothing
-can be planted against short of a whole mutation run; the bundle glob and the ratchet each is
-weighed against; the counter this decision picked; and the licence flag the `dependencies` job carries, which already has a planted red of its own in that job
-because osv-scanner is the job's tool rather than the workspace's.
+other's job.** A fixture proves a rule fires. It cannot prove that this document still says 300
+where the tool says 300, because a fixture has no opinion about prose, so each sentence here
+that carries a number or a rule name is also paired with a search of the tree in
+`tools/claims-in-prose.pairs.gates.mjs`. Some of those pairs sit beside a planted red as well,
+and two sentences that carried neither a number nor a name were dropped along with the grep
+that was their only witness, since the red beside them says everything they said. Others are
+sentences no fixture can reach at all: the mutation gate's break threshold, which nothing can
+be planted against short of a whole mutation run; the bundle glob and the ratchet each is
+weighed against; the counter this decision picked; and the licence flag the `dependencies` job
+carries, which already has a planted red of its own in that job because osv-scanner is the
+job's tool rather than the workspace's.
 
 One gate is outside all of that and it is worth naming rather than leaving to be found. The
 claims gate is four modules directly under `tools/` rather than a package, so it has no
@@ -393,8 +394,9 @@ declared property from an index-signature one and the compiler can, so the rule 
 is on. That is the only rule turned off for the whole workspace out of Biome's recommended preset, and
 this is the reason it is off.
 
-`isolatedDeclarations` reaches every project that emits, and reaches the ones that do not as well.
-`skipLibCheck` is set in `apps/native`, for the reason ADR 3 gives, and in `tests/app`, and nowhere else.
+`isolatedDeclarations` reaches every project that emits, and reaches the ones that do not as
+well. `skipLibCheck` is set in `apps/native`, for the reason ADR 3 gives, and in `tests/app`,
+and nowhere else.
 
 **Imports may not form a cycle**, by Biome's
 [`noImportCycles`](https://biomejs.dev/linter/rules/no-import-cycles/), whose documentation gives its
@@ -481,13 +483,13 @@ Gating one kind and leaving another unbounded would let bytes move from the weig
 free one, which is the deferred chunk under another name. Each glob is pointed at
 `apps/native/dist`, because the export is what ships.
 
-A ratchet a glob no longer reaches is worse than no ratchet, because it reads 0 B and passes. Two
-fixture `size-limit` configurations are committed beside a planted file: over the planted file the
-ratchet is refused by name, by ratchet and by the byte it went over, and over globs that reach nothing
-`size-limit` reports 0 B for each, holds neither to a ratchet, and passes each. The report refuses
-that reading rather than printing it: every entry must have weighed at least one file and must have
-been held to a number, and a list where any entry fails either test throws instead of becoming a
-verdict.
+A ratchet a glob no longer reaches is worse than no ratchet, because it reads 0 B and passes.
+Two fixture `size-limit` configurations are committed beside a planted file: over the planted
+file the ratchet is refused by name, by ratchet and by the byte it went over, and over globs
+that reach nothing `size-limit` reports 0 B for each, holds neither to a ratchet, and passes
+each. The report refuses that reading rather than printing it: every entry must have weighed at
+least one file and must have been held to a number, and a list where any entry fails either
+test throws instead of becoming a verdict.
 
 Their difference is not printed as a third. The ratchet is not a budget derived from a
 device, a network or a page, so the room left under it is distance to a number this
@@ -661,52 +663,52 @@ than fails is a merge base with no measurement to compare against, which the ste
 base records for the step that judges. With the reading taken, the same runner reads 3.9 per cent
 and the job gates.
 
-**The app is walked end to end on an emulator, and the walk gates every push that touches it.** The
-`android` job builds a release of the app for Android, with the Source answered in the build from
-the corpus, and Maestro walks it once from the Ask sheet through the ranked Seat Groups and
-the hand-off to the Room (`apps/native/e2e/journey.yaml`). It leaves every level it visits twice,
-and after each it asserts the screen beneath is back. First by gesture: a drag down on a sheet,
-which the app's own sheet answers,
-and on iOS the edge swipe on a pushed screen and the drag down on the Ask sheet. On Android the edge
-swipe on the full-screen Ask dialog and the Room is recognised by the system, not the app, which
-turns it into the same back event the back key sends; injected edge swipes are not recognised on
-the runner's emulator even with gesture navigation on (run 36223227514 swiped from the edge of
-Settings and opened a subpage instead), so the walk sends that back event itself. Then by the way
-back a person presses: the Ask sheet's own close control, and the Android back key. A step that
-finds nothing fails the job, and `footprint`, which is
-required, needs it. The corpus stands in through Metro: `SEATSCOUT_UPSTREAM=corpus` swaps
-`src/host/upstream.ts` for `e2e/upstream.ts`, which answers from the same `fakeUpstream` the accessibility
-scan uses, so the bundle a phone runs never carries the corpus. Any other value is refused, and
-`app.config.ts` turns updates off in such a build so a published update cannot replace the stand-in.
-It is Android on an ubuntu runner rather than iOS on a macOS one because the only maintained
-open-source frame-rate reader, [Flashlight](https://github.com/bamlab/flashlight), reads Android
-only, so one build serves both the walk and the reading, and published prior art for an Expo app on
-a macOS runner puts one run at 15 to 25 minutes (the workflow comment in
+**The app is walked end to end on an emulator, and the walk gates every push that touches it.**
+The `android` job builds a release of the app for Android, with the Source answered in the
+build from the corpus, and Maestro walks it once from the Ask sheet through the ranked Seat
+Groups and the hand-off to the Room (`apps/native/e2e/journey.yaml`). It leaves every level it
+visits twice, and after each it asserts the screen beneath is back. First by gesture: a drag
+down on a sheet, which the app's own sheet answers, and on iOS the edge swipe on a pushed
+screen and the drag down on the Ask sheet. On Android the edge swipe on the full-screen Ask
+dialog and the Room is recognised by the system, not the app, which turns it into the same back
+event the back key sends; injected edge swipes are not recognised on the runner's emulator even
+with gesture navigation on (run 36223227514 swiped from the edge of Settings and opened a
+subpage instead), so the walk sends that back event itself. Then by the way back a person
+presses: the Ask sheet's own close control, and the Android back key. A step that finds nothing
+fails the job, and `footprint`, which is required, needs it. The corpus stands in through
+Metro: `SEATSCOUT_UPSTREAM=corpus` swaps `src/host/upstream.ts` for `e2e/upstream.ts`, which
+answers from the same `fakeUpstream` the accessibility scan uses, so the bundle a phone runs
+never carries the corpus. Any other value is refused, and `app.config.ts` turns updates off in
+such a build so a published update cannot replace the stand-in. It is Android on an ubuntu
+runner rather than iOS on a macOS one because the only maintained open-source frame-rate
+reader, [Flashlight](https://github.com/bamlab/flashlight), reads Android only, so one build
+serves both the walk and the reading, and published prior art for an Expo app on a macOS runner
+puts one run at 15 to 25 minutes (the workflow comment in
 [johntips/react-native-infinite-material-tab](https://github.com/johntips/react-native-infinite-material-tab/blob/main/.github/workflows/e2e.yml)).
-[Lanterna](https://github.com/rogerfuentes/lanterna)
-was read and not taken: it is at 0.0.x, and its iOS frame rate needs a native module Expo Go does
-not bundle.
+[Lanterna](https://github.com/rogerfuentes/lanterna) was read and not taken: it is at 0.0.x,
+and its iOS frame rate needs a native module Expo Go does not bundle.
 
 **What the emulator reads is measured on main, held to the run before, one measure at a time,
-while it is steady.** The Baseline workflow's `device` job builds main's app on every push to main,
-and not on the nightly schedule, which would read the same commit again. It walks the journey and
-has Flashlight read the walk for its default ten iterations with the app's data cleared before
-each: the walk's own time, frame rate, CPU and memory. A measure is worse when this commit's median
-is worse than the worst iteration of the reading the previous Baseline run left, The previous reading is the newest
-`device-reading` artifact a run on main left, and a first run, with none to collect, is held to nothing. A run keeps its reading only when it
-held, so a worse reading never becomes the one the
-next run is held to. It stays the reference for the 14 days an artifact is kept; after that the
-next reading is held to nothing and becomes the reference, which is how a cost that was accepted
-stops alarming. Each measure is held
-only while its spread on both readings, the coefficient of variation that Reassure's own glossary
-names for how steady a run is ([CONTEXT.md](https://github.com/callstack/reassure/blob/main/CONTEXT.md)),
-stays below the 5 per cent Reassure publishes for a steady runner. A measure at or over it is left
-out of the report and the verdict, named with its spread, and the rest are still held. A reading
-that measured nothing, failed, carried no frame rate or memory, or read a figure that was nothing
-on every iteration is refused, and the job fails. A steady measure that got worse files an issue
+while it is steady.** The Baseline workflow's `device` job builds main's app on every push to
+main, and not on the nightly schedule, which would read the same commit again. It walks the
+journey and has Flashlight read the walk for its default ten iterations with the app's data
+cleared before each: the walk's own time, frame rate, CPU and memory. A measure is worse when
+this commit's median is worse than the worst iteration of the reading the previous Baseline run
+left, The previous reading is the newest `device-reading` artifact a run on main left, and a
+first run, with none to collect, is held to nothing. A run keeps its reading only when it held,
+so a worse reading never becomes the one the next run is held to. It stays the reference for
+the 14 days an artifact is kept; after that the next reading is held to nothing and becomes the
+reference, which is how a cost that was accepted stops alarming. Each measure is held only
+while its spread on both readings, the coefficient of variation that Reassure's own glossary
+names for how steady a run is
+([CONTEXT.md](https://github.com/callstack/reassure/blob/main/CONTEXT.md)), stays below the 5
+per cent Reassure publishes for a steady runner. A measure at or over it is left out of the
+report and the verdict, named with its spread, and the rest are still held. A reading that
+measured nothing, failed, carried no frame rate or memory, or read a figure that was nothing on
+every iteration is refused, and the job fails. A steady measure that got worse files an issue
 labelled `device-red`, or comments on the open one, with the report, which names each measure,
-this commit's median and the previous run's worst; a later reading that holds closes it. The job stays green on a worse reading: it reports a trend, and it gates no pull
-request.
+this commit's median and the previous run's worst; a later reading that holds closes it. The
+job stays green on a worse reading: it reports a trend, and it gates no pull request.
 
 **Why the reading left the pull request.** On run 36287276171 the two sides' twenty walks took 27
 of the run's 49 minutes. Flashlight's own [page on
@@ -749,16 +751,19 @@ writes the caches from main, and a pull request can read what the default branch
 `android` job reads them with `cache-read-only`, so there is one entry for every pull request rather
 than one per pull request.
 
-**The app's bundles are three ratchets.** The script Hermes compiles for iOS and for Android, and
-the faces and images every platform ships, each against its own figure in `.size-limit.json`. The phones' scripts are weighed before Hermes compiles them, from
-`expo export --no-bytecode`, because the bytecode is not the same twice: Expo's exporter compiles
+**The app's bundles are three ratchets.** The script Hermes compiles for iOS and for Android,
+and the faces and images every platform ships, each against its own figure in
+`.size-limit.json`. The phones' scripts are weighed before Hermes compiles them, from `expo
+export --no-bytecode`, because the bytecode is not the same twice: Expo's exporter compiles
 from a temporary directory named with `Math.random()` and the time (`exportHermes.js` in
-`@expo/metro-config`), and Hermes writes that path into the bytecode. Metro's own output was not the
-same twice either: Expo numbers modules in the order Metro meets them, and one commit weighed 992708
-and 990513 B for iOS on two runs of the same job (run 36231517101). So `metro.config.ts` gives each
-module an id hashed from its path, refusing a clash by name, and `quality` exports the scripts twice
-and fails if a byte differs. The longer ids cost bytes, which is the price of a size that means the same thing on every run. Each ratchet went in at 1 B and the `footprint` job refused it, naming
-each and printing its size; those sizes are the ratchets.
+`@expo/metro-config`), and Hermes writes that path into the bytecode. Metro's own output was
+not the same twice either: Expo numbers modules in the order Metro meets them, and one commit
+weighed 992708 and 990513 B for iOS on two runs of the same job (run 36231517101). So
+`metro.config.ts` gives each module an id hashed from its path, refusing a clash by name, and
+`quality` exports the scripts twice and fails if a byte differs. The longer ids cost bytes,
+which is the price of a size that means the same thing on every run. Each ratchet went in at 1
+B and the `footprint` job refused it, naming each and printing its size; those sizes are the
+ratchets.
 
 **A colour written into a screen is refused** by a Grit plugin, `tools/lint/no-colour-literals.grit`,
 which `biome.json` points at `apps/native/src` except the theme and the tests. It refuses a string
@@ -781,10 +786,11 @@ packages, every one of them a test-time import that the root had been satisfying
 answered by a line in the package that does the importing.
 
 Declaring a test runner in a package has a second effect worth knowing before it surprises
-somebody: Biome reads its domains off the same manifest, so the web application this repository then
-held, naming `vitest`, switched on the `test` domain there and its rules found three more diagnostics. All three were one fixture
-helper named `before`, which `noDuplicateTestHooks` cannot tell from Mocha's hook of that name. The
-helper is now `precedes`, which is what it does and what no test framework calls anything.
+somebody: Biome reads its domains off the same manifest, so the web application this repository
+then held, naming `vitest`, switched on the `test` domain there and its rules found three more
+diagnostics. All three were one fixture helper named `before`, which `noDuplicateTestHooks`
+cannot tell from Mocha's hook of that name. The helper is now `precedes`, which is what it does
+and what no test framework calls anything.
 
 **Watched failing, watched silent.** An `import "expo-camera"` planted in
 `apps/native/src/source.ts` is refused by package and by the manifest that does not declare it.

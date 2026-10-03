@@ -124,14 +124,14 @@ The values its catalogue clauses write are empty Catalogues, because a Showtime 
 branded identity that only parsing a response can mint, and a contract that forged one would
 need the assertion this repository does not contain.
 
-**Every request the adapter makes asks for `no-store`.** What the HTTP stack beneath `fetch`
-is entitled to hold for a seat map would otherwise be decided upstream. That was measured on 2026-08-29: the upstream sends no
-`Cache-Control`, `Expires` or `Last-Modified` on a seat map, which under
-[RFC 9111](https://www.rfc-editor.org/rfc/rfc9111#section-4.2.2) leaves a storable response
-with no freshness to calculate, so Chromium revalidates rather than reusing. Adding a
+**Every request the adapter makes asks for `no-store`.** What the HTTP stack beneath `fetch` is
+entitled to hold for a seat map would otherwise be decided upstream. That was measured on
+2026-08-29: the upstream sends no `Cache-Control`, `Expires` or `Last-Modified` on a seat map,
+which under [RFC 9111](https://www.rfc-editor.org/rfc/rfc9111#section-4.2.2) leaves a storable
+response with no freshness to calculate, so Chromium revalidates rather than reusing. Adding a
 `Last-Modified` upstream would have been enough to change that silently, so the adapter no
-longer relies on its absence. That belongs to Core's transport, so every host that runs it
-asks the same.
+longer relies on its absence. That belongs to Core's transport, so every host that runs it asks
+the same.
 
 ## Consequences
 
