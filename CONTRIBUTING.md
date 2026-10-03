@@ -281,9 +281,9 @@ ignore-plugin skips.
 
 `pnpm test:mutation` judges every shard over the whole tree in turn and names every shard it
 refused. On a pull request, `node tools/mutation.mjs --plan <base>` lists the source files the
-change touches, by shard, and each CI job runs
-`node tools/mutation.mjs --shard <id> --files <files>` over a few files or one `file:start-end` range, which is also how to
-judge your own change by hand. Every form first refuses a list that leaves a source file under
+change touches, by shard, and each CI job runs `node tools/mutation.mjs --shard <id> --files
+<files>` over a few files or one `file:start-end` range, which is also how to judge your own
+change by hand. Every form first refuses a list that leaves a source file under
 `{apps,packages,tools}/*/src` to no shard. `--base` and `--head` make `pnpm footprint` compare
 something else, and `--out` writes its Markdown to a file.
 
