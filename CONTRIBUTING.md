@@ -63,16 +63,18 @@ pnpm versions
 pnpm --filter @seatscout/native run install-check
 pnpm --filter @seatscout/native run doctor
 pnpm --filter @seatscout/native run bundle
+pnpm test:e2e
+pnpm --filter @seatscout/native run weigh
 pnpm counts
 pnpm claims
 pnpm test:unit
 pnpm test:native
 pnpm build
-pnpm test:e2e
 ```
 
 `pnpm test:e2e` serves the app's web build from `apps/native/dist` with `serve`, compressed as
-a host would send it, so the bundle step comes first. Playwright runs `tests/app` over it, and axe
+a host would send it, so it runs straight after the bundle step and before `weigh`, which
+exports the phones alone into the same directory. Playwright runs `tests/app` over it, and axe
 scans every screen against WCAG 2.2. The web build is there for that scan and for nothing else.
 
 The list is the job, not a selection from it. Running a shorter one and finding it green is

@@ -78,7 +78,6 @@ const CONTEXT = "CONTEXT.md";
 const CONTRIBUTING = "CONTRIBUTING.md";
 const DRAWING = "docs/adr/0014-the-room-is-read-from-its-drawing.md";
 const LAYERS = "docs/adr/0003-separate-view-layers-shared-core.md";
-const MUTANTS = "docs/adr/0012-every-mutant-must-die.md";
 const NIGHTLY = "docs/adr/0011-a-nightly-reading-judges-the-world.md";
 const PROFILE_RECORD =
   "docs/adr/0018-good-seats-are-scored-against-a-reference.md";

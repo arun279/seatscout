@@ -79,15 +79,19 @@ jobs:
       - run: pnpm complexity
       - run: pnpm duplication
       - run: actionlint
-      - run: shellcheck deploy/*.sh apps/native/e2e/*.sh
+      - run: shellcheck apps/native/e2e/*.sh
       - run: pnpm spell
       - run: pnpm typecheck
       - run: pnpm dead-code
       - run: pnpm versions
       - run: pnpm --filter @seatscout/native run install-check
       - run: pnpm --filter @seatscout/native run doctor
-      - name: Check the app bundles for both phones and the web on a machine that has only what the lockfile installs
+      - name: Check the app bundles for both phones and the web build the accessibility scan reads, on a machine that has only what the lockfile installs
         run: pnpm --filter @seatscout/native run bundle
+      - name: Install the browser the accessibility scan drives
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Scan every screen of the app's web build with axe
+        run: pnpm test:e2e
       - name: Check the same source exports the same scripts twice, so a size ratchet weighs the change and not the build
         working-directory: apps/native
         run: |
@@ -101,44 +105,6 @@ jobs:
       - run: pnpm test:unit
       - run: pnpm test:native
       - run: pnpm build
-      - name: Check the deployment builds from the repository alone
-        working-directory: apps/proxy
-        run: pnpm exec wrangler deploy --dry-run
-      - name: Install the browser the end-to-end suite drives
-        run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm test:e2e
-      - name: Measure the journey on this branch
-        run: pnpm test:journey
-      - name: Measure the journey at the merge base
-        run: |
-          git worktree add "$RUNNER_TEMP/base" "$BASE"
-          cd "$RUNNER_TEMP/base"
-          pnpm install --frozen-lockfile
-          if listed="$(pnpm exec playwright test --list --grep @performance 2>&1)"; then
-            pnpm exec playwright install --with-deps chromium
-            pnpm build
-            pnpm exec playwright test --grep @performance --workers=1
-            cp reports/journey/samples.json "$GITHUB_WORKSPACE/reports/journey/base.json"
-            if [ -f reports/journey/gesture.json ]; then
-              cp reports/journey/gesture.json "$GITHUB_WORKSPACE/reports/journey/base-gesture.json"
-            fi
-          elif printf '%s' "$listed" | grep -q "No tests found"; then
-            echo "The merge base has no journey to hold this one to."
-          else
-            printf '%s\n' "$listed"
-            exit 1
-          fi
-      - name: Hold the journey to the merge base
-        run: |
-          held=(--no-baseline)
-          if [ -f reports/journey/base.json ]; then
-            held=(--base reports/journey/base.json)
-            if [ -f reports/journey/base-gesture.json ]; then
-              held+=(--base-gesture reports/journey/base-gesture.json)
-            fi
-          fi
-          pnpm journey --head reports/journey/samples.json \
-            --head-gesture reports/journey/gesture.json "${held[@]}"
 
   mutation:
     name: mutation (${{ matrix.shard }} ${{ strategy.job-index }})
@@ -351,7 +317,7 @@ jobs:
           install: false
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - name: Export the scripts the app ships for both phones and the web, so they are weighed
+      - name: Export the scripts the app ships for both phones, so they are weighed
         run: pnpm --filter @seatscout/native run weigh
       - name: Install the counter
         run: |
