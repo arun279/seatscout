@@ -166,26 +166,23 @@ a mutation job that refused anything turns it red. The reason
 [ADR 11](0011-a-nightly-reading-judges-the-world.md) gives for leaving the nightly reading out
 of that list, that it reads a world this repository does not control, reaches nothing here.
 
-## Amendment, 2026-09-26: the Expo app is ten shards, not one
+## Amendment, 2026-09-26, revised 2026-10-03: the Expo app is five shards
 
 One shard for `apps/native` could not judge a cold tree inside two hours: a pull request that
 touched 18 of its files left 666 mutants to judge after the seed, and the run was cancelled at
 the 120-minute limit twice. The cost is not the mutant count. With `coverageAnalysis` off, a
 mutant runs every test file Jest's related-tests search reaches from its module, on both
 platforms, and that reach is very uneven: `theme.ts` reaches 32 of the app's 43 test files,
-the type, touch, platform and feedback primitives 15 to 30, and a screen file 3 to 7. Weighed
-by each file's mutants against the initial run's 99 net seconds for 926 tests on four runners,
-a cold run of the whole app comes to about 96 minutes, of which the theme file alone is 28 and
-the design system 36.
+the type, touch, platform and feedback primitives 15 to 30, and a screen file 3 to 7.
 
-So the app is divided twice. By file group, so the widest fan-in sits in the smallest shards:
-`theme` (the files at the root of `src`), `design-system`, `search`, `ask`, and `shell` (every
-other directory). And by platform, since every mutant otherwise runs its tests twice: each
-group runs once under `jest.ios.config.js` and once under `jest.android.config.js`, which are
-the two projects `jest.config.js` composes. That halves the cost of every mutant and puts the
-slowest cold shard at about 18 minutes by the same estimate, so the job's limit is 60 minutes:
-twice the slowest estimate plus its fixed cost, rather than a limit set to what the last run
-happened to take. The run that landed this division (36245321569) took 81 to 150 seconds on each
-app shard, but that is not a cold figure: every shard took from the seed each result it counted,
-the two theme shards 13 of their 92 mutants with the other 79 ignored, so their time was the
-initial test run, 50 and 71 seconds, and the set-up. A cold shard is still only the estimate above.
+So the app is divided by file group, so the widest fan-in sits in the smallest shards: `theme`
+(the files at the root of `src`), `design-system`, `search`, `ask`, and `shell` (every other
+directory). Each shard runs `jest.config.js`, which composes the iOS and Android projects, so a
+mutant is killed when either platform's tests kill it.
+
+The first version of this amendment also split each group by platform, running one shard under
+`jest.ios.config.js` and one under `jest.android.config.js`, to halve each mutant's cost. That
+made a branch that runs on one platform only unkillable in the other platform's shard: the iOS
+time picker's `"spinner"` display survived the Android shard on PR #161 although the iOS tests
+assert it. A mutant the suite kills on some platform is killed, so the platform split went once
+pull requests began mutating only the files they change, which is what bounds the cost now.

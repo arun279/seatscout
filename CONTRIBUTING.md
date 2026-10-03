@@ -301,8 +301,7 @@ The mutation gate is divided into shards. `stryker.shards.json` names them, and
 files, and `vitest.stryker.config.ts` limits Vitest to that workspace's own tests, so a
 mutant is killed by the tests that own it or by nothing. Every run breaks below 100. A shard is
 a workspace, except for `apps/native`, which Vitest cannot render and Stryker's Jest runner takes
-instead in ten shards: five file groups, each run once per platform under that platform's Jest
-configuration.
+instead in five shards by file group, each running both platforms' Jest projects.
 [ADR 12](docs/adr/0012-every-mutant-must-die.md) says why the division is by workspace, why
 the app is divided further, why its shards set `coverageAnalysis` to `off`, and what their
 ignore-plugin skips.
