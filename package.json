@@ -29,7 +29,6 @@
     "test:journey": "playwright test --list --grep @performance && playwright test --grep @performance --workers=1",
     "test:live": "vitest run --config vitest.live.config.ts",
     "test:mutation": "VITEST_MAX_WORKERS=1 node tools/mutation.mjs",
-    "test:mutation:shard": "VITEST_MAX_WORKERS=1 node tools/mutation.mjs --incremental --shard",
     "test:native": "jest --config apps/native/jest.config.js --ci",
     "test:unit": "vitest run",
     "typecheck": "tsc --build --pretty false --noEmit",

@@ -1,0 +1,12 @@
+# Advisories with no fixed release yet, in packages that run only on a developer's machine or in CI.
+# Each expires, so the scan raises it again when a fix may have shipped.
+
+[[IgnoredVulns]]
+id = "GHSA-vfj7-8cjw-p6xm"
+ignoreUntil = 2026-11-03T00:00:00Z
+reason = "braces (through micromatch) expands only glob patterns this repository writes; nothing passes it outside input, and it is not in the app bundle."
+
+[[IgnoredVulns]]
+id = "GHSA-86w9-cpqp-85rv"
+ignoreUntil = 2026-11-03T00:00:00Z
+reason = "node-forge is used by @expo/cli on the developer's machine; the app bundle does not include it and verifies no RSA signature with it."

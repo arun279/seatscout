@@ -26,22 +26,6 @@ const SEAT_MAP = "packages/core/src/source/seat-map.ts";
 const VERIFY = "packages/client/src/verify.ts";
 
 const WORKSPACE = "pnpm-workspace.yaml";
-const CI = ".github/workflows/ci.yml";
-const BASELINE = ".github/workflows/baseline.yml";
-
-const seedCaches = (read: Read) =>
-  [CI, BASELINE]
-    .map((workflow) => read(workflow).split("\n"))
-    .flatMap((lines) =>
-      lines.filter(
-        (line, at) =>
-          /uses: actions\/cache\//.test(line) &&
-          /^ {10}path: \$\{\{ steps\.\w+\.outputs\.seed \}\}$/.test(
-            lines[at + 2] ?? "",
-          ),
-      ),
-    );
-
 const blockUnder = (read: Read, path: string, heading: string) => {
   const lines = read(path).split("\n");
   const rest = lines.slice(lines.indexOf(heading) + 1);
@@ -122,12 +106,6 @@ export const CLAIMS: readonly Claim[] = [
     says: /The pre-commit hook runs (\w+) checks over staged files/,
     about: `the commands under pre-commit, in ${LEFTHOOK}`,
     count: (read) => hookCommands(read, "pre-commit").length,
-  },
-  {
-    document: MUTANTS,
-    says: /(\w+) cache entries across the two workflows name one seed file each/,
-    about: `the cache entries naming one seed file, in ${CI} and ${BASELINE}`,
-    count: (read) => seedCaches(read).length,
   },
   {
     document: GATES,

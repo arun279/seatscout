@@ -1,5 +1,4 @@
 import type { Gates, Limits } from "./limits.js";
-import type { Mutation } from "./mutation.js";
 import { type Measurement, render, type Report } from "./report.js";
 import type { Suites } from "./suites.js";
 import type { Counts, Side, Tree } from "./volume.js";
@@ -32,23 +31,6 @@ export const LIMITS: Limits = {
 
 export const SUITES: Suites = { unit: 487, screens: 76, endToEnd: 7 };
 
-export const WEIGHED: readonly Mutation[] = [
-  {
-    over: "packages/core",
-    score: 100,
-    detected: 2174,
-    weighed: 2174,
-    breaksAt: 100,
-  },
-  {
-    over: "apps/native",
-    score: 100,
-    detected: 180,
-    weighed: 180,
-    breaksAt: 100,
-  },
-];
-
 export const measurement = (over: Partial<Measurement> = {}): Measurement => ({
   base: side("0123456789abcdef0123456789abcdef01234567"),
   head: side("fedcba9876543210fedcba9876543210fedcba98"),
@@ -60,7 +42,6 @@ export const measurement = (over: Partial<Measurement> = {}): Measurement => ({
   gates: GATES,
   limits: LIMITS,
   suites: SUITES,
-  mutation: WEIGHED,
   ratchets: { comments: 0, tests: 1 },
   ...over,
 });

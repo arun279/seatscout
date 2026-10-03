@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { BIOME, OXLINT } from "./limits.js";
 import { measuring, recorder } from "./measure.fixtures.js";
-import { RATCHET, SHARDS } from "./measure.js";
+import { RATCHET } from "./measure.js";
 import type { Run } from "./shell.js";
 
 const sizeLimitExitingNonZero = (stdout: string): Run =>
@@ -172,47 +172,5 @@ describe("the limits the report stands its figures beside", () => {
         }),
       }),
     ).toThrow(`${BIOME} sets no lines per file limit`);
-  });
-});
-
-describe("the mutation reports the shards wrote", () => {
-  it("refuses a list that names no shard, whose score would be a verdict over nothing", () => {
-    expect(measured({ [SHARDS]: "[]" })).toThrow(
-      `${SHARDS} names no shard, so no mutation run was asked for and a score over nothing would pass.`,
-    );
-  });
-
-  it("refuses a shard that names no report, rather than reading a path that is not there", () => {
-    expect(
-      measured({
-        [SHARDS]: JSON.stringify([{ id: "core", workspace: "packages/core" }]),
-      }),
-    ).toThrow(
-      `${SHARDS} holds a shard without an id, a workspace and a report, so there is no score of it to read:\n{"id":"core","workspace":"packages/core"}`,
-    );
-  });
-
-  it("refuses a shard that names no workspace, whose score would be a row about nothing", () => {
-    expect(
-      measured({
-        [SHARDS]: JSON.stringify([
-          { id: "core", report: "reports/mutation/core.json" },
-        ]),
-      }),
-    ).toThrow(
-      `${SHARDS} holds a shard without an id, a workspace and a report, so there is no score of it to read:\n{"id":"core","report":"reports/mutation/core.json"}`,
-    );
-  });
-
-  it("refuses a shard that names no id, whose row would carry no name", () => {
-    expect(
-      measured({
-        [SHARDS]: JSON.stringify([
-          { workspace: "packages/core", report: "reports/mutation/core.json" },
-        ]),
-      }),
-    ).toThrow(
-      `${SHARDS} holds a shard without an id, a workspace and a report, so there is no score of it to read:\n{"workspace":"packages/core","report":"reports/mutation/core.json"}`,
-    );
   });
 });

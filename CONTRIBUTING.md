@@ -87,33 +87,25 @@ how a contributor arrives red on a pull request, which is what this list is for.
 line is the half of the journey gate a checkout can run alone; the job also builds the merge
 base in a worktree, runs its journey, and holds this one to it.
 
-Ten further jobs run beside it. `verdicts` runs first and names what `quality`, `apk` and
-`performance` would judge by the git trees they read; a job an earlier run of the same pull
-request passed on exactly those trees is skipped, and says so. `apk` builds the app for Android
-with the Source answered from the corpus (`SEATSCOUT_UPSTREAM=corpus`, which Metro reads to swap
+Eight further jobs run beside it. `changes` lists the source files the pull request touches, and those its changed tests import, and
+says whether it touches the app. `mutation` mutates those files, a few per runner, in parallel,
+and is skipped when no source file changed. `android` builds the app for Android with the Source
+answered from the corpus (`SEATSCOUT_UPSTREAM=corpus`, which Metro reads to swap
 `src/host/upstream.ts` for `e2e/upstream.ts`), reading the Gradle caches main's Baseline run
-leaves. `device` walks `apps/native/e2e/journey.yaml` over that app with Maestro on an emulator,
-once, and the walk gates. The Flashlight reading of the walk's frame rate, CPU and memory runs
-on main instead, in the Baseline workflow, held to the run before it; ADR 6 says why. `shards`
-reads the workspaces the mutation gate is divided into out of `stryker.shards.json`, and
-`mutation` judges one of them per runner, in parallel. `weigh` measures what the change weighs
-once the shards are done. `footprint` waits for every other job, reports what `weigh` measured and
-which jobs were reused, and refuses a run that took more than
-20 minutes from its first job starting. `secrets` scans the pull request's commits with gitleaks. `dependencies`
-scans the lockfile against the OSV database and fails on any advisory, then reads every
-dependency's licence and fails on any SPDX identifier outside the allowlist that job
-carries, a licence it could not determine included. `performance` measures each screen's
-Testing Library scenario with Reassure on the merge base and on the head, and reads how
-steady the runner is before it judges either.
+leaves, and walks `apps/native/e2e/journey.yaml` over it with Maestro on an emulator, once; the
+walk gates. `performance` measures each screen's Testing Library scenario with Reassure on the
+merge base and on the head, and reads how steady the runner is before it judges either. Both run
+only when the change touches the app. The Flashlight reading of the walk's frame rate, CPU and
+memory runs on main instead, in the Baseline workflow, held to the run before it; ADR 6 says why.
+`measure` measures what the change weighs. `secrets` scans the pull request's commits with
+gitleaks. `dependencies` scans the lockfile against the OSV database and fails on any advisory,
+then reads every dependency's licence and fails on any SPDX identifier outside the allowlist that
+job carries, a licence it could not determine included. `footprint` waits for every other job,
+posts what `measure` measured and what each job did, and refuses the change when any job failed.
 
 One hook runs before CI. The pre-commit hook runs five checks over staged files,
 `lefthook.yml` declares it, and nothing else runs on this machine unasked. CI is the
-judge of the whole tree, because a hook can be skipped. `quality`, `apk`, `performance`,
-`device` and `weigh` judge a tree once: a push that changes nothing one of them reads
-reuses its earlier verdict, and a push that fixes one of them reruns that one and what waits
-for it. The mutation shards start from the report their tree left. `secrets` reads commits, and
-`dependencies` an advisory database that changes without the tree, so those two run on every
-push, in under a minute each.
+judge of the whole tree, because a hook can be skipped, and it runs each check once per push.
 
 ## When a gate refuses
 
@@ -157,6 +149,10 @@ Each of these has one way through and no exemption to grant.
   lines under `{apps,packages,tools}/*/src` duplicated, which is the figure SonarSource
   publish in the Sonar way quality gate. The failure names both files and the lines they
   share. Take the duplication out; there is no list to add a file to.
+- **A dependency's advisory.** Update the package, or pin the fixed release under `overrides` in
+  `pnpm-workspace.yaml` when only a transitive dependency carries it. When no release fixes it,
+  add it to `osv-scanner.toml` with the reason it cannot reach the app and an `ignoreUntil` about
+  a month out, so the scan raises it again.
 - **A dependency's licence.** The `dependencies` job holds every licence in the lockfile to
   the SPDX allowlist written into `.github/workflows/ci.yml`. A licence osv-scanner cannot
   determine reads as `UNKNOWN` and fails like any other identifier that is not on the list.
@@ -224,11 +220,7 @@ Each of these has one way through and no exemption to grant.
   violation of each rule and watches the audit refuse it.
 - **The test count.** `.footprint.json` holds a floor under the tests the three runners collect,
   by their own listings rather than by a run, except Jest, which has no listing that counts tests
-  without running them and so reports its run's own total; the mutation-cache guard separately
-  compares each shard's Stryker initial run to the tests its own workspace holds, which is what
-  `vitest list` collects under that directory, or the Jest suite's own total for the Expo app,
-  and the `footprint` job holds the sum over the shards to what the two runners collect over the
-  whole tree. Put the tests back, or lower the ratchet in the same diff.
+  without running them and so reports its run's own total. Put the tests back, or lower the ratchet in the same diff.
 
 Take a ratchet's new value from the `footprint` comment on the pull request rather than from a
 local run: the job measures the merge of your branch with `main` rather than the branch alone,
@@ -304,42 +296,27 @@ pnpm test:mutation
 pnpm footprint
 ```
 
-The mutation gate is one run per shard. `stryker.shards.json` names them, and
+The mutation gate is divided into shards. `stryker.shards.json` names them, and
 `stryker.config.mjs` takes the one `MUTATION_SHARD` names out of that list and mutates its
 files, and `vitest.stryker.config.ts` limits Vitest to that workspace's own tests, so a
-mutant is killed by the tests that own it or by nothing. Each shard writes its own report under `reports/mutation`, each
-breaks below 100, and the footprint comment prints every one of them. A shard is a workspace,
-except for `apps/native`, which Vitest cannot render and Stryker's Jest runner takes instead in
-ten shards: five file groups, each run once per platform under that platform's Jest
-configuration.
+mutant is killed by the tests that own it or by nothing. Every run breaks below 100. A shard is
+a workspace, except for `apps/native`, which Vitest cannot render and Stryker's Jest runner takes
+instead in five shards by file group, each running both platforms' Jest projects.
 [ADR 12](docs/adr/0012-every-mutant-must-die.md) says why the division is by workspace, why
 the app is divided further, why its shards set `coverageAnalysis` to `off`, and what their
 ignore-plugin skips.
 
-`pnpm test:mutation` judges every shard in turn, inheriting nothing and writing nothing to
-inherit from, and names every shard it refused. Both scripts first refuse a list that leaves a
-source file under `{apps,packages,tools}/*/src` to no shard. `pnpm test:mutation:shard <id>`
-judges one incrementally, which is what each runner in CI runs. `--base` and `--head` make `pnpm footprint` compare something else, and
-`--out` writes its Markdown to a file.
+`pnpm test:mutation` judges every shard over the whole tree in turn and names every shard it
+refused. On a pull request, `node tools/mutation.mjs --plan <base>` lists the source files the
+change touches, by shard, and each CI job runs
+`node tools/mutation.mjs --shard <id> --files <files>` over a few of them, which is also how to
+judge your own change by hand. Every form first refuses a list that leaves a source file under
+`{apps,packages,tools}/*/src` to no shard. `--base` and `--head` make `pnpm footprint` compare
+something else, and `--out` writes its Markdown to a file.
 
-Both scripts run Vitest on one worker under Stryker (`VITEST_MAX_WORKERS=1`): with more, Stryker
-activates a mutant in one worker while its tests run in another, and the run reports survivors
-that a hand-planted mutant refutes. A scoped run by hand needs the same prefix and the shard the
-files sit in: `VITEST_MAX_WORKERS=1 MUTATION_SHARD=<id> pnpm exec stryker run --incremental
---force --mutate <files>`.
-
-Each shard's report is saved under two names, the branch's and the tree's, both carrying the
-shard. A pull request merged up to date has exactly the tree main gets, so the next branch
-restores the merged branch's report by main's tree hash and judges only what it changed. A cache
-saved on a branch is invisible to main, so a passing shard also publishes its report as an
-artifact named by the shard and the tree; the baseline job on a push downloads that artifact for
-main's tree, judges the nothing that changed, and saves the seed under main, where every branch
-can restore it. Its nightly schedule judges main from nothing, which is the one full run. A
-pull request's shard that restores no seed at all is refused rather than left to do the same;
-dispatching the Baseline on main reseeds it.
-
-A Baseline that fails saves no seed, so it opens an issue labelled `baseline-red`, and any
-green Baseline closes it. See [ADR 12](docs/adr/0012-every-mutant-must-die.md).
+Run Vitest on one worker under Stryker (`VITEST_MAX_WORKERS=1`): with more, Stryker activates a
+mutant in one worker while its tests run in another, and the run reports survivors that a
+hand-planted mutant refutes.
 
 ## Refreshing the corpus
 

@@ -7,21 +7,13 @@ import {
   limitsFrom,
   OXLINT,
 } from "./limits.js";
-import { type Mutation, mutationFrom } from "./mutation.js";
 import type { Measurement, Ratchets } from "./report.js";
 import type { Run } from "./shell.js";
 import { type Suites, suitesFrom } from "./suites.js";
 import { type Diff, filesOf, type Side, type Tree } from "./volume.js";
 
 export const RATCHET = ".footprint.json";
-export const SHARDS = "stryker.shards.json";
 const NATIVE_JEST = "apps/native/jest.config.js";
-
-interface Shard {
-  readonly id?: unknown;
-  readonly workspace?: unknown;
-  readonly report?: unknown;
-}
 
 const NATIVE_JEST_RUN: readonly string[] = [
   "exec",
@@ -112,25 +104,6 @@ export const measureWith = (run: Run, read: (path: string) => string) => {
       ]),
     );
 
-  const weighed = (): readonly Mutation[] => {
-    const shards: readonly Shard[] = JSON.parse(read(SHARDS));
-    if (shards.length === 0)
-      throw new Error(
-        `${SHARDS} names no shard, so no mutation run was asked for and a score over nothing would pass.`,
-      );
-    return shards.map(({ id, workspace, report }) => {
-      if (
-        typeof id !== "string" ||
-        typeof workspace !== "string" ||
-        typeof report !== "string"
-      )
-        throw new Error(
-          `${SHARDS} holds a shard without an id, a workspace and a report, so there is no score of it to read:\n${JSON.stringify({ id, workspace, report })}`,
-        );
-      return mutationFrom(id, read(report));
-    });
-  };
-
   const held = (of: string, ratchets: Record<string, unknown>): number => {
     const configured = ratchets[of];
     if (typeof configured !== "number")
@@ -160,7 +133,6 @@ export const measureWith = (run: Run, read: (path: string) => string) => {
       gates: against,
       limits: observed(against),
       suites: collected(),
-      mutation: weighed(),
       ratchets: ratchets(),
     };
   };

@@ -131,11 +131,13 @@
     "Vinju",
     "vitest",
     "VITEST_MAX_WORKERS",
+    "Vulns",
     "WCAG",
     "workerd",
     "worktree",
     "wslview",
     "Wyrich",
     "xoroshiro"
-  ]
+  ],
+  "ignoreRegExpList": ["GHSA-[a-z0-9-]+"]
 }

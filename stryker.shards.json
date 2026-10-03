@@ -4,6 +4,7 @@
     "workspace": "packages/core",
     "runner": "vitest",
     "mutate": ["packages/core/src/**/*.{ts,tsx}"],
+    "canary": "packages/core/src/domain/auditorium.ts",
     "report": "reports/mutation/core.json"
   },
   {
@@ -11,6 +12,7 @@
     "workspace": "packages/client",
     "runner": "vitest",
     "mutate": ["packages/client/src/**/*.{ts,tsx}"],
+    "canary": "packages/client/src/verify.ts",
     "report": "reports/mutation/client.json"
   },
   {
@@ -18,6 +20,7 @@
     "workspace": "packages/view-logic",
     "runner": "vitest",
     "mutate": ["packages/view-logic/src/**/*.{ts,tsx}"],
+    "canary": "packages/view-logic/src/asked.ts",
     "report": "reports/mutation/view-logic.json"
   },
   {
@@ -25,6 +28,7 @@
     "workspace": "apps/web",
     "runner": "vitest",
     "mutate": ["apps/web/src/**/*.{ts,tsx}"],
+    "canary": "apps/web/src/store.ts",
     "report": "reports/mutation/web.json"
   },
   {
@@ -32,6 +36,7 @@
     "workspace": "apps/proxy",
     "runner": "vitest",
     "mutate": ["apps/proxy/src/**/*.{ts,tsx}"],
+    "canary": "apps/proxy/src/index.ts",
     "report": "reports/mutation/proxy.json"
   },
   {
@@ -39,86 +44,52 @@
     "workspace": "tools",
     "runner": "vitest",
     "mutate": ["tools/*/src/**/*.{ts,tsx}"],
+    "canary": "tools/footprint/src/bundles.ts",
     "report": "reports/mutation/tools.json"
   },
   {
-    "id": "native-theme-ios",
+    "id": "native-theme",
     "workspace": "apps/native",
     "runner": "jest",
-    "jest": "apps/native/jest.ios.config.js",
+    "jest": "apps/native/jest.config.js",
     "mutate": ["apps/native/src/*.{ts,tsx}"],
-    "report": "reports/mutation/native-theme-ios.json"
+    "canary": "apps/native/src/theme.ts",
+    "report": "reports/mutation/native-theme.json"
   },
   {
-    "id": "native-theme-android",
+    "id": "native-design-system",
     "workspace": "apps/native",
     "runner": "jest",
-    "jest": "apps/native/jest.android.config.js",
-    "mutate": ["apps/native/src/*.{ts,tsx}"],
-    "report": "reports/mutation/native-theme-android.json"
-  },
-  {
-    "id": "native-design-system-ios",
-    "workspace": "apps/native",
-    "runner": "jest",
-    "jest": "apps/native/jest.ios.config.js",
+    "jest": "apps/native/jest.config.js",
     "mutate": ["apps/native/src/design-system/**/*.{ts,tsx}"],
-    "report": "reports/mutation/native-design-system-ios.json"
+    "canary": "apps/native/src/design-system/banner.tsx",
+    "report": "reports/mutation/native-design-system.json"
   },
   {
-    "id": "native-design-system-android",
+    "id": "native-search",
     "workspace": "apps/native",
     "runner": "jest",
-    "jest": "apps/native/jest.android.config.js",
-    "mutate": ["apps/native/src/design-system/**/*.{ts,tsx}"],
-    "report": "reports/mutation/native-design-system-android.json"
-  },
-  {
-    "id": "native-search-ios",
-    "workspace": "apps/native",
-    "runner": "jest",
-    "jest": "apps/native/jest.ios.config.js",
+    "jest": "apps/native/jest.config.js",
     "mutate": ["apps/native/src/search/**/*.{ts,tsx}"],
-    "report": "reports/mutation/native-search-ios.json"
+    "canary": "apps/native/src/search/recent.tsx",
+    "report": "reports/mutation/native-search.json"
   },
   {
-    "id": "native-search-android",
+    "id": "native-ask",
     "workspace": "apps/native",
     "runner": "jest",
-    "jest": "apps/native/jest.android.config.js",
-    "mutate": ["apps/native/src/search/**/*.{ts,tsx}"],
-    "report": "reports/mutation/native-search-android.json"
-  },
-  {
-    "id": "native-ask-ios",
-    "workspace": "apps/native",
-    "runner": "jest",
-    "jest": "apps/native/jest.ios.config.js",
+    "jest": "apps/native/jest.config.js",
     "mutate": ["apps/native/src/ask/**/*.{ts,tsx}"],
-    "report": "reports/mutation/native-ask-ios.json"
+    "canary": "apps/native/src/ask/film.tsx",
+    "report": "reports/mutation/native-ask.json"
   },
   {
-    "id": "native-ask-android",
+    "id": "native-shell",
     "workspace": "apps/native",
     "runner": "jest",
-    "jest": "apps/native/jest.android.config.js",
-    "mutate": ["apps/native/src/ask/**/*.{ts,tsx}"],
-    "report": "reports/mutation/native-ask-android.json"
-  },
-  {
-    "id": "native-shell-ios",
-    "workspace": "apps/native",
-    "runner": "jest",
-    "jest": "apps/native/jest.ios.config.js",
+    "jest": "apps/native/jest.config.js",
     "mutate": ["apps/native/src/{app,host,hand-off,ledger,room}/**/*.{ts,tsx}"],
-    "report": "reports/mutation/native-shell-ios.json"
-  },
-  {
-    "id": "native-shell-android",
-    "workspace": "apps/native",
-    "runner": "jest",
-    "jest": "apps/native/jest.android.config.js",
-    "mutate": ["apps/native/src/{app,host,hand-off,ledger,room}/**/*.{ts,tsx}"],
-    "report": "reports/mutation/native-shell-android.json"
+    "canary": "apps/native/src/host/profile.ts",
+    "report": "reports/mutation/native-shell.json"
   }
 ]
