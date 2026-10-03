@@ -3,10 +3,8 @@ import {
   FITTED,
   mostZoomFor,
   panned,
-  pinched,
   revealed,
   revealedIn,
-  transformOf,
   zoomed,
 } from "./gesture.js";
 
@@ -62,24 +60,6 @@ describe("panning and zooming the room", () => {
     });
   });
 
-  it("reads a pinch as a pan by the midpoint and a zoom by the spread, about the fingers", () => {
-    expect(
-      pinched(
-        FITTED,
-        [
-          { x: 100, y: 100 },
-          { x: 200, y: 100 },
-        ],
-        [
-          { x: 100, y: 100 },
-          { x: 300, y: 100 },
-        ],
-        ROOM,
-        MOST,
-      ),
-    ).toEqual({ scale: 2, tx: -200, ty: -100 });
-  });
-
   it("brings a Seat outside the view back inside it, and leaves one already in view alone", () => {
     const view = { scale: 2, tx: -250, ty: -150 };
 
@@ -95,7 +75,7 @@ describe("panning and zooming the room", () => {
     ).toEqual(view);
   });
 
-  it("holds the edge, the growth and the midpoint at a scale and an offset where each is its own arithmetic", () => {
+  it("holds the edge and the growth at a scale and an offset where each is its own arithmetic", () => {
     expect(panned({ scale: 3, tx: -400, ty: -200 }, -600, -400, ROOM)).toEqual({
       scale: 3,
       tx: -1000,
@@ -110,21 +90,6 @@ describe("panning and zooming the room", () => {
         MOST,
       ),
     ).toEqual({ scale: 3, tx: -425, ty: -255 });
-    expect(
-      pinched(
-        { scale: 2, tx: -250, ty: -150 },
-        [
-          { x: 100, y: 100 },
-          { x: 200, y: 100 },
-        ],
-        [
-          { x: 140, y: 160 },
-          { x: 260, y: 160 },
-        ],
-        ROOM,
-        MOST,
-      ),
-    ).toEqual({ scale: 2.4, tx: -280, ty: -140 });
     expect(
       revealed(
         { scale: 3, tx: -300, ty: -200 },
@@ -151,13 +116,6 @@ describe("panning and zooming the room", () => {
     expect(mostZoomFor(18, 500, 340, 48)).toBeCloseTo(3.922, 3);
     expect(mostZoomFor(18, 500, 340, 48)).toBeGreaterThan(
       mostZoomFor(18, 500, 340, 44),
-    );
-  });
-
-  it("spells the transform the wrapping group carries", () => {
-    expect(transformOf(FITTED)).toBe("translate(0 0) scale(1)");
-    expect(transformOf({ scale: 2, tx: -250, ty: -150 })).toBe(
-      "translate(-250 -150) scale(2)",
     );
   });
 });

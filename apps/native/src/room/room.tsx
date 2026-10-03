@@ -2,7 +2,6 @@ import type { Auditorium, SeatGroupResult } from "@seatscout/client";
 import {
   BACK_TO_THE_LIST,
   backToOf,
-  type Cursor,
   chosenOf,
   clockOf,
   consolesIn,
@@ -13,10 +12,8 @@ import {
   frameOf,
   groupHolding,
   notBookableIn,
-  opened,
   type Place,
   partyOf,
-  placed,
   readingOf,
   refusalOf,
   rowOf,
@@ -194,7 +191,7 @@ export const Room = ({
     width: 0,
     height: 0,
   });
-  const [cursor, setCursor] = useState<Cursor>(() => opened(auditorium));
+  const [cursor, setCursor] = useState<Place>(auditorium.recommended);
   const [chosen, setChosen] = useState(opening);
   const [notice, setNotice] = useState<string | null>(null);
   const { theater, formats, amenities } = result.showtime.presentation;
@@ -209,7 +206,7 @@ export const Room = ({
   });
 
   const activate = (place: Place) => {
-    setCursor(placed(place));
+    setCursor(place);
     const group = groupHolding(auditorium, place.seat);
     if (group === undefined)
       setNotice(refusalOf(place.seat, partySize, accessibleSeating));
@@ -276,7 +273,7 @@ export const Room = ({
         <TouchableOpacity
           accessibilityRole="button"
           onPress={() => {
-            setCursor(opened(auditorium));
+            setCursor(auditorium.recommended);
             setNotice(null);
           }}
           style={[styles.return, { borderColor: colours.hairline }]}

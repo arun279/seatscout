@@ -122,11 +122,6 @@ export const mapLabelOf = (
   return `Seat map of ${theater.name} at ${clockOf(result.showtime.startsAt)}. ${map.seatCount} seats in ${map.rows.length} rows, ${map.bookableCount} bookable. Recommended: ${spokenOf(result)}, ${ordinalOf(result.reasons.rowFromFront)} row of ${result.reasons.rowCount}, ${lateralOf(result.reasons.seatsOffCentre)}.`;
 };
 
-export const gridLabelOf = (
-  auditorium: Auditorium,
-  result: SeatGroupResult,
-): string => `${mapLabelOf(auditorium, result)} Arrow keys move one seat.`;
-
 export const refusalOf = (
   seat: PositionedSeat,
   partySize: number,

@@ -8,7 +8,6 @@ import type {
 import {
   ALSO_IN_THE_LIST,
   aimedAt,
-  type Cursor,
   dividersIn,
   type Frame,
   holds,
@@ -54,7 +53,7 @@ interface SeatMapProps {
   readonly auditorium: Auditorium;
   readonly result: SeatGroupResult;
   readonly chosen: SeatGroupResult;
-  readonly cursor: Cursor;
+  readonly cursor: Place;
   readonly accessibleSeating: boolean;
   readonly frame: Frame;
   readonly drawn: Drawn;

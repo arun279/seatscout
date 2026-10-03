@@ -1,8 +1,8 @@
 import {
-  type Cursor,
   FITTED,
   type Frame,
   mostZoomFor,
+  type Place,
   type Point,
   panned,
   revealedIn,
@@ -87,7 +87,7 @@ export const labelledAt = (view: View, mostZoom: number): number => {
 export const usePanZoom = (
   frame: Frame,
   drawn: Drawn,
-  cursor: Cursor,
+  cursor: Place,
   onTap: (at: Point) => void,
 ): PanZoom => {
   const view = useSharedValue<View>(FITTED);

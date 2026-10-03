@@ -13,9 +13,10 @@ export interface Frame extends Box {
   readonly seatWidth: number;
 }
 
-export type SeatState = "lit" | "bookable" | "unbookable";
-
-const ALTERNATES_SHOWN = 3;
+export interface Place {
+  readonly row: SeatRow;
+  readonly seat: PositionedSeat;
+}
 
 export const frameOf = (auditorium: Auditorium): Frame => {
   const seats = auditorium.map.rows.flatMap((row) => row.seats);
@@ -39,16 +40,6 @@ export const frameOf = (auditorium: Auditorium): Frame => {
 
 export const holds = (group: SeatGroupResult, seat: PositionedSeat): boolean =>
   group.seats.some((held) => held.id === seat.id);
-
-export const stateOf = (seat: PositionedSeat, lit: boolean): SeatState => {
-  if (lit) return "lit";
-  return seat.bookable ? "bookable" : "unbookable";
-};
-
-export const offeredIn = (auditorium: Auditorium): ReadonlySet<string> =>
-  new Set(
-    auditorium.offered.flatMap((group) => group.seats.map((seat) => seat.id)),
-  );
 
 export const groupHolding = (
   auditorium: Auditorium,
@@ -97,19 +88,3 @@ export const everyGroupIn = (
   result,
   ...auditorium.offered.filter((offered) => offered.key !== result.key),
 ];
-
-export const shownIn = (
-  auditorium: Auditorium,
-  result: SeatGroupResult,
-  chosen: SeatGroupResult,
-): readonly SeatGroupResult[] => {
-  const shown = [
-    result,
-    ...auditorium.offered
-      .filter((offered) => offered.key !== result.key)
-      .slice(0, ALTERNATES_SHOWN),
-  ];
-  return shown.some((offered) => offered.key === chosen.key)
-    ? shown
-    : [...shown, chosen];
-};

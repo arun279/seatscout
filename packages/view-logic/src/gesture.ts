@@ -16,8 +16,6 @@ export interface Point {
 
 export interface Box extends Point, Extent {}
 
-type Pair = readonly [Point, Point];
-
 export const FITTED: View = { scale: 1, tx: 0, ty: 0 };
 
 export const TOUCH_SLOP = 8;
@@ -66,32 +64,6 @@ export const zoomed = (
   );
 };
 
-const midOf = ([first, second]: Pair): Point => ({
-  x: (first.x + second.x) / 2,
-  y: (first.y + second.y) / 2,
-});
-
-const spanOf = ([first, second]: Pair) =>
-  Math.hypot(first.x - second.x, first.y - second.y);
-
-export const pinched = (
-  view: View,
-  previous: Pair,
-  current: Pair,
-  extent: Extent,
-  mostZoom: number,
-): View => {
-  const from = midOf(previous);
-  const to = midOf(current);
-  return zoomed(
-    panned(view, to.x - from.x, to.y - from.y, extent),
-    spanOf(current) / spanOf(previous),
-    to,
-    extent,
-    mostZoom,
-  );
-};
-
 const shiftInto = (low: number, high: number, limit: number) => {
   "worklet";
   return low < 0 ? -low : Math.min(0, limit - high);
@@ -118,6 +90,3 @@ export const mostZoomFor = (
   clientWidth: number,
   floor: number,
 ): number => Math.max(1, floor / ((seatWidth * clientWidth) / extentWidth));
-
-export const transformOf = (view: View): string =>
-  `translate(${view.tx} ${view.ty}) scale(${view.scale})`;

@@ -109,7 +109,7 @@ export const ledeOf = (
 export const noneOf = (party: number): string =>
   party === 1 ? "No seat" : `No ${wordOf(party)} seats together`;
 
-const penaltiesOf = (
+export const penaltiesOf = (
   reasons: RankReasons,
   podDividers: number,
 ): readonly string[] => [

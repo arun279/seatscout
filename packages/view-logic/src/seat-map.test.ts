@@ -14,9 +14,6 @@ import {
   frameOf,
   groupHolding,
   holds,
-  offeredIn,
-  shownIn,
-  stateOf,
 } from "./seat-map.js";
 
 let rooms: readonly OpenedRoom[] = [];
@@ -103,26 +100,12 @@ describe("the frame the whole room is drawn in", () => {
   });
 });
 
-describe("what a Seat is drawn as", () => {
-  it("says a Seat is lit when the chosen group holds it, whatever else it is", () => {
+describe("the Seats a group holds", () => {
+  it("holds every Seat the group took", () => {
     const { auditorium, result } = openedRoom(WEST_PLANO_28);
 
-    for (const held of result.seats) {
+    for (const held of result.seats)
       expect(holds(result, seatNamed(auditorium, held.id))).toBe(true);
-      expect(stateOf(seatNamed(auditorium, held.id), true)).toBe("lit");
-    }
-  });
-
-  it("separates a Seat for sale from one that is not bookable", () => {
-    const { auditorium } = openedRoom(WEST_PLANO_28);
-    const seats = auditorium.map.rows.flatMap((row) => row.seats);
-    const free = seats.find((seat) => seat.bookable);
-    const gone = seats.find((seat) => !seat.bookable);
-    if (free === undefined || gone === undefined)
-      throw new Error("the room has only one kind of Seat");
-
-    expect(stateOf(free, false)).toBe("bookable");
-    expect(stateOf(gone, false)).toBe("unbookable");
   });
 
   it("does not hold a Seat the group never took", () => {
@@ -137,23 +120,11 @@ describe("what a Seat is drawn as", () => {
 });
 
 describe("which Seats a person may choose from the map", () => {
-  it("names every Seat any offered group holds, and no other", () => {
-    const { auditorium } = openedRoom(WEST_PLANO_28);
-
-    expect([...offeredIn(auditorium)].sort()).toEqual([
-      "G13",
-      "G14",
-      "H13",
-      "H14",
-    ]);
-  });
-
   it("finds the group a Seat belongs to, and nothing for a Seat no group offers", () => {
     const { auditorium, result } = openedRoom(WEST_PLANO_28);
-    const offered = offeredIn(auditorium);
     const unoffered = auditorium.map.rows
       .flatMap((row) => row.seats)
-      .find((seat) => !offered.has(seat.id));
+      .find((seat) => !auditorium.offered.some((group) => holds(group, seat)));
     if (unoffered === undefined) throw new Error("every Seat is offered");
 
     expect(
@@ -162,39 +133,6 @@ describe("which Seats a person may choose from the map", () => {
       ),
     ).toEqual(result.seats.map(() => result.key));
     expect(groupHolding(auditorium, unoffered)).toBeUndefined();
-  });
-});
-
-describe("the alternates the room lists", () => {
-  it("opens with the recommendation and at most three others, the recommendation first", () => {
-    const { auditorium, result } = openedRoom(HOOKY_ADDISON);
-    const listed = shownIn(auditorium, result, result);
-
-    expect(auditorium.offered.length).toBeGreaterThan(4);
-    expect(listed).toHaveLength(4);
-    expect(listed.at(0)?.key).toBe(result.key);
-    expect(new Set(listed.map((group) => group.key)).size).toBe(4);
-  });
-
-  it("adds the chosen group when the choice is one the first four do not hold", () => {
-    const { auditorium, result } = openedRoom(HOOKY_ADDISON);
-    const opening = shownIn(auditorium, result, result);
-    const elsewhere = auditorium.offered.find(
-      (group) => !opening.some((shown) => shown.key === group.key),
-    );
-    if (elsewhere === undefined) throw new Error("every group was listed");
-
-    const listed = shownIn(auditorium, result, elsewhere);
-
-    expect(listed).toHaveLength(5);
-    expect(listed.at(-1)?.key).toBe(elsewhere.key);
-  });
-
-  it("lists a room that offers fewer than four without padding it", () => {
-    const { auditorium, result } = openedRoom(VILLAGE_1);
-    const listed = shownIn(auditorium, result, result);
-
-    expect(listed.length).toBe(Math.min(4, auditorium.offered.length));
   });
 });
 

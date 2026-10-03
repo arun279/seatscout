@@ -99,3 +99,10 @@ export const planOf = (seats: readonly Seat[]): AuditoriumPlan =>
     depth: row.depth,
     runs: runsAlong(row),
   }));
+
+export const nearestInRow = (row: SeatRow, lateral: number): PositionedSeat =>
+  row.seats.reduce((nearest, seat) =>
+    Math.abs(seat.lateral - lateral) < Math.abs(nearest.lateral - lateral)
+      ? seat
+      : nearest,
+  );
