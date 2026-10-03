@@ -98,7 +98,7 @@ describe("a SeatScout", () => {
 
     expect(programme.ok && programme.payload.unreached).toHaveLength(25);
     expect(settled.phase).toBe("settled");
-    expect(settled.coverage.checked).toBe(494);
+    expect(settled.coverage.checked).toBe(48);
   });
 
   it("re-verifies a result it found through the same Source", async () => {

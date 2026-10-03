@@ -29,12 +29,12 @@ import {
 import { covering, reading } from "./results-phrases.fixtures.js";
 import { ANGELIKA_5, searched } from "./rooms.fixtures.js";
 
-const stonebriarFailed = () =>
+const dallasFailed = () =>
   createSeatScout({
     fetch: fakeUpstream({
       seed: 4,
       standInAuditoriums: true,
-      sequences: { "/napi/seatMap/564362581": [500, 500, 500] },
+      sequences: { "/napi/seatMap/562169041": [500, 500, 500] },
     }),
     now: () => 0,
     wait: () => Promise.resolve(),
@@ -73,11 +73,11 @@ describe("the coverage strip", () => {
   });
 
   it("names a Showtime the search could not reach by its Theater and the time it starts", async () => {
-    const settled = await stonebriarFailed();
+    const settled = await dallasFailed();
     const [unreached] = settled.coverage.failed;
     if (unreached === undefined) throw new Error("no room failed");
 
-    expect(nameOf(unreached)).toBe("AMC Stonebriar 24 · 11:45a");
+    expect(nameOf(unreached)).toBe("Cinemark Dallas XD and IMAX · 10:45a");
   });
 });
 
@@ -191,7 +191,7 @@ describe("the three ways a search can end without a whole list", () => {
   });
 
   it("heads a partial search that still found something with the shorter line", async () => {
-    const settled = await stonebriarFailed();
+    const settled = await dallasFailed();
 
     expect(settled.results.length).toBeGreaterThan(0);
     expect(partialOf(settled)).toBe("Not everywhere yet.");

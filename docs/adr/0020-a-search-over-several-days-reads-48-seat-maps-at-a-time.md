@@ -1,4 +1,4 @@
-# 20. A search over several days reads 48 seat maps at a time
+# 20. A search over one day or several reads 48 seat maps at a time
 
 Date: 2026-09-25
 
@@ -6,7 +6,8 @@ Date: 2026-09-25
 
 Accepted. It amends [ADR 16](0016-a-search-reports-its-coverage.md), which read every seat map
 a listing named, and [ADR 17](0017-retry-and-the-breaker-follow-published-policy.md), which
-retried a 403.
+retried a 403. Amended 2026-10-03: a one-day search reads 48 seat maps at a time as well, now
+that the only screen offers the next 48.
 
 ## Context
 
@@ -34,17 +35,17 @@ given, and the search reads exactly those.
 before it asks for any seat map, so the candidates of every day are counted at once. Each day's
 listing is cached under its own date, as a one-day listing always was.
 
-**Over several days, seat maps are read nearest day first, 48 at a time.** `SEAT_MAP_BUDGET` in
-`packages/client/src/budget.ts` is 48, the largest batch the Source was measured to answer
-without a refusal. The maps are asked for through the fan-out's width of 24, in the order the
-listings name them, the nearest day's first. What the budget leaves is counted per day as not
-read yet, and `readMore()` reads the next 48. Nothing asks for more on a person's behalf.
+**Seat maps are read nearest day first, 48 at a time, over one day or several.**
+`SEAT_MAP_BUDGET` in `packages/client/src/budget.ts` is 48, the largest batch the Source was
+measured to answer without a refusal. The maps are asked for through the fan-out's width of 24,
+in the order the listings name them, the nearest day's first. What the budget leaves is counted
+per day as not read yet, and `readMore()` reads the next 48. Nothing asks for more on a
+person's behalf.
 
-**A one-day search reads its whole listing, as it always has.** The control that asks for more
-is on the phone's coverage strip and not yet on every screen, so a one-day search held to 48
-would read less than it does today with no way on where that control is missing. It moves under
-the budget once every screen has the control; until then the budget governs exactly the
-searches this decision adds.
+**A one-day search is held to 48 too.** It once read its whole listing, because the web app had
+no control to ask for more, and a one-day search held to 48 there would have had no way on. The
+web app is gone. The app's coverage strip is now the only screen, and it offers the next 48
+whatever the number of days, so nothing is left that the exception served.
 
 **A 403 stops the search.** Every route reads 403 as `refused`, answered at once and never
 retried, because asking again while the Source is refusing lengthens the refusal. A search that
@@ -70,9 +71,10 @@ A search over seven days reads seven listings and 48 seat maps before it settles
 one-day searches would have read up to seven whole listings of seat maps. The rest is one
 deliberate step away rather than a burst the Source may refuse.
 
-A one-day search still reads as many seat maps as its listing names, up to 185 on the widest
-release measured, which is inside the band where the Source begins to refuse. That is the risk
-this application already carried, and a 403 now stops it rather than being retried into a block.
+A one-day search reads 48 seat maps before it settles, where it once read its whole listing. The
+listing the corpus now holds for one wide release near one area names 494, more than twice the
+200 that met 46 refusals, so reading it whole was the burst this budget exists to avoid. The
+rest of the day is read 48 at a time, each step a person's own.
 
 The budget protects the Source and the horizon does not. Seven listings are seven requests, the
 cheapest reads the Source answers, and a week is the span people plan an evening over.

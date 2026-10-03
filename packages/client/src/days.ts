@@ -1,5 +1,5 @@
 import type { Showtime } from "@seatscout/core";
-import { seatMapsPerStep } from "./budget.js";
+import { SEAT_MAP_BUDGET } from "./budget.js";
 
 export interface Day {
   readonly date: string;
@@ -25,7 +25,6 @@ interface DayCounts {
 export const openDays = (dates: readonly string[]): DayCounts => {
   const order: Listed[] = [];
   const asked = new Map<Showtime["id"], SeatMapState | undefined>();
-  const perStep = seatMapsPerStep(dates.length);
 
   return {
     list: (date: string, bookable: readonly Showtime[]) => {
@@ -34,7 +33,7 @@ export const openDays = (dates: readonly string[]): DayCounts => {
     next: () =>
       order
         .filter(({ showtime }) => asked.get(showtime.id) === undefined)
-        .slice(0, perStep),
+        .slice(0, SEAT_MAP_BUDGET),
     mark: (entry: Listed, state: SeatMapState | undefined) => {
       asked.set(entry.showtime.id, state);
     },

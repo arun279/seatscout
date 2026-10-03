@@ -20,8 +20,7 @@ export const SEARCH_CLAIMS = [
   {
     adr: "0020-a-search-over-several-days-reads-48-seat-maps-at-a-time.md",
     says: /`SEAT_MAP_BUDGET` in\s+`packages\/client\/src\/budget\.ts` is 48/,
-    holds:
-      "the seat maps a search over several days reads before a person asks for more",
+    holds: "the seat maps a search reads before a person asks for more",
     pattern: "SEAT_MAP_BUDGET = 48",
     paths: ["packages/client/src/budget.ts"],
     files: 1,

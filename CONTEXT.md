@@ -318,10 +318,10 @@ not this: it keeps that reason and the remedy that goes with it.
 
 The not-reached remainder is two things. What is **being read** is the seat maps a search has
 asked for and not yet heard back about. What is **not read yet** is what a search has not asked
-for at all, because a search over several days reads a bounded number of seat maps at a time,
-nearest day first, and reads the next only when a person asks. Both are counted per day. A
-search the Source refused stops asking and says so, and every seat map it was refused or had
-not yet asked for is not read yet.
+for at all, because a search reads a bounded number of seat maps at a time, nearest day first,
+and reads the next only when a person asks. Both are counted per day. A search the Source
+refused stops asking and says so, and every seat map it was refused or had not yet asked for is
+not read yet.
 
 A screening at a Theater the Source says has **stopped selling** is on the same footing, and
 it is the one thing a listing says that its own flags do not. Such a row has not begun, is
