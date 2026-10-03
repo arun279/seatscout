@@ -5,8 +5,6 @@ export { accountOf } from "./derived.js";
 export { listed } from "./derived.js";
 export { tiedIn } from "./derived.js";
 export { unreachedIn } from "./derived.js";
-export type { HeldSnapshots } from "./held.js";
-export { heldSnapshots } from "./held.js";
 export { BACK_TO_THE_LIST } from "./hand-off-phrases.js";
 export { CHECK_AGAIN } from "./hand-off-phrases.js";
 export { checkingOf } from "./hand-off-phrases.js";
