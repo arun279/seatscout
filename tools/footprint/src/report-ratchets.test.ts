@@ -169,7 +169,7 @@ describe("the bundle ratchet", () => {
   it("names both ways through when a bundle breaks its ratchet", () => {
     const { markdown } = reportOn({
       bundles: [
-        { name: "web app", size: 2048, sizeLimit: 1024, passed: false },
+        { name: "app for iOS", size: 2048, sizeLimit: 1024, passed: false },
       ],
     });
 
@@ -181,8 +181,8 @@ describe("the bundle ratchet", () => {
   it("fails when any one bundle breaks its ratchet, not only when all do", () => {
     const report = reportOn({
       bundles: [
-        { name: "web app", size: 15, sizeLimit: 15, passed: true },
-        { name: "proxy", size: 90, sizeLimit: 15, passed: false },
+        { name: "app for iOS", size: 15, sizeLimit: 15, passed: true },
+        { name: "app for Android", size: 90, sizeLimit: 15, passed: false },
       ],
     });
 
@@ -192,11 +192,11 @@ describe("the bundle ratchet", () => {
   it("fails when a bundle breaks its ratchet", () => {
     const report = reportOn({
       bundles: [
-        { name: "web app", size: 2048, sizeLimit: 1024, passed: false },
+        { name: "app for iOS", size: 2048, sizeLimit: 1024, passed: false },
       ],
     });
 
     expect(report.passed).toBe(false);
-    expect(report.markdown).toContain("| web app | 2048 B | 1024 B |");
+    expect(report.markdown).toContain("| app for iOS | 2048 B | 1024 B |");
   });
 });

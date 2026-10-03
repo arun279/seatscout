@@ -56,7 +56,7 @@ const PLAYWRIGHT_OUTPUT = JSON.stringify({
 const JEST_OUTPUT = JSON.stringify({ numTotalTests: 3, success: true });
 
 const SIZE_LIMIT_OUTPUT = JSON.stringify([
-  { name: "web app", size: 15, sizeLimit: 15, passed: true },
+  { name: "app for iOS", size: 15, sizeLimit: 15, passed: true },
 ]);
 
 const CLOC_TREE = JSON.stringify({

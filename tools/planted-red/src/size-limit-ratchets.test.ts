@@ -8,7 +8,7 @@ const sizeLimitOver = (config: string) => {
   return { status: run.status, weighed: JSON.parse(run.stdout) };
 };
 
-describe("the planted red under the font and icon ratchets", () => {
+describe("the planted red under the bundle ratchets", () => {
   it("refuses a planted file that goes over the ratchet its kind is held to", () => {
     const { status, weighed } = sizeLimitOver("over-the-ratchet.json");
 

@@ -21,13 +21,13 @@ describe("reading the Source from a phone", () => {
     );
   });
 
-  it("names the Source's own page as the referer, as the proxy does for a browser", async () => {
+  it("names the Source's own page as the referer", async () => {
     const { sent, reach } = answering();
     await reach("/napi/seatMap/558117351");
     expect(sent[0]?.headers["Referer"]).toBe("https://www.fandango.com/");
   });
 
-  it("names a browser as the user agent, as the capture and the proxy both do", async () => {
+  it("names a browser as the user agent, as the capture does", async () => {
     const { sent, reach } = answering();
     await reach("/napi/seatMap/558117351");
     expect(sent[0]?.headers["User-Agent"]).toMatch(/^Mozilla\/5\.0 /);

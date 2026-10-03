@@ -226,29 +226,26 @@ own fixture fails the build instead of waiting to be watched by hand. Each gate 
 as a package under `tools/<name>/src` keeps its fixtures beside its source; the gates that
 are somebody else's tool keep theirs under `tools/planted-red/planted`, with one test file
 each for the cognitive limit, the cyclomatic limit and its variant, the file length limit,
-the class rule, the written declaration option, the duplication window, the import cycle
+the written declaration option, the duplication window, the import cycle
 rule and the bundle ratchets. That whole set answers in about seven seconds on two workers,
 which is why it sits in `pnpm test:unit` beside everything else rather than in a job of its
 own. The fixtures live outside `src`, where they are neither product code nor mutated.
 
 Not every gate here has one, and naming what does not is better than leaving the sentence
 above to be read as covering everything. The Grit plugin that refuses a collected response,
-the two bans that keep Cache Storage behind one writer, the two React hook rules and the
-undeclared import rule were each watched failing by hand on the day they landed. Every one
+the two React hook rules and the undeclared import rule were each watched failing by hand on the day they landed. Every one
 of them could carry a planted red instead, and none does yet.
 
 **A planted red holds the gate. A pair holds this record's wording, and neither does the
 other's job.** A fixture proves a rule fires. It cannot prove that this document still says
 300 where the tool says 300, because a fixture has no opinion about prose, so each sentence
 here that carries a number or a rule name is also paired with a search of the tree in
-`tools/claims-in-prose.pairs.gates.mjs`. Seven of those pairs now sit beside a planted red as
+`tools/claims-in-prose.pairs.gates.mjs`. Some of those pairs sit beside a planted red as
 well, and two sentences that carried neither a number nor a name were dropped along with the
-grep that was their only witness, since the red beside them says everything they said. Twelve
-of the rest are sentences no fixture can reach at all: the mutation gate's break threshold,
-which nothing can be planted against short of a whole mutation run;
-the bundle globs and the ratchet each is weighed against; the journey's and the gesture's own
-constants and the command that judges them; the counter this decision picked; and the licence
-flag the `dependencies` job carries, which already has a planted red of its own in that job
+grep that was their only witness, since the red beside them says everything they said. Others
+are sentences no fixture can reach at all: the mutation gate's break threshold, which nothing
+can be planted against short of a whole mutation run; the bundle glob and the ratchet each is
+weighed against; the counter this decision picked; and the licence flag the `dependencies` job carries, which already has a planted red of its own in that job
 because osv-scanner is the job's tool rather than the workspace's.
 
 One gate is outside all of that and it is worth naming rather than leaving to be found. The
@@ -256,8 +253,7 @@ claims gate is four modules directly under `tools/` rather than a package, so it
 planted red, nothing in the unit suite judges it, and the mutation gate's glob does not reach
 it, while it does gate a merge in `quality`. The rest of what sits directly under
 `tools/` is the corpus capture and the modules it reads, the corpus indexer, the upstream
-constant, the live suite's setup, the nightly alarm and the icon renderer, none of which
-gates a merge.
+constant, the live suite's setup and the nightly alarm, none of which gates a merge.
 
 **Lines per file** may not exceed 300, by Biome's
 [`noExcessiveLinesPerFile`](https://biomejs.dev/linter/rules/no-excessive-lines-per-file/) at
@@ -395,10 +391,10 @@ same expression. The compiler wants a key that comes from an index signature rea
 the lint rule wants a bracketed literal key written back as a property access. Biome cannot tell a
 declared property from an index-signature one and the compiler can, so the rule is off and the option
 is on. That is the only rule turned off for the whole workspace out of Biome's recommended preset, and
-this is the reason it is off. The two `a11y` rules ADR 14 turns off are an override over one file.
+this is the reason it is off.
 
 `isolatedDeclarations` reaches every project that emits, and reaches the ones that do not as well.
-`skipLibCheck` is set only in `tests/e2e`.
+`skipLibCheck` is set in `apps/native`, for the reason ADR 3 gives, and in `tests/app`, and nowhere else.
 
 **Imports may not form a cycle**, by Biome's
 [`noImportCycles`](https://biomejs.dev/linter/rules/no-import-cycles/), whose documentation gives its
@@ -479,28 +475,19 @@ emitted script rather than an entry point, so deferring bytes into a chunk that 
 later does not move the number. The measured size is printed beside the ratchet, so a
 ratchet that has drifted above the real size is visible from the two figures.
 
-Every kind of file the built directory serves is weighed, each against a ratchet of its own: the
-scripts the bundler emits, the stylesheets beside them, the three woff2 faces the page preloads, and
-the icons the page and the manifest name. A page costs a reader everything it fetches, so gating one
-kind and leaving another unbounded would let bytes move from the weighed kind to the free one, which
-is the deferred chunk under another name. The stylesheets are imports of the modules that draw with
-them, so the bundler emits them as it emits the scripts, and `apps/web/dist/**/*.css` weighs what the
-deployment serves rather than the sources it was built from. The fonts and the icons outweigh the
-scripts and the stylesheets together, which is why they are weighed rather than left out: 118,924 B
-and 134,269 B. Each glob is pointed at `apps/web/dist` rather than at `apps/web/public`, because the
-copy is what the deployment serves. The icon glob covers the `.png`, the `.ico` and the `.svg` the
-directory holds rather than the three raster sizes alone, for the same reason the stylesheet glob
-covers every sheet: an icon that is not weighed is somewhere bytes can go. Each of the two new
-ratchets was watched failing: lowered by a single byte, `size-limit` names the kind, the ratchet and
-the byte it went over, and exits 1.
+Every kind of file the export ships is weighed, each against a ratchet of its own: the script
+Hermes compiles for iOS, the one for Android, and the faces and images every platform ships.
+Gating one kind and leaving another unbounded would let bytes move from the weighed kind to the
+free one, which is the deferred chunk under another name. Each glob is pointed at
+`apps/native/dist`, because the export is what ships.
 
 A ratchet a glob no longer reaches is worse than no ratchet, because it reads 0 B and passes. Two
 fixture `size-limit` configurations are committed beside a planted file: over the planted file the
 ratchet is refused by name, by ratchet and by the byte it went over, and over globs that reach nothing
-`size-limit` reports 0 B for the font kind and 0 B for the icon kind, holds neither to a ratchet, and
-passes each. The report refuses that reading rather than printing it: every entry must have weighed at
-least one file and must have been held to a number, and a list where any entry fails either test
-throws instead of becoming a verdict.
+`size-limit` reports 0 B for each, holds neither to a ratchet, and passes each. The report refuses
+that reading rather than printing it: every entry must have weighed at least one file and must have
+been held to a number, and a list where any entry fails either test throws instead of becoming a
+verdict.
 
 Their difference is not printed as a third. The ratchet is not a budget derived from a
 device, a network or a page, so the room left under it is distance to a number this
@@ -511,24 +498,15 @@ there is no earlier headroom to compare a branch's against. What is left is a fi
 reader cannot act on without weighing it, which is the test this decision sets for
 anything it does not gate.
 
-What a glob is pointed at has to be what the deployment serves rather than a stand-in for
-it, and for the scripts that means the output of the application's own bundler. That is
-the load-bearing half of this gate. The web application had none at first: its
-build was `tsc`, which emits a file per source file and rewrites no import specifier,
-so the directory being weighed held modules no browser could resolve, and the workspace
-packages those modules imported were named in an import statement rather than present in
-the measurement. The figure moved once in the twenty-three merges after this decision was
-taken, and it moved because a second file appeared in the directory, not because anything
-a browser would download had changed. A ratchet over a per-file transpile is a ratchet
-over a stand-in, which is the failure named at the top of this decision arriving one step
-earlier than the deferred chunk. The web application therefore builds with Vite, which
-ADR 3 already chose, from the first commit at which there is something to measure rather
-than from the first screen.
-
-The pairing that keeps that honest is in the end-to-end suite rather than in the gate. It
-serves the built output over HTTP with no import map and runs the store contract against
-it in a real browser, so output a browser cannot resolve fails a test instead of passing a
-weigh-in.
+What a glob is pointed at has to be what ships rather than a stand-in for it, and for the
+scripts that means the output of the application's own bundler. That is the load-bearing half
+of this gate. The web application this repository once held was first weighed over `tsc`
+output, a file per source file with no import specifier rewritten, and its figure moved once in
+twenty-three merges, because a second file appeared in the directory rather than because
+anything a reader downloads had changed. A ratchet over a per-file transpile is a ratchet over a
+stand-in, which is the failure named at the top of this decision arriving one step earlier than
+the deferred chunk. The app is therefore weighed over `expo export`, which is what Metro bundles
+for a phone.
 
 size-limit signals a breach through its exit status while still printing its verdict, so
 the report reads `passed` out of its JSON rather than looking at the status. That is why
@@ -541,150 +519,26 @@ and refuses a run that weighed no bundle or weighed one against no ratchet.
 `@size-limit/file` compresses each matched file on its own and adds the results, so the
 figure is a sum of per-file brotli rather than the brotli of everything concatenated.
 
-**A gesture in the room** is measured the same way and for the same reason.
-`tests/e2e/auditorium.spec.ts` opens the 304-seat Auditorium at a phone's size under a
-four-times-slower CPU, pinches, wheels and drags it, and holds the 75th percentile of the
-frame intervals to one frame of the display's own idle cadence, measured first on the same
-page under the same throttle. The unit is the display's own frame and the percentile is the
-one Core Web Vitals are defined at, which is the convention the journey above already
-reports, so neither is a figure chosen here. It is a percentile because the gate's first
-shape, every interval inside one frame, went red twice on a single 33.3 ms interval out of
-forty-five, on machines that were also driving a second browser: one dropped frame in
-forty-five is the runner and not the room, and a gate with no tolerance for a host's own
-noise reports the host. Forty milliseconds of blocking added to the pointer handler takes
-the percentile to two frames and the gate refuses it, watched, which is the shape of the
-defect it exists for. The annotation carries the worst interval and the count of dropped
-frames beside the percentile, so the tail is reported rather than hidden, and two counts
-beside it say only that the gesture produced something, so a run cannot pass over nothing.
+**Accessibility has a published standard, so it is gated against that one.** `tests/app` serves
+the app's web build with Vercel's `serve`, which compresses what it sends as any host does, and
+`@axe-core/playwright` scans every screen from the Ask sheet to the Room against WCAG 2.2 at
+levels A and AA, which is the [W3C Recommendation](https://www.w3.org/TR/WCAG22/) rather than a
+bar this project invented. Any violation fails `quality`. The web build exists for this scan and
+for nothing else. Its first runs found two real violations: the film list in the Ask sheet was a
+list with no items in it (axe's `aria-required-children`), so each film is now a list item, and
+the Ask sheet's sliders gave a screen reader no range or position. Both were fixed in the app's
+own components, which is what makes a scan of the web build a signal about the app. The audit
+every screen test runs, which `CONTRIBUTING.md` describes, covers contrast, names and touch
+targets per platform; what is only axe's is computed roles and the relationships between them.
 
-**The dropped frames in the room are a ratchet now rather than an absolute.** The gesture spec used to
-hold the count of intervals longer than one idle frame to zero, and that absolute went red once on the
-runner, on one interval out of forty-five, which is the host and not the room. The gesture is made ten
-times over now, each on a freshly opened room so pan and zoom start where they started the first time,
-and the count of dropped frames per gesture is written down beside the journeys and held to the merge
-base by `tools/journey`: the head's median against the base's worst. The absolute is still reported,
-per gesture, in the test's own annotation and in the command's report. The 75th percentile of the
-frame intervals stays an absolute against the display's own idle cadence, because that is a published
-unit rather than a chosen one and it is not what flaked.
-
-**The journey** is measured on the built tree served by the deployment's own worker, in
-Chromium, ten times over, on the device stand-in Lighthouse publishes rather than on the
-runner as it comes: its mobile screen emulation, 412 by 823 CSS pixels at a device pixel
-ratio of 1.75 under the Moto G Power user agent, and its Slow 4G network profile, 150 ms of
-round-trip latency with 1.6 Mbps down and 750 Kbps up, applied through CDP's
-`Network.emulateNetworkConditions`. Those are Lighthouse's own constants rather than figures
-chosen here, and they are why the vitals are worth measuring at all: unthrottled, the
-largest paint on this journey measured 56 ms against a 2.5 s threshold, which is a figure no
-reader can act on. It is judged three ways. The three Core Web Vitals are held at their 75th
-percentile to the thresholds Google publishes as good, 2.5 s for LCP, 200 ms for INP and 0.1
-for CLS, which is a standard rather than a figure chosen here. That judgement is
-`tools/journey`'s and not the spec's, so the percentile and the three comparisons sit inside
-the mutation gate, with planted samples the command must refuse beside ones it must accept,
-and a gate that stops detecting its own red fails the build; the spec measures, refuses a
-journey that measured nothing on any axis, and leaves the verdict to the command. The moment
-the first Seat Group is painted has no published threshold, so it is held to the merge base:
-the job measures the base's own journey in a worktree and fails the branch when the head's
-median is slower than the base's slowest, a margin drawn from the base's spread rather than
-chosen. Under identical performance that verdict is wrong in under one run in a hundred,
-measured by simulation over ten journeys a side. That simulation assumes the two sides are
-drawn under the same conditions, so both are measured the same way: each side's ten journeys
-run in a step of their own, outside the end-to-end suite. Measured inside the suite, the
-branch's journey shares the runner with the rest of the suite while the merge base's has the
-runner to itself, and the gate reads that difference in load as a difference in the branch,
-by a margin that grows with every end-to-end test the branch adds. That assumption is
-checked rather than trusted: every journey writes down the emulation it ran under, built
-from the settings it applied rather than named by hand, and the ratchet holds one side to
-the other only where the two agree. A branch that changes the stand-in is reported and not
-held to a base measured another way, which is what this change itself needed. The absolute
-is reported either way, a merge base with no journey is reported rather than passed over, a
-head that wrote down no conditions or whose journeys disagree fails rather than passing on a
-comparison it never made, and a journey that renders no result fails, because a pass has to
-entail a measurement. The page's JS heap is read through CDP after a forced collection at
-that same instant and reported beside the moment with the same statistic, gated by neither
-threshold nor ratchet, because no publisher offers a byte budget and the projects that gate
-memory gate a leak invariant rather than a magnitude.
-
-**What the main thread was busy with is recorded on every journey and held to the merge base.**
-Each of the ten journeys installs a `PerformanceObserver` for `longtask` with `buffered: true` before
-the page's own scripts run, counts the entries, and sums each entry's duration in excess of 50 ms.
-Both halves of that are the publishers'. The W3C Long Tasks API defines a long task as one "whose
-duration exceeds 50ms" and reports nothing shorter; web.dev define total blocking time as the sum of
-"its duration in excess of 50 milliseconds" over the long tasks after the first paint. What is
-recorded here is that sum over the whole journey rather than over web.dev's window, because the
-journey has no Time to Interactive to close the window at, and the record says so rather than calling
-it Lighthouse's metric.
-
-The figure is ratcheted to the merge base in the same head-median-against-base-worst form the moment
-above takes, under the same conditions check, for the same reason: no publisher sets a blocking budget
-for a runner. web.dev's 200 ms, which they publish as good "when tested on average mobile hardware",
-is printed beside it and gates nothing, because this runner applies no CPU multiplier and the section
-below says why it will not.
-
-**Watched rising, and watched at rest.** Unthrottled, ten journeys on this machine run no task over
-50 ms at all, so the reading is zero and the ratchet holds zero. A zero is a measurement and not the
-absence of one, and it was shown to be: one 120 ms busy wait added to the page takes every journey to
-one long task and 82 ms of blocking, and the ratchet then refuses the head by name against a merge
-base that blocked for none, while the moment beside it stays green. The reading depends on the host,
-which is why it is a ratchet and not a threshold.
-
-**Lighthouse's fourth stand-in, the 4x CPU multiplier, is measured and deliberately not
-applied.** Lighthouse documents that default as calibrated for a high-end desktop host and
-tells a weaker machine to lower it, so the multiplier scales the host rather than the branch
-and a fixed one decides the verdict by whose machine ran it. Lowering it instead would mean
-choosing a number no one publishes, which is what this record refuses everywhere else, so it
-is left off and the multiplier is what the gate is deliberately thrown by rather than what
-it runs under: the shipped journey, run with the multiplier at 6, a figure inside
-Lighthouse's own published calibration range, trips the gate.
-
-**Accessibility has a published standard, so it is gated against that one.**
-`@axe-core/playwright` scans the shell and the results screen against WCAG 2.2 at levels A
-and AA, which is the [W3C Recommendation](https://www.w3.org/TR/WCAG22/) rather than a bar
-this project invented, and any violation fails `quality`. It was watched failing before it
-was trusted, on a colour contrast of 1.91:1 against the 4.5:1 success criterion 1.4.3
-requires. Every control's hit area is measured against the same document, its own box plus
-the area the stylesheet gives inline controls, on the list and inside the open ledger, and
-fails under 44 px. Biome lints the page for the half a static reader can compute and gets
-there first: a missing or invalid `lang` fails before the browser is even installed. The two
-overlap deliberately, and what is only axe's is contrast, computed roles, and anything a
-script renders.
-
-**Every screen the end-to-end suite reaches is scanned by axe.** Two were reached without one: the
-results screen offline, where the card offers no hand-off and the reason stands over the list, and the
-results screen holding showtimes the Source never answered for, where the coverage strip offers a
-retry. Both are scanned against WCAG 2.2 at A and AA now and measured for the 44 px target with the
-rest of them. The Ask sheet with its seat controls and the coverage ledger already had scans, in
-`on-device.spec.ts` and `journey.spec.ts`.
-
-**Those scans are named so that they cannot be deleted quietly.** `tests/e2e` is outside the
-unit runner's include and outside the mutation gate's scope, so nothing judges what is in it,
-and for one revision the end-to-end run passed with no tests at all, which left a file
-deletable with every gate green. So `pnpm test:e2e` lists the tests tagged `@accessibility`
-before it runs anything and `pnpm test:journey` lists the ones tagged `@performance` before
-it runs anything, and Playwright's own answer to a filter matching nothing is to exit
-non-zero. Deleting one, or untagging it, fails the job. What is asked for is a name and not a
-number: a floor on how many tests `tests/e2e` holds is a figure this decision would have to
-justify, it would calcify whatever the suite held on the day it was written, and a count does
-not protect a particular scan in any case.
-
-**The service worker's precache list is the page's own list, by set equality.** `cache.ts` names what
-the worker puts in the shell cache and `index.html` names what the page fetches to draw itself, and
-until now those were three copies of one list, in the worker, in its unit test and in the end-to-end
-spec, with nothing holding any of them to the page. The end-to-end spec reads
-`apps/web/public/index.html` now instead of restating it: the page itself, the module its inline
-script imports, and every `<link>` it carries, whatever the `rel`. That set is held equal to what the
-running service worker actually put in the cache, in a real browser against the built tree, so a
-stylesheet the page links and the worker does not hold fails, and so does a path the worker holds that
-the page never loads. Naming the kinds of link to take in was the earlier shape and it read four of
-them, which passed over the `apple-touch-icon` the page links and the worker does not hold. Every link
-counts now, and the one exclusion is written down as an exclusion: the touch icon is fetched by the
-platform when the page is installed rather than by the page to draw itself, which is what the
-comparison is about. A test plants a linked stylesheet the worker cannot hold and reads it back out of
-the derived set, so the derivation is shown to take in a new link rather than assumed to. The unit
-test beside it keeps its own written list, because that one is a golden assertion the mutation gate
-judges and this one is a comparison between two live things. The reader throws rather than returning a
-short list when the page links nothing at all or when a link carries no path it can read, because a
-regular expression that had stopped matching would otherwise make the comparison vacuous, which is the
-failure this decision opens with arriving inside a test.
+**That scan is named so that it cannot be deleted quietly.** `tests/app` is outside the unit
+runner's include and outside the mutation gate's scope, so nothing judges what is in it. So
+`pnpm test:e2e` lists the tests tagged `@accessibility` before it runs anything, and
+Playwright's own answer to a filter matching nothing is to exit non-zero. Deleting the scan, or
+untagging it, fails the job. What is asked for is a name and not a number: a floor on how many
+tests `tests/app` holds is a figure this decision would have to justify, it would calcify
+whatever the suite held on the day it was written, and a count does not protect a particular
+scan in any case.
 
 **One question gets one gate.** The `dependencies` job scans the lockfile against the OSV
 database and fails on any advisory. It once also ran `pnpm audit`, which since 2021 has been
@@ -724,7 +578,7 @@ moved to the versions it named. Expo documents `expo.install.exclude` as
 the way to hold a package back from that check, and `apps/native/package.json` carries no such
 list, because a package in it is a package the SDK is no longer asked about. The check this
 workspace expected to fight, the one that refuses an override breaking a critical dependency
-chain, passes over all eight overrides in `pnpm-workspace.yaml`.
+chain, passes over all six overrides in `pnpm-workspace.yaml`.
 
 Neither is on a hook, and the reason is not only what they cost. Measured over this workspace,
 `expo install --check` answers in 1.7 seconds and `expo-doctor` takes 35, so the first is cheap
@@ -821,8 +675,8 @@ Settings and opened a subpage instead), so the walk sends that back event itself
 back a person presses: the Ask sheet's own close control, and the Android back key. A step that
 finds nothing fails the job, and `footprint`, which is
 required, needs it. The corpus stands in through Metro: `SEATSCOUT_UPSTREAM=corpus` swaps
-`src/host/upstream.ts` for `e2e/upstream.ts`, which answers from the same `fakeUpstream` the browser
-suite uses, so the bundle a phone runs never carries the corpus. Any other value is refused, and
+`src/host/upstream.ts` for `e2e/upstream.ts`, which answers from the same `fakeUpstream` the accessibility
+scan uses, so the bundle a phone runs never carries the corpus. Any other value is refused, and
 `app.config.ts` turns updates off in such a build so a published update cannot replace the stand-in.
 It is Android on an ubuntu runner rather than iOS on a macOS one because the only maintained
 open-source frame-rate reader, [Flashlight](https://github.com/bamlab/flashlight), reads Android
@@ -838,8 +692,7 @@ while it is steady.** The Baseline workflow's `device` job builds main's app on 
 and not on the nightly schedule, which would read the same commit again. It walks the journey and
 has Flashlight read the walk for its default ten iterations with the app's data cleared before
 each: the walk's own time, frame rate, CPU and memory. A measure is worse when this commit's median
-is worse than the worst iteration of the reading the previous Baseline run left, the rule the
-browser journey already holds its first Seat Groups to. The previous reading is the newest
+is worse than the worst iteration of the reading the previous Baseline run left, The previous reading is the newest
 `device-reading` artifact a run on main left, and a first run, with none to collect, is held to nothing. A run keeps its reading only when it
 held, so a worse reading never becomes the one the
 next run is held to. It stays the reference for the 14 days an artifact is kept; after that the
@@ -896,27 +749,15 @@ writes the caches from main, and a pull request can read what the default branch
 `android` job reads them with `cache-read-only`, so there is one entry for every pull request rather
 than one per pull request.
 
-**The app's web build is held to the same accessibility standard as the web app.** `tests/app` runs
-as a Playwright project of its own over Vercel's `serve`, which compresses what it sends as any host
-does: axe scans every screen from the Ask sheet to the Room against WCAG 2.2 at A and AA. Its first run
-found a real violation: the film list in the Ask
-sheet was a list with no items in it (axe's `aria-required-children`), so each film is now a list item.
-The Core Web Vitals journey is not held over the app's web build yet. It was built and run, and it
-reads a p75 LCP of 3,304 ms against the 2,500 ms Google publishes as good, on a runner where the web
-app reads 1,648 ms: the app's 1.3 MB script has to run before the first paint. The gate arrives with
-the web build work that passes it, at Google's threshold, rather than now at a looser one.
-
-**The app's bundles are four more ratchets.** The script Hermes compiles for iOS and for Android, the
-web build's scripts, and the faces and images every platform ships, each against its own figure in
-`.size-limit.json`. The phones' scripts are weighed before Hermes compiles them, from
+**The app's bundles are three ratchets.** The script Hermes compiles for iOS and for Android, and
+the faces and images every platform ships, each against its own figure in `.size-limit.json`. The phones' scripts are weighed before Hermes compiles them, from
 `expo export --no-bytecode`, because the bytecode is not the same twice: Expo's exporter compiles
 from a temporary directory named with `Math.random()` and the time (`exportHermes.js` in
 `@expo/metro-config`), and Hermes writes that path into the bytecode. Metro's own output was not the
 same twice either: Expo numbers modules in the order Metro meets them, and one commit weighed 992708
 and 990513 B for iOS on two runs of the same job (run 36231517101). So `metro.config.ts` gives each
 module an id hashed from its path, refusing a clash by name, and `quality` exports the scripts twice
-and fails if a byte differs. The longer ids cost the web build 10,862 B of brotli, 282557 to 293419 B (run
-36234684086), which is the price of a size that means the same thing on every run. Each ratchet went in at 1 B and the `footprint` job refused it, naming
+and fails if a byte differs. The longer ids cost bytes, which is the price of a size that means the same thing on every run. Each ratchet went in at 1 B and the `footprint` job refused it, naming
 each and printing its size; those sizes are the ratchets.
 
 **A colour written into a screen is refused** by a Grit plugin, `tools/lint/no-colour-literals.grit`,
@@ -940,45 +781,14 @@ packages, every one of them a test-time import that the root had been satisfying
 answered by a line in the package that does the importing.
 
 Declaring a test runner in a package has a second effect worth knowing before it surprises
-somebody: Biome reads its domains off the same manifest, so `apps/web` naming `vitest` switched on
-the `test` domain there and its rules found three more diagnostics. All three were one fixture
+somebody: Biome reads its domains off the same manifest, so the web application this repository then
+held, naming `vitest`, switched on the `test` domain there and its rules found three more diagnostics. All three were one fixture
 helper named `before`, which `noDuplicateTestHooks` cannot tell from Mocha's hook of that name. The
 helper is now `precedes`, which is what it does and what no test framework calls anything.
 
 **Watched failing, watched silent.** An `import "expo-camera"` planted in
 `apps/native/src/source.ts` is refused by package and by the manifest that does not declare it.
 Taken out, the file passes.
-
-**A class no stylesheet rules is refused by Biome's `noUndeclaredClasses`**, which the pinned
-2.5.13 carries in its nursery group, and which replaced a check of this workspace's own:
-twenty-two files that read the `<link>` elements of the page and parsed both the markup and
-the stylesheets it linked with regular expressions.
-Two of the rule's limits were measured rather than assumed, and both shape the tree around
-it. It reads only a module that itself imports a stylesheet, and passes one that imports none
-in silence: the sheets are therefore imports of the modules that draw with them, and
-`apps/web/src/index.ts` imports every one of them in the order the page loaded them as links,
-which is the cascade the bundler emits. And it reads a class spelled as a literal, or held in
-a variable bound to one, but not a class built from a template or picked by a conditional.
-That limit is a rule for the code rather than a hole in the gate: a class here is always a
-literal, and the state that would otherwise be joined to it is a `data-` attribute the
-stylesheet selects on. A seat is `class="seat"` with `data-state`, `data-designation` and
-`data-recommended`; the ground of the pattern a wheelchair or companion space is filled with
-is `class="space-ground"` with `data-state`; a ledger row is `class="ledger-row"` with
-`data-unreached`. Every class in the tree is therefore a literal this rule reads, and a class
-a spelling hides from it is a class that has to be rewritten rather than excused. A planted
-module that imports a stylesheet and puts a class that sheet does not rule in a `className` is
-refused by the class's own name, and a second module beside it naming a class the same sheet
-does rule passes, so the rule is watched reading the sheet rather than refusing every class.
-
-**What no rule reads from one module is a bare class two surface sheets both rule**, where
-whichever loads last draws both. `apps/web/src/stylesheets.test.tsx` holds every surface sheet
-to one ruling of a bare class, reading each as the browser parses it and descending into a
-grouping rule, so a class ruled inside `@media`, `@supports` or `@layer` is seen too. The red
-it is watched against is planted in `apps/web/tests/planted/`: two surface sheets that rule
-the same two classes, one of those rulings inside a media query, beside a third class that
-`house.css` and one surface both rule bare and the other names only under a descendant
-selector, which is counted for neither. A rule two or more surfaces share has to move to
-`house.css`, which is what that sheet is for.
 
 The mutation gate has the same shape one tool along, and takes the same answer. Stryker
 computes its score as mutants detected over mutants valid, scores `NaN` when none was valid,
@@ -995,7 +805,7 @@ pass already claims.
 An earlier revision of this decision claimed that the non-zero exit alone made an empty
 glob fail the gate. It did not, because the code beside it discarded the status and
 `[].every()` is true, so the sentence asserted the opposite of what ran. A change to
-`outDir`, to a file extension, or to where `apps/web` lives would have gone green over a
+`outDir`, to a file extension, or to where an application lives would have gone green over a
 measurement that never happened, which is the failure this decision opens with arriving
 through the gate meant to catch it.
 
@@ -1050,16 +860,9 @@ diff, where a reviewer sees it beside the comment it pays for.
 Raising the bundle ratchet is a line in a diff that a reviewer sees, rather than a number
 that quietly stops meaning anything.
 
-The web bundle is a library build whose entries are the module the application publishes
-and its service worker, with the page copied beside them rather than compiled into them.
-The figure is all of the JavaScript the application contributes plus the slice of the
-shared packages it reaches, compressed. It is defined as what the build publishes rather
-than as what a page downloads, and the report says so rather than leaving it to be inferred.
-Today the two coincide, since the page loads the module and the browser fetches the worker
-beside it; the definition stays the build's output so that the figure keeps meaning the same
-thing the day a build emits a chunk no page reaches. Nothing had to remember to re-set the
-ratchet when the shell landed: the shell did not fit under 298 B, so the gate failed until
-that diff raised it to 744 B.
+The app's figure is everything Metro bundles for a phone, the slice of the shared packages it
+reaches included, compressed. It is defined as what the export publishes rather than as what one
+launch reads, and the report says so rather than leaving it to be inferred.
 
 A complexity finding is acted on where it is raised, by the author, before the branch
 leaves the machine: the same rule runs in the pre-commit hook over staged files. Nothing

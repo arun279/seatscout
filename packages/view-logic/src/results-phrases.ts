@@ -109,13 +109,6 @@ export const BELOW_THE_TIE = "below: measurably further";
 
 export const ONE_SOURCE = "1 source";
 
-export const cardNameOf = (result: SeatGroupResult): string =>
-  [
-    result.showtime.presentation.theater.name,
-    clockOf(result.showtime.startsAt),
-    ...result.showtime.presentation.formats,
-  ].join(", ");
-
 export const roomNameOf = (result: SeatGroupResult): string =>
   `See ${spokenOf(result)} in the room at ${result.showtime.presentation.theater.name}, ${clockOf(result.showtime.startsAt)}`;
 

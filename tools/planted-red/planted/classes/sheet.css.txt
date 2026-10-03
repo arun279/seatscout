@@ -1,3 +1,0 @@
-.declared {
-  color: #333333;
-}

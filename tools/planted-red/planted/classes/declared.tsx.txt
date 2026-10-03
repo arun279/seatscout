@@ -1,3 +1,0 @@
-import "./sheet.css";
-
-export const Declared = (): unknown => <span className="declared" />;

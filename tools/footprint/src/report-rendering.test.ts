@@ -47,16 +47,16 @@ held still holds a file. Holds.
 
 ### Bundle size
 
-Brotli, summed per file, over what each build publishes: every script an
-application's own bundler emits and the script Hermes compiles for each phone,
-with the workspace packages they reach inlined, the stylesheets beside them,
-the faces and the icons. Every emitted chunk counts, including one no page
-has loaded, so this is what a build publishes rather than what a page weighs.
+Brotli, summed per file, over what each build publishes: the script Hermes
+compiles for each phone, with the workspace packages it reaches inlined, and
+the faces and images the app ships. Every emitted chunk counts, including one
+no screen has loaded, so this is what a build publishes rather than what one
+launch reads.
 
 | Bundle | Brotli | Ratchet |
 | --- | ---: | ---: |
-| web app | 15 B | 15 B |
-| stylesheets | 4 B | 4 B |
+| app for iOS | 15 B | 15 B |
+| app's faces and images | 4 B | 4 B |
 
 Bundle size may not exceed the ratchet in \`.size-limit.json\`. Within it.
 
@@ -129,8 +129,8 @@ const MEASURED: Measurement = {
     modified: { "vitest.config.ts": counts(2, 0) },
   },
   bundles: [
-    { name: "web app", size: 15, sizeLimit: 15, passed: true },
-    { name: "stylesheets", size: 4, sizeLimit: 4, passed: true },
+    { name: "app for iOS", size: 15, sizeLimit: 15, passed: true },
+    { name: "app's faces and images", size: 4, sizeLimit: 4, passed: true },
   ],
   gates: GATES,
   limits: LIMITS,

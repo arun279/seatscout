@@ -1,10 +1,11 @@
-# 3. Separate web and native view layers over a shared core
+# 3. The view layer sits over a shared core
 
 Date: 2026-08-22
 
 ## Status
 
-Accepted
+Accepted. Amended 2026-10-03: the web application was deleted, so the native application is
+the one view layer over the shared packages. The context below is why the split was made.
 
 ## Context
 
@@ -48,31 +49,20 @@ packages/core        domain model, source adapters, seat normalisation, scoring,
                      filter engine. Plain TypeScript. No DOM, no React, no React Native.
 packages/client      query orchestration, on device cache, streaming fan out.
                      Depends only on fetch.
-packages/view-logic  view state, phrases, query terms, traversal and gesture geometry.
+packages/view-logic  view state, phrases and query terms.
                      Plain TypeScript. Depends on client. No DOM, no React, no React Native.
-apps/web             React and Vite. The progressive web app.
-apps/proxy           the stateless proxy.
 apps/native          React Native. Imports core and client unchanged.
 ```
 
 `core` and `client` are shared without modification. View logic is shared in `view-logic`; screens
-and platform adapters are written per platform.
+and platform adapters belong to the application.
 
 ## Consequences
 
-Everything expensive and everything correctness critical is written once. The duplicated
-surface is screens and components.
+Everything expensive and everything correctness critical is written once, below the screens.
 
-The web application uses the web's own primitives, so the seat map is a real SVG and
-gestures use the browser's own input handling.
-
-A native application uses native primitives, so its gestures and navigation are native
+The native application uses native primitives, so its gestures and navigation are native
 rather than approximations.
-
-Screens are written twice. This is accepted deliberately: the seat map is the component
-where a shared implementation would compromise most, because the web and native
-approaches to rendering and gesture handling differ in ways that a common abstraction
-would have to paper over.
 
 `core` must stay free of platform imports for this to hold. That constraint is enforced
 by dependency rules in the build, not by convention.
@@ -90,7 +80,7 @@ error. No package has a `fetch` either: what they need from a host arrives as an
 dependency typed by core itself, which is the shape that keeps them portable.
 
 A Biome override on `packages/**` then covers what the compiler cannot see.
-`noRestrictedImports` rejects React, React Native, Expo, Node and Cloudflare, and a second
+`noRestrictedImports` rejects React, React Native, Expo and Node, and a second
 override restates that same list and adds sibling workspace packages for `packages/core`,
 which reaches none. It restates rather than extends because Biome replaces a rule's options
 rather than merging them, so a pattern added to one list has to be added to the other.
@@ -147,29 +137,18 @@ satisfies the port structurally and is nameable in the test project alone.
 
 ### Where a platform adapter lives
 
-Per-platform adapters belong to the per-platform unit, which is what this decision already
-says about view layers. `apps/web/src/store.ts` is the Web Storage adapter for that reason:
-Core may not reach for `localStorage`, and `packages/client` may not either. The web
-application's entry publishes it alongside the two start functions, and that entry is what the
-bundler is given and what the deployment therefore holds.
-`apps/native/src/host/store.ts` is the same seam filled for a phone, over AsyncStorage, and
-`src/host/source.ts` hands it to the client the way the web entry hands the other one over. It
-is one module rather than a `.native.ts` and `.web.ts` pair because the package it reads
-through is already the pair: at the version the SDK pins, that package resolves its own native
-module on a phone and a `window.localStorage` implementation everywhere else, so the Expo web
-build is served by the same import. A pair here would be two files saying one thing.
+Platform adapters belong to the application, which is what this decision already says about
+view layers. Core may not reach for a device's storage, and `packages/client` may not either.
+`apps/native/src/host/store.ts` is the storage adapter for a phone, over AsyncStorage, and
+`src/host/source.ts` hands it to the client. It is one module rather than a `.native.ts` and
+`.web.ts` pair because the package it reads through is already the pair: at the version the SDK
+pins, that package resolves its own native module on a phone and a `window.localStorage`
+implementation everywhere else, so the Expo web build the accessibility scan runs over is served
+by the same import. A pair here would be two files saying one thing.
 
-`apps/web/src/terms.ts` is the address adapter for a browser, and `URLSearchParams` is the whole
-of it: a query string becomes the address's name and value pairs, and the pairs become a query
-string again. `packages/view-logic/src/terms.ts` holds the term names and the normalisation,
-reading the terms out of those pairs and writing them back. Pairs are what an address carries
-either way, so a native application flattens Expo Router's parameters into them and neither host
-states a term name of its own.
-
-`tsc` type checks `apps/web` twice rather than once, because a service worker and a page cannot
-share a library: one project covers the page under the DOM, and another covers the worker and
-its cache under `WebWorker`. Neither emits; Vite does that. Their build info sits beside the
-project rather than in `dist`, which the bundler empties on every run.
+`packages/view-logic/src/terms.ts` holds the term names and the normalisation, reading the terms
+out of an address's name and value pairs and writing them back. The application flattens Expo
+Router's parameters into those pairs, so it states no term name of its own.
 
 `packages/client` compiles against Core's own sources rather than through a project reference,
 and Core publishes two entry points to make that legible: the package itself and its testing
@@ -242,13 +221,11 @@ crash on a phone. The edition is the unit because TypeScript's is: Hermes has `f
 work and is still missing, while `lib.es2023.array.d.ts` declares all five together. Holding
 them one edition below is the only line that refuses the missing one without inventing a list
 of names to ban. `types` stays empty beside it in the packages, for the reason above. Nothing
-else moves: `apps/web` and `tools` do not run on Hermes and keep their own.
+else moves: `tools` does not run on Hermes and keeps its own.
 
 **The Source's origin is a constant of this application** rather than something it is
-configured with. The proxy takes `UPSTREAM_ORIGIN` from the deployment because a deployment is
-what it is; a phone has no such place to read one from, so `src/host/source.ts` names the origin
-beside the `Referer` and the user agent that every read carries, which is what the proxy adds
-for a browser and what nobody adds here.
+configured with. A phone has no place to read one from, so `src/host/source.ts` names the origin
+beside the `Referer` and the user agent that every read carries.
 
 Its versions are not chosen here either. Expo publishes the React and React Native version each
 SDK pins and this application matches its SDK exactly, which is what the `react` entry in

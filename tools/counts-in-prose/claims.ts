@@ -11,9 +11,7 @@ import {
 } from "./src/structures.ts";
 
 const BIOME = "biome.json";
-const ENTRY = "apps/web/src/index.ts";
 const LEFTHOOK = "lefthook.yml";
-const VITEST = "vitest.config.ts";
 const PACKAGES = "packages";
 const ADAPTER = "packages/core/src/source/catalogue.ts";
 const CATALOGUE = "packages/core/src/domain/catalogue.ts";
@@ -44,20 +42,6 @@ const hookCommands = (read: Read, hook: string) =>
   blockUnder(read, LEFTHOOK, `${hook}:`).filter((line) =>
     /^ {4}[a-z][\w:-]*:$/.test(line),
   );
-
-const sheetsImported = (read: Read) =>
-  [...read(ENTRY).matchAll(/^import "\.\/[\w-]+\.css";$/gm)].length;
-
-const projectsExtending = (read: Read) => {
-  const config = read(VITEST);
-  const projects = [...config.matchAll(/^ +name: "/gm)];
-  const extending = [...config.matchAll(/^ +extends: true,$/gm)];
-  if (projects.length !== extending.length)
-    throw new Error(
-      `a project in ${VITEST} does not extend the root configuration, so the dry run's timeout never reaches its tests`,
-    );
-  return extending.length;
-};
 
 const outcomes = (read: Read) =>
   fieldsOf(read, SEARCH, "Coverage").filter((field) => field !== "candidates");
@@ -112,18 +96,6 @@ export const CLAIMS: readonly Claim[] = [
     says: /passes over all (\w+) overrides in `pnpm-workspace\.yaml`/,
     about: `the entries under overrides, in ${WORKSPACE}`,
     count: (read) => overridden(read).length,
-  },
-  {
-    document: MUTANTS,
-    says: /The (\w+) projects in `vitest\.config\.ts` both say it/,
-    about: `the projects that extend the root configuration, in ${VITEST}`,
-    count: projectsExtending,
-  },
-  {
-    document: CONTRIBUTING,
-    says: /`apps\/web\/src\/index\.ts` imports all (\w+) in the order/,
-    about: `the stylesheets imported by ${ENTRY}`,
-    count: sheetsImported,
   },
   {
     document: CONTEXT,

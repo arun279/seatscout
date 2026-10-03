@@ -68,7 +68,7 @@ in the reading that settled it. Twenty-five reads are twenty-five chances to tri
 a typeahead that took the search down with it would be a worse bargain than a film list that
 fails alone: the search is what the person asked for, and the list only helps them name a film.
 So `createSeatScout` gives the programme its own `openSource`, and the breaker the search shares
-is untouched by a schedule the Source refuses. The two Sources still read through the same proxy
+is untouched by a schedule the Source refuses. The two Sources still read through the same transport
 under the same retry policy, and `seatscout.test.ts` holds the separation by refusing every
 schedule and asserting the search still answers. That is why the sellability word in
 [ADR 9](0009-no-upstream-word-crosses-the-boundary.md) is read at all, and why

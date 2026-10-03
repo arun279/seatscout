@@ -4,7 +4,8 @@ Date: 2026-09-05
 
 ## Status
 
-Accepted
+Accepted. Amended 2026-10-03: the web application was deleted, and with it the service worker,
+its Cache Storage and the browser storage adapter this record used to govern.
 
 ## Context
 
@@ -13,12 +14,11 @@ slow to fetch and changes over hours. A seat map changes minute to minute, and a
 as free on the strength of a reading held over is a lie with a plausible face: the person is
 sent to a checkout that refuses them.
 
-An application like this has three places a copy can hide. The on-device store the catalogue
-phase writes. The service worker's Cache Storage, which exists so the shell opens offline.
-And the browser's own HTTP cache, which is decided by response headers this repository does
-not send.
+An application like this has two places a copy can hide. The on-device store the catalogue
+phase writes. And the HTTP cache beneath `fetch`, which is decided by response headers this
+repository does not send.
 
-Every one of them is easy to reach for by accident, and none of them announces itself.
+Both are easy to reach for by accident, and neither announces itself.
 
 ## Decision
 
@@ -93,44 +93,29 @@ encoded as a JSON array so an area holding the separator cannot collide with ano
 Terms that only narrow the answer are not part of the name, so changing a Format filter
 re-reads the cache rather than the Source.
 
-**Web Storage may be absent or refuse outright**, in a private window, with cleared site data,
-or with storage disabled by policy. Reaching it is attempted once, and where it refuses the
-adapter falls back to memory, which lives as long as the accessor that made it. That is the
-honest answer rather than a failure, because the port never promised durability, memory is
-still on the device, and a search that cannot cache is one that reads the Source again rather
-than one that breaks. A write the storage refuses, which is what an exhausted quota looks
-like, is dropped rather than raised, because a write that did not land is a miss and a miss
-costs one request. A value that comes back as something other than what was written reads as
-absent for the same reason.
-
-**A phone's storage refuses in its own ways and is answered in the same two.**
+**A phone's storage may refuse, and a refusal is a miss.**
 `apps/native/src/host/store.ts` is the adapter over AsyncStorage, which the Expo SDK pins and
 Expo Go bundles. A read the storage rejects and a value it no longer holds whole both read as
-absent, and a write it refuses is dropped, which is the paragraph above applied to a different
-store. **What it deliberately does not carry is the fallback to memory.** Reaching Web Storage
-can refuse before a key is ever named, and the fallback is what that one moment buys; a library
-reached as a module has no such moment and answers every call with a promise, so there is
-nothing to attempt once and nothing to decide from. A phone whose storage refused every call
-would therefore remember nothing rather than remember it until the app closes, which costs a
-request per miss and nothing else, and on a phone that case needs the native module to be
-missing, which is a crash at import rather than a store to fall back from.
+absent, and a write it refuses is dropped, because a write that did not land is a miss and a
+miss costs one request. The port never promised durability, so a search that cannot cache is one
+that reads the Source again rather than one that breaks. **There is no fallback to memory.** A
+library reached as a module answers every call with a promise, so there is no one moment to
+attempt and decide from. A phone whose storage refused every call would therefore remember
+nothing rather than remember it until the app closes, which costs a request per miss and nothing
+else, and on a phone that case needs the native module to be missing, which is a crash at import
+rather than a store to fall back from.
 
 **The store's contract is part of the package's surface, and every adapter runs it.**
 `storeContract` ships with `packages/client` rather than with its tests, because an adapter
 author is who needs it. Each clause answers with what the store did wrong, or with nothing. One
 of them is why the in-memory store serialises rather than holding the object it was given: a
 store hands back its own value, so a test double that hands back the caller's object would let
-a caller mutate what another caller is about to read, and would pass in Node what fails in a
-browser. The in-memory store runs the clauses under vitest; the browser
-adapter runs the same clauses in a real browser, from a page that serves the built contract
-module and the built web bundle from one origin and renders each clause's verdict, which is
-also what makes a headed run readable by a person; the native adapter runs them under Jest
-against the storage library's own mock, with the module that really writes to the phone held by
-the headed pass a native change already owes. A clause writes one of each shape the union
+a caller mutate what another caller is about to read, and would pass in Node what fails on a
+device. The in-memory store runs the clauses under vitest; the native adapter runs them under
+Jest against the storage library's own mock, with the module that really writes to the phone
+held by the headed pass a native change already owes. A clause writes one of each shape the union
 admits and reads it back, so an adapter that can hold a catalogue and not a Profile fails the
-contract rather than a screen. A contract that passes only in Node proves
-nothing about the adapter that ships, and because the mutation gate runs vitest and not
-Playwright, the adapter is judged by unit tests of its own as well.
+contract rather than a screen.
 
 The contract's own tests are what keep it from being vacuous: each broken store fails exactly
 the clause it breaks, the operations and keys it performs are pinned, and its diagnostics are
@@ -139,128 +124,16 @@ The values its catalogue clauses write are empty Catalogues, because a Showtime 
 branded identity that only parsing a response can mint, and a contract that forged one would
 need the assertion this repository does not contain.
 
-**Every request the adapter makes asks for `no-store`.** The proxy passes an upstream
-response's headers through unchanged, so what a browser is entitled to hold for a seat map
-would otherwise be decided upstream. That was measured on 2026-08-29: the upstream sends no
+**Every request the adapter makes asks for `no-store`.** What the HTTP stack beneath `fetch`
+is entitled to hold for a seat map would otherwise be decided upstream. That was measured on 2026-08-29: the upstream sends no
 `Cache-Control`, `Expires` or `Last-Modified` on a seat map, which under
 [RFC 9111](https://www.rfc-editor.org/rfc/rfc9111#section-4.2.2) leaves a storable response
 with no freshness to calculate, so Chromium revalidates rather than reusing. Adding a
 `Last-Modified` upstream would have been enough to change that silently, so the adapter no
-longer relies on its absence. That belongs to Core's transport rather than to the worker,
-because a native client has no worker.
-
-**The service worker caches the shell and can cache nothing else, structurally.**
-`apps/web/src/worker/cache.ts` exports one writer, `precacheShell`, which takes no argument:
-what it caches is the list the build defined into that module, read out of what the page pass
-left in `dist` by `apps/web/shell-files.ts`, the one statement of that rule the build and the
-end-to-end test both read. No caller can choose, and nothing outside that list can be written.
-The worker's request path reaches Cache Storage only through `cachedShell`, which reads, and it
-reads through `CacheStorage.match` rather than through the cache's own, so no writable handle
-exists outside the writer. Nothing the fetch handler sees can therefore be cached, and a
-request outside the shell is not answered by the worker at all: it never calls `respondWith`,
-so the response never enters the worker.
-
-A shell request is one the worker can answer correctly and nothing else: same origin, a `GET`,
-and a path on the list. Everything else is left to the network untouched, because a path alone
-is not an identity: another origin's `/index.js` is not this one's, and a write is not a read.
-
-A shell request is answered from the network while there is one, and from the cache when the
-network fails. Cache-first would pin a device to the shell it first installed, because the
-worker only re-caches while it installs and it only installs again when its own script
-changes. Network-first costs a request that was going to be made anyway and keeps the device
-on the shell the deployment is serving; the copy the cache holds is a fallback for having no
-network, which is the only thing asked of it.
-
-The typefaces are on that list, and they are not Availability: a face is a build output with a
-deterministic name, which is exactly what the shell cache holds, and a shell that opens
-offline in a fallback face would be a different screen from the one the direction drew.
-
-### The reach check
-
-Two rules in `biome.json` are the whole of the gate that keeps the writer the only writer.
-`noRestrictedGlobals` denies the global `caches` under `apps/**`, and the override that
-carries it excludes one file, `apps/web/src/worker/cache.ts`. `noJsRestrictedProperties`
-denies the property `caches` across the workspace, which is the member form the global rule
-cannot see. Both run under `pnpm lint`: over the staged files in the pre-commit hook, and over the
-tree in `quality`.
-
-**It takes both rules, because neither is the whole ban.** The global rule matches a bare
-identifier and nothing else, which is the limit
-[ADR 3](0003-separate-view-layers-shared-core.md) already records: a ban on `caches` alone
-leaves `self.caches`, `globalThis.caches` and `window.caches` reaching Cache Storage without
-naming it. Under `packages/` the answer is to deny every name that denotes the global object
-as well, and that answer is not available here, because the worker is written in terms of
-`self`. The property rule closes the member side instead, and it closes it across the
-workspace rather than under `apps/`, so `self.caches` under `tools/` or `tests/` is refused
-too. Both were watched refusing a planted reach and staying silent on what has to pass:
-`caches.open("shell")`, `self.caches`, `globalThis.caches` and `window.caches.match` in a
-source file, `caches.open("shell")` in the proxy, and both the bare and the member form inside
-the inline module script `public/index.html` ships to every device. The writer was green
-throughout.
-
-**The two worker test files need no exemption, and that is what reading a tree buys.** They
-hand the module under test a fake through `vi.stubGlobal("caches", ...)`, where the global's
-name is a string argument rather than a reference, so neither rule sees it. The text scan this
-replaces had to strike that one literal out of those two files by name before looking for the
-letters, and had to refuse the word in a comment and in prose under `apps/` along with it.
-Neither cost survives, and no file is trusted for having a name on a list.
-
-**The surface is every application rather than one directory.** `public/index.html` carries an
-inline module script that ships to every device. Biome does lint JavaScript inside an HTML
-`<script>`, which is worth stating because it is the opposite of what it looks like, and both
-rules were watched firing there. `apps/proxy` is in scope because it is the Worker that serves
-seat maps, `caches.default` is the platform idiom for holding a response, and that proxy holds
-nothing about anybody. The override names `apps/**` and no application inside it, because
-`pnpm-workspace.yaml` declares every application as `apps/*` and a gate that lists its subjects
-one by one governs the applications that existed when it was written.
+longer relies on its absence. That belongs to Core's transport, so every host that runs it
+asks the same.
 
 ## Consequences
 
 Availability is never held anywhere, so the re-verification
 [ADR 4](0004-booking-ends-at-a-deep-link.md) requires has nothing to compete with.
-
-**What the check surrenders and what stays open, stated rather than implied.** Four routes
-remain open, and they are listed rather than implied because an enumeration that is short by
-one is worth less than no enumeration at all. Each was spelled out and linted rather than
-reasoned about.
-
-**An escape, and this one is a loss rather than a route that was always open.** A rule reading
-a syntax tree sees the spelling the parser kept, not the value an engine reads, so
-`self["\x63aches"]`, `self["\u0063aches"]` and `self["\u{63}aches"]` pass, and so does the
-identifier `\u0063aches`, which is a lawful spelling of the global itself. Plain
-`self["caches"]` and plain `caches` are refused, and the identity escape `self["\caches"]` is
-refused too, by Biome's
-[`noUselessEscapeInString`](https://biomejs.dev/linter/rules/no-useless-escape-in-string/),
-which this decision raises from its recommended warning to an error for that reason. The text
-scan this replaces decoded every escape and closed all of them. Nothing documented replaces
-that half: Biome's two rules read references, oxlint carries no rule for it, and the nearest
-published rules, `unicorn/no-hex-escape` and `unicorn/prefer-unicode-code-point-escapes`,
-rewrite an escape rather than refuse one. Closing it again means a text scan again, which is
-the tool this decision deleted.
-
-A name assembled at run time, `Reflect.get(self, "caches")` among them, which no rule reading
-references can see; the text scan did refuse that one, and it is the price of no longer
-refusing the word in a comment or in a test's name. A bare `caches` written inside the writer,
-which is the one file the global ban excludes, and one a reviewer reads; a member reach there
-is still refused, because the property rule excludes nothing. And an HTML character reference
-in an event handler attribute, `onload="&#99;aches.open('shell')"`, which the HTML parser
-decodes and Biome does not reach, since it lints the contents of a `<script>` and not the
-value of an `on*` attribute; that one is closed by the page having no such attribute and no
-reason to grow one.
-
-All four need a deliberate decoy rather than a slip, all four are plain in review, and they
-stand on the same footing as the import ban's own known-open routes.
-
-It costs no prose and no test name. The rules read references rather than letters, so a record
-under `apps/` may write the word, and a client test may be named for caching for two hours.
-
-`tests/e2e/shell.spec.ts` drives all of it in a real browser against the built output, served
-by `wrangler dev` from the Playwright configuration's `webServer`: the worker the deployment
-runs, over the asset directory it publishes, so what the suite sees is what a deployment serves
-rather than a stand-in for it. A seat map route therefore reaches the proxy, and the suite
-asserts that the proxy admits what the shell's own script asks for and refuses the same
-address opened as a page, which is the one thing only a real browser can settle. The suite
-watches the worker take control, reads Cache Storage back and asserts it holds the shell and
-nothing else, requests a seat map route and a published file the shell does not list and
-asserts neither is added, and reloads with the network disabled, still under the worker's
-control.

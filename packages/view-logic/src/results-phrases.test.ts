@@ -6,7 +6,6 @@ import { OFFLINE } from "./phrases.js";
 import {
   BELOW_THE_TIE,
   CHANGE_THE_QUERY,
-  cardNameOf,
   coverageOf,
   designationsOf,
   emptyOf,
@@ -127,10 +126,9 @@ describe("the head of the list", () => {
 });
 
 describe("what a card says", () => {
-  it("names its Theater, its time and its Formats, and the room its body opens", async () => {
+  it("names the room its body opens by its Seat Group, Theater and time", async () => {
     const result = await angelika();
 
-    expect(cardNameOf(result)).toBe(ANGELIKA_5.card);
     expect(roomNameOf(result)).toBe(
       `See ${ANGELIKA_5.spoken} in the room at ${ANGELIKA_5.card}`,
     );

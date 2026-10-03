@@ -40,7 +40,7 @@ export const ANGELIKA_5: CapturedRoom = {
   card: "Cinemark West Plano and XD, 6:40p",
 };
 
-export const VILLAGE_1: CapturedRoom = {
+const VILLAGE_1: CapturedRoom = {
   name: "AMC Village on the Parkway 1, 294 seats, row 5 mixing E18 with WC17",
   showtime: 557962491,
   capture: "561462741",
@@ -49,7 +49,7 @@ export const VILLAGE_1: CapturedRoom = {
   card: "Cinemark Frisco Square and XD, 1:25p",
 };
 
-export const LAKE_HIGHLANDS_1: CapturedRoom = {
+const LAKE_HIGHLANDS_1: CapturedRoom = {
   name: "Alamo Lake Highlands 1, 155 seats numbered 101 to 919",
   showtime: 557805659,
   capture: "561505814",
@@ -58,7 +58,7 @@ export const LAKE_HIGHLANDS_1: CapturedRoom = {
   card: "AMC Highland Village 12, 8:00p",
 };
 
-export const STRIKE_AND_REEL_1: CapturedRoom = {
+const STRIKE_AND_REEL_1: CapturedRoom = {
   name: "Strike + Reel 1, 46 seats in 5 rows",
   showtime: 557843159,
   capture: "561443587",
@@ -67,7 +67,7 @@ export const STRIKE_AND_REEL_1: CapturedRoom = {
   card: "AMC Grapevine Mills 24, 9:00p",
 };
 
-export const HOOKY_ADDISON: CapturedRoom = {
+const HOOKY_ADDISON: CapturedRoom = {
   name: "Hooky Addison, 10 rows with consoles in two of them and 30 Seat Groups",
   showtime: 558016664,
   capture: "561644741",
@@ -104,7 +104,7 @@ const capturedBody = (capture: string) => {
 
 const DRAWN_ROOMS: readonly CapturedRoom[] = [...FIVE_ROOMS, HOOKY_ADDISON];
 
-export const roomRoutes = (
+const roomRoutes = (
   rooms: readonly CapturedRoom[] = DRAWN_ROOMS,
 ): NonNullable<UpstreamScript["routes"]> =>
   Object.fromEntries(

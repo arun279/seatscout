@@ -4,7 +4,8 @@ Date: 2026-09-05
 
 ## Status
 
-Accepted
+Accepted. Amended 2026-10-03: the web application this was first written for was deleted. The
+app follows the same decisions through `packages/view-logic`.
 
 ## Context
 
@@ -24,16 +25,16 @@ a card is allowed to claim about its own provenance.
 
 ## Decision
 
-`apps/web` is React over the client's composition root, and everything on its screen is
-computed from a search: no fixture is rendered as if it were live.
+The app draws over the client's composition root, and everything on its screen is computed
+from a search: no fixture is rendered as if it were live.
 
 **The list is painted when the ranking has stopped moving.** While the search is in flight the
 strip carries the counts, the list head says how many seat maps are still being read and how
 many showtimes have answered, and the cards appear once, at settle. On the live Source that is
 well under a second end to end; on the corpus replay it is a few hundred milliseconds. The one
-transition the list does make is held still while a pointer is down on it and released when the
-pointer lifts, leaves the list, or is cancelled by a scroll, so nothing reshuffles under a tap.
-The list's own pointer events carry all of that, so nothing listens on the window for it.
+transition the list does make is held still while a finger is down on it and released when the
+touch ends or is cancelled, so nothing reshuffles under a tap. `heldSnapshots` in
+`packages/view-logic` does the holding, and the list's own touch events drive it.
 
 **The tie is a band, and nothing shows a score or an ordinal.** Every result whose Seat Group
 sits within half a row and one seat of the target is in the tie, whatever a console or a wall
@@ -47,9 +48,7 @@ centreline in seats, why it ranked where it did as the penalties it was charged,
 is as an age that keeps counting, and that it came from one Source. That last line is stated
 rather than counted, because a Seat's Provenance names exactly one Source and a count over it
 cannot come out otherwise; a type test binds the statement to that type, so widening Provenance
-to a second Source fails a test that points at the card. A card is named for assistive
-technology by its Theater, its time and its formats, because two rooms at one Theater can share
-a time. A pair astride the centreline is called central, because half a seat off is the finest
+to a second Source fails a test that points at the card. A pair astride the centreline is called central, because half a seat off is the finest
 a pair can do.
 
 **Coverage on this screen is counts and never a bar.** An in-flight search is Coverage: its
@@ -75,50 +74,11 @@ resolved against it: the Movies playing near the area on the date are read from 
 theater-centric route, so the sheet can offer a half-remembered title and the card can say the
 title rather than the number.
 
-**The dialogs are the platform's.** The editor and the ledger are `<dialog>` elements opened by
-one ref callback, `modal` in `apps/web/src/modal.ts`, which React 19 calls with the element
-and, because it returns a cleanup, never with null, so there is no branch for an element that
-is not there. They close through `method="dialog"` forms, which is how a dialog closes without
-a script reaching for it, and the `close` event that follows is what tells the screen the editor
-has gone. The editor names the term that was tapped on the dialog as `data-focus`, each control
-carries its term as `data-term`, and `modal` focuses the control named once the dialog is shown,
-because React never writes the `autofocus` attribute the dialog focusing steps read, and a focus
-call made before `showModal` lands on nothing, the element not yet being rendered. The
-end-to-end suite asserts that focus in Chromium, where the jsdom shim below has no say. A sheet
-that must learn of its own unmount attaches through a callback built once with `useRef`, so React's
-ref cleanup is the unmount notice and no dependency array is part of the contract.
-
-The typefaces are published beside the page as the latin subsets of their variable files under
-the Open Font License, whose notices sit beside them. Every stylesheet an application ships
-counts as product code in the footprint report and a drawing counts as data.
-
-The icon is one SVG and everything else is rendered from it, so the mark has one source. The
-manifest names the rasters and the page names its icon, and an end-to-end test asks Chromium
-itself, through the DevTools protocol, for its installability errors and expects none.
-
-**Screen tests drive the real search, shim the dialog, and refuse a console error.** The tests
-run the real `openSearch` over the fake upstream, with a captured room standing in for every
-seat map the corpus did not record. `vitest.config.ts` gives them a jsdom environment as their
-own project. jsdom has no `showModal` and does not close a dialog on a `method="dialog"` submit,
-so `apps/web/test/dialogs.ts` gives `HTMLDialogElement` a `showModal` that sets the `open`
-attribute, a `close` that removes it and fires `close`, and a document-level submit handler that
-closes the enclosing dialog for such a form; the real dialogs are exercised by the end-to-end
-suite in Chromium. `apps/web/test/strict-console.ts` turns every `console.error` into a thrown
-error, so React's own warnings, a duplicate key among them, fail the test that provoked them
-instead of scrolling past. The tests are split by subject, and the ones that need a whole screen
-share `apps/web/src/search.fixtures.tsx`, which stages the real application over the fake
-upstream and records every search it opens, abandons and is asked for.
-
 ## Consequences
 
 A reader never watches the list rearrange itself, and the price is that nothing appears until
 the search settles. That is affordable only because a search is about a second, which
 [ADR 16](0016-a-search-reports-its-coverage.md) records and the live timing test holds.
-
-The journey gate measures exactly this: the moment the first Seat Group is painted, beside the
-three Core Web Vitals.
-[ADR 6](0006-gates-cite-a-standard-or-measure-a-regression.md) says how each of those is
-judged, and why one of them is held to the merge base rather than to a figure.
 
 Coalescing the search's notifications is a rendering decision, and this is where it is made: the
 screen subscribes and paints once rather than the store publishing less often.

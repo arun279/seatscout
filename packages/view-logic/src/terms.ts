@@ -159,13 +159,6 @@ const LISTS: readonly (readonly [
   ["amenity", (terms) => terms.amenities],
 ];
 
-export const windowIn = (
-  terms: Terms,
-): { readonly from: string; readonly until: string } => ({
-  from: terms.from ?? "",
-  until: terms.until ?? "",
-});
-
 export const parametersOf = (terms: Terms): readonly Parameter[] => {
   const parameters: Parameter[] = [];
   if (terms.movie !== undefined) parameters.push(["movie", terms.movie]);

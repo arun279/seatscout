@@ -18,29 +18,29 @@ describe("what size-limit reported", () => {
   it("reads the bundle verdict even when size-limit exits non-zero", () => {
     const run = sizeLimitExitingNonZero(
       JSON.stringify([
-        { name: "web app", size: 90, sizeLimit: 15, passed: false },
+        { name: "app for iOS", size: 90, sizeLimit: 15, passed: false },
       ]),
     );
 
     expect(measuring(run)("origin/main", "HEAD").bundles).toStrictEqual([
-      { name: "web app", size: 90, sizeLimit: 15, passed: false },
+      { name: "app for iOS", size: 90, sizeLimit: 15, passed: false },
     ]);
   });
 
   it("refuses the verdict a glob matching nothing reports, which passes at no ratchet", () => {
     const run = sizeLimitExitingNonZero(
-      JSON.stringify([{ name: "web app", passed: true, size: 0 }]),
+      JSON.stringify([{ name: "app for iOS", passed: true, size: 0 }]),
     );
 
     expect(() => measuring(run)("origin/main", "HEAD")).toThrow(
-      'size-limit weighed no bundle against a ratchet:\n[{"name":"web app","passed":true,"size":0}]',
+      'size-limit weighed no bundle against a ratchet:\n[{"name":"app for iOS","passed":true,"size":0}]',
     );
   });
 
   it("refuses a font ratchet that weighed no face, which passes at any ratchet", () => {
     const run = sizeLimitExitingNonZero(
       JSON.stringify([
-        { name: "web app", size: 15, sizeLimit: 15, passed: true },
+        { name: "app for iOS", size: 15, sizeLimit: 15, passed: true },
         { name: "fonts", size: 0, sizeLimit: 118924, passed: true },
       ]),
     );
@@ -53,7 +53,7 @@ describe("what size-limit reported", () => {
   it("refuses an icon ratchet that weighed no icon, which passes at any ratchet", () => {
     const run = sizeLimitExitingNonZero(
       JSON.stringify([
-        { name: "web app", size: 15, sizeLimit: 15, passed: true },
+        { name: "app for iOS", size: 15, sizeLimit: 15, passed: true },
         { name: "icons", size: 0, sizeLimit: 134269, passed: true },
       ]),
     );
@@ -76,8 +76,8 @@ describe("what size-limit reported", () => {
   it("refuses a list where one bundle was weighed and another was not", () => {
     const run = sizeLimitExitingNonZero(
       JSON.stringify([
-        { name: "web app", size: 15, sizeLimit: 15, passed: true },
-        { name: "proxy", passed: true, size: 0 },
+        { name: "app for iOS", size: 15, sizeLimit: 15, passed: true },
+        { name: "app for Android", passed: true, size: 0 },
       ]),
     );
 

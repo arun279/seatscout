@@ -103,7 +103,7 @@ describe("measuring a change", () => {
       "packages/core/src/seat.ts": { code: 5, comment: 0 },
     });
     expect(measurement.bundles).toStrictEqual([
-      { name: "web app", size: 15, sizeLimit: 15, passed: true },
+      { name: "app for iOS", size: 15, sizeLimit: 15, passed: true },
     ]);
   });
 

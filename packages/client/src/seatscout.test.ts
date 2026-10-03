@@ -62,7 +62,7 @@ describe("a SeatScout", () => {
     expect(listingsRead()).toBe(1);
   });
 
-  it("names what is playing near an area on a date through the same proxy, titled", async () => {
+  it("names what is playing near an area on a date through the same transport, titled", async () => {
     const { seatscout } = composed();
 
     const reading = await seatscout.programme("75006", "2026-08-28");

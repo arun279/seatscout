@@ -2,22 +2,12 @@ const BIOME = "biome.json";
 const RATCHET = ".size-limit.json";
 const STRYKER = "stryker.config.mjs";
 const CYCLOMATIC = ".oxlintrc.json";
-const JOURNEY = "tests/e2e/journey.spec.ts";
-const GESTURE = "tests/e2e/auditorium.spec.ts";
 const DUPLICATION = ".jscpd.json";
 const WORKFLOW = ".github/workflows/ci.yml";
 const COLOURS = "tools/lint/no-colour-literals.grit";
 const BASELINE = ".github/workflows/baseline.yml";
 
 export const GATE_CLAIMS = [
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /\*\*A class no stylesheet rules is refused by Biome's `noUndeclaredClasses`\*\*/,
-    holds: "the class rule that gates the build",
-    pattern: '"noUndeclaredClasses": "error"',
-    paths: [BIOME],
-    files: 1,
-  },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
     says: /by Biome's \[`noExcessiveCognitiveComplexity`\]/,
@@ -93,40 +83,8 @@ export const GATE_CLAIMS = [
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
     says: /The glob covers every emitted script rather than an entry point/,
     holds: "the glob the ratchet weighs",
-    pattern: "dist/**/*.js",
+    pattern: "dist/_expo/static/js/",
     paths: [RATCHET],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /`apps\/web\/dist\/\*\*\/\*\.css` weighs what the/,
-    holds: "the glob the stylesheet ratchet weighs",
-    pattern: "dist/**/*.css",
-    paths: [RATCHET],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /Each glob is pointed at `apps\/web\/dist` rather than at/,
-    holds: "the glob the stylesheet ratchet weighs",
-    pattern: "dist/**/*.css",
-    paths: [RATCHET],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /\*\*The journey\*\* is measured on the built tree served by the deployment's own worker/,
-    holds: "the script that holds the head's journey to the merge base's",
-    pattern: "tools/journey/src/index.ts",
-    paths: ["package.json"],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /its Slow 4G network profile, 150 ms of round-trip latency/,
-    holds: "the round-trip latency the journey emulates",
-    pattern: "latency: 150,",
-    paths: [JOURNEY],
     files: 1,
   },
   {
@@ -199,30 +157,6 @@ export const GATE_CLAIMS = [
     holds: "the two Expo checks the quality job runs",
     pattern: "@seatscout/native run",
     paths: [WORKFLOW],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /sums each entry's duration in excess of 50 ms/,
-    holds: "the long task threshold the journey sums against",
-    pattern: "LONG_TASK_MS = 50",
-    paths: [JOURNEY],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /The gesture is made ten times over now/,
-    holds: "the number of gestures the room is measured over",
-    pattern: "const GESTURES = 10",
-    paths: [GESTURE],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /the three woff2 faces the page preloads, and the icons/,
-    holds: "the glob the font ratchet weighs",
-    pattern: "dist/fonts/*.woff2",
-    paths: [RATCHET],
     files: 1,
   },
   {
