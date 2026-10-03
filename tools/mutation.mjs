@@ -3,10 +3,12 @@ import { globSync, readFileSync } from "node:fs";
 import { dirname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
+import { parse } from "@babel/parser";
 
 const SHARDS = "stryker.shards.json";
 const TREE = "{apps,packages,tools}/*/src/**/*.{ts,tsx}";
-const FILES_PER_JOB = { jest: 2, vitest: 8 };
+const FILES_PER_JOB = 8;
+const LINES_PER_JOB = 60;
 const MACHINERY = [
   SHARDS,
   "stryker.config.mjs",
@@ -69,6 +71,29 @@ const imported = (file) =>
     )
     .flatMap((base) => [`${base}.ts`, `${base}.tsx`, `${base}/index.ts`]);
 
+const statementsOf = (file) =>
+  parse(readFileSync(`${root}${file}`, "utf8"), {
+    sourceType: "module",
+    plugins: ["typescript", "jsx"],
+  })
+    .program.body.filter((node) => node.type !== "ImportDeclaration")
+    .map(({ loc }) => ({ start: loc.start.line, end: loc.end.line }));
+
+const rangesOf = (file) =>
+  statementsOf(file)
+    .reduce((ranges, statement) => {
+      const last = ranges.at(-1);
+      return last !== undefined && statement.end - last.start < LINES_PER_JOB
+        ? [...ranges.slice(0, -1), { start: last.start, end: statement.end }]
+        : [...ranges, statement];
+    }, [])
+    .map(({ start, end }) => `${file}:${start}-${end}`);
+
+const jobsOf = (shard, files) =>
+  shard.runner === "jest"
+    ? files.flatMap(rangesOf).map((range) => [range])
+    : chunked(files, FILES_PER_JOB);
+
 const reachedBy = (file) =>
   NOT_PRODUCTION.test(file)
     ? [file.replace(TEST, "$1"), ...imported(file)]
@@ -87,7 +112,7 @@ const plan = (base) => {
   return shards.flatMap((shard) => {
     const picked = sourcesOf(shard).filter((file) => touched.has(file));
     const judged = canary && picked.length === 0 ? [shard.canary] : picked;
-    return chunked(judged, FILES_PER_JOB[shard.runner]).map((files) => ({
+    return jobsOf(shard, judged).map((files) => ({
       shard: shard.id,
       files: files.join(","),
     }));
