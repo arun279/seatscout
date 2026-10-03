@@ -12,7 +12,7 @@ import {
   unreachedIn,
   unreadIn,
 } from "./derived.js";
-import { clockOf, noneOf, spokenOf, wordOf } from "./phrases.js";
+import { capitalised, clockOf, noneOf, spokenOf, wordOf } from "./phrases.js";
 import { dayOf, whenOf } from "./when-phrases.js";
 import type { Terms } from "./terms.js";
 
@@ -165,11 +165,15 @@ export interface Verdict {
   readonly ledes: readonly string[];
 }
 
-export const emptyOf = (
-  snapshot: Snapshot,
-  terms: Terms,
-  when: string,
-): Verdict =>
+const refusedOf = ({ coverage }: Snapshot, when: string): Verdict => ({
+  said: `${capitalised(REFUSED)}.`,
+  ledes: [
+    `It answered ${coverage.checked} of the ${coverage.candidates} candidates first, so this is not an answer about ${when}.`,
+    "A refusal lasts at least six minutes. Search again after that.",
+  ],
+});
+
+const finishedOf = (snapshot: Snapshot, terms: Terms, when: string): Verdict =>
   snapshot.coverage.checked === 0
     ? {
         said: `No showtime matches this query ${when}.`,
@@ -184,3 +188,12 @@ export const emptyOf = (
           "Fewer seats together, another day or a wider area would change it.",
         ],
       };
+
+export const emptyOf = (
+  snapshot: Snapshot,
+  terms: Terms,
+  when: string,
+): Verdict =>
+  snapshot.refused
+    ? refusedOf(snapshot, when)
+    : finishedOf(snapshot, terms, when);
