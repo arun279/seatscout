@@ -67,7 +67,7 @@ metropolitan area without noticing they had.
 `.gitleaks.toml` carries one rule and one allowlist, both about this corpus. The rule fires
 on a `Set-Cookie` or a bootstrap cookie name anywhere under the corpus, which is the material
 redaction removes and which the default rules do not recognise as a secret. It is scoped to
-the corpus, because the proxy is expected to name those headers in its own source. The
+the corpus, because the capture tool names those headers in its own source. The
 allowlist covers the other direction: captured ticketing URLs are committed verbatim, hash
 included, because [ADR 4](0004-booking-ends-at-a-deep-link.md) forbids reconstructing one,
 and that hash is high-entropy enough for a generic rule to fire on it one day. Two things

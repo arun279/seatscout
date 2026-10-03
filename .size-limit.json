@@ -1,29 +1,5 @@
 [
   {
-    "name": "web app",
-    "path": "apps/web/dist/**/*.js",
-    "limit": "79650 B"
-  },
-  {
-    "name": "stylesheets",
-    "path": "apps/web/dist/**/*.css",
-    "limit": "4188 B"
-  },
-  {
-    "name": "fonts",
-    "path": "apps/web/dist/fonts/*.woff2",
-    "limit": "118924 B"
-  },
-  {
-    "name": "icons",
-    "path": [
-      "apps/web/dist/*.png",
-      "apps/web/dist/*.ico",
-      "apps/web/dist/*.svg"
-    ],
-    "limit": "134269 B"
-  },
-  {
     "name": "app for iOS, the script Hermes compiles",
     "path": "apps/native/dist/_expo/static/js/ios/*.js",
     "limit": "368579 B"
@@ -32,11 +8,6 @@
     "name": "app for Android, the script Hermes compiles",
     "path": "apps/native/dist/_expo/static/js/android/*.js",
     "limit": "420744 B"
-  },
-  {
-    "name": "app for the web",
-    "path": "apps/native/dist/_expo/static/js/web/*.js",
-    "limit": "293419 B"
   },
   {
     "name": "app's faces and images",

@@ -125,35 +125,8 @@ which is the price of having two ways to answer no; a fresh search restores it.
 
 ### The hand-off on screen
 
-A card's body is the control that opens the room, stretched over the card by an `::after`, and
-its seat label is the control that opens the hand-off, on the inset hit area the other inline
-controls have. They are siblings rather than one control inside another, because a button inside
-a button is not HTML, and the card is two tab stops with the body first: a person looks at the
-room before committing to the seats.
-
-The sheet is a `handOff` variant on the overlay stack of
-[ADR 19](0019-the-list-is-painted-once.md), carrying the result it draws, so a query change
-unmounts it with the search it belonged to and one close request pops it. Adding it touched the
-variant, the one switch over variants, and the sheet's own files. The room is a `room` variant
-on the same stack, carrying the result and the Search that found it, so the screen draws the
-room that Search already read. Opening the seats from inside the room pushes the sheet on top of
-it, and each close request pops one, so the way back out is the way in reversed.
-
-One tap on the velvet button calls the verification above and nothing else until the Source
-answers. An ok answer hands the URL it returned to a `checkout` dependency, which in the browser
-is `window.location.assign`: a navigation of the page itself, in the same tab, so the back
-button returns to the search address and re-runs the search. `taken` redraws the room and offers
-the Auditorium's other Groups, ranked, the best already chosen, each going through the same
-verification; `taken` with nothing left offers only the way back; `unreachable` offers to check
-again and opens nothing. A sheet closed before the answer arrives opens nothing either.
-
-The control is not offered at all while the phone is offline, so the hand-off is unreachable
-rather than reachable and refusing. That is the interface never offering an action it already
-knows cannot succeed, and it only holds while the reason is legible: the offline notice is
-fixed at the foot of every surface and layered over the list, because a positioned card
-otherwise paints over it while it still answers hit testing in the gaps between cards. An
-end-to-end test samples the notice across its width and requires it topmost at every point,
-which refuses anything painting over it rather than one instance of it.
+The app's hand-off sheet is a placeholder. It re-verifies nothing yet and opens no ticketing
+page, so the decision above is what it has to meet when it is built.
 
 ## Consequences
 

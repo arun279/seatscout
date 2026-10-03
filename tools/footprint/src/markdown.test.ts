@@ -7,15 +7,15 @@ describe("a table", () => {
       table(
         ["Bundle", "Brotli"],
         [
-          ["web app", "15 B"],
-          ["proxy", "90 B"],
+          ["app for iOS", "15 B"],
+          ["app for Android", "90 B"],
         ],
       ),
     ).toStrictEqual([
       "| Bundle | Brotli |",
       "| --- | ---: |",
-      "| web app | 15 B |",
-      "| proxy | 90 B |",
+      "| app for iOS | 15 B |",
+      "| app for Android | 90 B |",
     ]);
   });
 
@@ -31,12 +31,17 @@ describe("a table", () => {
 
   it("judges a column on the rows that reach it, ignoring one that does not", () => {
     expect(
-      table(["Bundle", "Brotli"], [["web app", "15 B"], ["proxy"]])[1],
+      table(
+        ["Bundle", "Brotli"],
+        [["app for iOS", "15 B"], ["app for Android"]],
+      )[1],
     ).toBe("| --- | ---: |");
   });
 
   it("ranges a column no row reaches left rather than calling it all figures", () => {
-    expect(table(["Bundle", "Brotli"], [["web app"]])[1]).toBe("| --- | --- |");
+    expect(table(["Bundle", "Brotli"], [["app for iOS"]])[1]).toBe(
+      "| --- | --- |",
+    );
   });
 
   it("ranges a column right when every cell in it is a figure, first column included", () => {
@@ -44,7 +49,7 @@ describe("a table", () => {
   });
 
   it("ranges an empty column left rather than claiming it holds figures", () => {
-    expect(table(["Bundle", "Brotli"], [["web app", ""]])[1]).toBe(
+    expect(table(["Bundle", "Brotli"], [["app for iOS", ""]])[1]).toBe(
       "| --- | --- |",
     );
   });

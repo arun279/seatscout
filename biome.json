@@ -26,18 +26,6 @@
         "useLiteralKeys": "off"
       },
       "nursery": {
-        "noJsRestrictedProperties": {
-          "level": "error",
-          "options": {
-            "entries": [
-              {
-                "property": "caches",
-                "message": "Cache Storage is reached only through apps/web/src/worker/cache.ts. See ADR 13."
-              }
-            ]
-          }
-        },
-        "noUndeclaredClasses": "error",
         "noUnsafeTypeAssertion": "error"
       },
       "style": {
@@ -52,8 +40,7 @@
       "suspicious": {
         "noImportCycles": "error",
         "noOctalEscape": "error",
-        "noTsIgnore": "error",
-        "noUselessEscapeInString": "error"
+        "noTsIgnore": "error"
       },
       "correctness": {
         "noUndeclaredDependencies": "error",
@@ -73,34 +60,6 @@
         "!apps/native/src/**/*.test.tsx"
       ],
       "plugins": ["./tools/lint/no-colour-literals.grit"]
-    },
-    {
-      "includes": ["apps/web/src/seat-map.tsx"],
-      "linter": {
-        "rules": {
-          "a11y": {
-            "noNoninteractiveElementToInteractiveRole": "off",
-            "useSemanticElements": "off"
-          }
-        }
-      }
-    },
-    {
-      "includes": ["apps/**", "!apps/web/src/worker/cache.ts"],
-      "linter": {
-        "rules": {
-          "style": {
-            "noRestrictedGlobals": {
-              "level": "error",
-              "options": {
-                "deniedGlobals": {
-                  "caches": "Cache Storage is reached only through apps/web/src/worker/cache.ts, whose writer takes no argument and caches the build's own output. See ADR 13."
-                }
-              }
-            }
-          }
-        }
-      }
     },
     {
       "includes": ["packages/**"],
@@ -144,9 +103,6 @@
                     "group": [
                       "node:*",
                       "node:*/**",
-                      "cloudflare:*",
-                      "@cloudflare/**",
-                      "wrangler",
                       "react*",
                       "react*/**",
                       "@types/react*",
@@ -177,9 +133,6 @@
                     "group": [
                       "node:*",
                       "node:*/**",
-                      "cloudflare:*",
-                      "@cloudflare/**",
-                      "wrangler",
                       "react*",
                       "react*/**",
                       "@types/react*",

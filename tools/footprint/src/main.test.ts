@@ -4,7 +4,7 @@ import { main, type Measure } from "./main.js";
 import { measurement } from "./report.fixtures.js";
 
 const WITHIN: Bundle = {
-  name: "web app",
+  name: "app for iOS",
   size: 15,
   sizeLimit: 15,
   passed: true,
@@ -78,7 +78,7 @@ describe("the command line", () => {
     expect(harness().run()).toBe(0);
     expect(
       harness({
-        name: "web app",
+        name: "app for iOS",
         size: 90,
         sizeLimit: 15,
         passed: false,

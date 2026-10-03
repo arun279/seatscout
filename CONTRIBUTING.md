@@ -29,7 +29,6 @@ that looks arbitrary is explained in one of them, and each section below names w
 
 ```sh
 pnpm build
-pnpm --filter @seatscout/proxy dev
 pnpm --filter @seatscout/native start
 ```
 
@@ -38,12 +37,10 @@ the Expo app under the `jest-expo` preset, which is the only runner that renders
 it runs every test twice, once as iOS and once as Android, so a per-platform floor is asserted
 from the styles each platform resolves.
 
-`pnpm build` runs `tsc --build` across the workspace and then Vite over `apps/web`. The
-proxy serves what that build writes, so build first, then open the URL wrangler prints.
-Nothing configures it: `apps/proxy/wrangler.json` names the upstream it forwards to and the
-rate limit it holds each visitor to, and nobody signs in.
+`pnpm build` runs `tsc --build` across the workspace. Nothing configures the app: it reads
+the Source from the device, and nobody signs in.
 
-Expo prints a URL of its own; open that one in Expo Go. `/ios` and `/android` are ignored
+Expo prints a URL; open it in Expo Go. `/ios` and `/android` are ignored
 because `expo prebuild` generates them. A phone that cannot reach this machine, which is any
 phone when the server runs behind a NAT, opens the published update instead of this server;
 `README.md` says how.
@@ -58,7 +55,7 @@ pnpm lint
 pnpm complexity
 pnpm duplication
 actionlint
-shellcheck deploy/*.sh apps/native/e2e/*.sh
+shellcheck apps/native/e2e/*.sh
 pnpm spell
 pnpm typecheck
 pnpm dead-code
@@ -66,26 +63,22 @@ pnpm versions
 pnpm --filter @seatscout/native run install-check
 pnpm --filter @seatscout/native run doctor
 pnpm --filter @seatscout/native run bundle
+pnpm test:e2e
+pnpm --filter @seatscout/native run weigh
 pnpm counts
 pnpm claims
 pnpm test:unit
 pnpm test:native
 pnpm build
-pnpm --filter @seatscout/proxy exec wrangler deploy --dry-run
-pnpm test:e2e
-pnpm test:journey
-pnpm journey --head reports/journey/samples.json \
-  --head-gesture reports/journey/gesture.json --no-baseline
 ```
 
-`pnpm test:e2e` serves the app's web build from `apps/native/dist` with
-`serve`, compressed as a host would send it, so the bundle step comes first. Playwright runs `tests/e2e` over `apps/web` as
-the `web` project and `tests/app` over the app's web build as the `app` project.
+`pnpm test:e2e` serves the app's web build from `apps/native/dist` with `serve`, compressed as
+a host would send it, so it runs straight after the bundle step and before `weigh`, which
+exports the phones alone into the same directory. Playwright runs `tests/app` over it, and axe
+scans every screen against WCAG 2.2. The web build is there for that scan and for nothing else.
 
 The list is the job, not a selection from it. Running a shorter one and finding it green is
-how a contributor arrives red on a pull request, which is what this list is for. The last
-line is the half of the journey gate a checkout can run alone; the job also builds the merge
-base in a worktree, runs its journey, and holds this one to it.
+how a contributor arrives red on a pull request, which is what this list is for.
 
 Eight further jobs run beside it. `changes` lists the source files the pull request touches, and those its changed tests import, and
 says whether it touches the app. `mutation` mutates those files, a few per runner, in parallel,
@@ -134,17 +127,6 @@ Each of these has one way through and no exemption to grant.
   callback that fetches without reading the body it gets back, and one that reads a body it
   was handed rather than one it fetched. Read each body inside the callback that fetched it;
   [ADR 2](docs/adr/0002-computation-on-the-client.md) says why a fan-out must.
-- **A class no stylesheet rules.** `pnpm lint` runs Biome's `noUndeclaredClasses`, which holds
-  every class a module puts in a `className` to the stylesheets that module imports. Add the
-  rule to the sheet that owns the surface, import the sheet that already carries it, or take
-  the class off the element. `foundation.css` holds the tokens and the reset every surface
-  starts from, `house.css` holds what two or more surfaces draw, and every other sheet is named
-  for the one surface it draws. The rule reads only a module that imports a stylesheet, so a
-  screen imports the sheets it draws with; `apps/web/src/index.ts` imports all ten in the order
-  the page loaded them as links, which is the cascade the build emits. It reads a class spelled
-  as a literal or held in a variable bound to one, and passes a class built from a template or
-  picked by a conditional, so a class here is always a literal and the state that would join it
-  goes in a `data-` attribute the sheet selects on; ADR 6 says why.
 - **Duplicated code.** `pnpm duplication` fails when jscpd finds more than 3 percent of the
   lines under `{apps,packages,tools}/*/src` duplicated, which is the figure SonarSource
   publish in the Sonar way quality gate. The failure names both files and the lines they
@@ -169,13 +151,6 @@ Each of these has one way through and no exemption to grant.
   because a gate that cannot read its subject is not a gate. The comment on the pull request
   names the scenarios that moved. Make the screen render what it rendered before, or say in
   the pull request what the change buys.
-- **A reach for Cache Storage.** `pnpm lint` denies the `caches` global under `apps/` with
-  Biome's `noRestrictedGlobals`, and the `caches` property everywhere with its
-  `noJsRestrictedProperties`, so `self.caches` is refused beside a bare `caches`. There is one
-  exemption and it is the writer, `apps/web/src/worker/cache.ts`; read a cached response
-  through `cachedShell` and write one nowhere.
-  [ADR 13](docs/adr/0013-only-the-catalogue-is-cached.md) says why a seat map may never be
-  held.
 - **An import the package never asked for.** Biome's `noUndeclaredDependencies` names the
   package and the manifest that does not declare it. Add it to that manifest, at the version
   the rest of the workspace already uses. The root's `package.json` does not answer for a
@@ -226,17 +201,15 @@ Take a ratchet's new value from the `footprint` comment on the pull request rath
 local run: the job measures the merge of your branch with `main` rather than the branch alone,
 so the bundle's bytes and the sum of the unit and end-to-end counts are what that merge weighs,
 and a floor derived locally read 25 too high the moment `main` had dropped a package's tests.
-`.size-limit.json` holds four ratchets over what the web app's build emits: the scripts, the
-stylesheets, the woff2 faces the page preloads and the icons it names. Four more weigh what the
-app's export emits: the script Hermes compiles for iOS and for Android, the web build's scripts, and
-the faces and images every platform ships. The comment prints each measured figure beside its
-own ratchet.
+`.size-limit.json` holds three ratchets over what the app's export emits: the script Hermes
+compiles for iOS and for Android, and the faces and images every platform ships. The comment
+prints each measured figure beside its own ratchet.
 
 A pull request that changes what a person sees or does carries its headed pass as images or
-video: drive the built tree in a real browser at a phone's size, screenshot each state the
-change adds or alters, and attach them with `gh pr create --attach`, `gh pr edit --attach` or
-`gh pr comment --attach`, one flag per file with alt text after a `#`, so a reviewer sees the
-screen rather than reads about it. The flag needs GitHub CLI 2.99 or later.
+video: run the app on a phone or a simulator, screenshot each state the change adds or alters,
+and attach them with `gh pr create --attach`, `gh pr edit --attach` or `gh pr comment
+--attach`, one flag per file with alt text after a `#`, so a reviewer sees the screen rather
+than reads about it. The flag needs GitHub CLI 2.99 or later.
 
 One class of mistake in `apps/native` has no gate here, and it is written down rather than left
 to be found. Raw text outside a `<Text>` element, a `StyleSheet` entry nothing uses, and a
@@ -263,9 +236,7 @@ the reason that record gives.
 Keep a hot test's work under Vitest's default timeout with room to spare. The dry run makes
 a test slower by an amount that depends on files it never touches, so a dry-run timeout on a
 test nobody edited means the test's work has to be divided rather than the timeout raised.
-Open one room per `it`: what a screen test costs is the search its terms set off, and
-`SMALLEST_LISTING` in `apps/web/src/terms.fixtures.ts` names the terms whose search reads the
-fewest captures.
+Open one room per `it`: what a screen test costs is the search its terms set off.
 
 A rule is only a gate while it still refuses something, so each one is watched refusing a
 fixture. `tools/planted-red` copies the fixtures under `tools/planted-red/planted` into a
@@ -276,7 +247,7 @@ status. Loosening a rule in `biome.json`, `.oxlintrc.json`, `.jscpd.json` or
 fixture moves in the same diff as the rule, where a reviewer sees both. The size-limit
 fixtures are the exception: they carry ratchets of their own rather than the shipped ones, so
 what they watch is that size-limit still refuses a file over a ratchet and still reports a
-glob that reached nothing. The nine files answer in about seven seconds on two workers,
+glob that reached nothing. The eight files answer in about seven seconds on two workers,
 inside `pnpm test:unit`.
 
 Substitute at `fetch`, never at the Source port. `fakeUpstream` in
@@ -337,38 +308,23 @@ asserts do have to be re-derived, and a refresh that moves one moves the numbers
 request; `.github/workflows/contract.yml` runs it nightly and opens an issue on what it
 finds. See [ADR 11](docs/adr/0011-a-nightly-reading-judges-the-world.md).
 
-`pnpm icons` renders the manifest's sizes, the Apple touch icon and a favicon from
-`apps/web/public/icon.svg` through the browser Playwright already installs, so the mark has
-one source.
+## Publishing
 
-## Deploying
-
-`deploy/README.md` is the runbook, `deploy/setup.sh` walks it, and `deploy/verify.sh` reads
-back what took effect without reading a secret. `.github/workflows/deploy.yml` releases when a
-merge to `main` changes the `version` in the root `package.json`: it deploys, tags the commit
-`v<version>` and publishes a GitHub release with generated notes. No other merge deploys and
-there is no manual trigger; to release, bump the version in a pull request. It runs `wrangler` from the workspace so the version
-that deploys is the version the lockfile pins and the dry run in `quality` already
-exercised. With neither `CLOUDFLARE_API_TOKEN` nor `CLOUDFLARE_ACCOUNT_ID` set its first
-step skips every step after it and says so in the run summary, so a fork gets a green build
-rather than a confusing red one; with one of the two set it fails and names the other.
-
-`.github/workflows/preview.yml` is the other thing a merge can start, and it is not a release.
+`.github/workflows/preview.yml` is the one thing a merge can start, and it is not a release.
 A merge to `main` that changes `apps/native`, anything under `packages/`, or what the install
 resolves, publishes an EAS Update to the `preview` channel, which is the channel the phones
 follow. That is deliberately not the release trigger: the point of it is to see each slice on a
 phone as it lands, and a release is a version the owner chose to cut. `--environment` names
 which of EAS's own environments the publish reads variables from, and `eas update` has required
 it since SDK 55. It publishes with `npx` at the `eas-cli` version the workflow pins, rather than
-from the workspace the way `wrangler` deploys, because `eas-cli` is a publisher and not a
+from the workspace, because `eas-cli` is a publisher and not a
 dependency of anything this repository builds: in the lockfile it would be installed by every
 job that installs at all, and an advisory against a tool one job runs would stand in the way of
 every merge. The version is a literal a reviewer sees move. It publishes with the repository
 secret `EXPO_TOKEN`, a robot user holding the developer role on the account
-`apps/native/app.json` names as the owner. Where
-the deploy skips itself and stays green without its credentials, this job fails and names which
-half is missing, because a deployment a fork never wanted is a fair thing to skip and an app
-that has quietly stopped reaching the phones is not. The run's summary carries the QR code
+`apps/native/app.json` names as the owner. Without its credentials this job fails and names
+which half is missing, because an app that has quietly stopped reaching the phones is not a
+thing to skip. The run's summary carries the QR code
 address and the update address; `README.md` carries the same two, since neither moves between
 updates, and `pnpm claims` holds the SDK they name to the one `apps/native` is on.
 
@@ -391,10 +347,10 @@ above [GHSA-vcc3-ghjq-m6fr](https://github.com/advisories/GHSA-vcc3-ghjq-m6fr), 
 it through the query parser inside Expo Router. Two more entries are there for reasons of
 their own: `exit` is aliased to `exit-x`, because the package Jest's own runner pulls in
 states its licence in npm's pre-SPDX form and so reads as undetermined, and `exit-x` is the
-maintained fork Jest itself moved to; and `@types/jsdom` is held at the version matching the
-`jsdom` this workspace installs, because the older types that arrive with the Jest jsdom
-environment do not type-check. `pnpm versions` holds that file and every
-`package.json` to one version of each dependency, so the React pin and the two apps that name
+maintained fork Jest itself moved to; and `@types/jsdom` is held at 30.0.0, because the version 20
+types `jest-expo` brings with the Jest jsdom environment do not type-check, which
+`pnpm typecheck` shows the moment the entry is removed. `pnpm versions` holds that file and every
+`package.json` to one version of each dependency, so the React pin and the app that names
 `react` cannot drift apart. `uuid` is held at 11.1.1
 rather than at the newest patched release because that parser loads it with `require` and
 uuid dropped its CommonJS entry point after 11. An entry is removable once the package that

@@ -62,9 +62,7 @@ rule against parsing.
 
 The property is that no ordinary code path reaches the thing, not that a determined author
 cannot. That is also true of the import ban's known-open routes in
-[ADR 3](0003-separate-view-layers-shared-core.md) and of the reach check in
-[ADR 13](0013-only-the-catalogue-is-cached.md), which reads source text precisely because
-what it refuses cannot be made a type error.
+[ADR 3](0003-separate-view-layers-shared-core.md).
 
 The workspace holds no type assertion at all, which is what
 [ADR 4](0004-booking-ends-at-a-deep-link.md) rests on: a constructed ticketing URL is a

@@ -98,8 +98,8 @@ rendering is.
 Source's dependencies, the transport, the clock, the wait and the random draw, and optionally a
 store, and answers with `search` and `verify` composed over one Source and one catalogue cache,
 and with `profile` and `recent`, which remember a Seat Profile and a history of searches on that
-same store. The store defaults to memory, so a caller that brings none still searches; the web
-application brings Web Storage.
+same store. The store defaults to memory, so a caller that brings none still searches; the app
+brings the phone's storage.
 
 ### The timing this rests on
 

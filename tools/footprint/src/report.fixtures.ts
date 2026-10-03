@@ -36,8 +36,8 @@ export const measurement = (over: Partial<Measurement> = {}): Measurement => ({
   head: side("fedcba9876543210fedcba9876543210fedcba98"),
   diff: { added: {}, removed: {}, modified: {} },
   bundles: [
-    { name: "web app", size: 15, sizeLimit: 15, passed: true },
-    { name: "stylesheets", size: 4, sizeLimit: 4, passed: true },
+    { name: "app for iOS", size: 15, sizeLimit: 15, passed: true },
+    { name: "app's faces and images", size: 4, sizeLimit: 4, passed: true },
   ],
   gates: GATES,
   limits: LIMITS,

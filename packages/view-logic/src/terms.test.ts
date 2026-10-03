@@ -1,23 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { parametersOf, termsFrom, termsOf, windowIn } from "./terms.js";
+import { parametersOf, termsFrom, termsOf } from "./terms.js";
 import { EVERY_PARAMETER, TODAY } from "./terms.fixtures.js";
 
 describe("the query terms an address carries", () => {
-  it("gives the window's two fields the empty string when the address holds no window", () => {
-    expect(windowIn(termsFrom([], TODAY))).toEqual({ from: "", until: "" });
-    expect(
-      windowIn(
-        termsFrom(
-          [
-            ["from", "19:00"],
-            ["until", "21:00"],
-          ],
-          TODAY,
-        ),
-      ),
-    ).toEqual({ from: "19:00", until: "21:00" });
-  });
-
   it("holds a value the address names twice once, and writes it once", () => {
     const twice = termsFrom(
       [

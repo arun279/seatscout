@@ -112,15 +112,6 @@ is held by the headed pass and its screenshots: the only test that kills a mutan
 the value, which is a tautological test. Everything that holds behaviour is judged, screens
 included.
 
-`apps/web` stays inside the gate: it is the view layer that will hold real behaviour, keyboard
-traversal among it, and the platform adapters it already holds are judged there rather than
-exempted by a line written while the directory was empty. That is why the browser store
-adapter has unit tests of its own beside the browser run of its contract: a suite the mutation
-gate cannot execute cannot be what judges a mutated adapter. The stateless proxy is not part
-of the carve-out either: it has its own assertions, including that a cross-site request is
-refused and that a visitor over the rate limit is, and a refusal is exactly the kind of
-behaviour most worth proving can fail.
-
 ## Consequences
 
 **A test cannot read the repository's own sources**, because the runner hands the suite
@@ -137,23 +128,20 @@ assertions would otherwise have caught.
 numbers mutants in file order and records per-test coverage in a plain object keyed by the
 mutant id as a string. V8 keeps such an object's numeric keys in fast elements only while the
 first index written stays under `JSObject::kMaxGap`, which V8 sets at 1,024, and falls to
-dictionary elements otherwise, which made every coverage increment about six times slower
-when benchmarked (34 ms against 211 ms per five million). `apps` sorts before `packages`, so
-when the first screen added about 700 mutants under `apps/web`, Core's ids moved from the
-hundreds past 1,250 and the Seat Profile sweep, unchanged, went from 1.6 s to 5.8 s under the
-dry run and timed out. It is now five sweeps of one benchmark room each rather than one of
-five, with the same assertions partitioned. The remedy is to divide the test's work, not to
-raise the timeout.
+dictionary elements otherwise, which made every coverage increment about six times slower when
+benchmarked (34 ms against 211 ms per five million). `apps` sorts before `packages`, so when
+the first screen of the web application this repository then held added about 700 mutants under
+`apps/web`, Core's ids moved from the hundreds past 1,250 and the Seat Profile sweep,
+unchanged, went from 1.6 s to 5.8 s under the dry run and timed out. It is now five sweeps of
+one benchmark room each rather than one of five, with the same assertions partitioned. The
+remedy is to divide the test's work, not to raise the timeout.
 
-**The allowance the dry run does get has to be written where a project reads it.**
-`vitest.stryker.config.ts` merges 30 seconds into the root configuration, and in the pinned
-Vitest a project declared inline inherits nothing from the root unless it says
-`extends: true`. The two projects in `vitest.config.ts` both say it, and `pnpm counts` refuses
-a third that does not. Without it the merge reached no test at all, every one of them ran at
-the default 5 seconds under the instrumentation, and the sweep above timed out again on
-2026-09-19 on a tree whose own pull request was green. Vitest's own migration guide makes
-`extends: true` the default for an inline project in the next major, so this leans with that
-change rather than against it.
+**The allowance the dry run does get has to reach every test.**
+`vitest.stryker.config.ts` merges 30 seconds into the root configuration. That configuration
+declares zero inline projects, because in the pinned Vitest a project declared inline inherits nothing
+from the root unless it says `extends: true`. When it held two, the merge reached no test until
+both said it, every test ran at the default 5 seconds under the instrumentation, and the sweep
+above timed out again on 2026-09-19 on a tree whose own pull request was green.
 
 **Two Stryker settings are less redundant than they look.** The vitest runner is named in
 `plugins` because Stryker resolves its own plugin search against its package directory, which

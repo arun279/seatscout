@@ -1,20 +1,15 @@
 export {
   type Amenity,
-  type AuditoriumMap,
   type Chain,
   EVERY_AMENITY,
   EVERY_CHAIN,
   EVERY_FORMAT,
   type Format,
   type Movie,
-  nearestInRow,
-  type PositionedSeat,
   REFERENCE,
   type SeatProfile,
-  type SeatRow,
   type Theater,
   type TheaterId,
-  type TicketingUrl,
 } from "@seatscout/core";
 export { SEAT_MAP_BUDGET } from "./budget.js";
 export { isReference } from "./profile.js";
@@ -32,4 +27,3 @@ export type { CachedCatalogue } from "./store.js";
 export type { KeyValueStore } from "./store.js";
 export type { RecentSearch } from "./store.js";
 export { storeContract } from "./store-contract.js";
-export type { Verified } from "./verify.js";

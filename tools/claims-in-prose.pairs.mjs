@@ -3,7 +3,6 @@ import { SEARCH_CLAIMS } from "./claims-in-prose.pairs.search.mjs";
 
 const BIOME = "biome.json";
 const PRODUCT = ["packages", ":!*.test.ts", ":!*.fixtures.ts"];
-const PROXY = "apps/proxy/src/index.ts";
 const STRYKER = "stryker.config.mjs";
 const SHARDS = "stryker.shards.json";
 const SOURCES = ["*.ts", "*.tsx"];
@@ -36,42 +35,10 @@ export const CLAIMS = [
   },
   {
     adr: "0002-computation-on-the-client.md",
-    says: /forwards the request upstream, and streams/,
-    holds: "the header allowlist the proxy forwards",
-    pattern: 'const FORWARDED = ["accept", "content-type", "user-agent"]',
-    paths: [PROXY],
-    files: 1,
-  },
-  {
-    adr: "0002-computation-on-the-client.md",
-    says: /A request is carried only when its `Sec-Fetch-Site` reads `same-origin`\./,
-    holds: "the fetch metadata the proxy reads",
-    pattern: 'headers.get("sec-fetch-site")',
-    paths: [PROXY],
-    files: 1,
-  },
-  {
-    adr: "0002-computation-on-the-client.md",
-    says: /runs checks 170 candidates besides its listings\./,
-    holds: "the corpus search the limit is sized from",
-    pattern: "170 checked",
-    paths: ["tests/e2e/query.spec.ts"],
-    files: 1,
-  },
-  {
-    adr: "0002-computation-on-the-client.md",
-    says: /Three of the wider kind in a minute is 540, which is the limit\./,
-    holds: "the rate limit the deployment declares",
-    pattern: '"limit": 540',
-    paths: ["apps/proxy/wrangler.json"],
-    files: 1,
-  },
-  {
-    adr: "0002-computation-on-the-client.md",
-    says: /a request for any other path is answered 404 rather than forwarded/,
-    holds: "the only path the proxy carries",
-    pattern: 'const ROUTE = "/napi/"',
-    paths: [PROXY],
+    says: /so every read names the\s+upstream as its referer\./,
+    holds: "the referer every read from the device carries",
+    pattern: "Referer:",
+    paths: ["apps/native/src/host", ":!*.test.ts"],
     files: 1,
   },
   {
@@ -93,7 +60,6 @@ export const CLAIMS = [
       "packages/client/tsconfig.json",
       "packages/view-logic/tsconfig.json",
       "apps/native/tsconfig.json",
-      "apps/web/tsconfig.json",
       "tools/footprint/tsconfig.json",
     ],
     files: 4,
@@ -204,30 +170,6 @@ export const CLAIMS = [
     holds: "the plugin that skips a drawn value",
     pattern: "StyleSheet.create",
     paths: ["tools/stryker-style-tables.mjs"],
-    files: 1,
-  },
-  {
-    adr: "0013-only-the-catalogue-is-cached.md",
-    says: /are the whole of the gate that keeps the writer the only writer/,
-    holds: "the property rule that keeps the writer the only writer",
-    pattern: "noJsRestrictedProperties",
-    paths: [BIOME],
-    files: 1,
-  },
-  {
-    adr: "0013-only-the-catalogue-is-cached.md",
-    says: /the override that carries it excludes one file/,
-    holds: "the one file the global ban excludes",
-    pattern: '"!apps/web/src/worker/cache.ts"',
-    paths: [BIOME],
-    files: 1,
-  },
-  {
-    adr: "0013-only-the-catalogue-is-cached.md",
-    says: /which this decision raises from its recommended warning to an error/,
-    holds: "the escape rule raised to an error",
-    pattern: '"noUselessEscapeInString": "error"',
-    paths: [BIOME],
     files: 1,
   },
   {

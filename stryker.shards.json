@@ -24,22 +24,6 @@
     "report": "reports/mutation/view-logic.json"
   },
   {
-    "id": "web",
-    "workspace": "apps/web",
-    "runner": "vitest",
-    "mutate": ["apps/web/src/**/*.{ts,tsx}"],
-    "canary": "apps/web/src/store.ts",
-    "report": "reports/mutation/web.json"
-  },
-  {
-    "id": "proxy",
-    "workspace": "apps/proxy",
-    "runner": "vitest",
-    "mutate": ["apps/proxy/src/**/*.{ts,tsx}"],
-    "canary": "apps/proxy/src/index.ts",
-    "report": "reports/mutation/proxy.json"
-  },
-  {
     "id": "tools",
     "workspace": "tools",
     "runner": "vitest",

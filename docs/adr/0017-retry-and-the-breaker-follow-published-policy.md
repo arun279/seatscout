@@ -63,16 +63,16 @@ asking again lengthens it; [ADR 20](0020-a-search-over-several-days-reads-48-sea
 what a search does when it meets one.
 
 **The programme reads through a Source of its own, so its breaker is its own.** Reading what is
-playing near an area is one schedule request per Theater the discovery route names, which was 25
-in the reading that settled it. Twenty-five reads are twenty-five chances to trip a breaker, and
-a typeahead that took the search down with it would be a worse bargain than a film list that
-fails alone: the search is what the person asked for, and the list only helps them name a film.
-So `createSeatScout` gives the programme its own `openSource`, and the breaker the search shares
-is untouched by a schedule the Source refuses. The two Sources still read through the same proxy
-under the same retry policy, and `seatscout.test.ts` holds the separation by refusing every
-schedule and asserting the search still answers. That is why the sellability word in
-[ADR 9](0009-no-upstream-word-crosses-the-boundary.md) is read at all, and why
-[ADR 1](0001-single-aggregating-source.md) records a fan-out width this Source will not answer.
+playing near an area is one schedule request per Theater the discovery route names, which was
+25 in the reading that settled it. Twenty-five reads are twenty-five chances to trip a breaker,
+and a typeahead that took the search down with it would be a worse bargain than a film list
+that fails alone: the search is what the person asked for, and the list only helps them name a
+film. So `createSeatScout` gives the programme its own `openSource`, and the breaker the search
+shares is untouched by a schedule the Source refuses. The two Sources still read through the
+same transport under the same retry policy, and `seatscout.test.ts` holds the separation by
+refusing every schedule and asserting the search still answers. That is why the sellability
+word in [ADR 9](0009-no-upstream-word-crosses-the-boundary.md) is read at all, and why [ADR
+1](0001-single-aggregating-source.md) records a fan-out width this Source will not answer.
 
 Backoff needs a timer and the import ban leaves Core none, so `wait` is injected beside `fetch`.
 `now` and `random` are injected too rather than defaulted from the language, because a default

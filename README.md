@@ -77,22 +77,14 @@ ordered and are sometimes not letters at all.
 every candidate screening reports its coverage, because a short list that looks complete is
 indistinguishable from an empty room.
 
-**Nothing about you is stored on a server.** Preferences and history live on your device.
-The hosted component is a stateless proxy that exists only because browsers cannot call the
-upstream source directly. Native clients do not use it at all.
+**Nothing about you is stored on a server, because there is no server.** Preferences and
+history live on your device, and the app reads the ticket site from the phone directly.
 
 ## Booking
 
 seatscout finds seats and hands off to the operator's own checkout with the screening
 selected. It does not process payments and never stores card details. See
 [ADR 4](docs/adr/0004-booking-ends-at-a-deep-link.md).
-
-## Self-hosting
-
-The deployment holds no user data, and the only values it needs are the credentials that
-let your own hosting account be deployed to. Running your own instance means that account
-and nothing else; there is no login to set up. [deploy/README.md](deploy/README.md) is the
-runbook, `deploy/setup.sh` walks it, and `deploy/verify.sh` checks the result.
 
 ## Documentation
 

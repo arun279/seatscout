@@ -11,7 +11,6 @@ import type { Capture } from "../corpus/types.js";
 import type { Fetch, FetchInit, FetchResponse } from "../transport.js";
 
 export { seatMapCaptures };
-export { seatMapBodyWithStatuses } from "./seat-map-body.js";
 
 interface ScriptedRoute {
   readonly status: number;

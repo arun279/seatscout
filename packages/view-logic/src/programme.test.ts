@@ -6,7 +6,6 @@ import {
   movieOf,
   offeredFor,
   programmeNear,
-  suggestedFor,
   theaterNamed,
   titleOf,
 } from "./programme.js";
@@ -68,35 +67,27 @@ describe("the films playing near an area", () => {
   });
 
   it("offers every film the typed letters appear in, wherever they appear", () => {
-    expect(suggestedFor("co", PLAYING).map((movie) => movie.title)).toEqual([
+    expect(offeredFor("co", PLAYING).map((movie) => movie.title)).toEqual([
       "Colony (2026)",
       "Coyote vs. Acme",
     ]);
-    expect(suggestedFor("  co  ", PLAYING).map((movie) => movie.title)).toEqual(
-      ["Colony (2026)", "Coyote vs. Acme"],
-    );
-    expect(suggestedFor("acme", PLAYING).map((movie) => movie.title)).toEqual([
+    expect(offeredFor("  co  ", PLAYING).map((movie) => movie.title)).toEqual([
+      "Colony (2026)",
+      "Coyote vs. Acme",
+    ]);
+    expect(offeredFor("acme", PLAYING).map((movie) => movie.title)).toEqual([
       "Coyote vs. Acme",
     ]);
   });
 
-  it("offers nothing for nothing typed, and nothing once one title is typed whole even where it opens another", () => {
-    expect(suggestedFor("", PLAYING)).toEqual([]);
-    expect(suggestedFor("   ", PLAYING)).toEqual([]);
-    expect(suggestedFor("Akira", PLAYING)).toEqual([]);
-    expect(suggestedFor("Akira 4", PLAYING)).toHaveLength(1);
+  it("offers nothing once one title is typed whole, even where it opens another", () => {
+    expect(offeredFor("Akira", PLAYING)).toEqual([]);
+    expect(offeredFor("Akira 4", PLAYING)).toHaveLength(1);
   });
 
   it("offers everything playing while nothing is typed, so a film is picked rather than remembered", () => {
     expect(offeredFor("", PLAYING)).toEqual(PLAYING);
     expect(offeredFor("   ", PLAYING)).toEqual(PLAYING);
-  });
-
-  it("narrows to what was typed the moment a letter is", () => {
-    expect(offeredFor("acme", PLAYING).map((movie) => movie.title)).toEqual([
-      "Coyote vs. Acme",
-    ]);
-    expect(offeredFor("Akira", PLAYING)).toEqual([]);
   });
 
   it("marks the typed letters where they sit in a title", () => {
