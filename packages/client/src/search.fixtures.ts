@@ -23,6 +23,15 @@ const LISTINGS = "/napi/theaterShowtimeGroupings/";
 export const LISTING: string = `${LISTINGS}245893/2026-09-20`;
 const AREA = "75006";
 export const TODAY = "2026-09-20";
+export const LATER = "2026-09-21";
+export const LATEST = "2026-09-22";
+export const ACROSS: Required<Pick<Options, "days" | "script">> = {
+  days: [
+    [LATEST, "243819/2026-09-20"],
+    [LATER, "246473/2026-09-20"],
+  ],
+  script: { standInAuditoriums: true },
+};
 const WIDE_RELEASE = "245893";
 export const AT = 1000;
 export const STONEBRIAR = "AMC Stonebriar 24";
@@ -127,7 +136,7 @@ const roomsFor = (
 
 export const routesTo = (
   showtimes: readonly Showtime[],
-  answer: { status: number; body: string },
+  answer: Routes[string],
 ): Routes =>
   Object.fromEntries(
     showtimes.map((showtime) => [`${SEAT_MAP}${showtime.id}`, answer]),

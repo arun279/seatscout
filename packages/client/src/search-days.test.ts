@@ -1,35 +1,20 @@
 import { describe, expect, it } from "vitest";
 import {
+  ACROSS,
+  LATER,
+  LATEST,
   LISTING,
   listing,
   SEAT_MAP,
   searching,
   TODAY,
-  WIDTH,
 } from "./search.fixtures.js";
 import type { Snapshot } from "./search.js";
 
 const EARLIER = "2026-09-19";
-const LATER = "2026-09-21";
-const LATEST = "2026-09-22";
-const ACROSS = {
-  days: [
-    [LATEST, "243819/2026-09-20"],
-    [LATER, "246473/2026-09-20"],
-  ],
-  script: { standInAuditoriums: true },
-} as const;
 
 const datesIn = (snapshot: Snapshot) =>
   snapshot.results.map((result) => result.terms.date);
-
-const refusingEvery = async () => {
-  const run = await searching({
-    script: { faults: [{ status: 403, percent: 100 }] },
-    cached: (catalogue) => ({ fetchedAt: 1000, catalogue }),
-  });
-  return { run, settled: await run.search.done };
-};
 
 describe("a search's budget", () => {
   it("reads every seat map of a one-day search, as a one-day search always has", async () => {
@@ -86,6 +71,23 @@ describe("a search's budget", () => {
       unread: 398,
     });
     expect(run.search.snapshot()).toBe(more);
+  });
+
+  it("reads the next 48 while one day has seat maps left, though another has none to read", async () => {
+    const run = await searching({
+      window: { from: "19:00", until: "23:00" },
+      days: [[LATER, "246473/2026-09-20"]],
+      script: { standInAuditoriums: true },
+    });
+    await run.search.done;
+
+    const more = await run.search.readMore();
+
+    expect(run.requested()).toHaveLength(96);
+    expect(more.days).toEqual([
+      { date: TODAY, read: 96, reading: 0, unread: 58 },
+      { date: LATER, read: 0, reading: 0, unread: 0 },
+    ]);
   });
 
   it("asks for nothing more once every seat map is read", async () => {
@@ -209,76 +211,5 @@ describe("a search's days without a window", () => {
 
     expect(await asked[0]).toBe(settled);
     expect(run.requested()).toHaveLength(48);
-  });
-});
-
-describe("a search the Source refuses", () => {
-  it("stops at the first refusal, asks no seat map again, and counts nothing it was refused as read", async () => {
-    const { run, settled } = await refusingEvery();
-
-    expect(run.requested()).toHaveLength(WIDTH);
-    expect(settled.refused).toBe(true);
-    expect(settled.phase).toBe("settled");
-    expect(settled.coverage.checked).toBe(0);
-    expect(settled.coverage.failed).toEqual([]);
-    expect(settled.days).toEqual([
-      { date: TODAY, read: 0, reading: 0, unread: 494 },
-    ]);
-  });
-
-  it("neither reads more nor retries into the refusal", async () => {
-    const { run, settled } = await refusingEvery();
-
-    expect(await run.search.readMore()).toBe(settled);
-    expect(await run.search.retry()).toBe(settled);
-    expect(run.requested()).toHaveLength(WIDTH);
-  });
-
-  it("keeps what it read before the refusal and names the rest as not read yet", async () => {
-    const run = await searching({
-      answers: (bookable) =>
-        Object.fromEntries(
-          bookable
-            .slice(30)
-            .map((showtime) => [`${SEAT_MAP}${showtime.id}`, { status: 403 }]),
-        ),
-    });
-    const settled = await run.search.done;
-    const [day] = settled.days;
-
-    expect(settled.refused).toBe(true);
-    expect(settled.coverage.checked).toBe(30);
-    expect(settled.results.length).toBeGreaterThan(0);
-    expect(day).toEqual({ date: TODAY, read: 30, reading: 0, unread: 464 });
-    expect(run.requested().length).toBeLessThan(494);
-    expect(await run.search.readMore()).toBe(settled);
-  });
-
-  it("says it was refused when one day's listing was refused and another was read", async () => {
-    const run = await searching({
-      ...ACROSS,
-      script: {
-        ...ACROSS.script,
-        sequences: { [LISTING]: [403] },
-      },
-    });
-    const settled = await run.search.done;
-
-    expect(settled.phase).toBe("unreachable");
-    expect(settled.refused).toBe(true);
-  });
-
-  it("stops before any seat map when the listing is refused, and does not ask again", async () => {
-    const run = await searching({
-      script: { sequences: { [LISTING]: [403, 200] } },
-    });
-    const settled = await run.search.done;
-
-    const again = await run.search.retry();
-
-    expect(settled.phase).toBe("unreachable");
-    expect(settled.refused).toBe(true);
-    expect(again).toBe(settled);
-    expect(run.paths()).toEqual([LISTING]);
   });
 });
