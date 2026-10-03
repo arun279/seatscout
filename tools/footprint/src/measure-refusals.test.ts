@@ -47,6 +47,19 @@ describe("what size-limit reported", () => {
     );
   });
 
+  it("refuses a bundle held to a ratchet that weighed nothing, which passes at any ratchet", () => {
+    const run = sizeLimitExitingNonZero(
+      JSON.stringify([
+        { name: "app for iOS", size: 15, sizeLimit: 15, passed: true },
+        { name: "app for Android", size: 0, sizeLimit: 15, passed: true },
+      ]),
+    );
+
+    expect(() => measuring(run)("origin/main", "HEAD")).toThrow(
+      "size-limit weighed no bundle against a ratchet",
+    );
+  });
+
   it("refuses a list where one bundle was weighed and another was not", () => {
     const run = sizeLimitExitingNonZero(
       JSON.stringify([

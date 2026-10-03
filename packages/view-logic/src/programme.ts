@@ -69,7 +69,7 @@ export const movieOf = (
   return /^\d+$/.test(title) ? title : undefined;
 };
 
-const suggestedFor = (
+export const offeredFor = (
   typed: string,
   movies: readonly Movie[],
 ): readonly Movie[] => {
@@ -81,12 +81,6 @@ const suggestedFor = (
     ? []
     : matching;
 };
-
-export const offeredFor = (
-  typed: string,
-  movies: readonly Movie[],
-): readonly Movie[] =>
-  typed.trim() === "" ? movies : suggestedFor(typed, movies);
 
 export const markedIn = (
   title: string,
