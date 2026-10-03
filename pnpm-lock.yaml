@@ -291,9 +291,6 @@ importers:
       fast-check:
         specifier: 4.10.1
         version: 4.10.1
-      mutation-testing-metrics:
-        specifier: 3.9.0
-        version: 3.9.0
       vitest:
         specifier: 4.1.11
         version: 4.1.11(@types/node@26.6.1)(jsdom@30.0.1)(vite@8.3.0(@types/node@26.6.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.1)(yaml@2.9.0))
@@ -5533,14 +5530,8 @@ packages:
   mutation-testing-metrics@3.8.4:
     resolution: {integrity: sha512-DZcmndJBH6nrNs3tpiB3OcMVq9KkG2cHCpJSnDxSxPwi9qrafRmoec40xjhkbzOoX1n7/4UkDqg5tIj4A6nvCw==}
 
-  mutation-testing-metrics@3.9.0:
-    resolution: {integrity: sha512-E2i+8bXoEST8KIyJymc+OjO3eW+Q2gBAwI+hh0tvEZxif9nZQnawAh/+2hLWg+aZRWsG5s3I5xDAGZfELxC7hw==}
-
   mutation-testing-report-schema@3.8.4:
     resolution: {integrity: sha512-s4G71R6Lt/PpZ0cqeglIcgyBdzLM8E+SeCHZAPg1wkSsPtRBa4XfPzAozYKdiJk/TLbNEEb7En9t0/bveuPuxA==}
-
-  mutation-testing-report-schema@3.9.0:
-    resolution: {integrity: sha512-28CobrcLdQm35zySemaLMKrUpVccLMA1DekUGtfezOSmnI0Xq8oJisixYnO0BQYIwKCkKL7+AE71/uWq/vFSJQ==}
 
   mute-stream@3.0.0:
     resolution: {integrity: sha512-dkEJPVvun4FryqBmZ5KhDo0K9iDXAwn08tMLDinNdRBNPcYEDiWYysLcc6k3mjTMlbP9KyylvRpd4wFtwrT9rw==}
@@ -12809,13 +12800,7 @@ snapshots:
     dependencies:
       mutation-testing-report-schema: 3.8.4
 
-  mutation-testing-metrics@3.9.0:
-    dependencies:
-      mutation-testing-report-schema: 3.9.0
-
   mutation-testing-report-schema@3.8.4: {}
-
-  mutation-testing-report-schema@3.9.0: {}
 
   mute-stream@3.0.0: {}
 

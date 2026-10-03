@@ -184,14 +184,6 @@ export const CLAIMS = [
   },
   {
     adr: "0012-every-mutant-must-die.md",
-    says: /opens an issue labelled `baseline-red`/,
-    holds: "workflows that file the baseline alarm",
-    pattern: "baseline-red",
-    paths: [".github"],
-    files: 1,
-  },
-  {
-    adr: "0012-every-mutant-must-die.md",
     says: /\*\*Nothing is carved out, and it takes two runners to say so\.\*\*/,
     holds: "the shard that takes the directory Vitest cannot render",
     pattern: '"runner": "jest"',

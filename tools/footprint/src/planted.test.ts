@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { reading, recorder } from "./measure.fixtures.js";
-import { measureWith, SHARDS } from "./measure.js";
+import { measureWith } from "./measure.js";
 
 const PLANTED = "tools/footprint/planted";
 
@@ -16,20 +16,7 @@ const INNOCENT: Record<string, string> = {
   playwright: "playwright-one.json",
 };
 
-const judging = (...reports: readonly string[]) => ({
-  [SHARDS]: JSON.stringify(
-    reports.map((report, index) => ({
-      id: `planted-${index}`,
-      workspace: `packages/planted-${index}`,
-      report: `${PLANTED}/${report}`,
-    })),
-  ),
-});
-
-const measuring = (
-  swapped: Record<string, string> = {},
-  ...reports: readonly string[]
-) => {
+const measuring = (swapped: Record<string, string> = {}) => {
   const named = { ...INNOCENT, ...swapped };
   const { run } = recorder((command) => {
     const fixture =
@@ -38,12 +25,7 @@ const measuring = (
       ? undefined
       : { ok: true, stdout: planted(fixture), stderr: "" };
   });
-  const { read } = reading(
-    judging(...(reports.length > 0 ? reports : ["mutation-one.json"])),
-  );
-  const onDisk = (path: string) =>
-    path.startsWith(`${PLANTED}/`) ? readFileSync(path, "utf8") : read(path);
-  return () => measureWith(run, onDisk)("origin/main", "HEAD");
+  return () => measureWith(run, reading().read)("origin/main", "HEAD");
 };
 
 describe("the planted red", () => {
@@ -83,24 +65,6 @@ describe("the planted red", () => {
     );
   });
 
-  it("refuses a shard whose every mutant was ignored or would not compile", () => {
-    expect(measuring({}, "mutation-nothing.json")).toThrow(
-      "The mutation run weighed no mutant",
-    );
-  });
-
-  it("refuses a shard the list names whose report never reached the job, and names the report", () => {
-    expect(
-      measuring({}, "mutation-one.json", "mutation-never-written.json"),
-    ).toThrow(`${PLANTED}/mutation-never-written.json`);
-  });
-
-  it("refuses a later shard that weighed nothing behind one that weighed something", () => {
-    expect(measuring({}, "mutation-one.json", "mutation-nothing.json")).toThrow(
-      "The mutation run weighed no mutant",
-    );
-  });
-
   it("accepts the set that measured something, so it is not refusing everything", () => {
     const measurement = measuring()();
 
@@ -112,6 +76,5 @@ describe("the planted red", () => {
       screens: 1,
       endToEnd: 1,
     });
-    expect(measurement.mutation.map((run) => run.weighed)).toStrictEqual([1]);
   });
 });

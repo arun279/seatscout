@@ -62,121 +62,27 @@ of the testing owns something, and a package leaning on a screen to kill its mut
 nothing. The answer is the test the workspace was missing, never a shard widened back towards
 the tree.
 
-**It runs on every pull request and on every push to `main`.** On a pull request a `mutation`
-matrix judges the shards on parallel runners, each incrementally, reusing what an earlier run
-already judged about code that has not changed; the `footprint` job, which is the required
-check, gathers what they wrote, refuses a shard whose report is missing or weighed nothing,
-holds the tests the shards ran between them to the tests the runners collect over the whole
-tree, and puts each workspace's score in the pull request comment beside the other figures. On
-a push to `main` the `Baseline` workflow judges the same shards, each inheriting the report the
-branch that merged published for its own workspace, and leaves each shard's incremental file in
-the Actions cache under `main`'s commit, where every branch's run starts from it. Nothing
-cross-checks the two: the branch run reuses the baseline's verdicts rather than reaching them
-again, so what the baseline got wrong a branch inherits until the file it wrote is replaced.
+**A pull request judges the files it changes.** The `changes` job lists the source files the
+pull request adds or modifies, plus the source beside any test file it touches, and
+`tools/mutation.mjs --plan` splits them by shard into jobs of a few files each. Each job runs
+Stryker with `--mutate` set to exactly those files, under its shard's runner and test
+configuration, and breaks below 100 like a whole run. The job also holds Stryker's own count of
+the files it found to the number it was handed, so a path that reaches nothing fails rather than
+passing over less than it was given. A pull request that touches no source file runs no
+mutation job.
 
-**A red baseline leaves no seed, so it says so where somebody will read it.** The workflow
-opens an issue labelled `baseline-red`, or comments on the open one, naming the shards the run
-itself reports as failed and the run, each shard's own summary carrying the tests its initial
-run reported failing; any green Baseline afterwards comments on that issue and closes it, a run
-started by hand included, because a maintainer confirming the fix by hand should not have to
-wait for the next push.
-That is the shape [ADR 11](0011-a-nightly-reading-judges-the-world.md) already gives the
-nightly reading, and for the same reason: the two red runs of 2026-09-19 were found by
-somebody looking rather than by anybody being told. Filing is the half a run by hand skips,
-so re-running one to watch it costs no issue.
+Stryker.NET ships this scope as its
+[`since`](https://stryker-mutator.io/docs/stryker-net/configuration/) option, which tests only
+the code changed since a target. StrykerJS has no such option, so the diff goes through
+`--mutate`, which its [incremental](https://stryker-mutator.io/docs/stryker-js/incremental/)
+documentation uses to scope a run to named files. Nothing is inherited between runs, so no verdict is
+reused that a later change has disproved, and a red run leaves nothing behind for the next push
+to trust. `pnpm test:mutation` still judges every shard over the whole tree for anyone who wants
+that reading.
 
-`main`'s run follows the merge that changed `main` rather than a clock. On a schedule it
-re-judged a tree that had not moved, and the seed a branch started from was always as old as
-the last night rather than as old as the last merge. A merge landing while one is still
-running cancels it, because the whole point is a seed at the tip and a run for a commit that
-is no longer the tip cannot produce one. Without that a busy day queues twenty-minute runs
-behind each other and the seed lags further than the schedule ever left it: `main` took
-seventeen pushes on 2026-08-29 and five to seven on a normal day.
-
-Each shard saves its incremental file in its own job, under `always()`, rather than in a step
-that runs after everything else and only when everything else passed. A job that judges every
-mutant and then fails or is cancelled in a later step used to throw that work away: the cache
-action's own save is skipped on both, twice costing a branch a nineteen-minute run it had
-already finished. What this does not do is bank a run cut short in the middle of judging. The
-runner starts the save as soon as the step is cancelled and terminates the mutation process
-afterwards, so the file saved is the one that was restored, and the work in flight is lost
-either way.
-
-Before either workflow saves a shard's file, it reads Stryker's own initial-run count and holds
-it to the tests that shard's workspace holds, collected by that workspace's own runner:
-`vitest list` filtered to the workspace, or the Jest suite's own total for the Expo app. A
-short or missing count means the runner did not collect the whole of that workspace's suite, so
-the shard fails and its partial report is not cached as a seed for later runs. A count of
-nothing fails too, because a pass has to entail a measurement.
-
-**No test file may fall between the shards.** A workspace missing from `stryker.shards.json`
-is a directory nothing mutates and nothing runs, which reads as a smaller wall clock rather
-than as a hole, so the `footprint` job holds the tests the shards ran between them to the tests
-the two runners collect over the whole tree and refuses a shortfall. It reads each shard's
-report through the same guard `pnpm test:mutation` uses, so a shard that published nothing at
-all is refused by name rather than dropped from the score.
-
-**That count is collected rather than run.** The step used to run every related test in
-order to count them, and piped the runner's JSON into `jq`. So a single test timing out
-failed the step with `xargs`'s exit code 123 and sent the name of the test that timed out
-into `jq` with the rest of the output: the Baseline run of 2026-09-19 reported that code and
-named nothing at all. A listing makes the same selection without the run, writes its JSON to
-a file rather than into a pipe, and leaves its own errors on the step's output.
-
-Related mode went with the division. The count used to be taken in the mode Stryker's Vitest
-runner selects with, through a configuration carrying `test.related`, because the runner chose
-the tests for the initial run itself. The shard's configuration names them instead, and
-Stryker runs exactly those, so the listing the count is held to is filtered by the same
-workspace rather than computed a second way beside it.
-
-The two counts are not reached the same way, and one difference survives that. A listing
-leaves a skipped test out and Stryker's run counts it, so the first `it.skip` in the suite
-makes the two differ by one. The tree holds none today, the numbers agreed at 984 when the
-count became a listing, and the refusal names that case rather than leaving a reader to find it.
-
-The incremental mode is Stryker's own, and it is a reuse of earlier results rather than a
-second opinion about them: it matches a mutant by the content of the file it sits in and of
-the tests that covered it, and re-runs anything that does not match. That is why the whole
-run on `main` stays, and a pull request always starts from the seed `main` last left.
-
-**Each shard's seed is one file, and every cache entry names it alone.** Each shard writes the
-incremental file its runner owns, under the name it has always had:
-`reports/stryker-incremental.json` for a Vitest shard and `reports/stryker-native-incremental.json`
-for the app. `actions/cache` derives a cache's version from its `path` list, so a job asking for
-two files cannot read a cache saved for one, and a list that grows silently hides every seed
-saved before it: the run that found this judged 4,987 mutants from nothing and was cancelled at
-its two-hour cap. Renaming the file per shard would do the same to every seed `main` holds. So
-each workflow reads the file's name for the shard it runs out of `stryker.config.mjs` and caches
-that one path, and the keys carry the shard instead, each starting `stryker-shard-<id>-`.
-`stryker-main-` and `stryker-native-main-`, the keys `main` saved under before the division,
-stay as the last resorts, which is how a shard that has never run inherits the whole tree's
-report the first time. No key a shard saves starts with either, so a fallback can only reach a
-report of the whole tree and never another workspace's, and a cache saved for the other file
-has another version, so the app's seed and the rest never cross. A pull request whose shard
-restores nothing at all is refused rather than left to judge its workspace from nothing, and
-dispatching the Baseline reseeds it. Stryker keeps every file of a restored incremental file in the
-report it writes, out of scope
-or not, so before a shard runs, `tools/mutation.mjs` cuts the restored file down to the files
-that shard mutates. Its report, its score and the seed it saves then hold its own workspace and
-nothing else, and two shards sharing one file would each erase what the other judged; they
-never do, because they run on machines of their own. Five cache entries across the two workflows
-name one seed file each,
-and a list that grows back to two is a count that no longer matches this sentence.
-
-**Only a run that passed leaves a seed, under every key it writes.** A mutant that runs while
-the file is loaded is covered by no single test, so the matching above cannot tell that a test
-which kills it has since been added in another file, and a `Survived` verdict saved by a red
-run would be handed to every later push on that branch. A red run therefore caches nothing and
-the next push re-judges its own delta against `main`'s seed, which costs minutes and is the
-price of never inheriting a verdict the tree has already disproved.
-
-**The run's exit status is not what fails the pull request.** Stryker writes its report, the
-footprint report reads the score out of that report and holds it to the break threshold the
-same report names, and the job goes red on that. This is the shape size-limit already has
-here, and for the same reason: a tool's exit status cannot say whether it measured something,
-and the verdict belongs where the number is printed.
-[ADR 6](0006-gates-cite-a-standard-or-measure-a-regression.md) carries the guard that makes
-a run weighing no mutant fail.
+The cost this removes was measured: with an incremental seed per shard, one pull request's
+design-system shard took 48 minutes for 319 mutants, and the nightly whole-tree run of the same
+shard took two hours and failed on timeouts under load rather than on survivors.
 
 **Nothing is carved out, and it takes two runners to say so.** Vitest cannot render React
 Native, so every shard but one runs under Vitest, and the shard over `apps/native/src` takes
@@ -184,7 +90,7 @@ that directory with Stryker's Jest runner over the `jest-expo` preset. That shar
 `coverageAnalysis` to `off`, because under `perTest` and `all` the runner re-resolves the test
 environment from a raw, un-normalised config and silently replaces a preset's with the Node
 default ([stryker-js#6108](https://github.com/stryker-mutator/stryker-js/issues/6108), which
-names `jest-expo`); `off` is unaffected. It keeps an incremental report of its own and breaks
+names `jest-expo`); `off` is unaffected. It breaks
 below 100 like the rest, and its Jest configuration already collects `apps/native` and
 nothing else, so it needs no narrowing of its own. It must not be given `testFiles` either:
 naming the files turns off the related-test filter the Jest runner applies to every mutant, so
@@ -200,13 +106,6 @@ read carries are judged like any other adapter. A drawn or declared value
 is held by the headed pass and its screenshots: the only test that kills a mutant in one restates
 the value, which is a tautological test. Everything that holds behaviour is judged, screens
 included.
-
-Each shard's set is written once and read in two places, because each gate is two numbers that
-have to agree. `stryker.shards.json` says which files that shard mutates and which workspace
-holds its tests; the workflow counts the tests that workspace's runner finds, the filtered
-listing for one and the Jest suite's own total for the other, and holds that shard's Stryker
-initial run to it. A set named one way in one place and another way in the other is a run that
-judged less than it looked like it did, which is what that step exists to catch.
 
 `apps/web` stays inside the gate: it is the view layer that will hold real behaviour, keyboard
 traversal among it, and the platform adapters it already holds are judged there rather than
@@ -262,13 +161,10 @@ leaves the working tree exactly as it found it. The copy itself is what such a r
 behind, so `cleanTempDir` is `always` rather than the default, which clears the sandbox only
 after a run that finished.
 
-The gate is a required check, under the name of the job that gathers the shards and posts
-their figures: `footprint` is one of the four contexts the ruleset on `main` names, and a shard
-that refused anything turns it red. The reason
+The gate is a required check through `footprint`, the job that gathers every gate's result:
+a mutation job that refused anything turns it red. The reason
 [ADR 11](0011-a-nightly-reading-judges-the-world.md) gives for leaving the nightly reading out
 of that list, that it reads a world this repository does not control, reaches nothing here.
-What was ever argued against requiring this one was its cost, and dividing it by workspace is
-the answer to the cost.
 
 ## Amendment, 2026-09-26: the Expo app is ten shards, not one
 
@@ -293,6 +189,3 @@ happened to take. The run that landed this division (36245321569) took 81 to 150
 app shard, but that is not a cold figure: every shard took from the seed each result it counted,
 the two theme shards 13 of their 92 mutants with the other 79 ignored, so their time was the
 initial test run, 50 and 71 seconds, and the set-up. A cold shard is still only the estimate above.
-A shard's initial run sees only the tests Jest relates to its sources, so each shard records the
-test files it reached, and the footprint job holds their union to every test file in the tree,
-naming any file no shard reaches.

@@ -3,14 +3,12 @@ import { readFileSync } from "node:fs";
 const RUNNERS = {
   vitest: () => ({
     testRunner: "vitest",
-    incrementalFile: "reports/stryker-incremental.json",
     vitest: { related: false, configFile: "vitest.stryker.config.ts" },
   }),
   jest: (shard) => ({
     testRunner: "jest",
     ignorers: ["drawn-values"],
     coverageAnalysis: "off",
-    incrementalFile: "reports/stryker-native-incremental.json",
     jest: {
       projectType: "custom",
       configFile: shard.jest,

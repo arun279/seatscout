@@ -1,25 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { BIOME, OXLINT } from "./limits.js";
-import {
-  CORE_MUTATION_REPORT,
-  lines,
-  measuring,
-  NATIVE_MUTATION_REPORT,
-  reading,
-  recorder,
-} from "./measure.fixtures.js";
+import { lines, measuring, reading, recorder } from "./measure.fixtures.js";
 import {
   BIOME_REPORT,
   measureWith,
   OXLINT_REPORT,
   RATCHET,
-  SHARDS,
 } from "./measure.js";
 
 describe("measuring a change", () => {
   it("names every file it reads a number or a path out of", () => {
     expect(RATCHET).toBe(".footprint.json");
-    expect(SHARDS).toBe("stryker.shards.json");
     expect(OXLINT_REPORT).toBe(".oxlintrc.report.json");
     expect(BIOME_REPORT).toBe("biome.report.json");
   });
@@ -135,7 +126,7 @@ describe("measuring a change", () => {
     });
   });
 
-  it("carries every test count and the score of each run that was recorded", () => {
+  it("carries every test count", () => {
     const { run } = recorder();
 
     const measurement = measuring(run)("origin/main", "HEAD");
@@ -145,32 +136,6 @@ describe("measuring a change", () => {
       screens: 3,
       endToEnd: 1,
     });
-    expect(measurement.mutation).toStrictEqual([
-      {
-        over: "core",
-        score: 100,
-        detected: 1,
-        weighed: 1,
-        breaksAt: 100,
-      },
-      {
-        over: "native",
-        score: 100,
-        detected: 1,
-        weighed: 1,
-        breaksAt: 100,
-      },
-    ]);
-  });
-
-  it("reads one mutation report for every shard the list names", () => {
-    const { run } = recorder();
-    const { read, asked } = reading();
-
-    measureWith(run, read)("origin/main", "HEAD");
-
-    expect(asked).toContain(CORE_MUTATION_REPORT);
-    expect(asked).toContain(NATIVE_MUTATION_REPORT);
   });
 
   it("names the command and repeats its complaint when one fails", () => {

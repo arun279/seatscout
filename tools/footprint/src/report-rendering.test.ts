@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { counts, GATES, LIMITS, SUITES, WEIGHED } from "./report.fixtures.js";
+import { counts, GATES, LIMITS, SUITES } from "./report.fixtures.js";
 import { type Measurement, render } from "./report.js";
 
 const RENDERED = `### Code footprint
@@ -95,29 +95,8 @@ The total may not fall below the ratchet in \`.footprint.json\`, which is 570. A
 
 A count is a weak gate on its own. It notices a suite shrinking and says nothing about
 whether what is left asserts anything, so it is met by a test that cannot fail. The
-mutation score below is what closes that, because a test that cannot fail leaves a
+mutation gate is what closes that, because a test that cannot fail leaves a
 mutant alive.
-
-### Mutation
-
-One run for each shard, on a runner of its own, mutating that shard's files and running only
-its own suite, so a mutant is killed by the tests that own it or by nothing at all. A shard
-is a workspace, or a slice of the Expo app on one platform, so that the slowest shard stays
-short. Each run is held to the threshold named in its own report rather than to one restated
-here, and a run that weighed no mutant is refused instead of scored, because such a run
-scores NaN and NaN is never below a threshold. Vitest judges everything that runs in Node
-and Jest judges the Expo app, which Vitest cannot render. Every run is incremental: it
-starts from what the run on \`main\` last judged of that workspace, and from this branch's
-own last run after that. Nothing cross-checks a reused verdict, so it is one that run
-reached rather than one reached again.
-
-| Shard | Score | Detected | Weighed | Break |
-| --- | ---: | ---: | ---: | ---: |
-| packages/core | 100.00 | 2174 | 2174 | 100 |
-| apps/native | 100.00 | 180 | 180 | 100 |
-
-packages/core: the score may not fall below the threshold, which is 100. At or above it.
-apps/native: the score may not fall below the threshold, which is 100. At or above it.
 `;
 
 const MEASURED: Measurement = {
@@ -156,7 +135,6 @@ const MEASURED: Measurement = {
   gates: GATES,
   limits: LIMITS,
   suites: SUITES,
-  mutation: WEIGHED,
   ratchets: { comments: 2, tests: 570 },
 };
 

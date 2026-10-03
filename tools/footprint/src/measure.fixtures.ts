@@ -1,15 +1,12 @@
 import { BIOME, OXLINT } from "./limits.js";
 import type { Measure } from "./main.js";
-import { measureWith, RATCHET, SHARDS } from "./measure.js";
+import { measureWith, RATCHET } from "./measure.js";
 import type { Completed, Run } from "./shell.js";
 
 export interface Command {
   readonly command: string;
   readonly args: readonly string[];
 }
-
-export const CORE_MUTATION_REPORT = "reports/mutation/core.json";
-export const NATIVE_MUTATION_REPORT = "reports/mutation/native.json";
 
 const OXLINT_OUTPUT = JSON.stringify({
   diagnostics: [
@@ -62,21 +59,6 @@ const SIZE_LIMIT_OUTPUT = JSON.stringify([
   { name: "web app", size: 15, sizeLimit: 15, passed: true },
 ]);
 
-const MUTATION_OUTPUT = JSON.stringify({
-  schemaVersion: "2.0",
-  thresholds: { high: 100, low: 100, break: 100 },
-  files: {
-    "packages/core/src/seat.ts": {
-      language: "typescript",
-      source: "export const two = (n) => n * 2;\n",
-      mutants: [
-        { id: "0", mutatorName: "ArithmeticOperator", status: "Killed" },
-        { id: "1", mutatorName: "BlockStatement", status: "Ignored" },
-      ],
-    },
-  },
-});
-
 const CLOC_TREE = JSON.stringify({
   header: { cloc_version: "2.10" },
   "packages/core/src/seat.ts": { code: 40, comment: 1 },
@@ -122,22 +104,6 @@ const FILES: Record<string, string> = {
       },
     },
   }),
-  [SHARDS]: JSON.stringify([
-    {
-      id: "core",
-      workspace: "packages/core",
-      runner: "vitest",
-      report: CORE_MUTATION_REPORT,
-    },
-    {
-      id: "native",
-      workspace: "apps/native",
-      runner: "jest",
-      report: NATIVE_MUTATION_REPORT,
-    },
-  ]),
-  [CORE_MUTATION_REPORT]: MUTATION_OUTPUT,
-  [NATIVE_MUTATION_REPORT]: MUTATION_OUTPUT,
 };
 
 const ANSWERS: Record<string, (args: readonly string[]) => string> = {

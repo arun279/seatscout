@@ -74,7 +74,7 @@ export const suites = (collected: Suites, ratchet: number): Section => {
       "",
       "A count is a weak gate on its own. It notices a suite shrinking and says nothing about",
       "whether what is left asserts anything, so it is met by a test that cannot fail. The",
-      "mutation score below is what closes that, because a test that cannot fail leaves a",
+      "mutation gate is what closes that, because a test that cannot fail leaves a",
       "mutant alive.",
       "",
     ],

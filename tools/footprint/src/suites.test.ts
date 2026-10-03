@@ -109,7 +109,7 @@ describe("the test ratchet", () => {
 
   it("says plainly that the mutation gate is what stops the count being gamed", () => {
     expect(suites({ unit: 1, screens: 1, endToEnd: 1 }, 1).lines).toContain(
-      "mutation score below is what closes that, because a test that cannot fail leaves a",
+      "mutation gate is what closes that, because a test that cannot fail leaves a",
     );
   });
 });

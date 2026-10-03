@@ -811,9 +811,9 @@ than fails is a merge base with no measurement to compare against, which the ste
 base records for the step that judges. With the reading taken, the same runner reads 3.9 per cent
 and the job gates.
 
-**The app is walked end to end on an emulator, and the walk gates every push.** The `apk` job
-builds a release of the app for Android, with the Source answered in the build from the corpus, and
-in the `device` job Maestro walks it once from the Ask sheet through the ranked Seat Groups and
+**The app is walked end to end on an emulator, and the walk gates every push that touches it.** The
+`android` job builds a release of the app for Android, with the Source answered in the build from
+the corpus, and Maestro walks it once from the Ask sheet through the ranked Seat Groups and
 the hand-off to the Room (`apps/native/e2e/journey.yaml`). It leaves every level it visits twice,
 and after each it asserts the screen beneath is back. First by gesture: a drag down on a sheet,
 which the app's own sheet answers,
@@ -844,9 +844,8 @@ has Flashlight read the walk for its default ten iterations with the app's data 
 each: the walk's own time, frame rate, CPU and memory. A measure is worse when this commit's median
 is worse than the worst iteration of the reading the previous Baseline run left, the rule the
 browser journey already holds its first Seat Groups to. The previous reading is the newest
-`device-reading` artifact a run on main left, collected the way a mutation shard inherits its seed,
-and a first run, with none to collect, is held to nothing. A run keeps its reading only when it
-held, as a shard keeps its seed only when it passed, so a worse reading never becomes the one the
+`device-reading` artifact a run on main left, and a first run, with none to collect, is held to nothing. A run keeps its reading only when it
+held, so a worse reading never becomes the one the
 next run is held to. It stays the reference for the 14 days an artifact is kept; after that the
 next reading is held to nothing and becomes the reference, which is how a cost that was accepted
 stops alarming. Each measure is held
@@ -857,9 +856,7 @@ out of the report and the verdict, named with its spread, and the rest are still
 that measured nothing, failed, carried no frame rate or memory, or read a figure that was nothing
 on every iteration is refused, and the job fails. A steady measure that got worse files an issue
 labelled `device-red`, or comments on the open one, with the report, which names each measure,
-this commit's median and the previous run's worst; a later reading that holds closes it. It is a
-label of its own because the mutation alarm closes the open `baseline-red` issue whenever the
-shards pass. The job stays green on a worse reading: it reports a trend, and it gates no pull
+this commit's median and the previous run's worst; a later reading that holds closes it. The job stays green on a worse reading: it reports a trend, and it gates no pull
 request.
 
 **Why the reading left the pull request.** On run 36287276171 the two sides' twenty walks took 27
@@ -893,14 +890,14 @@ trick of last resort" and a reading of 10 per cent or more a machine to fix, and
 [page on CI](https://github.com/bamlab/flashlight/blob/main/website/docs/test/ci.md) says an emulator
 on CI is likely too slow and points to a device farm. So the job reads once, and a measure that is
 unsteady on that pass is left out. One pass of both sides took 1,846 seconds on run 36287276171.
-The Baseline job reads one side, and its limit is 60 minutes. The pull request's `device` job boots
-the emulator, installs the app and walks once, and its limit is 20 minutes. That run also tried
-Gradle's build cache on the `apk` job: cold, it saved nothing (836 and 623 seconds against 859 and
+The Baseline job reads one side, and its limit is 60 minutes. The pull request's `android` job boots
+the emulator, installs the app and walks once. That run also tried
+Gradle's build cache on the app build: cold, it saved nothing (836 and 623 seconds against 859 and
 699) and wrote a 1.79 GB entry per pull request into a repository cache already past GitHub's
-10 GB, which evicts the mutation seeds. So a pull request never writes Gradle's caches. The
+10 GB. So a pull request never writes Gradle's caches. The
 Baseline job sets Gradle up with `gradle/actions/setup-gradle`, whose open-source `basic` provider
 writes the caches from main, and a pull request can read what the default branch saved; the
-`apk` job reads them with `cache-read-only`, so there is one entry for every pull request rather
+`android` job reads them with `cache-read-only`, so there is one entry for every pull request rather
 than one per pull request.
 
 **The app's web build is held to the same accessibility standard as the web app.** `tests/app` runs
@@ -1014,33 +1011,14 @@ eight byte-identical bundles and one size.
 `quality` also runs, some scoped to the change. It is gone. The pre-commit hook stays, because its
 checks over the staged files (secrets, format, lint, spelling and complexity) take seconds and are
 the only thing that runs before CI. CI is the judge of the whole tree, because
-a hook can be skipped, and it judges each tree once. Each job names what it judges by the git tree
-ids of the paths it reads: the whole tree and the merge base's for `quality` and `weigh`; the
-app, its workspace packages, the lockfile, the workspace and compiler settings and `.github` for
-`apk`, and the same at the merge base as well for `performance`; for `device`, the walk, `.github`
-and the SHA-256 of the app it walks, since the build is not the same twice. Before it works it
-restores the cache entry `verdict-<job>-<hash of those ids>`, and when one exists it carries what
-the jobs after it need, says "judged green before on this same tree" with the run that judged it,
-and skips the work; the `footprint` report names every job reused. A job saves its entry only when
-it passed, so a push that fixes a failure reruns that job and what waits for it. The app's own
-entry carries the app, which is how `device` receives it, in this run or a later one. The mutation
-shards already had the same rule in their seed. Two jobs keep running on every push: `secrets`
-reads the pull request's commits rather than a tree, and `dependencies` reads an advisory database
-that changes without the tree, so a reused verdict could miss what either is for; each takes under
-a minute.
-
-**A run is held to 20 minutes.** The `footprint` job waits for every other job, so its last steps
-see the whole run. It counts from the earliest start among the jobs of the run's current attempt,
-or from the attempt's own start when a re-run carries earlier jobs over, which leaves out the time
-a run waits for its first runner but counts any later job's wait, and prints the elapsed minutes in its report, and refuses the run
-when they pass 20. After the reading moved to main, the longest path is the build, then one walk,
-then the report. The first run of that shape (36293222998), with no Gradle cache yet on main, took
-1,306 seconds: 935 to build, 146 to boot the emulator, install and walk, and 200 for `footprint`,
-which then still measured the footprint itself after the walk. The gate refused it at 21.8
-minutes, so the measuring moved to `weigh`, which starts when the shards finish and is done long
-before the walk, and `footprint` only reports. That takes about three minutes off the path,
-leaving a cold build about four minutes of margin. 20 minutes is the limit this project sets for
-a pull request's checks.
+a hook can be skipped, and it runs each check once per push. Nothing is reused from an earlier
+run: a cache of verdicts keyed by tree ids saved little, because a rebase changes the tree, and it
+was one more thing that could carry a stale answer. What keeps a push short instead is that a job
+runs only when the change reaches what it judges. Mutation judges the source files the change
+touches (see [ADR 12](0012-every-mutant-must-die.md)), and the `android` and `performance` jobs
+run only when the change touches the app, its workspace packages, the lockfile, the workspace or
+compiler settings, or the CI workflow. `footprint` waits for every job and refuses the change when
+any of them failed, or when one that runs on every change was skipped.
 
 The line counter is [cloc](https://github.com/AlDanial/cloc), pinned to a released version
 and checked against its SHA-256 before use. scc and tokei were the alternatives for that
