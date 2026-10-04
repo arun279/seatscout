@@ -112,7 +112,7 @@ describe("retrying a search", () => {
     expect(settled.phase).toBe("unreachable");
     expect(again.phase).toBe("settled");
     expect(again.coverage.candidates).toBe(506);
-    expect(again.coverage.checked).toBe(494);
+    expect(again.coverage.checked).toBe(48);
   });
 
   it("answers the search in flight rather than starting another while it is still running", async () => {

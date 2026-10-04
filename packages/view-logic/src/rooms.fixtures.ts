@@ -8,6 +8,7 @@ import type {
 } from "@seatscout/client";
 import {
   fakeUpstream,
+  readToTheEnd,
   routeOf,
   seatMapCaptures,
   type UpstreamScript,
@@ -135,7 +136,7 @@ export const searched = async (
     random: () => 0.5,
   });
   const search = seatscout.search(terms);
-  return { search, settled: await search.done };
+  return { search, settled: await readToTheEnd(search) };
 };
 
 export const openedRooms = async (

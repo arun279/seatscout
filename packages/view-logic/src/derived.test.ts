@@ -19,7 +19,7 @@ const searched = () =>
     fetch: fakeUpstream({
       seed: 4,
       standInAuditoriums: true,
-      sequences: { "/napi/seatMap/564362581": [500, 500, 500] },
+      sequences: { "/napi/seatMap/562169041": [500, 500, 500] },
     }),
     now: () => 0,
     wait: () => Promise.resolve(),

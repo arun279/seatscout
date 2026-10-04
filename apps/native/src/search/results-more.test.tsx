@@ -76,7 +76,7 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
-describe("a search over several days with more to read", () => {
+describe("a search with more to read", () => {
   it("offers to read more once it settles past its budget, and pressing it asks for the next 48 seat maps", async () => {
     const seatMaps = await shown(TWO_DAYS);
     const more = await screen.findByRole("button", {
@@ -102,13 +102,13 @@ describe("a search over several days with more to read", () => {
     expect(seatMaps()).toBe(96);
   });
 
-  it("offers nothing more to a one-day search, which reads its whole listing", async () => {
-    await shown(ASKED);
-    await screen.findByText("The top of the list is a tie");
+  it("offers a one-day search the next 48 as well, without a line for its one day", async () => {
+    const seatMaps = await shown({ ...TWO_DAYS, dates: [TODAY] });
 
     expect(
-      screen.queryByRole("button", { name: /^Read \d+ more rooms/ }),
-    ).toBeNull();
+      await screen.findByRole("button", { name: "Read 48 more rooms today" }),
+    ).toBeOnTheScreen();
+    expect(seatMaps()).toBe(48);
     expect(screen.queryByText(/^Today: /)).toBeNull();
   });
 });

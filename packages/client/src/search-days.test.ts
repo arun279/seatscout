@@ -17,13 +17,24 @@ const datesIn = (snapshot: Snapshot) =>
   snapshot.results.map((result) => result.terms.date);
 
 describe("a search's budget", () => {
-  it("reads every seat map of a one-day search, as a one-day search always has", async () => {
+  it("reads the first 48 seat maps of a one-day search, counts the rest as not read yet, and reads the next 48 when asked", async () => {
     const run = await searching({});
     const settled = await run.search.done;
 
-    expect(run.requested()).toHaveLength(494);
+    expect(run.requested()).toEqual(
+      run.candidates.bookable.slice(0, 48).map((showtime) => showtime.id),
+    );
     expect(settled.days).toEqual([
-      { date: TODAY, read: 494, reading: 0, unread: 0 },
+      { date: TODAY, read: 48, reading: 0, unread: 446 },
+    ]);
+
+    const more = await run.search.readMore();
+
+    expect(run.requested()).toEqual(
+      run.candidates.bookable.slice(0, 96).map((showtime) => showtime.id),
+    );
+    expect(more.days).toEqual([
+      { date: TODAY, read: 96, reading: 0, unread: 398 },
     ]);
   });
 

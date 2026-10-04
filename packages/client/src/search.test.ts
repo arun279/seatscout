@@ -15,6 +15,7 @@ import {
   VILLAGE,
   withoutIdentity,
 } from "./search.fixtures.js";
+import { readToTheEnd } from "./search-steps.fixtures.js";
 
 describe("a search", () => {
   it("answers the best Seat Group at every Showtime it could check, ranked best-first", async () => {
@@ -90,9 +91,9 @@ describe("a search", () => {
     ]);
   });
 
-  it("never lets a Coverage outcome go backwards", async () => {
+  it("never lets a Coverage outcome go backwards, across every step a person asks for", async () => {
     const run = await searching({});
-    await run.search.done;
+    await readToTheEnd(run.search);
     const counts = run.snapshots.map((snapshot) => [
       snapshot.coverage.checked,
       snapshot.coverage.soldOut.length,
@@ -103,7 +104,7 @@ describe("a search", () => {
       snapshot.coverage.failed.length,
     ]);
 
-    expect(counts.length).toBe(496);
+    expect(counts.length).toBe(516);
     expect(
       counts.filter((row, at) =>
         row.some((count, outcome) => count < (counts[at - 1]?.[outcome] ?? 0)),
@@ -111,16 +112,16 @@ describe("a search", () => {
     ).toEqual([]);
   });
 
-  it("closes the Coverage ledger in every snapshot, what is left being what is still being read", async () => {
+  it("closes the Coverage ledger in every snapshot, what is left being what is being read or not read yet", async () => {
     const run = await searching({});
-    const settled = await run.search.done;
+    const settled = await readToTheEnd(run.search);
 
     const left = run.snapshots.map(
       (snapshot) =>
         snapshot.coverage.candidates - accountedIn(snapshot.coverage),
     );
 
-    expect(run.snapshots).toHaveLength(496);
+    expect(run.snapshots).toHaveLength(516);
     expect(left.filter((over) => over < 0)).toEqual([]);
     expect(left.filter((now, at) => now > (left[at - 1] ?? now))).toEqual([]);
     expect(left[0]).toBe(494);
