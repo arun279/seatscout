@@ -12,14 +12,7 @@ import {
   unreachedIn,
   unreadIn,
 } from "./derived.js";
-import {
-  capitalised,
-  clockOf,
-  noneOf,
-  spokenOf,
-  timeOf,
-  wordOf,
-} from "./phrases.js";
+import { clockOf, noneOf, spokenOf, timeOf, wordOf } from "./phrases.js";
 import { dayOf, whenOf } from "./when-phrases.js";
 import type { Terms } from "./terms.js";
 
@@ -27,8 +20,6 @@ type Named = Coverage["soldOut"][number];
 
 export const nameOf = (showtime: Named): string =>
   `${showtime.presentation.theater.name} · ${clockOf(showtime.startsAt)}`;
-
-const REFUSED = "the source refused, so the search stopped";
 
 const countsOf = (snapshot: Snapshot): string => {
   const account = accountOf(snapshot.coverage);
@@ -39,7 +30,6 @@ const countsOf = (snapshot: Snapshot): string => {
     `${account.checked} checked`,
     ...(toGo > 0 ? [`${toGo} to go`] : []),
     ...(unread > 0 ? [`${unread} not read yet`] : []),
-    ...(snapshot.refusedUntil === null ? [] : [REFUSED]),
   ].join(" · ");
 };
 
@@ -48,7 +38,7 @@ export const coverageOf = (snapshot: Snapshot): string => {
   if (snapshot.phase === "unreachable")
     return snapshot.refusedUntil === null
       ? "Nothing was read"
-      : `Nothing was read: ${REFUSED}`;
+      : "Nothing read yet";
   return countsOf(snapshot);
 };
 
@@ -176,17 +166,14 @@ export interface Verdict {
   readonly ledes: readonly string[];
 }
 
-export const refusedOf = (
-  { coverage, phase }: Snapshot,
-  when: string,
-  until: string,
-): Verdict => ({
-  said: `${capitalised(REFUSED)}.`,
+export const refusedOf = ({ coverage }: Snapshot, until: string): Verdict => ({
+  said: "The ticket site asked us to slow down.",
   ledes: [
-    phase === "unreachable"
-      ? notAnAnswerAbout(when)
-      : `It answered ${coverage.checked} of the ${coverage.candidates} candidates first, so this is not an answer about ${when}.`,
-    `The source asked the app to slow down. Search again after ${timeOf(until)}.`,
+    `${
+      coverage.checked === 0
+        ? "Nothing was read, so this says nothing about seats yet."
+        : `Only ${coverage.checked} of ${coverage.candidates} rooms were read, so this says nothing about the rest yet.`
+    } Search again after ${timeOf(until)}.`,
   ],
 });
 

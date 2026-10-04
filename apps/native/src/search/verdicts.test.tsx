@@ -201,7 +201,7 @@ describe("the search that found nothing", () => {
   });
 });
 
-describe("the search the source refused", () => {
+describe("the search the ticket site refused", () => {
   const AFTER = new Date(2026, 9, 3, 21, 47, 30).getTime();
 
   const stopped = (phase: Snapshot["phase"], checked: number): Snapshot => ({
@@ -221,43 +221,28 @@ describe("the search the source refused", () => {
     },
   });
 
-  it("names the minute a person can search again, and offers nothing to press before then", async () => {
+  it("says once that it was asked to slow down and names the minute to search again, with nothing to press before then", async () => {
     await render(
-      <Refused
-        snapshot={stopped("unreachable", 0)}
-        until={AFTER}
-        when="today"
-      />,
+      <Refused snapshot={stopped("unreachable", 0)} until={AFTER} />,
     );
 
     expect(screen.getByRole("header")).toHaveTextContent(
-      "The source refused, so the search stopped.",
+      "The ticket site asked us to slow down.",
     );
     expect(
       screen.getByText(
-        "Nothing was looked at, so this is not an answer about today.",
-      ),
-    ).toBeOnTheScreen();
-    expect(
-      screen.getByText(
-        "The source asked the app to slow down. Search again after 9:48p.",
+        "Nothing was read, so this says nothing about seats yet. Search again after 9:48p.",
       ),
     ).toBeOnTheScreen();
     expect(screen.queryAllByRole("button")).toEqual([]);
   });
 
-  it("says how much it answered first when the refusal came part way through", async () => {
-    await render(
-      <Refused
-        snapshot={stopped("settled", 24)}
-        until={AFTER}
-        when="tomorrow"
-      />,
-    );
+  it("says how many rooms were read first when the refusal came part way through", async () => {
+    await render(<Refused snapshot={stopped("settled", 24)} until={AFTER} />);
 
     expect(
       screen.getByText(
-        "It answered 24 of the 172 candidates first, so this is not an answer about tomorrow.",
+        "Only 24 of 172 rooms were read, so this says nothing about the rest yet. Search again after 9:48p.",
       ),
     ).toBeOnTheScreen();
   });

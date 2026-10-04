@@ -51,7 +51,7 @@ export const SEARCH_CLAIMS = [
   },
   {
     adr: "0019-the-list-is-painted-once.md",
-    says: /The query lives in the address as `movie`, `date`, `area`, `partySize`, `chain`/,
+    says: /The query lives in the address as `movie`, `title`, `date`, `area`, `partySize`, `chain`/,
     holds: "the module that reads a query out of the address",
     pattern: "partySize",
     paths: ["packages/view-logic/src/terms.ts"],

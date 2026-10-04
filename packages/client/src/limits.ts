@@ -23,6 +23,6 @@ export const SOURCE_LIMITS: SourceLimits = {
     // ADR 17: Polly's published default break, longer than a whole measured search.
     openForMs: 5000,
   },
-  // ADR 20: a refusal held for at least 6 min 2 s; 6 min 30 s is that floor and a margin.
-  refusalCooldownMs: 390_000,
+  // ADR 20: polling first met an answer 6 min 32 s after a refusal; 7 min clears it.
+  refusalCooldownMs: 420_000,
 };

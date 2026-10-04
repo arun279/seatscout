@@ -2,6 +2,9 @@ import { createSeatScout, type Movie } from "@seatscout/client";
 import { fakeUpstream, type UpstreamScript } from "@seatscout/client/testing";
 import { describe, expect, it } from "vitest";
 import {
+  chosenFrom,
+  filmOf,
+  knownFilms,
   markedIn,
   movieOf,
   offeredFor,
@@ -192,5 +195,44 @@ describe("the programme held for an area and a date", () => {
 
     expect(heard).toEqual([]);
     expect(held.snapshot().phase).toBe("read");
+  });
+});
+
+describe("the films a query can be named from", () => {
+  const playing = [{ id: "245893", title: "Resident Evil (2026)" }];
+
+  it("adds the film the query carries when the programme does not hold it", () => {
+    expect(
+      knownFilms(playing, { movie: "245569", title: "The Dog Stars (2026)" }),
+    ).toEqual([...playing, { id: "245569", title: "The Dog Stars (2026)" }]);
+  });
+
+  it("keeps the programme's own title for a film it holds, and adds nothing for a query without both", () => {
+    expect(
+      knownFilms(playing, { movie: "245893", title: "Resident Evil" }),
+    ).toBe(playing);
+    expect(knownFilms(playing, { movie: "245569" })).toBe(playing);
+    expect(knownFilms(playing, { title: "The Dog Stars (2026)" })).toBe(
+      playing,
+    );
+  });
+
+  it("chooses a film by its title or its identity, carrying the title only when one is known", () => {
+    expect(chosenFrom("resident evil (2026)", playing)).toEqual({
+      movie: "245893",
+      title: "Resident Evil (2026)",
+    });
+    expect(chosenFrom("245569", playing)).toStrictEqual({
+      movie: "245569",
+      title: undefined,
+    });
+  });
+
+  it("names a film by the programme, then by the title carried with it, and never by its identity", () => {
+    expect(filmOf(playing, { movie: "245893", title: "Carried" })).toBe(
+      "Resident Evil (2026)",
+    );
+    expect(filmOf([], { movie: "245893", title: "Carried" })).toBe("Carried");
+    expect(filmOf([], { movie: "245893" })).toBe("Your movie");
   });
 });

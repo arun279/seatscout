@@ -245,28 +245,29 @@ describe("the three ways a search can end without a whole list", () => {
     ).toBe("No showtime matches this query today.");
   });
 
-  it("says the source refused and when to search again, never that nothing matched, when a refusal stopped the search", () => {
+  it("says the ticket site asked to slow down, how much was read and when to search again, when a refusal stopped the search", () => {
     const stopped = reading(covering(172, 24), "settled", [], COOLED);
 
-    expect(refusedOf(stopped, "today", "21:48")).toEqual({
-      said: "The source refused, so the search stopped.",
+    expect(refusedOf(stopped, "21:48")).toEqual({
+      said: "The ticket site asked us to slow down.",
       ledes: [
-        "It answered 24 of the 172 candidates first, so this is not an answer about today.",
-        "The source asked the app to slow down. Search again after 9:48p.",
+        "Only 24 of 172 rooms were read, so this says nothing about the rest yet. Search again after 9:48p.",
       ],
     });
   });
 
-  it("says nothing was looked at when the source was still refusing before the listing was read", () => {
+  it("says nothing was read when the ticket site was still refusing before a single room was read", () => {
     const cooling = reading(covering(0, 0), "unreachable", [], COOLED);
-
-    expect(refusedOf(cooling, "tomorrow", "09:05")).toEqual({
-      said: "The source refused, so the search stopped.",
+    const listedThenRefused = reading(covering(172, 0), "settled", [], COOLED);
+    const nothingRead = {
+      said: "The ticket site asked us to slow down.",
       ledes: [
-        "Nothing was looked at, so this is not an answer about tomorrow.",
-        "The source asked the app to slow down. Search again after 9:05a.",
+        "Nothing was read, so this says nothing about seats yet. Search again after 9:05a.",
       ],
-    });
+    };
+
+    expect(refusedOf(cooling, "09:05")).toEqual(nothingRead);
+    expect(refusedOf(listedThenRefused, "09:05")).toEqual(nothingRead);
   });
 });
 

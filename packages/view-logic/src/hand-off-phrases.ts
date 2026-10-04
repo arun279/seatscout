@@ -20,7 +20,7 @@ export const NEXT_BEST = "Next best in this room";
 
 export const NEXT_BEST_MARK = "next best";
 
-export const UNREACHABLE = "The Source could not be reached.";
+export const UNREACHABLE = "The ticket site could not be reached.";
 
 export const CHECK_AGAIN = "Check again";
 

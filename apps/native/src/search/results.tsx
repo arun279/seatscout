@@ -169,9 +169,12 @@ const Verdict = ({
     void session.search.retry();
   };
 
-  if (snapshot.refusedUntil !== null && results.length === 0)
+  if (snapshot.refusedUntil !== null)
     return (
-      <Refused snapshot={snapshot} until={snapshot.refusedUntil} when={when} />
+      <>
+        <Refused snapshot={snapshot} until={snapshot.refusedUntil} />
+        {results.length > 0 && <Head snapshot={snapshot} tie={tie} />}
+      </>
     );
   if (snapshot.phase === "unreachable")
     return (

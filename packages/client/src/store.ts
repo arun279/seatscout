@@ -13,6 +13,7 @@ export interface CachedProgramme {
 
 export interface RecentSearch {
   readonly movie: string;
+  readonly title?: string | undefined;
   readonly dates: readonly string[];
   readonly area: string;
   readonly partySize: number;

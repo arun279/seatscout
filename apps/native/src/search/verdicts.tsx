@@ -35,7 +35,6 @@ interface VerdictProps extends RemedyProps {
 export interface RefusedProps {
   readonly snapshot: Snapshot;
   readonly until: number;
-  readonly when: string;
 }
 
 export interface EmptyProps {
@@ -135,13 +134,9 @@ const Told = ({ said, ledes }: ReturnType<typeof emptyOf>): ReactElement => (
   </>
 );
 
-export const Refused = ({
-  snapshot,
-  until,
-  when,
-}: RefusedProps): ReactElement => (
+export const Refused = ({ snapshot, until }: RefusedProps): ReactElement => (
   <View style={styles.verdict} testID="verdict">
-    <Told {...refusedOf(snapshot, when, clockAfter(until))} />
+    <Told {...refusedOf(snapshot, clockAfter(until))} />
   </View>
 );
 

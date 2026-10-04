@@ -55,14 +55,14 @@ says so. A new search is a deliberate act of the person and starts again once th
 passed.
 
 **A refusal is remembered on the device.** A 403 on any route records the moment
-`refusalCooldownMs` later, 6 minutes 30 seconds, in the store the device already keeps, so a
+`refusalCooldownMs` later, 7 minutes, in the store the device already keeps, so a
 relaunch remembers it too. Until that moment no read reaches the Source: every route answers
 `refused` at once, so a new search reads no seat map, the programme reads nothing and a hand-off
 checks nothing. A search's snapshot carries the moment as `refusedUntil`, and the results
-screen names the minute a person can search again. Six minutes 30 seconds is the measured 6
-minutes 2 seconds and a margin. The polling met its first answer at 6 minutes 32 seconds, so the
-refusal ended somewhere in those last 30 seconds, and a search in the final 2 of them may still
-be refused.
+screen names the minute a person can search again. The polling was still refused at 6 minutes
+2 seconds and first answered at 6 minutes 32 seconds, so the refusal ended somewhere between the
+two. Seven minutes is past the first answer, so a search the screen invites is not refused
+again by the refusal it is waiting out.
 
 **Each result carries its own day.** A result's `terms.date` is the day whose listing named its
 Showtime, which is what re-verification reads the listing by. The list is banded by day, nearest

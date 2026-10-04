@@ -8,14 +8,16 @@ import { Recent } from "./recent.js";
 const TODAY = "2026-09-19";
 
 const ONE: RecentSearch = {
-  movie: "One Battle After Another",
+  movie: "245569",
+  title: "One Battle After Another",
   dates: [TODAY],
   area: "75201",
   partySize: 4,
 };
 
 const ANOTHER: RecentSearch = {
-  movie: "Spider-Man: Brand New Day",
+  movie: "246329",
+  title: "Spider-Man: Brand New Day",
   dates: ["2026-09-20"],
   area: "75234",
   partySize: 1,
@@ -39,8 +41,8 @@ describe("the searches this phone remembers", () => {
   it("rules between the rows and not under the last, which has nothing below it", async () => {
     await listed([ONE, ANOTHER]);
 
-    expect(ruleUnder(ONE.movie)).toBeGreaterThan(0);
-    expect(ruleUnder(ANOTHER.movie)).toBe(0);
+    expect(ruleUnder("One Battle")).toBeGreaterThan(0);
+    expect(ruleUnder("Spider-Man")).toBe(0);
   });
 
   it("is headed even before the store has answered", async () => {
@@ -86,11 +88,30 @@ describe("the searches this phone remembers", () => {
     );
 
     expect(ran).toHaveBeenCalledWith({
-      movie: "One Battle After Another",
+      movie: "245569",
+      title: "One Battle After Another",
       date: TODAY,
       area: "75201",
       partySize: 4,
     });
+  });
+
+  it("names a search kept without a title as your movie, never by the number it is asked by", async () => {
+    const untitled = {
+      movie: "245569",
+      dates: [TODAY],
+      area: "75201",
+      partySize: 4,
+    };
+    await listed([untitled]);
+
+    expect(
+      screen.getByRole("button", {
+        name: "Your movie, 4 seats · today · 75201",
+      }),
+    ).toBeOnTheScreen();
+    expect(screen.getByText("Your movie")).toBeOnTheScreen();
+    expect(screen.queryByText(/245569/)).toBeNull();
   });
 
   it("rules one row off from the next with a hairline", async () => {

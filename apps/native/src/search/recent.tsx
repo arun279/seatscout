@@ -1,5 +1,6 @@
 import type { RecentSearch } from "@seatscout/client";
 import {
+  filmOf,
   isPast,
   NOTHING_REMEMBERED,
   saidOf,
@@ -48,7 +49,7 @@ const Row = ({
 
   return (
     <TouchableOpacity
-      accessibilityLabel={`${search.movie}, ${saidOf(search, today)}`}
+      accessibilityLabel={`${filmOf([], search)}, ${saidOf(search, today)}`}
       accessibilityRole="button"
       onPress={() => onRun(termsOf({ ...search, date: search.dates }, today))}
       style={[
@@ -61,7 +62,7 @@ const Row = ({
     >
       <View style={styles.said}>
         <Type set="marqueeRow" tone="silver">
-          {search.movie}
+          {filmOf([], search)}
         </Type>
         <Type set="ledgerRow" tone="silverFaint">
           {saidOf(search, today)}

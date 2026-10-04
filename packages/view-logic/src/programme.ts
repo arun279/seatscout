@@ -54,6 +54,29 @@ export const titleOf = (
   movie: string | undefined,
 ): string | undefined => movies.find((named) => named.id === movie)?.title;
 
+interface Picked {
+  readonly movie?: string | undefined;
+  readonly title?: string | undefined;
+}
+
+export const knownFilms = (
+  movies: readonly Movie[],
+  { movie, title }: Picked,
+): readonly Movie[] =>
+  movie === undefined ||
+  title === undefined ||
+  titleOf(movies, movie) !== undefined
+    ? movies
+    : [...movies, { id: movie, title }];
+
+export const chosenFrom = (typed: string, movies: readonly Movie[]): Picked => {
+  const movie = movieOf(typed, movies);
+  return { movie, title: titleOf(movies, movie) };
+};
+
+export const filmOf = (movies: readonly Movie[], picked: Picked): string =>
+  titleOf(movies, picked.movie) ?? picked.title ?? "Your movie";
+
 export const theaterNamed = (
   theaters: readonly Theater[],
   id: string,

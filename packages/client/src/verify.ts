@@ -16,6 +16,8 @@ export type Verified =
       readonly alternatives: readonly SeatGroupResult[];
     };
 
+const UNREAD: readonly string[] = ["unreachable", "refused"];
+
 const gone = (
   reason: Unverified,
   alternatives: readonly SeatGroupResult[] = [],
@@ -33,7 +35,7 @@ export const openVerification = (deps: CatalogueDependencies) => {
     if (showtime === undefined) return gone("taken");
     const reading = await deps.source.seatsFor(`${showtime.id}`);
     if (!reading.ok)
-      return gone(reading.reason === "unreachable" ? "unreachable" : "taken");
+      return gone(UNREAD.includes(reading.reason) ? "unreachable" : "taken");
     const ranking = rankingIn(reading, result.terms);
     const held = ranking.holding(result);
     return held === null

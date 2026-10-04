@@ -107,7 +107,11 @@ describe("the film the card announces", () => {
     const asking = styleOf("Which movie?").color;
     await cleanup();
 
-    await card({ ...SHORT, movie: "Spider-Man: Brand New Day" });
+    await card({
+      ...SHORT,
+      movie: "246329",
+      title: "Spider-Man: Brand New Day",
+    });
     const named = styleOf("Spider-Man: Brand New Day").color;
 
     expect(String(asking)).toMatch(/^#[0-9a-f]{6}$/);

@@ -140,6 +140,21 @@ describe("re-verifying a Seat Group", () => {
     expect(run.auditoriumsRead()).toHaveLength(3);
   });
 
+  it("answers unreachable rather than taken, and asks once, when the Source refuses the Auditorium", async () => {
+    const run = await verifying({
+      script: (bookable) => ({
+        sequences: Object.fromEntries(
+          bookable.map((showtime) => [`${SEAT_MAP}${showtime.id}`, [403]]),
+        ),
+      }),
+    });
+    const verified = await run.verify();
+
+    expect(verified.ok || verified.reason).toBe("unreachable");
+    expect(alternativesIn(verified)).toEqual([]);
+    expect(run.auditoriumsRead()).toHaveLength(1);
+  });
+
   it("answers unreachable, and spends no request on an Auditorium, when the listing cannot be read", async () => {
     const run = await verifying({
       store: () => inMemoryStore(),

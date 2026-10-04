@@ -26,16 +26,14 @@ describe("the coverage of a search over days", () => {
     ).toBe("172 candidates · 48 checked · 124 not read yet");
   });
 
-  it("says the source refused and the search stopped, whether or not anything was read", () => {
+  it("leaves the refusal to the verdict, counting only what was and was not read", () => {
     expect(
       coverageOf(
         reading(covering(172, 30), "settled", [day(TODAY, 30, 0, 142)], COOLED),
       ),
-    ).toBe(
-      "172 candidates · 30 checked · 142 not read yet · the source refused, so the search stopped",
-    );
+    ).toBe("172 candidates · 30 checked · 142 not read yet");
     expect(coverageOf(reading(covering(0, 0), "unreachable", [], COOLED))).toBe(
-      "Nothing was read: the source refused, so the search stopped",
+      "Nothing read yet",
     );
   });
 
