@@ -4,7 +4,10 @@ export {
   type AuditoriumMap,
   type AuditoriumPlan,
   auditoriumMap,
+  nearestInRow,
   planOf,
+  type PositionedSeat,
+  type SeatRow,
 } from "./domain/auditorium-map.js";
 export {
   type Amenity,

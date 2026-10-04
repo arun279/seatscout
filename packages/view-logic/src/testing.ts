@@ -1,0 +1,10 @@
+export { ANGELIKA_5 } from "./rooms.fixtures.js";
+export type { CapturedRoom } from "./rooms.fixtures.js";
+export { CEDARS_3 } from "./rooms.fixtures.js";
+export { HOOKY_SOUTHLAKE } from "./rooms.fixtures.js";
+export { STRIKE_AND_REEL_4 } from "./rooms.fixtures.js";
+export { VILLAGE_1 } from "./rooms.fixtures.js";
+export { WEST_PLANO_10 } from "./rooms.fixtures.js";
+export { openedRooms } from "./rooms.fixtures.js";
+export { roomRoutes } from "./rooms.fixtures.js";
+export type { OpenedRoom } from "./rooms.fixtures.js";

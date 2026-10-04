@@ -60,6 +60,17 @@ export const askAbout = (terms: Terms, term: Term): void => {
   router.push({ pathname: "/ask", params: { ...askedIn(terms), term } });
 };
 
+export const openRoom = (
+  terms: Terms,
+  showtime: number,
+  group: string,
+): void => {
+  router.push({
+    pathname: "/room",
+    params: { ...askedIn(terms), showtime: `${showtime}`, group },
+  });
+};
+
 let handed: SeatGroupResult | undefined;
 
 export const handOff = (chosen: SeatGroupResult): void => {

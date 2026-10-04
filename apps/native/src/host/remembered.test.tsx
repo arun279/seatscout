@@ -1,6 +1,6 @@
-import { createSeatScout } from "@seatscout/client";
-import type { KeyValueStore, RecentSearch, SeatScout } from "@seatscout/client";
 import { describe, expect, it } from "@jest/globals";
+import type { KeyValueStore, RecentSearch, SeatScout } from "@seatscout/client";
+import { createSeatScout } from "@seatscout/client";
 import type { Terms } from "@seatscout/view-logic";
 import { renderHook, waitFor } from "@testing-library/react-native";
 import { useRemembered } from "./remembered.js";

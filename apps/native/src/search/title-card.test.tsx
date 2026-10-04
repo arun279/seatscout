@@ -1,5 +1,5 @@
-import { REFERENCE } from "@seatscout/client";
 import { describe, expect, it, jest } from "@jest/globals";
+import { REFERENCE } from "@seatscout/client";
 import type { ProgrammeState, Term, Terms } from "@seatscout/view-logic";
 import {
   cleanup,

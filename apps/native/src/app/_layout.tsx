@@ -1,6 +1,7 @@
 import { useFonts } from "expo-font";
 import { type NativeStackNavigationOptions, Stack } from "expo-router";
 import type { ReactElement } from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SHEET_PRESENTATION } from "../design-system/sheet.js";
 import { FACES } from "../theme.js";
 
@@ -34,12 +35,14 @@ export default function Layout(): ReactElement | null {
   if (!loaded && unreadable === null) return null;
 
   return (
-    <Stack screenOptions={STAGE}>
-      <Stack.Screen name="index" />
-      <Stack.Screen name="room" />
-      <Stack.Screen name="ask" options={ASK} />
-      <Stack.Screen dangerouslySingular name="hand-off" options={FITTED} />
-      <Stack.Screen name="ledger" options={RESTING} />
-    </Stack>
+    <GestureHandlerRootView>
+      <Stack screenOptions={STAGE}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="room" />
+        <Stack.Screen name="ask" options={ASK} />
+        <Stack.Screen dangerouslySingular name="hand-off" options={FITTED} />
+        <Stack.Screen name="ledger" options={RESTING} />
+      </Stack>
+    </GestureHandlerRootView>
   );
 }

@@ -166,7 +166,7 @@ export const CLAIMS = [
   },
   {
     adr: "0012-every-mutant-must-die.md",
-    says: /skips the argument of `StyleSheet\.create`, and a table declared at the top of the four files/,
+    says: /skips the argument of `StyleSheet\.create`, and a table declared at the top of a file the plugin/,
     holds: "the plugin that skips a drawn value",
     pattern: "StyleSheet.create",
     paths: ["tools/stryker-style-tables.mjs"],
@@ -206,10 +206,10 @@ export const CLAIMS = [
   },
   {
     adr: "README.md",
-    says: /Both addresses name the SDK, so both of them move when `apps\/native` moves to a new Expo SDK/,
-    holds: "the manifest holding the Expo SDK the phone's addresses name",
-    pattern: '"expo": "57.',
-    paths: ["apps/native/package.json"],
+    says: /set by `"runtimeVersion": \{ "policy": "fingerprint" \}` in\s+`apps\/native\/app\.json`/,
+    holds: "the app config holding the fingerprint runtime version policy",
+    pattern: '"policy": "fingerprint"',
+    paths: ["apps/native/app.json"],
     files: 1,
   },
   ...GATE_CLAIMS,

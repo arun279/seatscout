@@ -27,11 +27,11 @@ name: Back by the Android back key, from the hand-off, the ledger and the Room
     id: body
     index: 0
 - extendedWaitUntil:
-    visible: The room
+    visible: ‹ Back to the list
     timeout: 15000
 - back
 - extendedWaitUntil:
-    notVisible: The room
+    notVisible: ‹ Back to the list
     timeout: 10000
 - assertVisible:
     id: seats

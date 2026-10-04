@@ -6,7 +6,7 @@ import {
   FETCHED_AT,
   lateralsOf,
 } from "./auditorium-map.fixtures.js";
-import { auditoriumMap } from "./auditorium-map.js";
+import { auditoriumMap, nearestInRow } from "./auditorium-map.js";
 
 interface Space {
   readonly away: number;
@@ -198,6 +198,35 @@ describe("the Auditorium map, its rows front to back and its Seats left to right
     );
 
     expect(shapes.leftEdgesDisagree).toBeGreaterThan(0);
+  });
+
+  it("answers a Seat's own lateral with that Seat", () => {
+    fc.assert(
+      fc.property(auditoriums, (seats) => {
+        const map = auditoriumMap(seats, []);
+
+        expect(
+          map.rows.map((row) =>
+            row.seats.map((seat) => nearestInRow(row, seat.lateral)),
+          ),
+        ).toEqual(map.rows.map((row) => [...row.seats]));
+      }),
+      { numRuns: 300 },
+    );
+  });
+
+  it("takes the Seat on the left when two are equally near the lateral asked for", () => {
+    const space = { away: 10, width: 10, accessible: false, bookable: true };
+    const map = auditoriumMap(
+      drawn([{ gap: 1, origin: 0, spaces: [space, space, space] }]),
+      [],
+    );
+
+    expect(map.rows.map((row) => lateralsOf(row.seats))).toEqual([[-1, 0, 1]]);
+    expect(map.rows.map((row) => nearestInRow(row, -0.5).lateral)).toEqual([
+      -1,
+    ]);
+    expect(map.rows.map((row) => nearestInRow(row, 0.5).lateral)).toEqual([0]);
   });
 
   it("orders the same however the Seats are labelled", () => {

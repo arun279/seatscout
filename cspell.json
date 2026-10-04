@@ -52,7 +52,6 @@
     "esbuild",
     "escomplex",
     "ESEM",
-    "exposdk",
     "extensionless",
     "FLIX",
     "ghjq",
@@ -96,6 +95,7 @@
     "Pressable",
     "rawfile",
     "reactivecircus",
+    "reanimated",
     "Referer",
     "REGL",
     "rgba",
@@ -128,6 +128,7 @@
     "VITEST_MAX_WORKERS",
     "Vulns",
     "WCAG",
+    "worklets",
     "worktree",
     "Wyrich",
     "xoroshiro"

@@ -179,12 +179,13 @@ it: 0.87 deprecated the package and its `registry.js` now re-exports `AssetRegis
 fails at run time. Neither option covers for the compiler version, since with the DOM library
 removed React Native's own declarations check clean.
 
-**`runtimeVersion` in `app.json` follows the `sdkVersion` policy** because the phones open this
-application in Expo Go, and Expo Go loads only an update built for the SDK it carries. The
-policy writes that SDK into the update as `exposdk:57.0.0`, deriving it from the `expo`
-dependency, where the literal string the schema also accepts would be one more line to remember
-at the next SDK and nothing here would catch it. `updates.url` beside it names the project on
-EAS, and the two together are the whole of what `expo-updates` requires. `updates.enabled` is
+**`runtimeVersion` in `app.json` follows the `fingerprint` policy** because the phones run
+this application as its own build, which carries native modules of its own: the gesture
+handler, Reanimated and its worklets. The policy hashes the native side with
+`@expo/fingerprint`, so an update reaches only a build whose native code it was made against,
+and adding a native module means a new build rather than an update that crashes the old one.
+`updates.url` beside it names the project on EAS, and the two together are the whole of what
+`expo-updates` requires. `updates.enabled` is
 gone with them: the key was there to say that the application did not update itself through a
 library it did not have, which is the disagreement knip's Expo plugin reports, and the library
 is installed now.

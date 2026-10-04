@@ -1,6 +1,12 @@
 import { router } from "expo-router";
 import type { ReactElement } from "react";
-import { askAbout, goTo, handOff, useTerms } from "../host/address.js";
+import {
+  askAbout,
+  goTo,
+  handOff,
+  openRoom,
+  useTerms,
+} from "../host/address.js";
 import { deviceClock, today } from "../host/clock.js";
 import { useOnline } from "../host/online.js";
 import { useProfile } from "../host/profile.js";
@@ -22,7 +28,7 @@ export default function Index(): ReactElement | null {
       onHandOff={handOff}
       onLedger={() => router.push("/ledger")}
       online={online}
-      onRoom={() => router.push("/room")}
+      onRoom={(result) => openRoom(terms, result.showtime.id, result.key)}
       onRun={goTo}
       profile={profile}
       seatscout={seatscout}

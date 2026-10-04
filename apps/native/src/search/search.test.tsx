@@ -1,4 +1,3 @@
-import { REFERENCE } from "@seatscout/client";
 import {
   afterEach,
   beforeAll,
@@ -8,6 +7,7 @@ import {
   it,
   jest,
 } from "@jest/globals";
+import { REFERENCE } from "@seatscout/client";
 import type { Term, Terms } from "@seatscout/view-logic";
 import {
   fireEvent,

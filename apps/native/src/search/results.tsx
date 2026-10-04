@@ -1,5 +1,4 @@
 import type {
-  Search,
   SearchTerms,
   SeatGroupResult,
   SeatProfile,
@@ -9,8 +8,6 @@ import type {
 import {
   BELOW_THE_TIE,
   headOf,
-  type HeldSnapshots,
-  heldSnapshots,
   listed,
   type ProgrammeState,
   type Term,
@@ -20,11 +17,12 @@ import {
   unreachedIn,
   whenSaidOf,
 } from "@seatscout/view-logic";
-import { type ReactElement, useState, useSyncExternalStore } from "react";
+import { type ReactElement, useSyncExternalStore } from "react";
 import { FlatList, StyleSheet, View } from "react-native";
 import { ScreenBand } from "../design-system/screen-band.js";
 import { Type } from "../design-system/type.js";
 import type { Clock } from "../host/clock.js";
+import { type Session, useSession } from "../host/session.js";
 import { useTheme } from "../theme.js";
 import { Card } from "./card.js";
 import { Strip } from "./coverage.js";
@@ -44,11 +42,6 @@ export interface ResultsProps {
   readonly onRoom: (result: SeatGroupResult) => void;
   readonly onHandOff: (result: SeatGroupResult) => void;
   readonly onLedger: () => void;
-}
-
-interface Session {
-  readonly search: Search;
-  readonly held: HeldSnapshots;
 }
 
 const styles = StyleSheet.create({
@@ -73,11 +66,6 @@ const styles = StyleSheet.create({
   },
   beam: { flex: 1, height: 1.5 },
 });
-
-const opened = (seatscout: SeatScout, asked: SearchTerms): Session => {
-  const search = seatscout.search(asked);
-  return { search, held: heldSnapshots(search) };
-};
 
 const Head = ({
   snapshot,
@@ -218,7 +206,7 @@ export const Results = ({
   onHandOff,
   onLedger,
 }: ResultsProps): ReactElement => {
-  const [session] = useState(() => opened(seatscout, asked));
+  const session = useSession(seatscout, asked);
   const painted = useSyncExternalStore(
     session.held.subscribe,
     session.held.painted,

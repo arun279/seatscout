@@ -19,49 +19,10 @@ Early development. Not yet usable.
 
 ## On your phone
 
-The app runs on a phone through [Expo Go](https://expo.dev/go). It opens a published update
-rather than a development server, so it needs nothing running anywhere and works wherever the
-phone has a network. Every merge to `main` that changes the app, or anything under `packages/`,
-publishes to the `preview` channel, and the phone opens whichever update is newest there.
-
-Expo Go carries one SDK, and it has to be the one this project is on, which is SDK 57. Sign in
-to Expo Go with the Expo account that owns the project: Expo's own note on SDK 57 says Expo Go
-asks to be signed in before it opens a project, and being signed in also lists the project on
-its Home tab, which is a second way in when no code is to hand.
-
-**Android.** Install Expo Go from the Play Store, or take the SDK 57 build from
-<https://expo.dev/go> when the store one is behind. Open it, sign in, and scan the code below
-from its Home tab. An open report upstream,
-[expo/expo#50139](https://github.com/expo/expo/issues/50139), has Expo Go on Android refusing
-every SDK 57 update with `Failed to download remote update` while the same update loads on
-iOS. If that is what the phone says, it is that and not this repository.
-
-**iPhone.** Install Expo Go for SDK 57 the same way. When the App Store build is behind,
-`npx eas-cli@latest go` builds Expo Go against your own Apple developer account and submits it
-to your TestFlight, a one-off that repeats only at the next SDK. Sign in, then point the camera
-at the code below and open what it offers.
-
-The code:
-
-<https://qr.expo.dev/eas-update?projectId=bd0a1be7-8d02-4cd8-9a1b-d0431c52d495&runtimeVersion=exposdk:57.0.0&channel=preview>
-
-Or paste the address itself into Expo Go:
-
-```text
-exp://u.expo.dev/bd0a1be7-8d02-4cd8-9a1b-d0431c52d495?runtime-version=exposdk%3A57.0.0&channel-name=preview
-```
-
-Both addresses name the SDK, so both of them move when `apps/native` moves to a new Expo SDK,
-and `pnpm claims` refuses the pair until they agree. Neither changes when an update is
-published, so they are worth keeping. Each run of the publish prints them again in its own
-summary.
-
-### Installing the app itself
-
-Expo Go is the quickest way in. To install SeatScout as its own app, build it on Expo's servers
-from `apps/native`; nothing is built on your machine. Each build follows the same `preview`
-channel, so every merge that changes the app reaches it as an update, and a new build is needed
-only when a native dependency or the SDK changes.
+SeatScout runs on a phone as its own app, built on Expo's servers from `apps/native`; nothing
+is built on your machine. Each build follows the `preview` channel. Every merge to `main` that
+changes the app, or anything under `packages/`, publishes an update there. An installed build
+fetches the newest update when it opens and runs it from the next launch.
 
 ```sh
 npx eas-cli@latest build --platform android --profile preview   # an APK to install from its link
@@ -71,6 +32,15 @@ npx eas-cli@latest build --platform ios --profile simulator     # an iOS Simulat
 
 The iPhone build needs an Apple developer account. The first run asks you to sign in to it and
 to register each iPhone with `npx eas-cli@latest device:create`.
+
+An update reaches only the builds that share its runtime version. Here that version is a
+fingerprint of the app's native side, set by `"runtimeVersion": { "policy": "fingerprint" }` in
+`apps/native/app.json`. A change that adds or updates a native module therefore needs a new
+build, and no update made after it can reach an older build that lacks the module.
+
+Expo Go is not the way to run it. Expo Go runs its own native code rather than this app's, and
+the address of the updates moves each time the fingerprint does, so there is no fixed address
+to keep.
 
 ## What makes it different
 

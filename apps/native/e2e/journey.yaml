@@ -83,14 +83,14 @@ name: Ask, the ranked Seat Groups, the hand-off, the ledger and the Room, each l
     id: body
     index: 0
 - extendedWaitUntil:
-    visible: The room
+    visible: ‹ Back to the list
     timeout: 15000
 - runFlow:
     file: back-by-gesture.yaml
     env:
       LEVEL: pushed
 - extendedWaitUntil:
-    notVisible: The room
+    notVisible: ‹ Back to the list
     timeout: 10000
 - assertVisible:
     id: seats

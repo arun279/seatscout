@@ -1,5 +1,5 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { type CachedCatalogue, storeContract } from "@seatscout/client";
 import { deviceStore } from "./store.js";
 
