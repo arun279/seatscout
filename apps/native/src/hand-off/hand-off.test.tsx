@@ -34,7 +34,7 @@ describe("the hand-off sheet as it opens", () => {
     expect(
       screen.getByText("Not confirmed by a second Source"),
     ).toBeOnTheScreen();
-    expect(screen.getByText("G6·G7, yours")).toBeOnTheScreen();
+    expect(screen.getByText("E12·E11, yours")).toBeOnTheScreen();
     expect(screen.getByRole("status")).toHaveTextContent(
       /^Tapping re-checks these seats with the Source/,
     );
@@ -43,7 +43,7 @@ describe("the hand-off sheet as it opens", () => {
     );
     expect(screen.getAllByTestId("velvet")).toHaveLength(1);
     expect(
-      screen.getByRole("button", { name: "Take G6 and G7" }),
+      screen.getByRole("button", { name: "Take E12 and E11" }),
     ).toBeOnTheScreen();
     expect(
       screen.queryByTestId("lost", { includeHiddenElements: true }),
@@ -76,10 +76,10 @@ describe("no ticketing URL opens before Re-verification confirms", () => {
     const counter = await opened();
     counter.holdSeatMaps();
 
-    await take("G6 and G7");
+    await take("E12 and E11");
 
     expect(await screen.findByRole("status")).toHaveTextContent(
-      "Checking G6 and G7 with the Source",
+      "Checking E12 and E11 with the Source",
     );
     expect(screen.getByRole("status").props["accessibilityLiveRegion"]).toBe(
       "polite",
@@ -98,7 +98,7 @@ describe("no ticketing URL opens before Re-verification confirms", () => {
   });
 
   it("opens nothing when the Seat Group was taken since the search", async () => {
-    const { checkout } = await taken({ statuses: { G6: "X" } });
+    const { checkout } = await taken({ statuses: { E12: "X" } });
 
     expect(checkout).not.toHaveBeenCalled();
   });
@@ -112,8 +112,8 @@ describe("no ticketing URL opens before Re-verification confirms", () => {
   it("opens nothing when the sheet was closed before the Source answered", async () => {
     const counter = await opened();
     counter.holdSeatMaps();
-    await take("G6 and G7");
-    await screen.findByText("Checking G6 and G7 with the Source");
+    await take("E12 and E11");
+    await screen.findByText("Checking E12 and E11 with the Source");
 
     await act(() => screen.unmount());
     counter.releaseSeatMaps();
@@ -127,7 +127,7 @@ describe("no ticketing URL opens before Re-verification confirms", () => {
 describe("closing the in-app browser", () => {
   it("closes the sheet only once the browser is closed, so the moviegoer lands where they were", async () => {
     const counter = await opened();
-    await take("G6 and G7");
+    await take("E12 and E11");
     await counter.answered();
 
     expect(counter.onClose).not.toHaveBeenCalled();
@@ -139,7 +139,7 @@ describe("closing the in-app browser", () => {
 
   it("leaves the stack alone when the sheet had already gone by the time the browser closed", async () => {
     const counter = await opened();
-    await take("G6 and G7");
+    await take("E12 and E11");
     await counter.answered();
 
     await act(() => screen.unmount());
@@ -154,11 +154,11 @@ describe("a browser that cannot open", () => {
     const counter = await opened();
     counter.checkout.mockRejectedValueOnce(new Error("no browser"));
 
-    await take("G6 and G7");
+    await take("E12 and E11");
     await counter.answered();
 
     expect(
-      screen.getByRole("button", { name: "Take G6 and G7" }),
+      screen.getByRole("button", { name: "Take E12 and E11" }),
     ).toBeOnTheScreen();
     expect(counter.onClose).not.toHaveBeenCalled();
   });
@@ -179,7 +179,7 @@ describe("offline", () => {
     await counter.online(true);
 
     expect(
-      screen.getByRole("button", { name: "Take G6 and G7" }),
+      screen.getByRole("button", { name: "Take E12 and E11" }),
     ).toBeOnTheScreen();
     expect(screen.queryByText(OFFLINE_HERE)).toBeNull();
 
@@ -189,7 +189,7 @@ describe("offline", () => {
   });
 
   it("withdraws the next best's take control too", async () => {
-    const counter = await taken({ statuses: { G6: "X" } });
+    const counter = await taken({ statuses: { E12: "X" } });
 
     await counter.online(false);
 

@@ -28,9 +28,9 @@ import {
 } from "./hand-off-phrases.js";
 import { searched } from "./rooms.fixtures.js";
 
-const HOOKY_ADDISON_9AM = 561527980;
-const LEGACY_1030P = 561938043;
-const LEWISVILLE_720P = 557882248;
+const HOOKY_ADDISON_9AM = 564424799;
+const LEGACY_1035P = 562413965;
+const LEWISVILLE_830P = 562433541;
 
 let results: readonly SeatGroupResult[] = [];
 
@@ -46,21 +46,21 @@ beforeAll(async () => {
 
 describe("what the hand-off says of the Seat Group it takes", () => {
   it("heads the sheet with the day, the time and every Format of the Showtime", () => {
-    expect(showingOf(at(LEGACY_1030P), "2026-08-28")).toBe(
-      "Today 10:30p · D-BOX · XD",
+    expect(showingOf(at(LEGACY_1035P), "2026-09-20")).toBe(
+      "Today 10:35p · D-BOX · XD",
     );
-    expect(showingOf(at(HOOKY_ADDISON_9AM), "2026-08-27")).toBe(
+    expect(showingOf(at(HOOKY_ADDISON_9AM), "2026-09-19")).toBe(
       "Tomorrow 9:00a · SDX",
     );
-    expect(showingOf(at(LEWISVILLE_720P), "2026-08-28")).toBe("Today 7:20p");
+    expect(showingOf(at(LEWISVILLE_830P), "2026-09-20")).toBe("Today 8:30p");
   });
 
   it("names the seats the velvet control takes and the check it waits on", () => {
     const chosen = at(HOOKY_ADDISON_9AM);
 
-    expect(takeOf(chosen)).toBe("Take G6 and G7");
-    expect(yoursOf(chosen)).toBe("G6·G7, yours");
-    expect(checkingOf(chosen)).toBe("Checking G6 and G7 with the Source");
+    expect(takeOf(chosen)).toBe("Take E12 and E11");
+    expect(yoursOf(chosen)).toBe("E12·E11, yours");
+    expect(checkingOf(chosen)).toBe("Checking E12 and E11 with the Source");
     expect(openingOf(chosen)).toBe(
       "Still there. Opening the ticketing page for 9:00a at Hooky Entertainment Addison + SDX.",
     );
@@ -77,9 +77,9 @@ describe("what the hand-off says when the Seat Group is taken", () => {
   it("says the seats went, and whether anything in the room replaces them", () => {
     const lost = at(HOOKY_ADDISON_9AM);
 
-    expect(wentOf(lost, true)).toBe("G6 and G7 just went.");
+    expect(wentOf(lost, true)).toBe("E12 and E11 just went.");
     expect(wentOf(lost, false)).toBe(
-      "G6 and G7 just went, and nothing in this room replaces them.",
+      "E12 and E11 just went, and nothing in this room replaces them.",
     );
   });
 
@@ -96,15 +96,15 @@ describe("what the hand-off says when the Seat Group is taken", () => {
   });
 
   it("marks where the lost seats were and places each alternative by row and side", () => {
-    expect(whereTheyWereOf(at(HOOKY_ADDISON_9AM))).toBe("where G6·G7 were");
-    expect(placeOf(at(HOOKY_ADDISON_9AM))).toBe("Row 7 · on the centreline");
+    expect(whereTheyWereOf(at(HOOKY_ADDISON_9AM))).toBe("where E12·E11 were");
+    expect(placeOf(at(HOOKY_ADDISON_9AM))).toBe("Row 5 · on the centreline");
   });
 });
 
 describe("what the hand-off says when the Source could not be reached", () => {
   it("says nothing was checked and no checkout opens on it", () => {
     expect(uncheckedOf(at(HOOKY_ADDISON_9AM))).toBe(
-      "Nothing was checked, so G6 and G7 may well still be there. A checkout never opens on an answer that could not be judged.",
+      "Nothing was checked, so E12 and E11 may well still be there. A checkout never opens on an answer that could not be judged.",
     );
   });
 });
