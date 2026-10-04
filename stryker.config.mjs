@@ -7,7 +7,7 @@ const RUNNERS = {
   }),
   jest: (shard) => ({
     testRunner: "jest",
-    ignorers: ["drawn-values"],
+    ignorers: ["drawn-values", "exact-ranges"],
     coverageAnalysis: "off",
     dryRunTimeoutMinutes: 15,
     jest: {
@@ -51,6 +51,7 @@ export default {
     "@stryker-mutator/vitest-runner",
     "@stryker-mutator/jest-runner",
     "./tools/stryker-style-tables.mjs",
+    "./tools/stryker-exact-ranges.mjs",
   ],
   ignorePatterns: ["/tsconfig.json"],
   mutate: [...shard.mutate, ...NOT_PRODUCTION],

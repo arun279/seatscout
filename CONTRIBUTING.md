@@ -82,8 +82,8 @@ how a contributor arrives red on a pull request, which is what this list is for.
 
 Eight further jobs run beside it. `changes` lists the source files the pull request touches,
 and those its changed tests import, and says whether it touches the app. `mutation` mutates
-those files in parallel, a few files per runner, or a range of an app file, and is skipped when
-no source file changed. `android` builds the app for Android with the Source answered from the
+those files in parallel, a few files or a few of an app file's mutants per runner, and is
+skipped when no source file changed. `android` builds the app for Android with the Source answered from the
 corpus (`SEATSCOUT_UPSTREAM=corpus`, which Metro reads to swap `src/host/upstream.ts` for
 `e2e/upstream.ts`), reading the Gradle caches main's Baseline run leaves, and walks
 `apps/native/e2e/journey.yaml` over it with Maestro on an emulator, once; the walk gates.
@@ -287,8 +287,10 @@ ignore-plugin skips.
 `pnpm test:mutation` judges every shard over the whole tree in turn and names every shard it
 refused. On a pull request, `node tools/mutation.mjs --plan <base>` lists the source files the
 change touches, by shard, and each CI job runs `node tools/mutation.mjs --shard <id> --files
-<files>` over a few files or a list of `file:start-end` ranges (the changed lines, for the app), which is also how to judge your own
-change by hand. Every form first refuses a list that leaves a source file under
+<files>` over a few files or, for the app, a few mutants named `file:line:column-line:column`,
+and must judge as many as the plan counted. A range given with columns names one node, and an app
+shard ignores the mutants nested inside it; a `file:start-end` range of lines judges every
+mutant inside it, which is how to judge your own change by hand. Every form first refuses a list that leaves a source file under
 `{apps,packages,tools}/*/src` to no shard. `--base` and `--head` make `pnpm footprint` compare
 something else, and `--out` writes its Markdown to a file.
 

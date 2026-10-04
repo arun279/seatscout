@@ -37,6 +37,7 @@
     "runner": "jest",
     "jest": "apps/native/jest.config.js",
     "mutate": ["apps/native/src/*.{ts,tsx}"],
+    "mutantsPerJob": 8,
     "canary": "apps/native/src/theme.ts",
     "report": "reports/mutation/native-theme.json"
   },
@@ -46,6 +47,7 @@
     "runner": "jest",
     "jest": "apps/native/jest.config.js",
     "mutate": ["apps/native/src/design-system/**/*.{ts,tsx}"],
+    "mutantsPerJob": 8,
     "canary": "apps/native/src/design-system/banner.tsx",
     "report": "reports/mutation/native-design-system.json"
   },
@@ -55,6 +57,7 @@
     "runner": "jest",
     "jest": "apps/native/jest.config.js",
     "mutate": ["apps/native/src/search/**/*.{ts,tsx}"],
+    "mutantsPerJob": 12,
     "canary": "apps/native/src/search/recent.tsx",
     "report": "reports/mutation/native-search.json"
   },
@@ -64,6 +67,7 @@
     "runner": "jest",
     "jest": "apps/native/jest.config.js",
     "mutate": ["apps/native/src/ask/**/*.{ts,tsx}"],
+    "mutantsPerJob": 12,
     "canary": "apps/native/src/ask/film.tsx",
     "report": "reports/mutation/native-ask.json"
   },
@@ -73,6 +77,7 @@
     "runner": "jest",
     "jest": "apps/native/jest.config.js",
     "mutate": ["apps/native/src/{app,host,hand-off,ledger,room}/**/*.{ts,tsx}"],
+    "mutantsPerJob": 12,
     "canary": "apps/native/src/host/profile.ts",
     "report": "reports/mutation/native-shell.json"
   }
