@@ -7,8 +7,8 @@ import type {
 import { beforeAll, describe, expect, it } from "vitest";
 import {
   chosenOf,
-  mapLabelOf,
   groupsOf,
+  mapLabelOf,
   ordinalOf,
   refusalOf,
   rowTextOf,
@@ -16,12 +16,12 @@ import {
 } from "./auditorium-phrases.js";
 import {
   ANGELIKA_5,
-  LAKE_HIGHLANDS_1,
+  CEDARS_3,
   type OpenedRoom,
   openedRooms,
-  STRIKE_AND_REEL_1,
+  STRIKE_AND_REEL_4,
   VILLAGE_1,
-  WEST_PLANO_28,
+  WEST_PLANO_10,
 } from "./rooms.fixtures.js";
 
 let rooms: readonly OpenedRoom[] = [];
@@ -79,20 +79,20 @@ describe("what the room calls things", () => {
   });
 
   it("names a Seat as its label, its lateral, its availability, its kind and its place in the recommendation, in that order", () => {
-    expect(nameOf(openedRoom(ANGELIKA_5), "L11")).toBe(
-      "Seat L11. On the centreline. Bookable. First of your two recommended seats.",
+    expect(nameOf(openedRoom(ANGELIKA_5), "K11")).toBe(
+      "Seat K11. On the centreline. Bookable. First of your two recommended seats.",
     );
-    expect(nameOf(openedRoom(ANGELIKA_5), "L10")).toBe(
-      "Seat L10. One and a half seats right of centre. Bookable. Second of your two recommended seats.",
+    expect(nameOf(openedRoom(ANGELIKA_5), "K10")).toBe(
+      "Seat K10. One and a half seats right of centre. Bookable. Second of your two recommended seats.",
     );
-    expect(nameOf(openedRoom(WEST_PLANO_28), "A21")).toBe(
-      "Seat A21. Eight and a half seats left of centre. Not bookable.",
+    expect(nameOf(openedRoom(WEST_PLANO_10), "G19")).toBe(
+      "Seat G19. Six seats left of centre. Not bookable.",
     );
-    expect(nameOf(openedRoom(LAKE_HIGHLANDS_1), "607")).toBe(
+    expect(nameOf(openedRoom(CEDARS_3), "607")).toBe(
       "Seat 607. On the centreline. Bookable.",
     );
-    expect(nameOf(openedRoom(LAKE_HIGHLANDS_1), "608")).toBe(
-      "Seat 608. One seat right of centre. Bookable. First of your two recommended seats.",
+    expect(nameOf(openedRoom(CEDARS_3), "609")).toBe(
+      "Seat 609. Two seats right of centre. Bookable. Second of your two recommended seats.",
     );
   });
 
@@ -106,20 +106,27 @@ describe("what the room calls things", () => {
     expect(nameOf(openedRoom(VILLAGE_1), "WC17", true)).toBe(
       "Seat WC17. Seven and a half seats left of centre. Wheelchair space. Bookable.",
     );
-    expect(nameOf(openedRoom(STRIKE_AND_REEL_1), "D11")).toBe(
-      "Seat D11. Six seats left of centre. Not bookable.",
+    expect(nameOf(openedRoom(STRIKE_AND_REEL_4), "H16")).toBe(
+      "Seat H16. Eight and a half seats left of centre. Not bookable.",
     );
   });
 
   it("describes a Row for the row bar: its ordinal of the count, its seats, how many are bookable and how many are accessible spaces", () => {
-    const { map } = openedRoom(WEST_PLANO_28).auditorium;
+    const { map } = openedRoom(WEST_PLANO_10).auditorium;
     const village = openedRoom(VILLAGE_1).auditorium.map;
     const angelika = openedRoom(ANGELIKA_5).auditorium.map;
 
+    const front = rowOf(map, 0);
+    const soldOut = {
+      ...front,
+      seats: front.seats.map((seat) => ({ ...seat, bookable: false })),
+      bookableCount: 0,
+    };
+
     expect(rowTextOf(rowOf(map, 7), map)).toBe(
-      "8th row of 14 from the front. 20 seats, 12 bookable.",
+      "8th row of 14 from the front. 20 seats, 8 bookable.",
     );
-    expect(rowTextOf(rowOf(map, 0), map)).toBe(
+    expect(rowTextOf(soldOut, map)).toBe(
       "1st row of 14 from the front. 18 seats, none bookable.",
     );
     expect(rowTextOf(rowOf(angelika, 10), angelika)).toBe(
@@ -131,19 +138,19 @@ describe("what the room calls things", () => {
   });
 
   it("labels the map with the room, its size and the recommendation, so the recommendation is spoken on entry", () => {
-    const opened = openedRoom(WEST_PLANO_28);
+    const opened = openedRoom(WEST_PLANO_10);
 
     expect(mapLabelOf(opened.auditorium, opened.result)).toBe(
-      "Seat map of Cinemark Frisco Square and XD at 10:10p. 304 seats in 14 rows, 25 bookable. Recommended: H14 and H13, 8th row of 14, on the centreline.",
+      "Seat map of Cinemark Frisco Square and XD at 8:00p. 303 seats in 14 rows, 266 bookable. Recommended: N14 and N13, 13th row of 14, on the centreline.",
     );
   });
 
   it("names the reason a Seat cannot start a Seat Group", () => {
-    const plano = openedRoom(WEST_PLANO_28).auditorium;
+    const plano = openedRoom(WEST_PLANO_10).auditorium;
     const village = openedRoom(VILLAGE_1).auditorium;
 
-    expect(refusalOf(seatNamed(plano, "A21"), 2, false)).toBe(
-      "Seat A21 is not bookable, so no seats together can include it.",
+    expect(refusalOf(seatNamed(plano, "G19"), 2, false)).toBe(
+      "Seat G19 is not bookable, so no seats together can include it.",
     );
     expect(refusalOf(seatNamed(village, "WC17"), 2, false)).toBe(
       "Seat WC17 is a wheelchair space. Ask for accessible seating in the query to include it.",
@@ -151,8 +158,8 @@ describe("what the room calls things", () => {
     expect(refusalOf(seatNamed(village, "E18"), 2, false)).toBe(
       "Seat E18 is a companion seat. Ask for accessible seating in the query to include it.",
     );
-    expect(refusalOf(seatNamed(plano, "J10"), 2, false)).toBe(
-      "No offered pair includes seat J10.",
+    expect(refusalOf(seatNamed(plano, "A21"), 2, false)).toBe(
+      "No offered pair includes seat A21.",
     );
     expect(refusalOf(seatNamed(village, "WC17"), 3, true)).toBe(
       "No offered group of three includes seat WC17.",
@@ -163,10 +170,10 @@ describe("what the room calls things", () => {
     const { result } = openedRoom(VILLAGE_1);
 
     expect(chosenOf(result)).toBe(
-      "G14 and G13 chosen. They are re-checked when you continue.",
+      "D18 and D17 chosen. They are re-checked when you continue.",
     );
     expect(chosenOf({ ...result, seats: result.seats.slice(0, 1) })).toBe(
-      "G14 chosen. It is re-checked when you continue.",
+      "D18 chosen. It is re-checked when you continue.",
     );
   });
 
@@ -186,7 +193,7 @@ describe("what the room calls things", () => {
   });
 
   it("counts a Seat's place in the recommendation in words, as far as a party can be booked together", () => {
-    const room = openedRoom(WEST_PLANO_28).auditorium;
+    const room = openedRoom(WEST_PLANO_10).auditorium;
     const together = [
       "H18",
       "H17",

@@ -1,17 +1,16 @@
 import { test } from "@jest/globals";
 import { labelOf } from "@seatscout/view-logic";
-import { openedRooms, WEST_PLANO_28 } from "@seatscout/view-logic/testing";
+import { openedRooms, WEST_PLANO_10 } from "@seatscout/view-logic/testing";
 import { fireEvent, screen } from "@testing-library/react-native";
 import { measureRenders } from "reassure";
 import { Room } from "../src/room/room.js";
-import { still } from "./rooms.js";
+import { still, TODAY } from "./rooms.js";
 
-const TODAY = "2026-08-28";
 const NOW = 13_000;
 const STAGE = { x: 0, y: 0, width: 390, height: 760 };
 
 test("the largest room in the corpus, drawn and its choice moved", async () => {
-  const [opened] = await openedRooms(undefined, [WEST_PLANO_28]);
+  const [opened] = await openedRooms(undefined, [WEST_PLANO_10]);
   if (opened === undefined) throw new Error("the room was never opened");
   const other = opened.auditorium.offered.find(
     (group) => group.key !== opened.result.key,

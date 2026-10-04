@@ -1,7 +1,7 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { createSeatScout, REFERENCE } from "@seatscout/client";
 import { fakeUpstream } from "@seatscout/client/testing";
-import { BACK_TO_THE_LIST, labelOf } from "@seatscout/view-logic";
+import { BACK_TO_THE_LIST, labelOf, takeOf } from "@seatscout/view-logic";
 import {
   openedRooms,
   roomRoutes,
@@ -47,7 +47,7 @@ jest.mock("../host/source.js", () => {
   return { seatscout, seatProfile: heldProfile(seatscout) };
 });
 
-const THEATER = "Cinemark Frisco Square and XD";
+const THEATER = "AMC Village on the Parkway 9";
 
 const opened = (url: string) =>
   renderRouter(
@@ -151,7 +151,7 @@ describe("the Room a deep link opens", () => {
     await settled(app);
 
     await fireEvent.press(screen.getByTestId("velvet"));
-    await screen.findByText("Taking the seats");
+    await screen.findByRole("button", { name: takeOf(other) });
 
     expect(app.getPathname()).toBe("/hand-off");
     expect(app.getSearchParams()).toMatchObject({ group: other.key });

@@ -214,17 +214,6 @@ describe("opening the Room from a Seat Group", () => {
   });
 });
 
-describe("handing a Seat Group off", () => {
-  it("names the Seat Group the hand-off will verify", () => {
-    handOff("H13-H14");
-
-    expect(mockPush).toHaveBeenCalledWith({
-      pathname: "/hand-off",
-      params: { group: "H13-H14" },
-    });
-  });
-});
-
 describe("keeping the query as it was", () => {
   it("goes back one entry, which is the screen the sheet was presented over", () => {
     keepAsItWas();

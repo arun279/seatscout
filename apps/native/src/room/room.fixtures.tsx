@@ -25,12 +25,11 @@ import {
   getByGestureTestId,
 } from "react-native-gesture-handler/jest-utils";
 import { animatedTo } from "../../test/reanimated.js";
-import { still } from "../../test/rooms.js";
+import { still, TODAY } from "../../test/rooms.js";
 import { Room } from "./room.js";
 
 type Found = ReturnType<typeof screen.getByTestId>;
 
-const TODAY = "2026-08-28";
 const NOW = 13_000;
 const STAGE = { x: 0, y: 0, width: 390, height: 760 };
 
@@ -40,7 +39,7 @@ export interface Shown extends OpenedRoom {
 }
 
 const ACCESSIBLE: SearchTerms = {
-  movie: "245569",
+  movie: "245893",
   dates: [TODAY],
   area: "75006",
   partySize: 2,
@@ -150,7 +149,7 @@ export const refusedIn = (room: Shown): PositionedSeat => {
   return seat;
 };
 
-const QUERY = "movie=245569&date=2026-08-28&area=75006&partySize=2";
+const QUERY = `movie=245893&date=${TODAY}&area=75006&partySize=2`;
 
 export const listLink: string = `/?${QUERY}`;
 

@@ -7,12 +7,12 @@ import {
 } from "@seatscout/view-logic";
 import {
   ANGELIKA_5,
-  HOOKY_ADDISON,
-  LAKE_HIGHLANDS_1,
+  CEDARS_3,
+  HOOKY_SOUTHLAKE,
   openedRooms,
-  STRIKE_AND_REEL_1,
+  STRIKE_AND_REEL_4,
   VILLAGE_1,
-  WEST_PLANO_28,
+  WEST_PLANO_10,
 } from "@seatscout/view-logic/testing";
 import {
   labelledAt,
@@ -109,11 +109,11 @@ describe("the label a Seat carries at the closest the map comes", () => {
   it("shows it at the closest zoom in every captured room, on either platform's touch floor, and not a step before", async () => {
     const rooms = await openedRooms(undefined, [
       VILLAGE_1,
-      WEST_PLANO_28,
-      HOOKY_ADDISON,
+      WEST_PLANO_10,
+      HOOKY_SOUTHLAKE,
       ANGELIKA_5,
-      LAKE_HIGHLANDS_1,
-      STRIKE_AND_REEL_1,
+      CEDARS_3,
+      STRIKE_AND_REEL_4,
     ]);
 
     for (const { auditorium } of rooms) {

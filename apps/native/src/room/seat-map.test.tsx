@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { mapLabelOf, seatNameOf } from "@seatscout/view-logic";
 import {
-  HOOKY_ADDISON,
+  HOOKY_SOUTHLAKE,
   openedRooms,
   VILLAGE_1,
-  WEST_PLANO_28,
+  WEST_PLANO_10,
 } from "@seatscout/view-logic/testing";
 import { screen } from "@testing-library/react-native";
 import { processColor } from "react-native";
@@ -67,7 +67,7 @@ describe("the Auditorium drawn to scale", () => {
 
   it("lights the chosen Seat Group and leaves every other Seat for sale", async () => {
     const room = await shown();
-    const chosen = ["G14", "G13"];
+    const chosen = ["D18", "D17"];
     const free = room.auditorium.map.rows
       .flatMap((held) => held.seats)
       .filter(
@@ -140,7 +140,7 @@ describe("the Seats that are wheelchair spaces and companion seats", () => {
     for (const space of spaces) {
       expect(offered.has(space.id)).toBe(false);
       expect(seatNamed(space.id).props["accessibilityLabel"]).toContain(
-        "kept out of ordinary results",
+        space.bookable ? "kept out of ordinary results" : "Not bookable.",
       );
     }
   });
@@ -148,7 +148,7 @@ describe("the Seats that are wheelchair spaces and companion seats", () => {
 
 describe("what the room's own furniture is drawn with", () => {
   it("marks a console between the Seats a pod divider parts", async () => {
-    const room = await shown({ room: HOOKY_ADDISON });
+    const room = await shown({ room: HOOKY_SOUTHLAKE });
     const divided = room.auditorium.map.rows.filter((row) =>
       row.gapAfter.includes("pod"),
     );
@@ -158,7 +158,7 @@ describe("what the room's own furniture is drawn with", () => {
   });
 
   it("leaves the console out of the legend of a room that has none", async () => {
-    await shown({ room: WEST_PLANO_28 });
+    await shown({ room: WEST_PLANO_10 });
 
     expect(screen.queryByText("console")).toBeNull();
     expect(screen.getByText("for sale")).toBeOnTheScreen();

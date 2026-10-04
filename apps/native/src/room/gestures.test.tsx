@@ -1,6 +1,6 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { chosenOf, frameOf } from "@seatscout/view-logic";
-import { HOOKY_ADDISON } from "@seatscout/view-logic/testing";
+import { HOOKY_SOUTHLAKE } from "@seatscout/view-logic/testing";
 import { act, fireEvent, screen } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import { State } from "react-native-gesture-handler";
@@ -118,7 +118,7 @@ describe("the map under the fingers", () => {
   });
 
   it("chooses the group holding the Seat a tap lands on, where the zoomed drawing has put it", async () => {
-    const room = await shown({ room: HOOKY_ADDISON });
+    const room = await shown({ room: HOOKY_SOUTHLAKE });
     const other = otherThan(room);
     const [seat] = other.seats;
     if (seat === undefined) throw new Error("the group holds no Seat");
@@ -136,7 +136,7 @@ describe("the map under the fingers", () => {
   });
 
   it("chooses nothing when a tap is cancelled before it lands", async () => {
-    const room = await shown({ room: HOOKY_ADDISON });
+    const room = await shown({ room: HOOKY_SOUTHLAKE });
     const other = otherThan(room);
     const [seat] = other.seats;
     if (seat === undefined) throw new Error("the group holds no Seat");

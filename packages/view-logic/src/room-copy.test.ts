@@ -17,7 +17,7 @@ import {
   type OpenedRoom,
   openedRooms,
   VILLAGE_1,
-  WEST_PLANO_28,
+  WEST_PLANO_10,
 } from "./rooms.fixtures.js";
 
 let rooms: readonly OpenedRoom[] = [];
@@ -29,7 +29,7 @@ const openedRoom = (wanted: { readonly showtime: number }): OpenedRoom => {
 };
 
 beforeAll(async () => {
-  rooms = await openedRooms(undefined, [WEST_PLANO_28, VILLAGE_1]);
+  rooms = await openedRooms(undefined, [WEST_PLANO_10, VILLAGE_1]);
 });
 
 describe("what the room says beside the map", () => {
@@ -40,15 +40,13 @@ describe("what the room says beside the map", () => {
   });
 
   it("names the Seats the return control goes back to, spaced rather than joined", () => {
-    expect(backToOf(openedRoom(VILLAGE_1).result)).toBe("Back to G14 G13");
+    expect(backToOf(openedRoom(VILLAGE_1).result)).toBe("Back to D18 D17");
   });
 
   it("counts the Seats a room will not sell against the Seats it has", () => {
-    const { auditorium } = openedRoom(WEST_PLANO_28);
+    const { auditorium } = openedRoom(WEST_PLANO_10);
 
-    expect(notBookableIn({ ...auditorium.map, bookableCount: 300 })).toBe(
-      "4 of 304 not bookable",
-    );
+    expect(notBookableIn(auditorium.map)).toBe("37 of 303 not bookable");
   });
 
   it("attests one reading and how old it is", () => {
@@ -57,7 +55,7 @@ describe("what the room says beside the map", () => {
 
   it("says the chosen Seats are still drawn while the connection is gone", () => {
     expect(heldWhileOfflineOf(openedRoom(VILLAGE_1).result)).toBe(
-      "G14 and G13 are here while you are offline.",
+      "D18 and D17 are here while you are offline.",
     );
   });
 });
@@ -67,7 +65,7 @@ describe("the legend the map is read with", () => {
     const { result } = openedRoom(VILLAGE_1);
 
     expect(legendOf(result, false, false)).toEqual([
-      { mark: "lit", words: "G14·G13, yours" },
+      { mark: "lit", words: "D18·D17, yours" },
       { mark: "forSale", words: "for sale" },
       { mark: "notBookable", words: "not bookable" },
       {

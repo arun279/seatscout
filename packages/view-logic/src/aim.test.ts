@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import {
   type OpenedRoom,
   openedRooms,
-  WEST_PLANO_28,
+  WEST_PLANO_10,
 } from "./rooms.fixtures.js";
 import { aimedAt } from "./seat-map.js";
 
@@ -15,7 +15,7 @@ const opened = (): OpenedRoom => {
 };
 
 beforeAll(async () => {
-  [room] = await openedRooms(undefined, [WEST_PLANO_28]);
+  [room] = await openedRooms(undefined, [WEST_PLANO_10]);
 });
 
 const aimedWith = (targetDepth: number) => {

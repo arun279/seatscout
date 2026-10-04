@@ -2,11 +2,11 @@ import { describe, expect, it, jest } from "@jest/globals";
 import type { SeatGroupResult } from "@seatscout/client";
 import { frameOf, labelOf } from "@seatscout/view-logic";
 import {
-  HOOKY_ADDISON,
-  LAKE_HIGHLANDS_1,
+  CEDARS_3,
+  HOOKY_SOUTHLAKE,
   openedRooms,
   VILLAGE_1,
-  WEST_PLANO_28,
+  WEST_PLANO_10,
 } from "@seatscout/view-logic/testing";
 import { cleanup, render, screen, within } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
@@ -27,7 +27,7 @@ const drawnMap = () => {
 
 describe("the room drawn to the screen it is on", () => {
   it("fills the frame's own width on a tall screen, in the room's own proportions", async () => {
-    const room = await shown({ room: WEST_PLANO_28 });
+    const room = await shown({ room: WEST_PLANO_10 });
     const frame = flat("map-frame");
     const proportion = frameOf(room.auditorium);
     const inside =
@@ -47,7 +47,7 @@ describe("the room drawn to the screen it is on", () => {
 
   it("gives way to the screen's height on a short screen, so what sits below the map still shows", async () => {
     await shown({
-      room: WEST_PLANO_28,
+      room: WEST_PLANO_10,
       stage: { x: 0, y: 0, width: 390, height: 200 },
     });
 
@@ -55,7 +55,7 @@ describe("the room drawn to the screen it is on", () => {
   });
 
   it("sets the screen edge over the map at the map's own width", async () => {
-    await shown({ room: WEST_PLANO_28 });
+    await shown({ room: WEST_PLANO_10 });
 
     const edge = StyleSheet.flatten(
       screen.getByTestId("screen-edge", { includeHiddenElements: true }).props[
@@ -114,7 +114,7 @@ describe("the screen edge over the map", () => {
 
   it("glows with the house lights down, drawn centred and short of both ends of the map", async () => {
     houseLights("down");
-    await shown({ room: WEST_PLANO_28 });
+    await shown({ room: WEST_PLANO_10 });
     const span = drawnMap().width;
     const { x, width } = hidden("edge").props;
 
@@ -124,7 +124,7 @@ describe("the screen edge over the map", () => {
 
   it("lies flat in the beam with the house lights up, centred and short of both ends of the map", async () => {
     houseLights("up");
-    await shown({ room: WEST_PLANO_28 });
+    await shown({ room: WEST_PLANO_10 });
     const span = drawnMap().width;
     const lamp = StyleSheet.flatten(hidden("lamp").props["style"]);
 
@@ -139,7 +139,7 @@ describe("the legend below the map", () => {
     for (const appearance of ["down", "up"] as const) {
       const { colours } = themeFor(appearance);
       houseLights(appearance);
-      await shown({ room: HOOKY_ADDISON });
+      await shown({ room: HOOKY_SOUTHLAKE });
 
       expect(flat("mark-lit")).toMatchObject({
         backgroundColor: colours.beam,
@@ -162,14 +162,14 @@ describe("the legend below the map", () => {
 
   it("glows the lit mark in the beam with the house lights down", async () => {
     houseLights("down");
-    await shown({ room: HOOKY_ADDISON });
+    await shown({ room: HOOKY_SOUTHLAKE });
 
     expect(flat("mark-lit").boxShadow).toContain(themeFor("down").colours.beam);
   });
 
   it("glows nothing with the house lights up", async () => {
     houseLights("up");
-    await shown({ room: HOOKY_ADDISON });
+    await shown({ room: HOOKY_SOUTHLAKE });
 
     expect(flat("mark-lit").boxShadow).toBeUndefined();
   });
@@ -180,7 +180,7 @@ describe("the Seat Groups listed below the map", () => {
     for (const appearance of ["down", "up"] as const) {
       const { colours } = themeFor(appearance);
       houseLights(appearance);
-      const room = await shown({ room: HOOKY_ADDISON });
+      const room = await shown({ room: HOOKY_SOUTHLAKE });
       const drawnAs = (group: SeatGroupResult) => {
         const listed = screen.getByRole("radio", {
           name: new RegExp(`^${labelOf(group)} `),
@@ -251,7 +251,7 @@ describe("the row bar", () => {
 
 describe("the room's standing facts", () => {
   it("lists what the room offers, one after another", async () => {
-    await shown({ room: LAKE_HIGHLANDS_1 });
+    await shown({ room: CEDARS_3 });
 
     expect(
       screen.getByText("Accessibility Devices · Closed Captioning"),
@@ -259,7 +259,7 @@ describe("the room's standing facts", () => {
   });
 
   it("draws no line for what a room offers when it offers nothing", async () => {
-    await shown({ room: WEST_PLANO_28 });
+    await shown({ room: WEST_PLANO_10 });
 
     expect(screen.getByTestId("facts").children).toHaveLength(1);
   });

@@ -1,11 +1,11 @@
 import type { Auditorium, PositionedSeat, SeatRow } from "@seatscout/client";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
-  HOOKY_ADDISON,
+  HOOKY_SOUTHLAKE,
   type OpenedRoom,
   openedRooms,
   VILLAGE_1,
-  WEST_PLANO_28,
+  WEST_PLANO_10,
 } from "./rooms.fixtures.js";
 import {
   consolesIn,
@@ -42,15 +42,15 @@ const rowHolding = (auditorium: Auditorium, id: string): SeatRow => {
 
 beforeAll(async () => {
   rooms = await openedRooms(undefined, [
-    WEST_PLANO_28,
+    WEST_PLANO_10,
     VILLAGE_1,
-    HOOKY_ADDISON,
+    HOOKY_SOUTHLAKE,
   ]);
 });
 
 describe("the frame the whole room is drawn in", () => {
   it("leaves a gutter of 1.6 seats on the left for the row labels and half a seat elsewhere", () => {
-    const { auditorium } = openedRoom(WEST_PLANO_28);
+    const { auditorium } = openedRoom(WEST_PLANO_10);
 
     expect(frameOf(auditorium)).toEqual({
       x: expect.closeTo(-28.8, 6),
@@ -62,7 +62,7 @@ describe("the frame the whole room is drawn in", () => {
   });
 
   it("takes its scale from the widest Seat in the room", () => {
-    const { auditorium } = openedRoom(WEST_PLANO_28);
+    const { auditorium } = openedRoom(WEST_PLANO_10);
     const [first, ...rest] = auditorium.map.rows;
     const [seat, ...others] = first?.seats ?? [];
     if (first === undefined || seat === undefined)
@@ -102,14 +102,14 @@ describe("the frame the whole room is drawn in", () => {
 
 describe("the Seats a group holds", () => {
   it("holds every Seat the group took", () => {
-    const { auditorium, result } = openedRoom(WEST_PLANO_28);
+    const { auditorium, result } = openedRoom(WEST_PLANO_10);
 
     for (const held of result.seats)
       expect(holds(result, seatNamed(auditorium, held.id))).toBe(true);
   });
 
   it("does not hold a Seat the group never took", () => {
-    const { auditorium, result } = openedRoom(WEST_PLANO_28);
+    const { auditorium, result } = openedRoom(WEST_PLANO_10);
     const outside = auditorium.map.rows
       .flatMap((row) => row.seats)
       .find((seat) => !result.seats.some((held) => held.id === seat.id));
@@ -121,7 +121,7 @@ describe("the Seats a group holds", () => {
 
 describe("which Seats a person may choose from the map", () => {
   it("finds the group a Seat belongs to, and nothing for a Seat no group offers", () => {
-    const { auditorium, result } = openedRoom(WEST_PLANO_28);
+    const { auditorium, result } = openedRoom(WEST_PLANO_10);
     const unoffered = auditorium.map.rows
       .flatMap((row) => row.seats)
       .find((seat) => !auditorium.offered.some((group) => holds(group, seat)));
@@ -138,12 +138,12 @@ describe("which Seats a person may choose from the map", () => {
 
 describe("every Seat Group the phone's room lists", () => {
   it("lists the recommendation first and then every other group the room offers, each once", () => {
-    const { auditorium, result } = openedRoom(HOOKY_ADDISON);
+    const { auditorium, result } = openedRoom(HOOKY_SOUTHLAKE);
     const listed = everyGroupIn(auditorium, result);
 
-    expect(listed).toHaveLength(30);
+    expect(listed).toHaveLength(31);
     expect(listed.at(0)?.key).toBe(result.key);
-    expect(new Set(listed.map((group) => group.key)).size).toBe(30);
+    expect(new Set(listed.map((group) => group.key)).size).toBe(31);
   });
 });
 
@@ -159,7 +159,7 @@ describe("the console dividers a row carries", () => {
   });
 
   it("draws a tick midway across every pod gap, down the middle of the Seats beside it", () => {
-    const { auditorium } = openedRoom(HOOKY_ADDISON);
+    const { auditorium } = openedRoom(HOOKY_SOUTHLAKE);
     const row = auditorium.map.rows.find((held) =>
       held.gapAfter.includes("pod"),
     );
@@ -178,7 +178,7 @@ describe("the console dividers a row carries", () => {
   });
 
   it("draws none in a row whose Seats only meet or part at an aisle", () => {
-    const { auditorium } = openedRoom(WEST_PLANO_28);
+    const { auditorium } = openedRoom(WEST_PLANO_10);
     const row = auditorium.map.rows.find(
       (held) => !held.gapAfter.includes("pod"),
     );
@@ -191,7 +191,7 @@ describe("the console dividers a row carries", () => {
   });
 
   it("says whether the room has any console at all, which is what the legend asks", () => {
-    expect(consolesIn(openedRoom(HOOKY_ADDISON).auditorium.map)).toBe(true);
-    expect(consolesIn(openedRoom(WEST_PLANO_28).auditorium.map)).toBe(false);
+    expect(consolesIn(openedRoom(HOOKY_SOUTHLAKE).auditorium.map)).toBe(true);
+    expect(consolesIn(openedRoom(WEST_PLANO_10).auditorium.map)).toBe(false);
   });
 });
