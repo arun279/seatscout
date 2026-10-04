@@ -143,10 +143,10 @@ export const Ask = ({
       </Field>
       <Film
         area={held.area}
-        date={held.date}
         focused={focus === "movie"}
         onTyped={setTyped}
         programme={playing}
+        span={draft}
         today={today}
         typed={film}
       />

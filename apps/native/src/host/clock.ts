@@ -10,13 +10,6 @@ const SECOND = 1000;
 export const listingDate = (at: Date): string =>
   `${at.getFullYear()}-${twoDigits(at.getMonth() + 1)}-${twoDigits(at.getDate())}`;
 
-export const dateAt = (listing: string): Date =>
-  new Date(
-    Number(listing.slice(0, 4)),
-    Number(listing.slice(5, 7)) - 1,
-    Number(listing.slice(8, 10)),
-  );
-
 export const clockFor = (at: Date): string =>
   `${twoDigits(at.getHours())}:${twoDigits(at.getMinutes())}`;
 

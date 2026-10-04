@@ -9,6 +9,7 @@ const RUNNERS = {
     testRunner: "jest",
     ignorers: ["drawn-values"],
     coverageAnalysis: "off",
+    dryRunTimeoutMinutes: 15,
     jest: {
       projectType: "custom",
       configFile: shard.jest,

@@ -10,7 +10,7 @@ const TODAY = "2026-09-19";
 
 const NEAR: Terms = { date: TODAY, area: "75234", partySize: 2 };
 
-test("the Ask sheet with every term, opened over a query that names an area", async () => {
+test("the Ask sheet with every term and the calendar", async () => {
   await measureRenders(
     <Ask
       focus={undefined}
