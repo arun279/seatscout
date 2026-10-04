@@ -80,21 +80,23 @@ scans every screen against WCAG 2.2. The web build is there for that scan and fo
 The list is the job, not a selection from it. Running a shorter one and finding it green is
 how a contributor arrives red on a pull request, which is what this list is for.
 
-Eight further jobs run beside it. `changes` lists the source files the pull request touches, and those its changed tests import, and
-says whether it touches the app. `mutation` mutates those files, a few per runner, in parallel,
-and is skipped when no source file changed. `android` builds the app for Android with the Source
-answered from the corpus (`SEATSCOUT_UPSTREAM=corpus`, which Metro reads to swap
-`src/host/upstream.ts` for `e2e/upstream.ts`), reading the Gradle caches main's Baseline run
-leaves, and walks `apps/native/e2e/journey.yaml` over it with Maestro on an emulator, once; the
-walk gates. `performance` measures each screen's Testing Library scenario with Reassure on the
-merge base and on the head, and reads how steady the runner is before it judges either. Both run
-only when the change touches the app. The Flashlight reading of the walk's frame rate, CPU and
-memory runs on main instead, in the Baseline workflow, held to the run before it; ADR 6 says why.
+Eight further jobs run beside it. `changes` lists the source files the pull request touches,
+and those its changed tests import, and says whether it touches the app. `mutation` mutates
+those files in parallel, a few files per runner, or a range of an app file, and is skipped when
+no source file changed. `android` builds the app for Android with the Source answered from the
+corpus (`SEATSCOUT_UPSTREAM=corpus`, which Metro reads to swap `src/host/upstream.ts` for
+`e2e/upstream.ts`), reading the Gradle caches main's Baseline run leaves, and walks
+`apps/native/e2e/journey.yaml` over it with Maestro on an emulator, once; the walk gates.
+`performance` measures each screen's Testing Library scenario with Reassure on the merge base
+and on the head, and reads how steady the runner is before it judges either. Both run only when
+the change touches the app. The Flashlight reading of the walk's frame rate, CPU and memory
+runs on main instead, in the Baseline workflow, held to the run before it; ADR 6 says why.
 `measure` measures what the change weighs. `secrets` scans the pull request's commits with
 gitleaks. `dependencies` scans the lockfile against the OSV database and fails on any advisory,
-then reads every dependency's licence and fails on any SPDX identifier outside the allowlist that
-job carries, a licence it could not determine included. `footprint` waits for every other job,
-posts what `measure` measured and what each job did, and refuses the change when any job failed.
+then reads every dependency's licence and fails on any SPDX identifier outside the allowlist
+that job carries, a licence it could not determine included. `footprint` waits for every other
+job, posts what `measure` measured and what each job did, and refuses the change when any job
+failed.
 
 One hook runs before CI. The pre-commit hook runs five checks over staged files,
 `lefthook.yml` declares it, and nothing else runs on this machine unasked. CI is the
@@ -279,9 +281,9 @@ ignore-plugin skips.
 
 `pnpm test:mutation` judges every shard over the whole tree in turn and names every shard it
 refused. On a pull request, `node tools/mutation.mjs --plan <base>` lists the source files the
-change touches, by shard, and each CI job runs
-`node tools/mutation.mjs --shard <id> --files <files>` over a few of them, which is also how to
-judge your own change by hand. Every form first refuses a list that leaves a source file under
+change touches, by shard, and each CI job runs `node tools/mutation.mjs --shard <id> --files
+<files>` over a few files or one `file:start-end` range, which is also how to judge your own
+change by hand. Every form first refuses a list that leaves a source file under
 `{apps,packages,tools}/*/src` to no shard. `--base` and `--head` make `pnpm footprint` compare
 something else, and `--out` writes its Markdown to a file.
 

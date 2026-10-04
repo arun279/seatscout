@@ -26,11 +26,13 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - name: Set up Node.js
+      - name: Set up pnpm and Node.js
         uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
         with:
           runtime: node@24.20.0
+          cache: true
           install: false
+      - run: pnpm install --frozen-lockfile
       - name: Split the source files this change touches into mutation jobs
         id: plan
         run: |
@@ -133,7 +135,7 @@ jobs:
         run: |
           set -o pipefail
           VITEST_MAX_WORKERS=1 node tools/mutation.mjs --shard "$SHARD" --files "$FILES" 2>&1 | tee "$RUNNER_TEMP/stryker.log"
-          expected="$(tr ',' '\n' <<< "$FILES" | wc -l)"
+          expected="$(tr ',' '\n' <<< "$FILES" | sed 's/:.*//' | sort -u | wc -l)"
           if ! grep -qE "Found $expected of [0-9]+ file\(s\) to be mutated" "$RUNNER_TEMP/stryker.log"; then
             echo "::error::Stryker was asked to mutate $expected file(s) and did not report finding them all, so this job would pass over less than it was given."
             exit 1
