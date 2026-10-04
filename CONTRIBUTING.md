@@ -98,9 +98,14 @@ that job carries, a licence it could not determine included. `footprint` waits f
 job, posts what `measure` measured and what each job did, and refuses the change when any job
 failed.
 
-One hook runs before CI. The pre-commit hook runs five checks over staged files,
-`lefthook.yml` declares it, and nothing else runs on this machine unasked. CI is the
-judge of the whole tree, because a hook can be skipped, and it runs each check once per push.
+One hook runs before CI. The pre-commit hook runs five checks over staged files, `lefthook.yml`
+declares it, and nothing else runs on this machine unasked. CI is the judge of the whole tree,
+because a hook can be skipped, and it runs each check once per push. A draft pull request runs
+only the fast jobs (`changes`, `quality`, `secrets`, `dependencies`); `mutation`, `android`,
+`performance` and `measure` run once it is marked ready, and on each push after that. A branch
+need not be up to date with `main` to merge: every pull request run already tests the branch
+merged onto `main` as it stood, and each push to `main` runs the fast jobs again over the
+merged result, so a clash between two pull requests shows there within minutes.
 
 ## When a gate refuses
 

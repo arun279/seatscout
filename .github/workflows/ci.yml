@@ -2,6 +2,10 @@ name: CI
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -12,7 +16,8 @@ concurrency:
 
 env:
   APP: apps/native packages package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json .github/workflows/ci.yml
-  BASE: ${{ github.event.pull_request.base.sha }}
+  BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+  HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
 
 jobs:
   changes:
@@ -111,7 +116,7 @@ jobs:
   mutation:
     name: mutation (${{ matrix.shard }} ${{ strategy.job-index }})
     needs: changes
-    if: needs.changes.outputs.mutation != '[]'
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft && needs.changes.outputs.mutation != '[]'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     strategy:
@@ -143,7 +148,7 @@ jobs:
 
   android:
     needs: changes
-    if: needs.changes.outputs.app == 'true'
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft && needs.changes.outputs.app == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
@@ -207,14 +212,13 @@ jobs:
 
   performance:
     needs: changes
-    if: needs.changes.outputs.app == 'true'
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft && needs.changes.outputs.app == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
       contents: read
       pull-requests: write
     env:
-      HEAD: ${{ github.event.pull_request.head.sha }}
       TEST_RUNNER_ARGS: --config jest.perf.config.js --ci --maxWorkers 1
     steps:
       - name: Check out repository
@@ -302,10 +306,9 @@ jobs:
           fi
 
   measure:
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
     runs-on: ubuntu-24.04
     timeout-minutes: 30
-    env:
-      HEAD: ${{ github.event.pull_request.head.sha }}
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -338,7 +341,7 @@ jobs:
 
   footprint:
     needs: [changes, quality, mutation, android, performance, measure, secrets, dependencies]
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() && github.event_name == 'pull_request' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
@@ -380,7 +383,7 @@ jobs:
             echo "::error::These gates did not pass: $(echo "$refused" | tr '\n' ' ')"
             exit 1
           fi
-          skipped="$(jq -r '[.changes.result, .quality.result, .measure.result, .secrets.result, .dependencies.result] | map(select(. != "success")) | length' <<< "$RESULTS")"
+          skipped="$(jq -r '[.changes.result, .quality.result, .secrets.result, .dependencies.result] | map(select(. != "success")) | length' <<< "$RESULTS")"
           if [ "$skipped" != 0 ]; then
             echo "::error::A gate that runs on every change was skipped."
             exit 1
@@ -400,9 +403,7 @@ jobs:
           echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  $RUNNER_TEMP/gitleaks.tar.gz" | sha256sum --check
           tar -x -f "$RUNNER_TEMP/gitleaks.tar.gz" -C "$RUNNER_TEMP" gitleaks
           sudo install -m 0755 "$RUNNER_TEMP/gitleaks" /usr/local/bin/gitleaks
-      - name: Scan this pull request's commits for secrets
-        env:
-          HEAD: ${{ github.event.pull_request.head.sha }}
+      - name: Scan the pushed commits for secrets
         run: gitleaks git --no-banner --redact --verbose --log-opts="$BASE..$HEAD" .
 
   dependencies:
