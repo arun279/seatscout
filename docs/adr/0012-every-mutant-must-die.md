@@ -80,7 +80,10 @@ whose mutants are all ignored, or that has none, has nothing to judge. A pull re
 touches no source file runs no mutation job, except that a change to the mutation machinery
 itself (the shard list, the Stryker and Vitest configurations, the Jest configuration, the
 style-table ignorer, `tools/mutation.mjs` or the lockfile) judges the `canary` file each shard
-names, so a machinery change is seen killing mutants in every shard before it merges.
+names, so a machinery change is seen killing mutants in every shard before it merges. A Jest
+shard's initial run gets 15 minutes rather than Stryker's default 5: the theme file reaches
+nearly every screen test, which take 1 minute 55 seconds on a runner uninstrumented and passed
+5 minutes under instrumentation.
 
 Stryker.NET ships this scope as its
 [`since`](https://stryker-mutator.io/docs/stryker-net/configuration/) option, which tests only
