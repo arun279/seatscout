@@ -40,7 +40,7 @@
     "react-native-web": "0.21.2"
   },
   "devDependencies": {
-    "@jest/globals": "29.7.0",
+    "@jest/globals": "30.5.2",
     "@testing-library/react-native": "14.0.1",
     "@types/react": "19.2.18",
     "babel-preset-expo": "57.0.12",
