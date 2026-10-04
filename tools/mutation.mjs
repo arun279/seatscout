@@ -79,7 +79,9 @@ const statementsOf = (file) =>
     .program.body.filter((node) => node.type !== "ImportDeclaration")
     .map(({ loc }) => ({ start: loc.start.line, end: loc.end.line }));
 
-const rangesOf = (file) =>
+const WHOLE = [{ start: 1, end: Number.MAX_SAFE_INTEGER }];
+
+const rangesOf = (file, lines = WHOLE) =>
   statementsOf(file)
     .reduce((ranges, statement) => {
       const last = ranges.at(-1);
@@ -87,12 +89,47 @@ const rangesOf = (file) =>
         ? [...ranges.slice(0, -1), { start: last.start, end: statement.end }]
         : [...ranges, statement];
     }, [])
-    .map(({ start, end }) => `${file}:${start}-${end}`);
+    .flatMap((range) =>
+      lines.map((changed) => ({
+        start: Math.max(range.start, changed.start),
+        end: Math.min(range.end, changed.end),
+      })),
+    )
+    .filter(({ start, end }) => start <= end)
+    .map(({ start, end }) => ({ file, start, end }));
 
-const jobsOf = (shard, files) =>
+const packed = (ranges) =>
+  ranges.reduce((jobs, range) => {
+    const last = jobs.at(-1);
+    const size = (job) => job.reduce((sum, r) => sum + r.end - r.start + 1, 0);
+    return last !== undefined &&
+      size(last) + range.end - range.start < LINES_PER_JOB
+      ? [...jobs.slice(0, -1), [...last, range]]
+      : [...jobs, [range]];
+  }, []);
+
+const jobsOf = (shard, files, changed) =>
   shard.runner === "jest"
-    ? files.flatMap(rangesOf).map((range) => [range])
+    ? packed(files.flatMap((file) => rangesOf(file, changed.get(file)))).map(
+        (job) => job.map(({ file, start, end }) => `${file}:${start}-${end}`),
+      )
     : chunked(files, FILES_PER_JOB);
+
+const HUNK = /^@@ -\S+ \+(\d+)(?:,(\d+))? @@/;
+
+const changedLines = (diff) =>
+  diff.split("\n").reduce(
+    ({ file, lines }, line) => {
+      if (line.startsWith("+++ ")) return { file: line.slice(6), lines };
+      const hunk = HUNK.exec(line);
+      if (hunk === null || hunk[2] === "0") return { file, lines };
+      const start = Number(hunk[1]);
+      const end = start + Number(hunk[2] ?? 1) - 1;
+      lines.set(file, [...(lines.get(file) ?? []), { start, end }]);
+      return { file, lines };
+    },
+    { file: "", lines: new Map() },
+  ).lines;
 
 const reachedBy = (file) =>
   NOT_PRODUCTION.test(file)
@@ -108,11 +145,18 @@ const plan = (base) => {
   if (run.status !== 0) refuse(`git diff against ${base}\n${run.stderr}`);
   const changed = run.stdout.split("\n").filter(Boolean);
   const touched = new Set(changed.flatMap(reachedBy));
+  const hunks = spawnSync(
+    "git",
+    ["diff", "-U0", "--diff-filter=d", `${base}...HEAD`],
+    { cwd: root, encoding: "utf8", maxBuffer: 1 << 28 },
+  );
+  if (hunks.status !== 0) refuse(`git diff against ${base}\n${hunks.stderr}`);
+  const lines = changedLines(hunks.stdout);
   const canary = changed.some((file) => MACHINERY.includes(file));
   return shards.flatMap((shard) => {
     const picked = sourcesOf(shard).filter((file) => touched.has(file));
     const judged = canary && picked.length === 0 ? [shard.canary] : picked;
-    return jobsOf(shard, judged).map((files) => ({
+    return jobsOf(shard, judged, lines).map((files) => ({
       shard: shard.id,
       files: files.join(","),
     }));

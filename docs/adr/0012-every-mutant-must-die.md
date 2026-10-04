@@ -83,7 +83,12 @@ style-table ignorer, `tools/mutation.mjs` or the lockfile) judges the `canary` f
 names, so a machinery change is seen killing mutants in every shard before it merges. A Jest
 shard's initial run gets 15 minutes rather than Stryker's default 5: the theme file reaches
 nearly every screen test, which take 1 minute 55 seconds on a runner uninstrumented and passed
-5 minutes under instrumentation.
+5 minutes under instrumentation. Under Jest a job mutates only the lines the change adds or
+edits, cut at top-level statements and packed up to 60 lines a job; a source reached only
+through a changed test, and a shard's canary, are mutated whole. This is the scope Google's
+code-review mutation testing reports on ([State of Mutation Testing at Google](https://research.google/pubs/state-of-mutation-testing-at-google/), 2018),
+and it is what made it necessary: a pull request touching ten lines of one large screen mutated
+all of it, and that one job took 58 minutes.
 
 Stryker.NET ships this scope as its
 [`since`](https://stryker-mutator.io/docs/stryker-net/configuration/) option, which tests only
