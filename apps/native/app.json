@@ -21,7 +21,12 @@
       "bundleIdentifier": "io.github.arun279.seatscout"
     },
     "android": {
-      "package": "io.github.arun279.seatscout"
-    }
+      "package": "io.github.arun279.seatscout",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0d0f19"
+      }
+    },
+    "icon": "./assets/icon.png"
   }
 }

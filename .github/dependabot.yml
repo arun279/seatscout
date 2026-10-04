@@ -14,10 +14,18 @@ updates:
     schedule:
       interval: weekly
     ignore:
+      # The Expo SDK pins these; `expo install --fix` moves them together at an SDK upgrade.
       - dependency-name: react
       - dependency-name: react-dom
       - dependency-name: react-native
+      - dependency-name: 'react-native-*'
+      - dependency-name: '@react-native-community/*'
+      - dependency-name: '@react-native-async-storage/*'
       - dependency-name: expo
+      - dependency-name: 'expo-*'
+      - dependency-name: '@expo/*'
+      - dependency-name: jest-expo
+      - dependency-name: babel-preset-expo
       - dependency-name: '@types/react'
     groups:
       non-major-updates:
