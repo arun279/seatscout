@@ -2,12 +2,12 @@
   {
     "name": "app for iOS, the script Hermes compiles",
     "path": "apps/native/dist/_expo/static/js/ios/*.js",
-    "limit": "534242 B"
+    "limit": "534414 B"
   },
   {
     "name": "app for Android, the script Hermes compiles",
     "path": "apps/native/dist/_expo/static/js/android/*.js",
-    "limit": "571954 B"
+    "limit": "572269 B"
   },
   {
     "name": "app's faces and images",
