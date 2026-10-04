@@ -6,7 +6,10 @@ import type {
   TicketingUrl,
   Verified,
 } from "@seatscout/client";
-import { seatMapBodyWithStatuses } from "@seatscout/client/testing";
+import {
+  readToTheEnd,
+  seatMapBodyWithStatuses,
+} from "@seatscout/client/testing";
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import { HandOff } from "../src/hand-off/hand-off.js";
 import type { Clock } from "../src/host/clock.js";
@@ -88,7 +91,9 @@ export const atTheCounter = async (): Promise<Counter> => {
       };
     },
   });
-  const { results } = await seatscout.search(WHOLE_LISTING).done;
+  const search = seatscout.search(WHOLE_LISTING);
+  await search.done;
+  const { results } = await readToTheEnd(search);
   const chosen = results.find(
     (result) => result.showtime.id === HOOKY_ADDISON_9AM,
   );
