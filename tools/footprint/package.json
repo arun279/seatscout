@@ -8,8 +8,8 @@
     "build": "tsc --build --pretty false"
   },
   "devDependencies": {
-    "@types/node": "26.6.1",
-    "fast-check": "4.10.1",
+    "@types/node": "26.6.3",
+    "fast-check": "4.10.2",
     "vitest": "4.1.11"
   }
 }
