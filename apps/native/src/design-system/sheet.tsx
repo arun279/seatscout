@@ -28,6 +28,7 @@ export interface SheetProps {
   readonly onKeep: () => void;
   readonly claimed: boolean;
   readonly scrolls?: boolean;
+  readonly fitted?: boolean;
   readonly dock: ReactNode;
   readonly children: ReactNode;
 }
@@ -149,6 +150,7 @@ export const Sheet = ({
   onKeep,
   claimed,
   scrolls = true,
+  fitted = false,
   dock,
   children,
 }: SheetProps): ReactElement => {
@@ -164,7 +166,7 @@ export const Sheet = ({
   return (
     <View
       style={[
-        styles.sheet,
+        !fitted && styles.sheet,
         { backgroundColor: theme.colours.house, paddingBottom: lift },
       ]}
       testID="stage"
@@ -191,7 +193,11 @@ export const Sheet = ({
           <Head {...above} />
         </View>
       )}
-      <View collapsable={false} style={styles.body} testID="sheet-body">
+      <View
+        collapsable={false}
+        style={!fitted && styles.body}
+        testID="sheet-body"
+      >
         <ScrollView
           contentContainerStyle={styles.read}
           keyboardShouldPersistTaps="handled"

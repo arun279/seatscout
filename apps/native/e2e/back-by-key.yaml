@@ -5,11 +5,13 @@ name: Back by the Android back key, from the hand-off, the ledger and the Room
     id: seats
     index: 0
 - extendedWaitUntil:
-    visible: Taking the seats
+    visible:
+      id: hand-off
     timeout: 15000
 - back
 - extendedWaitUntil:
-    notVisible: Taking the seats
+    notVisible:
+      id: hand-off
     timeout: 10000
 
 - tapOn: ledger ›

@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from "@testing-library/react-native";
 import { selectionAsync } from "expo-haptics";
 import { Platform, StyleSheet } from "react-native";
 import { houseLights } from "../../test/lights.js";
-import { Chips } from "./chips.js";
+import { Chips, Choices } from "./chips.js";
 
 const FORMATS = [
   { value: "IMAX", text: "IMAX" },
@@ -85,5 +85,66 @@ describe("a group of chips, any number of them chosen", () => {
       Platform.OS === "android" ? 8 : 12,
     );
     expect(screen.queryByText("✓") !== null).toBe(Platform.OS === "android");
+  });
+});
+
+const GROUPS = [
+  { key: "f", text: "F6·F7", sub: "Row 6 · on the centreline", value: 6 },
+  {
+    key: "g",
+    text: "G8·G9",
+    sub: "Row 7 · three seats right of centre",
+    value: 7,
+  },
+] as const;
+
+const choosing = async (
+  onChoose: (value: number) => void = () => undefined,
+  chosen = "f",
+) => {
+  await render(
+    <Choices choices={GROUPS} chosen={chosen} onChoose={onChoose} />,
+  );
+};
+
+describe("a group of chips, exactly one of them chosen", () => {
+  it("offers each as a radio named by its words and its sub-line", async () => {
+    await choosing();
+
+    expect(
+      screen
+        .getAllByRole("radio")
+        .map((one) => one.props["accessibilityLabel"]),
+    ).toEqual([
+      "F6·F7, Row 6 · on the centreline",
+      "G8·G9, Row 7 · three seats right of centre",
+    ]);
+  });
+
+  it("checks the chosen one alone", async () => {
+    await choosing(undefined, "g");
+
+    expect(screen.getByRole("radio", { name: /^G8·G9/ })).toBeChecked();
+    expect(screen.getByRole("radio", { name: /^F6·F7/ })).not.toBeChecked();
+  });
+
+  it("hands back the value of the one pressed, with one selection tick", async () => {
+    const onChoose = jest.fn<(value: number) => void>();
+    await choosing(onChoose);
+
+    await fireEvent.press(screen.getByRole("radio", { name: /^G8·G9/ }));
+
+    expect(onChoose).toHaveBeenCalledWith(7);
+    expect(selectionAsync).toHaveBeenCalledTimes(1);
+  });
+
+  it("inks the sub-line as the chip it sits in is inked", async () => {
+    houseLights("down");
+    await choosing();
+    const ink = (text: string) =>
+      StyleSheet.flatten(screen.getByText(text).props["style"]).color;
+
+    expect(ink("Row 6 · on the centreline")).toBe("#06070e");
+    expect(ink("Row 7 · three seats right of centre")).toBe("#aab2bd");
   });
 });

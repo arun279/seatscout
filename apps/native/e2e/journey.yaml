@@ -49,14 +49,16 @@ name: Ask, the ranked Seat Groups, the hand-off, the ledger and the Room, each l
     id: seats
     index: 0
 - extendedWaitUntil:
-    visible: Taking the seats
+    visible:
+      id: hand-off
     timeout: 15000
 - runFlow:
     file: back-by-gesture.yaml
     env:
       LEVEL: sheet
 - extendedWaitUntil:
-    notVisible: Taking the seats
+    notVisible:
+      id: hand-off
     timeout: 10000
 - assertVisible:
     id: seats

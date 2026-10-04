@@ -287,7 +287,7 @@ describe("the accessibility audit every rendered screen passes through", () => {
     );
 
     expect(await audited(chip(() => undefined))).toContain(
-      'Apple HIG, Playing haptics: \\"3D\\" changes what is chosen or commits and plays no selection or notification feedback',
+      'Apple HIG, Playing haptics: \\"3D\\" changes what is chosen or commits and plays no selection, impact or notification feedback',
     );
     expect(await audited(chip(() => void selectionAsync()))).toBe("");
   });
