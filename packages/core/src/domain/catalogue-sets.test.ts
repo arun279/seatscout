@@ -1,4 +1,5 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
+import { captured, everyShowtime } from "./catalogue.fixtures.js";
 import {
   type Amenity,
   type Chain,
@@ -7,7 +8,6 @@ import {
   EVERY_FORMAT,
   type Format,
 } from "./catalogue.js";
-import { captured, everyShowtime } from "./catalogue.fixtures.js";
 
 describe("the closed sets a Query names", () => {
   it("lists every Format, Amenity and Chain once each and in order, so a screen can offer them", () => {

@@ -5,10 +5,10 @@ import { fireEvent, render, screen } from "@testing-library/react-native";
 import { settled, TODAY } from "../../test/rooms.js";
 import { Empty, Partial, Unreachable } from "./verdicts.js";
 
-const FAILING = { "/napi/seatMap/558117351": [500, 500, 500] };
+const FAILING = { "/napi/seatMap/564362583": [500, 500, 500] };
 
 const WHOLE_LISTING: SearchTerms = {
-  movie: "245569",
+  movie: "246473",
   dates: [TODAY],
   area: "75006",
   partySize: 2,

@@ -14,11 +14,11 @@ import {
 import { REFERENCE, type SeatProfile } from "./seat-profile.js";
 
 const BENCHMARK_AUDITORIUMS: readonly string[] = [
-  "561443587",
-  "561462741",
-  "561505814",
-  "561230736",
-  "561865199",
+  "559982630",
+  "562247516",
+  "564216396",
+  "564402231",
+  "562212808",
 ];
 
 const auditoriumOf = (body: CapturedSeatMap): Auditorium => {

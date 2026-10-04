@@ -1,13 +1,13 @@
-import { openSource } from "@seatscout/core";
 import type { Catalogue, Reading, Source } from "@seatscout/core";
-import { type UpstreamScript, fakeUpstream } from "@seatscout/core/testing";
+import { openSource } from "@seatscout/core";
+import { fakeUpstream, type UpstreamScript } from "@seatscout/core/testing";
 import { type CatalogueTerms, openCatalogue } from "./catalogue.js";
-import { type KeyValueStore, inMemoryStore } from "./store.js";
+import { inMemoryStore, type KeyValueStore } from "./store.js";
 
 const AREA = "75006";
-export const TODAY = "2026-08-28";
-export const YESTERDAY = "2026-08-27";
-export const WIDE_RELEASE = "245569";
+export const TODAY = "2026-09-20";
+export const YESTERDAY = "2026-09-19";
+export const WIDE_RELEASE = "245893";
 export const LISTINGS = "/napi/theaterShowtimeGroupings";
 export const TERMS: CatalogueTerms = {
   movie: WIDE_RELEASE,

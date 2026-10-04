@@ -18,7 +18,7 @@ const ROUTE = `/napi/theaterMovieShowtimes/${ANCHOR}`;
 
 const anchorCapture = () => {
   const capture = theaterMovieShowtimesCaptures.get(
-    "showtimes/theater-showtimes-aacbt-2026-08-28.json",
+    "showtimes/theater-showtimes-aacbt-2026-09-20.json",
   );
   if (capture === undefined)
     throw new Error("the anchor Theater's schedule was never captured");
@@ -32,10 +32,13 @@ describe("the Movies playing at a Theater", () => {
   it("turns a Theater and a date into the Movies playing there, each titled beside the identity a listing is asked by", async () => {
     const movies = payloadOf(await sourced().moviesAt(ANCHOR, TODAY));
 
-    expect(movies).toHaveLength(15);
-    expect(movies[0]).toEqual({ id: "245476", title: "Colony (2026)" });
-    expect(movies.find((movie) => movie.id === "245569")?.title).toBe(
-      "The Dog Stars (2026)",
+    expect(movies).toHaveLength(19);
+    expect(movies[0]).toEqual({
+      id: "247497",
+      title: "Forgotten Island - Early Access Screening (2026)",
+    });
+    expect(movies.find((movie) => movie.id === "245893")?.title).toBe(
+      "Resident Evil (2026)",
     );
     expect(
       [...new Set(movies.flatMap((movie) => Object.keys(movie)))].toSorted(),
@@ -60,7 +63,7 @@ describe("the Movies playing at a Theater", () => {
       (movie) => movie.id,
     );
 
-    expect(asked).toEqual(["243819", "245569", "245569", "246329", "246427"]);
+    expect(asked).toEqual(["243819", "245699", "245893", "245893", "246473"]);
     expect(asked.filter((movie) => !playing.includes(movie))).toEqual([]);
   });
 

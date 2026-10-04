@@ -2,8 +2,8 @@ import * as fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import type { Seat } from "../source/seat-map.js";
 import {
-  FETCHED_AT,
   ascending,
+  FETCHED_AT,
   lateralsOf,
 } from "./auditorium-map.fixtures.js";
 import { auditoriumMap } from "./auditorium-map.js";
@@ -230,7 +230,7 @@ describe("the Auditorium map, its rows front to back and its Seats left to right
 
         expect(rows.map((row) => row.label)).toEqual(
           rows.map((row, index) => {
-            if (row.seats.every(accessibleLabel)) return "W";
+            if (row.seats.every(accessibleLabel)) return "WC";
             if (row.seats.some(accessibleLabel)) return null;
             return String.fromCharCode(65 + rows.length - 1 - index);
           }),

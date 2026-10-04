@@ -10,9 +10,9 @@ import {
 
 const SPAN_THE_CAPTURE_REACHED = {
   chains: 11,
-  auditoriums: 41,
-  smallestAuditorium: 46,
-  largestAuditorium: 304,
+  auditoriums: 40,
+  smallestAuditorium: 49,
+  largestAuditorium: 368,
 };
 
 const indexedFiles = () => [
@@ -138,7 +138,7 @@ describe("the captured corpus", () => {
     expect(refused).toHaveLength(seatMapFailureCaptures.size);
     expect(
       refused.map((entry) => entry.httpStatus).toSorted((a, b) => a - b),
-    ).toEqual([400, 404, 410]);
+    ).toEqual([400, 404]);
 
     for (const entry of refused) {
       const capture = seatMapFailureCaptures.get(entry.file);
@@ -160,7 +160,7 @@ describe("the captured corpus", () => {
       ),
     ]);
 
-    expect(groups).toHaveLength(37);
+    expect(groups).toHaveLength(29);
     expect(
       ["id", "ticketingJumpPageURL"].filter((key) => named.has(key)),
     ).toEqual(["id", "ticketingJumpPageURL"]);

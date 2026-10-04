@@ -34,14 +34,14 @@ const stonebriarFailed = () =>
     fetch: fakeUpstream({
       seed: 4,
       standInAuditoriums: true,
-      sequences: { "/napi/seatMap/558117351": [500, 500, 500] },
+      sequences: { "/napi/seatMap/564362581": [500, 500, 500] },
     }),
     now: () => 0,
     wait: () => Promise.resolve(),
     random: () => 0.5,
   }).search({
-    movie: "245569",
-    dates: ["2026-08-28"],
+    movie: "245893",
+    dates: ["2026-09-20"],
     area: "75006",
     partySize: 2,
     accessibleSeating: false,
@@ -77,7 +77,7 @@ describe("the coverage strip", () => {
     const [unreached] = settled.coverage.failed;
     if (unreached === undefined) throw new Error("no room failed");
 
-    expect(nameOf(unreached)).toBe("AMC Stonebriar 24 · 4:20p");
+    expect(nameOf(unreached)).toBe("AMC Stonebriar 24 · 11:45a");
   });
 });
 
@@ -242,6 +242,24 @@ describe("the three ways a search can end without a whole list", () => {
         "today",
       ).said,
     ).toBe("No showtime matches this query today.");
+  });
+
+  it("says the source refused, never that nothing matched or that no seats were free, when a refusal stopped the search", () => {
+    const stopped = reading(covering(172, 24), "settled", [], true);
+
+    expect(
+      emptyOf(
+        stopped,
+        { date: "2026-08-28", area: "75006", partySize: 2 },
+        "today",
+      ),
+    ).toEqual({
+      said: "The source refused, so the search stopped.",
+      ledes: [
+        "It answered 24 of the 172 candidates first, so this is not an answer about today.",
+        "A refusal lasts at least six minutes. Search again after that.",
+      ],
+    });
   });
 });
 

@@ -1,7 +1,7 @@
 import { seatMapCaptures } from "../corpus/captures.js";
 import type { CapturedSeatMap } from "../corpus/types.js";
-import { seatsFrom } from "../source/seat-map.js";
 import type { Seat } from "../source/seat-map.js";
+import { seatsFrom } from "../source/seat-map.js";
 import type { PositionedSeat } from "./auditorium-map.js";
 
 export const FETCHED_AT = 1000;

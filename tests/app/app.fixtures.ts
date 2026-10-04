@@ -2,7 +2,7 @@ import { AxeBuilder } from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
 import { fakeUpstream } from "@seatscout/core/testing";
 
-export const ASKING = "/?area=75006&date=2026-08-28&partySize=2";
+export const ASKING = "/?area=75006&date=2026-09-20&partySize=2";
 
 const WCAG: readonly string[] = [
   "wcag2a",

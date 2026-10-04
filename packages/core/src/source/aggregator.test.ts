@@ -3,12 +3,13 @@ import { nearbyTheatersCaptures } from "../corpus/captures.js";
 import {
   type FakeUpstream,
   fakeUpstream,
+  SOLD_OUT,
   type UpstreamScript,
 } from "../testing/fake-upstream.js";
 import { openSource, type SourcePolicy } from "./aggregator.js";
 import type { Source } from "./port.js";
 
-const SEAT_MAP = "/napi/seatMap/561748075";
+const SEAT_MAP = "/napi/seatMap/562185322";
 
 interface Rig {
   readonly fetch: FakeUpstream;
@@ -75,19 +76,19 @@ describe("the aggregating source", () => {
 
   it("asks for showtimes by movie, date and area", async () => {
     const { fetch, source } = rig({});
-    const reading = await source.showtimesFor("245569", "2026-08-28", "75006");
+    const reading = await source.showtimesFor("245893", "2026-09-20", "75006");
 
     expect(reading.ok).toBe(true);
     expect(pathsOf(fetch)[0]).toBe(
-      "/napi/theaterShowtimeGroupings/245569/2026-08-28?isdesktop=true&isDesktopMOP=true&zip=75006&partnerRestrictedTicketing=",
+      "/napi/theaterShowtimeGroupings/245893/2026-09-20?isdesktop=true&isDesktopMOP=true&zip=75006&partnerRestrictedTicketing=",
     );
   });
 
   it("refuses a cached answer on every route it reads", async () => {
     const { fetch, source } = rig({});
     await source.theatersNear("75006");
-    await source.showtimesFor("245569", "2026-08-28", "75006");
-    await source.seatsFor("561748075");
+    await source.showtimesFor("245893", "2026-09-20", "75006");
+    await source.seatsFor("562185322");
 
     expect(fetch.requests.map((request) => request.cache)).toEqual([
       "no-store",
@@ -97,9 +98,11 @@ describe("the aggregating source", () => {
   });
 
   it("names each upstream refusal in domain terms and spends no retry on it", async () => {
-    const { fetch, source } = rig({});
+    const { fetch, source } = rig({
+      routes: { "/napi/seatMap/561549583": SOLD_OUT },
+    });
     const reasons = await Promise.all(
-      ["561442975", "561682781", "561549583"].map(async (showtime) => {
+      ["563960289", "564335359", "561549583"].map(async (showtime) => {
         const reading = await source.seatsFor(showtime);
         return reading.ok ? "read" : reading.reason;
       }),
@@ -110,7 +113,7 @@ describe("the aggregating source", () => {
   });
 
   it("reads a rejection as the Source refusing this client, and never asks again into the block", async () => {
-    const listing = "/napi/theaterShowtimeGroupings/245569/2026-08-28";
+    const listing = "/napi/theaterShowtimeGroupings/245893/2026-09-20";
     const { fetch, source, waits } = rig({
       sequences: { [SEAT_MAP]: [403, 200], [listing]: [403, 200] },
     });
@@ -121,8 +124,8 @@ describe("the aggregating source", () => {
       attempts: 1,
     };
 
-    expect(await source.seatsFor("561748075")).toEqual(refused);
-    expect(await source.showtimesFor("245569", "2026-08-28", "75006")).toEqual(
+    expect(await source.seatsFor("562185322")).toEqual(refused);
+    expect(await source.showtimesFor("245893", "2026-09-20", "75006")).toEqual(
       refused,
     );
     expect(fetch.requests).toHaveLength(2);
@@ -133,7 +136,7 @@ describe("the aggregating source", () => {
     const { fetch, source, waits } = rig({
       sequences: { [SEAT_MAP]: [500, 500, 500] },
     });
-    const reading = await source.seatsFor("561748075");
+    const reading = await source.seatsFor("562185322");
 
     expect(reading).toEqual({
       ok: false,
@@ -171,11 +174,11 @@ describe("the aggregating source", () => {
       },
     );
 
-    expect((await source.seatsFor("561748075")).ok).toBe(false);
-    expect((await source.seatsFor("561748075")).ok).toBe(false);
+    expect((await source.seatsFor("562185322")).ok).toBe(false);
+    expect((await source.seatsFor("562185322")).ok).toBe(false);
     const issued = fetch.requests.length;
 
-    expect(await source.seatsFor("561748075")).toEqual({
+    expect(await source.seatsFor("562185322")).toEqual({
       ok: false,
       reason: "unreachable",
       fetchedAt: 1000,
@@ -184,12 +187,12 @@ describe("the aggregating source", () => {
     expect(fetch.requests).toHaveLength(issued);
 
     at(6000);
-    expect((await source.seatsFor("561748075")).ok).toBe(true);
+    expect((await source.seatsFor("562185322")).ok).toBe(true);
     expect(fetch.requests).toHaveLength(issued + 1);
   });
 
   it("counts an answered read, refusal included, as evidence the upstream is up", async () => {
-    const other = "/napi/seatMap/561882799";
+    const other = "/napi/seatMap/561432171";
     const { fetch, source } = rig(
       { sequences: { [SEAT_MAP]: [500], [other]: [500] } },
       {
@@ -200,12 +203,12 @@ describe("the aggregating source", () => {
       },
     );
 
-    expect((await source.seatsFor("561748075")).ok).toBe(false);
-    expect((await source.seatsFor("561549583")).ok).toBe(false);
-    expect((await source.seatsFor("561882799")).ok).toBe(false);
+    expect((await source.seatsFor("562185322")).ok).toBe(false);
+    expect((await source.seatsFor("564335359")).ok).toBe(false);
+    expect((await source.seatsFor("561432171")).ok).toBe(false);
     const issued = fetch.requests.length;
 
-    expect((await source.seatsFor("561748075")).ok).toBe(true);
+    expect((await source.seatsFor("562185322")).ok).toBe(true);
     expect(fetch.requests).toHaveLength(issued + 1);
   });
 
@@ -232,10 +235,10 @@ describe("the aggregating source", () => {
   });
 
   it("opens the circuit on the default policy's own threshold and break", async () => {
-    const dead = ["561748075", "561882799", "561565820"];
+    const dead = ["562185322", "561432171", "564755702"];
     const { fetch, source, at } = rig({
       sequences: Object.fromEntries(
-        [...dead, "561462741"].map((showtime) => [
+        [...dead, "562247516"].map((showtime) => [
           `/napi/seatMap/${showtime}`,
           [500, 500, 500],
         ]),
@@ -245,19 +248,19 @@ describe("the aggregating source", () => {
     for (const showtime of dead.slice(0, 2))
       expect((await source.seatsFor(showtime)).ok).toBe(false);
     const stillTrying = fetch.requests.length;
-    expect((await source.seatsFor("561565820")).ok).toBe(false);
+    expect((await source.seatsFor("564755702")).ok).toBe(false);
     expect(fetch.requests.length).toBeGreaterThan(stillTrying);
 
     const opened = fetch.requests.length;
-    await source.seatsFor("561462741");
+    await source.seatsFor("562247516");
     expect(fetch.requests).toHaveLength(opened);
 
     at(5999);
-    await source.seatsFor("561462741");
+    await source.seatsFor("562247516");
     expect(fetch.requests).toHaveLength(opened);
 
     at(6000);
-    await source.seatsFor("561462741");
+    await source.seatsFor("562247516");
     expect(fetch.requests).toHaveLength(opened + 1);
   });
 
@@ -271,7 +274,7 @@ describe("the aggregating source", () => {
         openForMs: 1,
       },
     );
-    const reading = await source.seatsFor("561748075");
+    const reading = await source.seatsFor("562185322");
 
     expect(reading.attempts).toBe(2);
     expect(waits).toEqual([20]);

@@ -71,7 +71,7 @@ const lines = [
 for (const [name, body] of GROUPS) {
   lines.push(
     "",
-    `export const ${name}: ReadonlyMap<string, ${body}> = new Map([`,
+    `export const ${name}: ReadonlyMap<string, ${body}> = new Map<string, ${body}>([`,
   );
   for (const file of members.get(name))
     lines.push(`  ["${file}", ${identifier(file)}],`);

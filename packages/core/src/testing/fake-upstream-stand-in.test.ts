@@ -17,7 +17,7 @@ describe("what the fake upstream stands in for a route the corpus never recorded
     const first = await fetch("/napi/seatMap/000000001");
     const again = await fetch("/napi/seatMap/000000001");
     const other = await fetch("/napi/seatMap/000000002");
-    const soldOut = await fetch("/napi/seatMap/561549583");
+    const started = await fetch("/napi/seatMap/564335359");
     const [firstBody, againBody, otherBody] = await Promise.all([
       first.text(),
       again.text(),
@@ -29,7 +29,7 @@ describe("what the fake upstream stands in for a route the corpus never recorded
     expect(auditoriums.has(otherBody)).toBe(true);
     expect(againBody).toBe(firstBody);
     expect(otherBody).not.toBe(firstBody);
-    expect(soldOut.status).toBe(410);
+    expect(started.status).toBe(404);
     for (const elsewhere of [
       "/napi/theaterMovies/aacbt",
       "/napi/theaterMovieShowtimes/another",

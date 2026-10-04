@@ -23,13 +23,13 @@ describe("reading the Source from a phone", () => {
 
   it("names the Source's own page as the referer", async () => {
     const { sent, reach } = answering();
-    await reach("/napi/seatMap/558117351");
+    await reach("/napi/seatMap/564362581");
     expect(sent[0]?.headers["Referer"]).toBe("https://www.fandango.com/");
   });
 
   it("names a browser as the user agent, as the capture does", async () => {
     const { sent, reach } = answering();
-    await reach("/napi/seatMap/558117351");
+    await reach("/napi/seatMap/564362581");
     expect(sent[0]?.headers["User-Agent"]).toMatch(/^Mozilla\/5\.0 /);
   });
 
@@ -48,7 +48,7 @@ describe("reading the Source from a phone", () => {
       asked.push(init?.cache);
       return Promise.resolve(answered);
     });
-    await reach("/napi/seatMap/558117351", { cache: "no-store" });
+    await reach("/napi/seatMap/564362581", { cache: "no-store" });
     expect(asked).toEqual(["no-store"]);
   });
 

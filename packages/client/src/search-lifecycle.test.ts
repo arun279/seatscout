@@ -2,6 +2,7 @@ import { narrowed } from "@seatscout/core";
 import { describe, expect, it } from "vitest";
 import {
   accountedIn,
+  byStart,
   LISTING,
   listing,
   namedIn,
@@ -34,21 +35,23 @@ describe("a search in flight", () => {
     const settled = await run.search.done;
     const again = await searching({ at: [STONEBRIAR] });
 
-    expect(settled.coverage.failed).toEqual(refused);
+    const failed = byStart(settled.coverage.failed);
+
+    expect(failed).toEqual(refused);
     expect(
-      settled.coverage.failed.map((showtime) => [
+      failed.map((showtime) => [
         showtime.presentation.theater.name,
         showtime.startsAt,
       ]),
     ).toEqual([
-      [STONEBRIAR, "2026-08-28T16:20:00-05:00"],
-      [STONEBRIAR, "2026-08-28T18:00:00-05:00"],
+      [STONEBRIAR, "2026-09-20T11:45:00-05:00"],
+      [STONEBRIAR, "2026-09-20T14:30:00-05:00"],
     ]);
     expect(
       namedIn(settled.coverage).map((showtime) => showtime.startsAt),
     ).not.toContain(stonebriar[0]?.startsAt);
-    expect(settled.coverage.checked).toBe(2);
-    expect((await again.search.done).coverage.checked).toBe(4);
+    expect(settled.coverage.checked).toBe(16);
+    expect((await again.search.done).coverage.checked).toBe(18);
   });
 
   it("stops issuing requests when it is aborted and settles with what it knew", async () => {
@@ -62,7 +65,7 @@ describe("a search in flight", () => {
     expect(settled.phase).toBe("settled");
     expect(settled.results).toHaveLength(1);
     expect(settled.coverage.candidates - accountedIn(settled.coverage)).toBe(
-      171,
+      493,
     );
   });
 
@@ -73,7 +76,7 @@ describe("a search in flight", () => {
 
     expect(run.requested()).toEqual([]);
     expect(settled.phase).toBe("settled");
-    expect(settled.coverage.candidates).toBe(176);
+    expect(settled.coverage.candidates).toBe(506);
     expect(run.snapshots.map((snapshot) => snapshot.phase)).toEqual([
       "settled",
     ]);

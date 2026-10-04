@@ -62,13 +62,15 @@ describe("the catalogue listing", () => {
       noSeatMap: counted(catalogue, "noSeatMap"),
       started: counted(catalogue, "started"),
       soldOut: counted(catalogue, "soldOut"),
+      salesOff: counted(catalogue, "salesOff"),
       unidentified: catalogue.unidentified.length,
     }).toEqual({
-      bookable: 100,
+      bookable: 262,
       noSeatMap: 3,
       started: 0,
-      soldOut: 1,
-      unidentified: 72,
+      soldOut: 0,
+      salesOff: 9,
+      unidentified: 232,
     });
   });
 
@@ -83,7 +85,7 @@ describe("the catalogue listing", () => {
       answered.push(everyShowtime(await catalogueOf(movie, date)).length);
     }
 
-    expect(listed).toEqual([236, 80, 176, 175, 157]);
+    expect(listed).toEqual([120, 41, 460, 506, 166]);
     expect(answered).toEqual(listed);
   });
 
@@ -94,7 +96,7 @@ describe("the catalogue listing", () => {
     const partly = payloadOf(await readingOf(asTheSourceAnsweredIt()));
     const none = payloadOf(await readingOf(without(capture, "id")));
 
-    expect(listed).toBe(176);
+    expect(listed).toBe(506);
     expect([whole, partly, none].map((it) => everyShowtime(it).length)).toEqual(
       [listed, listed, listed],
     );
@@ -102,11 +104,11 @@ describe("the catalogue listing", () => {
       whole.unidentified.length,
       partly.unidentified.length,
       none.unidentified.length,
-    ]).toEqual([0, 72, 172]);
+    ]).toEqual([0, 232, 494]);
   });
 
   it("asks why a Showtime is unbookable before it asks whether it was identified", async () => {
-    const yesterday = "2026-08-27";
+    const yesterday = "2026-09-19";
     const capture = groupingCapture(WIDE_RELEASE, yesterday);
     const catalogue = payloadOf(
       await sourced(
@@ -119,7 +121,7 @@ describe("the catalogue listing", () => {
       noSeatMap: counted(catalogue, "noSeatMap"),
       started: counted(catalogue, "started"),
       unidentified: catalogue.unidentified.length,
-    }).toEqual({ bookable: 0, noSeatMap: 3, started: 77, unidentified: 0 });
+    }).toEqual({ bookable: 0, noSeatMap: 3, started: 201, unidentified: 252 });
   });
 
   it("keeps the Presentation and the ticketing URL of a Showtime it cannot identify", async () => {
@@ -213,7 +215,7 @@ describe("the catalogue listing", () => {
       ),
     ).showtimesFor(WIDE_RELEASE, TODAY, AREA);
 
-    expect(payloadOf(reading).bookable).toHaveLength(172);
+    expect(payloadOf(reading).bookable).toHaveLength(494);
   });
 
   it("reports a Source it could not read rather than raising", async () => {

@@ -50,10 +50,10 @@ describe("what a re-verification offers instead", () => {
     const middle = alternativesIn(await reference.verify());
     const nearest = alternativesIn(await front.verify());
 
-    expect(seatsIn(reference.result)).toEqual(["F9", "F8"]);
-    expect(seatsIn(front.result)).toEqual(["A8", "A7"]);
+    expect(seatsIn(reference.result)).toEqual(["F5", "F6"]);
+    expect(seatsIn(front.result)).toEqual(["B8", "B9"]);
     expect(middle[0]?.reasons.rowFromFront).toBe(6);
-    expect(nearest[0]?.reasons.rowFromFront).toBe(1);
+    expect(nearest[0]?.reasons.rowFromFront).toBe(3);
   });
 
   it("offers only Seat Groups carrying an accessible Seat to a Query that asked for one", async () => {
@@ -64,11 +64,10 @@ describe("what a re-verification offers instead", () => {
     });
     const alternatives = alternativesIn(await run.verify());
 
-    expect(seatsIn(run.result)).toEqual(["D4", "D3"]);
+    expect(seatsIn(run.result)).toEqual(["D8", "D7"]);
     expect(alternatives.map(seatsIn)).toEqual([
-      ["D6", "D5"],
-      ["D2", "D1"],
-      ["D8", "D7"],
+      ["D5", "D4"],
+      ["D12", "D11"],
     ]);
     expect(
       alternatives.filter((alternative) =>
@@ -95,7 +94,7 @@ describe("what a re-verification offers instead", () => {
     const run = await verifying({ partySize: 3, room: POD_ROOM });
     const verified = await run.verify();
 
-    expect(seatsIn(run.result)).toEqual(["E7", "E6", "E5"]);
+    expect(seatsIn(run.result)).toEqual(["G8", "G7", "G6"]);
     expect(run.result.podDividers).toBe(1);
     expect(verified.ok && verified.result.podDividers).toBe(1);
     expect(verified.ok && verified.result.score).toBe(run.result.score);

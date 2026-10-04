@@ -2,6 +2,7 @@ import { narrowed } from "@seatscout/core";
 import { describe, expect, it } from "vitest";
 import {
   accountedIn,
+  byStart,
   LISTING,
   listing,
   SEAT_MAP,
@@ -36,14 +37,14 @@ describe("retrying a search", () => {
 
     const again = await run.search.retry();
 
-    expect(settled.coverage.failed).toEqual(refused);
-    expect(settled.coverage.checked).toBe(2);
+    expect(byStart(settled.coverage.failed)).toEqual(refused);
+    expect(settled.coverage.checked).toBe(16);
     expect(run.requested().slice(asked)).toEqual(
-      refused.map((showtime) => showtime.id),
+      settled.coverage.failed.map((showtime) => showtime.id),
     );
     expect(again.coverage.failed).toEqual([]);
-    expect(again.coverage.checked).toBe(4);
-    expect(again.results).toHaveLength(4);
+    expect(again.coverage.checked).toBe(18);
+    expect(again.results).toHaveLength(18);
     expect(again.phase).toBe("settled");
     expect(run.search.snapshot()).toBe(again);
   });
@@ -61,8 +62,8 @@ describe("retrying a search", () => {
       "searching",
       "settled",
     ]);
-    expect(during[0]?.coverage.failed).toEqual(refused);
-    expect(during[0]?.coverage.checked).toBe(2);
+    expect(byStart(during[0]?.coverage.failed ?? [])).toEqual(refused);
+    expect(during[0]?.coverage.checked).toBe(16);
     expect(
       during.map(
         (snapshot) =>
@@ -97,7 +98,7 @@ describe("retrying a search", () => {
       refused.id,
     ]);
     expect(again.coverage.failed).toEqual([refused]);
-    expect(again.coverage.checked).toBe(3);
+    expect(again.coverage.checked).toBe(17);
   });
 
   it("re-reads the listing when it was the listing that could not be read", async () => {
@@ -110,8 +111,8 @@ describe("retrying a search", () => {
 
     expect(settled.phase).toBe("unreachable");
     expect(again.phase).toBe("settled");
-    expect(again.coverage.candidates).toBe(176);
-    expect(again.coverage.checked).toBe(172);
+    expect(again.coverage.candidates).toBe(506);
+    expect(again.coverage.checked).toBe(494);
   });
 
   it("answers the search in flight rather than starting another while it is still running", async () => {
@@ -121,7 +122,7 @@ describe("retrying a search", () => {
     const settled = await run.search.done;
 
     expect(await retried).toBe(settled);
-    expect(run.requested()).toHaveLength(4);
+    expect(run.requested()).toHaveLength(18);
   });
 
   it("keeps the Showtimes it could not reach when the retry is abandoned part way", async () => {
@@ -132,9 +133,9 @@ describe("retrying a search", () => {
 
     const abandoned = await again;
 
-    expect(abandoned.coverage.failed).toEqual(refused);
+    expect(byStart(abandoned.coverage.failed)).toEqual(refused);
     expect(abandoned.days).toEqual([
-      { date: "2026-08-28", read: 4, reading: 0, unread: 0 },
+      { date: "2026-09-20", read: 18, reading: 0, unread: 0 },
     ]);
   });
 

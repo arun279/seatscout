@@ -9,9 +9,9 @@ import {
 import { auditoriumMap } from "./auditorium-map.js";
 import { seatGroupsIn } from "./seat-group.js";
 
-const AUDITORIUM_WHOSE_ROW_INDEX_SKIPS_TWO = "561865199";
-const AUDITORIUM_WHOSE_ROW_LETTERS_SKIP_ONE = "561462741";
-const AUDITORIUM_NUMBERED_WITHOUT_LETTERS = "561609773";
+const AUDITORIUM_WHOSE_ROW_INDEX_SKIPS_TWO = "562212808";
+const AUDITORIUM_WHOSE_ROW_LETTERS_SKIP_ONE = "562247516";
+const AUDITORIUM_NUMBERED_WITHOUT_LETTERS = "562697591";
 
 describe("the Auditorium map over the captured corpus", () => {
   it("reads every captured Auditorium into contiguous rows of ordered Seats", () => {
@@ -90,7 +90,7 @@ describe("the Auditorium map over the captured corpus", () => {
     );
     const unlabelled = rows.filter((row) => row.label === null);
 
-    expect(rows).toHaveLength(376);
+    expect(rows).toHaveLength(404);
     expect(
       unlabelled
         .map((row) =>
@@ -100,12 +100,12 @@ describe("the Auditorium map over the captured corpus", () => {
         )
         .toSorted((left, right) => left.join().localeCompare(right.join())),
     ).toEqual([
-      ["B", "WC"],
+      ["C", "WC"],
       ["C", "WC"],
       ["D", "WC"],
       ["E", "WC"],
-      ["J", "WC"],
-      ["M", "WC"],
+      ["N", "WC"],
+      ["Q", "WC"],
     ]);
   });
 
@@ -119,7 +119,7 @@ describe("the Auditorium map over the captured corpus", () => {
     expect(labelled.map((labels) => new Set(labels).size)).toEqual(
       labelled.map((labels) => labels.length),
     );
-    expect(labelled.flat()).toHaveLength(370);
+    expect(labelled.flat()).toHaveLength(398);
   });
 
   it("labels an Auditorium that skips a row letter, and one numbered without letters at all", () => {
@@ -151,6 +151,11 @@ describe("the Auditorium map over the captured corpus", () => {
       "4",
       "5",
       "6",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11",
     ]);
   });
 
@@ -162,7 +167,7 @@ describe("the Auditorium map over the captured corpus", () => {
       map.rows.flatMap((row) => row.gapAfter),
     );
 
-    expect(gaps).toHaveLength(6395);
+    expect(gaps).toHaveLength(6986);
     expect(gaps.length).toBe(
       captured.reduce(
         (total, map) => total + map.seatCount - map.rows.length,
@@ -173,7 +178,7 @@ describe("the Auditorium map over the captured corpus", () => {
       contiguous: gaps.filter((gap) => gap === null).length,
       pods: gaps.filter((gap) => gap === "pod").length,
       aisles: gaps.filter((gap) => gap === "aisle").length,
-    }).toEqual({ contiguous: 5766, pods: 462, aisles: 167 });
+    }).toEqual({ contiguous: 6563, pods: 269, aisles: 154 });
   });
 
   it("locates the recommended Seat Group where its Seats are drawn", () => {
@@ -230,8 +235,8 @@ describe("the Auditorium map over the captured corpus", () => {
       [],
     );
 
-    expect(skipping.seatCount).toBe(304);
-    expect(skipping.bookableCount).toBe(25);
+    expect(skipping.seatCount).toBe(303);
+    expect(skipping.bookableCount).toBe(266);
     expect(captured.map((map) => map.bookableCount)).toEqual(
       captured.map((map) =>
         map.rows.reduce((total, row) => total + row.bookableCount, 0),

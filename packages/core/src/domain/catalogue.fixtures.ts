@@ -7,7 +7,7 @@ import type {
   Unidentified,
 } from "./catalogue.js";
 
-const CAPTURE = "showtimes/grouping-245569-2026-08-28.json";
+const CAPTURE = "showtimes/grouping-245893-2026-09-20.json";
 
 export const captured = (): Catalogue => {
   const capture = showtimeGroupingCaptures.get(CAPTURE);

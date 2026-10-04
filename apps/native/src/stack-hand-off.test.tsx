@@ -33,7 +33,7 @@ jest.mock("expo-network", () => ({
 jest.mock("./host/source.js", () => mockSource);
 
 const LISTED =
-  "/?movie=246427&date=2026-08-28&area=75006&partySize=2&from=19:00&until=19:20";
+  "/?movie=246473&date=2026-09-20&area=75006&partySize=2&from=19:00&until=19:20";
 
 interface Routed {
   readonly routes: readonly {
@@ -131,7 +131,7 @@ describe("the hand-off over the list", () => {
   });
 
   it("goes to the list when a hand-off link is opened with no Seat Group handed to it", async () => {
-    const app = opened("/hand-off?group=561527980:G6+G7");
+    const app = opened("/hand-off?group=564424799:E12+E11");
     await app;
 
     expect(app.getPathname()).toBe("/");

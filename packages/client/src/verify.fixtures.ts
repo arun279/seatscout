@@ -20,23 +20,20 @@ import { inMemoryStore, type KeyValueStore } from "./store.js";
 import { openVerification, type Verified } from "./verify.js";
 
 export const SEAT_MAP = "/napi/seatMap/";
-export const LISTING = "/napi/theaterShowtimeGroupings/245569/2026-08-28";
+export const LISTING = "/napi/theaterShowtimeGroupings/245893/2026-09-20";
 export const AREA = "75006";
-export const TODAY = "2026-08-28";
-export const WIDE_RELEASE = "245569";
+export const TODAY = "2026-09-20";
+export const WIDE_RELEASE = "245893";
 const STONEBRIAR = "AMC Stonebriar 24";
-const ROOM = "561562311";
-export const ACCESSIBLE_ROOM = "561898261";
-export const POD_ROOM = "561748075";
+const ROOM = "564442282";
+export const ACCESSIBLE_ROOM = "564679720";
+export const POD_ROOM = "562185322";
 export const SEARCHED_AT = 1000;
 export const VERIFIED_AT = 61000;
 export const AN_HOUR: number = 60 * 60 * 1000;
 const SEED = 4;
 
-interface Answer {
-  readonly status: number;
-  readonly body: string;
-}
+type Answer = NonNullable<UpstreamScript["routes"]>[string];
 
 type Script = Omit<UpstreamScript, "seed" | "routes">;
 

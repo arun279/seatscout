@@ -1,8 +1,8 @@
 import { REFERENCE, type Theater } from "@seatscout/client";
 import { describe, expect, it } from "vitest";
 import type { ProgrammeState } from "./programme.js";
-import { type Terms, termsFrom, termsOf } from "./terms.js";
 import { EVERY_PARAMETER, TODAY } from "./terms.fixtures.js";
+import { type Terms, termsFrom, termsOf } from "./terms.js";
 import { type TitleCardEntry, termLinesOf } from "./title-card-terms.js";
 
 const NOTHING_READ: ProgrammeState = {

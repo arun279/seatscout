@@ -44,16 +44,18 @@ into nothing at all, a key never captured before, a seat status outside the reco
 vocabulary, a seat type outside it, a listed screening the catalogue did not refuse that
 carries no word for on sale, and a neighbour link that disagrees with the geometry.
 
-**One list stands beside the corpus, for a status the corpus cannot hold.**
+**One list stands beside the corpus, for a status no capture can be relied on to hold.**
 `SETTLED_STATUSES` names a seat status that has been measured against the live Source and
 settled as bookable or not, and the known statuses are the corpus's plus those. It holds `H`
 alone: a seat held in another shopper's checkout, 84 seats among the 75,591 read across 492
 live maps on 2026-08-29, 0.111% of them, left out of the upstream's own available counts,
 refused by its booking interface, and resolving within minutes to `R` when the purchase
-completes or back to `A` when it lapses. A state that rare and that short-lived does not land
-in a capture: three passes over about 42,000 seats had already missed it, and refreshing the
-corpus until one caught an `H` would freeze one shopper's abandoned cart into the fixtures as
-though it were a property of the room. A word nobody has measured still turns the check red
+completes or back to `A` when it lapses. A state that rare and that short-lived lands in a
+capture by accident if at all: three passes over about 42,000 seats missed it, the refresh of
+2026-09-20 caught two adjoining Seats of one AMC room, and refreshing the corpus until one
+caught an `H` would freeze a shopper's abandoned cart into the fixtures as though it were a
+property of the room. Those two are that cart, which is why the list stays rather than why it
+goes: the next refresh may hold none. A word nobody has measured still turns the check red
 on the first night, which is the whole of what the check is for. The list is not a free pass
 either: the unit suite reads every status on it through the seat map adapter and fails unless
 the adapter agrees with what the list declares, so it cannot drift from the known-bookable
@@ -99,7 +101,7 @@ nearly every row, and weak against a further rare word at a rare Theater, which 
 this case had.
 
 **The neighbour links are the live half of an invariant the corpus already carries.** The
-Seat Group test holds all 10,974 captured links to the geometric bands; that guards the
+Seat Group test holds all 10,686 captured links to the geometric bands; that guards the
 fixtures. Here every link a live map sends must name the Seat immediately beside it in the
 same row, on the side it claims, across a gap the same band rule calls contiguous. It is the
 adapter's own rule applied to today's rooms, not a second copy of it.

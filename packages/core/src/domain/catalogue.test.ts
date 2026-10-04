@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { type Catalogue, narrowed } from "./catalogue.js";
 import {
   captured,
   counted,
   everyShowtime,
   theaterNamed,
 } from "./catalogue.fixtures.js";
+import { type Catalogue, narrowed } from "./catalogue.js";
 
 const asUnidentified = (catalogue: Catalogue): Catalogue => ({
   bookable: [],
@@ -24,8 +24,8 @@ describe("narrowing a catalogue", () => {
     const catalogue = captured();
 
     expect(counted(catalogue)).toEqual({
-      bookable: 172,
-      unbookable: 4,
+      bookable: 494,
+      unbookable: 12,
       unidentified: 0,
     });
     expect(narrowed(catalogue, {})).toEqual(catalogue);
@@ -43,31 +43,31 @@ describe("narrowing a catalogue", () => {
 
     expect(counted(narrowed(catalogue, {}))).toEqual({
       ...none,
-      unidentified: 176,
+      unidentified: 506,
     });
     expect(counted(narrowed(catalogue, { theaters }))).toEqual({
       ...none,
-      unidentified: 17,
+      unidentified: 50,
     });
     expect(counted(narrowed(catalogue, { formats: ["IMAX"] }))).toEqual({
       ...none,
-      unidentified: 1,
+      unidentified: 18,
     });
     expect(
       counted(narrowed(catalogue, { chains: ["Cinemark Theatres"] })),
-    ).toEqual({ ...none, unidentified: 63 });
+    ).toEqual({ ...none, unidentified: 207 });
     expect(counted(narrowed(catalogue, { amenities: ["Dine-In"] }))).toEqual({
       ...none,
-      unidentified: 16,
+      unidentified: 27,
     });
     expect(
       counted(
         narrowed(catalogue, {
-          from: "2026-08-28T19:00",
-          until: "2026-08-28T22:00",
+          from: "2026-09-20T19:00",
+          until: "2026-09-20T22:00",
         }),
       ),
-    ).toEqual({ ...none, unidentified: 46 });
+    ).toEqual({ ...none, unidentified: 119 });
   });
 
   it("narrows to the one Theater a Query names", () => {
@@ -78,11 +78,7 @@ describe("narrowing a catalogue", () => {
           theaters: [theaterNamed(catalogue, "Cinemark Dallas XD and IMAX")],
         }),
       ),
-    ).toEqual({
-      bookable: 14,
-      unbookable: 0,
-      unidentified: 0,
-    });
+    ).toEqual({ bookable: 47, unbookable: 0, unidentified: 0 });
   });
 
   it("narrows the identified Showtimes to the Theaters asked for", () => {
@@ -94,7 +90,7 @@ describe("narrowing a catalogue", () => {
     const kept = narrowed(catalogue, { theaters });
 
     expect(counted(kept)).toEqual({
-      bookable: 14,
+      bookable: 47,
       unbookable: 3,
       unidentified: 0,
     });
@@ -118,15 +114,15 @@ describe("narrowing a catalogue", () => {
 
     expect(
       counted(narrowed(catalogue, { chains: ["Cinemark Theatres"] })),
-    ).toEqual({ bookable: 63, unbookable: 0, unidentified: 0 });
+    ).toEqual({ bookable: 207, unbookable: 0, unidentified: 0 });
     expect(
       counted(narrowed(catalogue, { chains: ["AMC", "Landmark"] })),
-    ).toEqual({ bookable: 26, unbookable: 4, unidentified: 0 });
+    ).toEqual({ bookable: 79, unbookable: 3, unidentified: 0 });
     expect(
       everyShowtime(catalogue).filter(
         (showtime) => showtime.presentation.theater.chain === undefined,
       ),
-    ).toHaveLength(17);
+    ).toHaveLength(33);
   });
 
   it("admits nothing when the Chains asked for are none", () => {
@@ -141,18 +137,18 @@ describe("narrowing a catalogue", () => {
     const catalogue = captured();
 
     expect(counted(narrowed(catalogue, { amenities: ["Dine-In"] }))).toEqual({
-      bookable: 16,
+      bookable: 27,
       unbookable: 0,
       unidentified: 0,
     });
     expect(
       counted(narrowed(catalogue, { amenities: ["Closed Captioning"] })),
-    ).toEqual({ bookable: 43, unbookable: 1, unidentified: 0 });
+    ).toEqual({ bookable: 105, unbookable: 0, unidentified: 0 });
     expect(
       counted(
         narrowed(catalogue, { amenities: ["Dine-In", "Closed Captioning"] }),
       ),
-    ).toEqual({ bookable: 59, unbookable: 1, unidentified: 0 });
+    ).toEqual({ bookable: 132, unbookable: 0, unidentified: 0 });
   });
 
   it("admits nothing when the Amenities asked for are none", () => {
@@ -167,18 +163,18 @@ describe("narrowing a catalogue", () => {
     const catalogue = captured();
 
     expect(counted(narrowed(catalogue, { formats: ["IMAX"] }))).toEqual({
-      bookable: 1,
+      bookable: 18,
       unbookable: 0,
       unidentified: 0,
     });
     expect(counted(narrowed(catalogue, { formats: ["ScreenX"] }))).toEqual({
-      bookable: 2,
+      bookable: 13,
       unbookable: 0,
       unidentified: 0,
     });
     expect(
       counted(narrowed(catalogue, { formats: ["IMAX", "ScreenX"] })),
-    ).toEqual({ bookable: 3, unbookable: 0, unidentified: 0 });
+    ).toEqual({ bookable: 31, unbookable: 0, unidentified: 0 });
   });
 
   it("admits nothing when the Formats asked for are none", () => {
@@ -194,17 +190,17 @@ describe("narrowing a catalogue", () => {
     const theaters = [theaterNamed(catalogue, "Cinemark Dallas XD and IMAX")];
 
     expect(counted(narrowed(catalogue, { theaters, formats: ["XD"] }))).toEqual(
-      { bookable: 4, unbookable: 0, unidentified: 0 },
+      { bookable: 24, unbookable: 0, unidentified: 0 },
     );
     expect(
       counted(
         narrowed(catalogue, {
           theaters,
           formats: ["XD"],
-          until: "2026-08-28T20:00",
+          until: "2026-09-20T20:00",
         }),
       ),
-    ).toEqual({ bookable: 2, unbookable: 0, unidentified: 0 });
+    ).toEqual({ bookable: 16, unbookable: 0, unidentified: 0 });
     expect(
       counted(
         narrowed(catalogue, {
@@ -212,6 +208,6 @@ describe("narrowing a catalogue", () => {
           amenities: ["Recliners"],
         }),
       ),
-    ).toEqual({ bookable: 57, unbookable: 0, unidentified: 0 });
+    ).toEqual({ bookable: 183, unbookable: 0, unidentified: 0 });
   });
 });

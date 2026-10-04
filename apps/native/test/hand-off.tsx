@@ -16,22 +16,22 @@ import { NOW } from "./rooms.js";
 export const HOOKY_ADDISON = "Hooky Entertainment Addison + SDX";
 
 export const HOOKY_TICKETING =
-  "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-08-28%2B09%3A00&from=mov_det_showtimes&source=desktop&mid=245569&tid=aawza&dfam=webbrowser&showtimehashcode=v2-d2998da8682c402f6a3d3b08e2e04eebbebc86096e8467e63cc506ab808dec5a";
+  "https://tickets.fandango.com/transaction/ticketing/mobile/jump.aspx?sdate=2026-09-20%2B09%3A00&from=mov_det_showtimes&source=desktop&mid=245893&tid=aawza&dfam=webbrowser&showtimehashcode=v2-4be31253fe8dbfc0de135d40176bce4135e2eae47ea913ffc171124b31b9e3da";
 
 export const OFFLINE_HERE =
   "Offline. Seats are never cached, so this hand-off can be checked when the connection returns.";
 
 const WHOLE_LISTING: SearchTerms = {
-  movie: "245569",
-  dates: ["2026-08-28"],
+  movie: "245893",
+  dates: ["2026-09-20"],
   area: "75006",
   partySize: 2,
   accessibleSeating: false,
 };
 
-export const TODAY = "2026-08-28";
+export const TODAY = "2026-09-20";
 
-const HOOKY_ADDISON_9AM = 561527980;
+const HOOKY_ADDISON_9AM = 564424799;
 
 const SEAT_MAP = "/napi/seatMap/";
 
@@ -174,7 +174,7 @@ export const take = (seats: string): Promise<void> =>
 export const taken = async (room: Room): Promise<Opened> => {
   const counter = await opened();
   counter.roomAtHandOff(room);
-  await take("G6 and G7");
+  await take("E12 and E11");
   await counter.answered();
   return counter;
 };

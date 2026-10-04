@@ -33,11 +33,11 @@ name: Ask, the ranked Seat Groups, the hand-off, the ledger and the Room, each l
 - extendedWaitUntil:
     visible: What are we seeing\?
     timeout: 15000
-- inputText: Dog Stars
+- inputText: Practical Magic
 - extendedWaitUntil:
-    visible: The Dog Stars \(2026\)
+    visible: Practical Magic 2 \(2026\)
     timeout: 30000
-- tapOn: The Dog Stars \(2026\)
+- tapOn: Practical Magic 2 \(2026\)
 - hideKeyboard
 - tapOn: Find seats
 - extendedWaitUntil:

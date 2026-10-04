@@ -142,7 +142,7 @@ describe("the catalogue's areas, Theaters and Chains", () => {
       if (!(await readingOf(instead(capture, "chainCode", code))).ok)
         refused.push(code);
 
-    expect(unnamed.bookable).toHaveLength(172);
+    expect(unnamed.bookable).toHaveLength(494);
     expect(
       [
         ...new Set(
@@ -164,26 +164,24 @@ describe("the catalogue's areas, Theaters and Chains", () => {
       }
 
     expect(Object.fromEntries(tally)).toEqual({
-      "": 496,
-      "3D": 4,
-      "3D+D-BOX+XD": 3,
-      "3D+Laser": 4,
-      "3D+XD": 4,
-      "D-BOX": 45,
-      "D-BOX+DFX": 5,
-      "D-BOX+XD": 40,
-      DFX: 5,
-      "Dolby Atmos+HDR by Barco": 4,
-      "Dolby Atmos+The Big Show": 4,
-      "Dolby Cinema": 19,
-      "IMAX+IMAX with Laser": 2,
-      Laser: 99,
-      "Laser+ScreenX": 4,
-      SDX: 13,
-      ScreenX: 4,
-      "Sony Digital": 4,
-      XD: 53,
-      XL: 12,
+      "3D": 2,
+      "": 719,
+      Laser: 149,
+      XL: 14,
+      XD: 118,
+      "D-BOX+XD": 89,
+      "Dolby Cinema": 36,
+      SDX: 24,
+      ScreenX: 10,
+      "D-BOX": 48,
+      DFX: 8,
+      "D-BOX+DFX": 8,
+      IMAX: 16,
+      "Dolby Atmos+The Big Show": 6,
+      "IMAX+IMAX with Laser": 20,
+      "Laser+ScreenX": 15,
+      "Dolby Atmos+HDR by Barco": 6,
+      "Sony Digital": 5,
     });
   });
 
@@ -196,14 +194,13 @@ describe("the catalogue's areas, Theaters and Chains", () => {
       }
 
     expect(Object.fromEntries(tally)).toEqual({
-      "": 157,
-      "Accessibility Devices": 43,
-      "Accessibility Devices+Closed Captioning": 84,
-      "Accessibility Devices+Closed Captioning+Recliners": 110,
-      "Accessibility Devices+Dine-In+Recliners": 61,
-      "Accessibility Devices+Recliners": 41,
-      "Closed Captioning+Recliners": 13,
-      Recliners: 315,
+      Recliners: 525,
+      "Accessibility Devices+Closed Captioning+Recliners": 162,
+      "": 256,
+      "Accessibility Devices+Dine-In+Recliners": 76,
+      "Accessibility Devices+Closed Captioning": 134,
+      "Accessibility Devices": 64,
+      "Accessibility Devices+Recliners": 76,
     });
   });
 

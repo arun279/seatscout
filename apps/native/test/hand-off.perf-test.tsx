@@ -18,7 +18,7 @@ const drawn = (counter: Counter) => (
 
 const taking = async () => {
   await fireEvent.press(
-    await screen.findByRole("button", { name: "Take G6 and G7" }),
+    await screen.findByRole("button", { name: "Take E12 and E11" }),
   );
 };
 
@@ -35,12 +35,12 @@ test("the hand-off sheet, opened and confirmed", async () => {
 
 test("the hand-off sheet's taken verdict and the room's next best", async () => {
   const counter = await atTheCounter();
-  counter.roomAtHandOff({ statuses: { G6: "X" } });
+  counter.roomAtHandOff({ statuses: { E12: "X" } });
 
   await measureRenders(drawn(counter), {
     scenario: async () => {
       await taking();
-      await screen.findByRole("button", { name: "Take F6 and F7" });
+      await screen.findByRole("button", { name: "Take F13 and F12" });
     },
   });
 });

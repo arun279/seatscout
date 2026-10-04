@@ -32,7 +32,7 @@ import { Results } from "./results.js";
 
 const SEAT_MAP = "/napi/seatMap/";
 
-const FAILING = { "/napi/seatMap/556375288": [500, 500, 500] };
+const FAILING = { "/napi/seatMap/564362583": [500, 500, 500] };
 
 const STILL: Clock = { now: () => NOW, subscribe: () => () => undefined };
 
@@ -211,7 +211,7 @@ describe("the search that did not reach every room", () => {
     await screen.findByText(/^\d+ candidates · \d+ checked$/);
 
     expect(new Set(carried.reads.slice(read))).toEqual(
-      new Set(["/napi/seatMap/556375288"]),
+      new Set(["/napi/seatMap/564362583"]),
     );
   });
 });
@@ -250,6 +250,24 @@ describe("the searches that end with nothing to show", () => {
       await screen.findByText("The listing could not be read."),
     ).toBeOnTheScreen();
     expect(screen.getByRole("status")).toHaveTextContent("Nothing was read");
+    expect(screen.queryAllByTestId("card")).toEqual([]);
+  });
+
+  it("says the Source refused, never that nothing matched, when it refused every seat map", async () => {
+    await shown({
+      upstream: {
+        script: {},
+        through: (upstream) => (url, init) =>
+          url.includes(SEAT_MAP)
+            ? Promise.resolve({ status: 403, text: () => Promise.resolve("") })
+            : upstream(url, init),
+      },
+    });
+
+    expect(
+      await screen.findByText("The source refused, so the search stopped."),
+    ).toBeOnTheScreen();
+    expect(screen.queryByText(/^No showtime matches this query /)).toBeNull();
     expect(screen.queryAllByTestId("card")).toEqual([]);
   });
 });

@@ -15,8 +15,8 @@ test("every screen of the app's web build, from Ask to the Room, carries no WCAG
   await expect(film).toBeVisible();
   expect(await violationsOn(page)).toEqual([]);
 
-  await film.fill("Dog Stars");
-  await page.getByRole("button", { name: "The Dog Stars (2026)" }).click();
+  await film.fill("Practical Magic");
+  await page.getByRole("button", { name: "Practical Magic 2 (2026)" }).click();
   await page
     .getByTestId("dock")
     .getByRole("button", { name: "Find seats" })

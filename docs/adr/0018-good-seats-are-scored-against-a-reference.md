@@ -16,7 +16,7 @@ There is also a modelling choice underneath it that looks like a detail and is n
 on how far sideways a Seat sits is separable in depth and lateral: it applies the same lateral
 function in every row, so the only thing left to decide which row's side seats are punished
 hardest is which row is physically wider, and that varies by room. Of the 42 captured seat
-maps 25 widen toward the back, 15 narrow and 2 are equal.
+maps 20 widen toward the back, 21 narrow and 1 is equal.
 
 ## Decision
 

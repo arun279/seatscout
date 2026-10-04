@@ -30,7 +30,7 @@ jobs:
     env:
       SEATSCOUT_UPSTREAM: corpus
       APP_ID: io.github.arun279.seatscout
-      LINK: seatscout:///?area=75006&date=2026-08-28&partySize=2
+      LINK: seatscout:///?area=75006&date=2026-09-20&partySize=2
       OUT: reports/device
       APK: apps/native/android/app/build/outputs/apk/release/app-release.apk
       WALK: apps/native/e2e/journey.yaml
