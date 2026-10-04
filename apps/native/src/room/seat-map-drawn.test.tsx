@@ -82,8 +82,8 @@ describe("how each Seat is inked", () => {
     await shown({ room: WEST_PLANO_10 });
 
     expect(["N14", "N13", "N12"].map((id) => drawnAs(id).filter)).toEqual([
-      "lit",
-      "lit",
+      "seat-lit",
+      "seat-lit",
       undefined,
     ]);
   });

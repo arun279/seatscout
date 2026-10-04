@@ -11,7 +11,7 @@ import { processColor } from "react-native";
 import { houseLights } from "../../test/lights.js";
 import { themeFor } from "../theme.js";
 import { seatNamed, seatsOnScreen, shown } from "./room.fixtures.js";
-import { placeAt } from "./seat-map.js";
+import { announcedOn, placeAt } from "./seat-map.js";
 
 jest.mock("react-native/Libraries/Utilities/useColorScheme");
 
@@ -213,5 +213,19 @@ describe("the Seat a point in the room falls on", () => {
         { x: across(back), y: back.seat.y + back.seat.height + PAST },
       ].map((at) => placeAt(map, at)),
     ).toEqual([undefined, undefined, undefined, undefined]);
+  });
+});
+
+describe("each Seat as a screen reader meets it", () => {
+  it("is its own element on a phone", async () => {
+    await shown();
+
+    expect(seatNamed("D18").props["accessible"]).toBe(true);
+    expect(announcedOn("ios")).toEqual({ accessible: true });
+    expect(announcedOn("android")).toEqual({ accessible: true });
+  });
+
+  it("leaves the attribute off the web's DOM, which takes its label and role instead", () => {
+    expect(announcedOn("web")).toEqual({});
   });
 });

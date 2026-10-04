@@ -25,6 +25,17 @@ describe("the Room a Seat Group opens", () => {
     ).toBeOnTheScreen();
   });
 
+  it("pads every edge by the device's inset, so nothing sits under the status bar, the notch or the home indicator", async () => {
+    await shown();
+
+    expect(screen.getByTestId("stage").props["edges"]).toEqual({
+      top: "additive",
+      right: "additive",
+      bottom: "additive",
+      left: "additive",
+    });
+  });
+
   it("opens the row bar on the row the recommendation sits in", async () => {
     await shown();
 

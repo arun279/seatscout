@@ -3,11 +3,9 @@ import {
   BACK_TO_THE_LIST,
   backToOf,
   chosenOf,
-  clockOf,
   consolesIn,
   creditsOf,
   everyGroupIn,
-  dayOf,
   type Frame,
   frameOf,
   groupHolding,
@@ -17,6 +15,7 @@ import {
   readingOf,
   refusalOf,
   rowOf,
+  showingOf,
   UNCONFIRMED,
 } from "@seatscout/view-logic";
 import { type ReactElement, useState, useSyncExternalStore } from "react";
@@ -194,7 +193,7 @@ export const Room = ({
   const [cursor, setCursor] = useState<Place>(auditorium.recommended);
   const [chosen, setChosen] = useState(opening);
   const [notice, setNotice] = useState<string | null>(null);
-  const { theater, formats, amenities } = result.showtime.presentation;
+  const { theater, amenities } = result.showtime.presentation;
   const { partySize, accessibleSeating } = result.terms;
   const drawn = drawnIn(stage, frame);
 
@@ -235,11 +234,7 @@ export const Room = ({
         </TouchableOpacity>
         <View style={styles.head}>
           <Type set="ledgerLabel" tone="silverFaint">
-            {[
-              partyOf(partySize),
-              `${dayOf(result.terms.date, today)} ${clockOf(result.showtime.startsAt)}`,
-              ...formats,
-            ].join(" · ")}
+            {`${partyOf(partySize)} · ${showingOf(result, today)}`}
           </Type>
           <Type set="marqueeTitle" tone="silver">
             {theater.name}

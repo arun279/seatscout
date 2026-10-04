@@ -169,7 +169,12 @@ export const notBookableIn = (map: AuditoriumMap): string =>
 export const readingOf = (fetchedAt: number, now: number): string =>
   `1 source · read ${ageOf(fetchedAt, now)} ago`;
 
-export type LegendMark = "lit" | "forSale" | "notBookable" | "space" | "console";
+export type LegendMark =
+  | "lit"
+  | "forSale"
+  | "notBookable"
+  | "space"
+  | "console";
 
 export interface LegendEntry {
   readonly mark: LegendMark;

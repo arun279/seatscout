@@ -17,7 +17,7 @@ import {
   seatNameOf,
 } from "@seatscout/view-logic";
 import type { ReactElement, ReactNode } from "react";
-import { StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import Animated from "react-native-reanimated";
 import Svg, {
@@ -33,6 +33,10 @@ import Svg, {
 } from "react-native-svg";
 import { type Palette, type Theme, useTheme } from "../theme.js";
 import { type Drawn, usePanZoom } from "./pan-zoom.js";
+
+export const announcedOn = (
+  os: typeof Platform.OS,
+): { readonly accessible?: true } => (os === "web" ? {} : { accessible: true });
 
 const DRAWN = {
   seat: { radius: 0.25, glow: 5, lit: 0.95 },
@@ -105,7 +109,7 @@ const Seat = ({
 }) => (
   <Rect
     accessibilityLabel={name}
-    accessible
+    {...announcedOn(Platform.OS)}
     height={seat.height}
     role="img"
     rx={seat.width * DRAWN.seat.radius}
@@ -118,7 +122,7 @@ const Seat = ({
       stroke: theme.colours.beamDim,
       strokeWidth: DRAWN.space.stroke,
     })}
-    {...(lit && theme.appearance === "down" && { filter: "url(#lit)" })}
+    {...(lit && theme.appearance === "down" && { filter: "url(#seat-lit)" })}
   />
 );
 
@@ -221,7 +225,7 @@ export const SeatMap = ({
           width={drawn.width}
         >
           <Defs>
-            <Filter id="lit">
+            <Filter id="seat-lit">
               <FeDropShadow
                 dx={0}
                 dy={0}
