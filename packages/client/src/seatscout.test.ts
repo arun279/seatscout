@@ -2,6 +2,7 @@ import { REFERENCE } from "@seatscout/core";
 import { fakeUpstream } from "@seatscout/core/testing";
 import { describe, expect, it } from "vitest";
 import type { SearchTerms } from "./search.js";
+import { SOURCE_LIMITS } from "./limits.js";
 import { createSeatScout, type SeatScoutDependencies } from "./seatscout.js";
 import { inMemoryStore, type RecentSearch } from "./store.js";
 
@@ -18,11 +19,15 @@ const TONIGHT: SearchTerms & RecentSearch = {
   accessibleSeating: false,
 };
 
-const composed = (overrides: Partial<SeatScoutDependencies> = {}) => {
+const composed = (
+  overrides: Partial<SeatScoutDependencies> = {},
+  sequences: Readonly<Record<string, readonly number[]>> = {},
+) => {
   const upstream = fakeUpstream({
     seed: 4,
     standInAuditoriums: true,
     standInTheaters: true,
+    sequences,
   });
   const seatscout = createSeatScout({
     fetch: upstream,
@@ -36,6 +41,7 @@ const composed = (overrides: Partial<SeatScoutDependencies> = {}) => {
     listingsRead: () =>
       upstream.requests.filter((request) => request.path.startsWith(LISTING))
         .length,
+    asked: () => upstream.requests.length,
   };
 };
 
@@ -136,5 +142,61 @@ describe("a SeatScout", () => {
     });
 
     expect(await composed().seatscout.profile.remembered()).toEqual(REFERENCE);
+  });
+});
+
+describe("a SeatScout the Source has refused", () => {
+  it("records when the cooldown ends, so a root opened later over the same store asks the Source nothing until then", async () => {
+    const store = inMemoryStore();
+    const clock = { at: AT };
+    const now = () => clock.at;
+    const refused = await composed(
+      { store, now },
+      { [LISTING]: [403] },
+    ).seatscout.search(TONIGHT).done;
+    const relaunched = composed({ store, now });
+    clock.at = AT + SOURCE_LIMITS.refusalCooldownMs - 1;
+
+    const cooling = await relaunched.seatscout.search(TONIGHT).done;
+    const programme = await relaunched.seatscout.programme(
+      "75006",
+      "2026-09-20",
+    );
+
+    expect(refused.refusedUntil).toBe(AT + SOURCE_LIMITS.refusalCooldownMs);
+    expect(cooling.phase).toBe("unreachable");
+    expect(cooling.refusedUntil).toBe(refused.refusedUntil);
+    expect(programme.ok).toBe(false);
+    expect(relaunched.asked()).toBe(0);
+  });
+
+  it("searches normally once the cooldown has passed", async () => {
+    const store = inMemoryStore();
+    const clock = { at: AT };
+    const now = () => clock.at;
+    await composed({ store, now }, { [LISTING]: [403] }).seatscout.search(
+      TONIGHT,
+    ).done;
+    const relaunched = composed({ store, now });
+    clock.at = AT + SOURCE_LIMITS.refusalCooldownMs;
+
+    const settled = await relaunched.seatscout.search(TONIGHT).done;
+
+    expect(settled.phase).toBe("settled");
+    expect(settled.refusedUntil).toBeNull();
+    expect(settled.coverage.checked).toBe(SOURCE_LIMITS.seatMapsPerStep);
+  });
+
+  it("reads within the limits it is given in place of the shipped ones", async () => {
+    const limits = {
+      ...SOURCE_LIMITS,
+      seatMapsPerStep: 5,
+      refusalCooldownMs: 1000,
+    };
+    const { seatscout } = composed({ limits });
+    const refusing = composed({ limits }, { [LISTING]: [403] }).seatscout;
+
+    expect((await seatscout.search(TONIGHT).done).coverage.checked).toBe(5);
+    expect((await refusing.search(TONIGHT).done).refusedUntil).toBe(AT + 1000);
   });
 });

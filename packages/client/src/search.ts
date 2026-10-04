@@ -12,8 +12,10 @@ import {
   type CatalogueTerms,
   openCatalogue,
 } from "./catalogue.js";
+import type { Cooldown } from "./cooldown.js";
 import { type Day, type Listed, openDays, type SeatMapState } from "./days.js";
 import { fannedOut } from "./fan-out.js";
+import type { SourceLimits } from "./limits.js";
 import {
   type Ranking,
   type ResultTerms,
@@ -45,7 +47,7 @@ export interface Snapshot {
   readonly coverage: Coverage;
   readonly phase: Phase;
   readonly days: readonly Day[];
-  readonly refused: boolean;
+  readonly refusedUntil: number | null;
 }
 
 export interface Auditorium {
@@ -93,12 +95,17 @@ const withinDay = (terms: SearchTerms, date: string): CatalogueTerms => ({
   ...(terms.until !== undefined && { until: `${date}T${terms.until}` }),
 });
 
-export const openSearch = (deps: CatalogueDependencies) => {
+export interface SearchDependencies extends CatalogueDependencies {
+  readonly limits: SourceLimits;
+  readonly cooldown: Cooldown;
+}
+
+export const openSearch = (deps: SearchDependencies) => {
   const resolve = openCatalogue(deps);
 
   return (terms: SearchTerms): Search => {
     const dates = [...terms.dates].sort();
-    const byDay = openDays(dates);
+    const byDay = openDays(dates, deps.limits.seatMapsPerStep);
     const listeners = new Set<() => void>();
     const results: SeatGroupResult[] = [];
     const named: Record<UnbookableReason, (Showtime | Unidentified)[]> = {
@@ -113,14 +120,14 @@ export const openSearch = (deps: CatalogueDependencies) => {
     let candidates = 0;
     let checked = 0;
     let aborted = false;
-    let refused = false;
+    let refusedUntil: number | null = null;
 
     let current: Snapshot = {
       results: [],
       coverage: NOTHING,
       phase: "resolving",
       days: byDay.days(),
-      refused,
+      refusedUntil,
     };
 
     const publish = (phase: Phase) => {
@@ -138,7 +145,7 @@ export const openSearch = (deps: CatalogueDependencies) => {
         },
         phase,
         days: byDay.days(),
-        refused,
+        refusedUntil,
       };
       for (const listener of listeners) listener();
     };
@@ -190,7 +197,7 @@ export const openSearch = (deps: CatalogueDependencies) => {
         return rank(entry, reading);
       }
       if (reading.reason === "refused") {
-        refused = true;
+        refusedUntil = deps.cooldown.until();
         return byDay.mark(entry, before);
       }
       settle(entry);
@@ -200,7 +207,7 @@ export const openSearch = (deps: CatalogueDependencies) => {
 
     const check =
       (before: SeatMapState | undefined) => async (entry: Listed) => {
-        if (aborted || refused) return byDay.mark(entry, before);
+        if (aborted || refusedUntil !== null) return byDay.mark(entry, before);
         const reading = await deps.source.seatsFor(`${entry.showtime.id}`);
         if (aborted) return byDay.mark(entry, before);
         record(entry, reading, before);
@@ -210,7 +217,7 @@ export const openSearch = (deps: CatalogueDependencies) => {
     const readAll = async (batch: readonly Listed[], before?: SeatMapState) => {
       for (const entry of batch) byDay.mark(entry, "reading");
       publish("searching");
-      await fannedOut(batch, check(before));
+      await fannedOut(batch, deps.limits.width, check(before));
       publish("settled");
       return current;
     };
@@ -225,18 +232,23 @@ export const openSearch = (deps: CatalogueDependencies) => {
         })),
       );
 
+    const unlisted = (
+      read: readonly { readonly reading: Reading<unknown> }[],
+    ) => {
+      if (
+        read.some(({ reading }) => !reading.ok && reading.reason === "refused")
+      )
+        refusedUntil = deps.cooldown.until();
+      publish("unreachable");
+      return current;
+    };
+
     const run = async () => {
       const read = await listings();
       const catalogues = read.flatMap(({ date, reading }) =>
         reading.ok ? [{ date, catalogue: reading.payload }] : [],
       );
-      if (catalogues.length < read.length) {
-        refused = read.some(
-          ({ reading }) => !reading.ok && reading.reason === "refused",
-        );
-        publish("unreachable");
-        return current;
-      }
+      if (catalogues.length < read.length) return unlisted(read);
       for (const { date, catalogue } of catalogues) {
         candidates +=
           catalogue.bookable.length +
@@ -262,7 +274,7 @@ export const openSearch = (deps: CatalogueDependencies) => {
       },
       done: running,
       retry: () => {
-        if (refused) return running;
+        if (refusedUntil !== null) return running;
         if (current.phase === "unreachable") running = run();
         else if (current.phase === "settled")
           running = readAll([...failed], "read");
@@ -271,7 +283,7 @@ export const openSearch = (deps: CatalogueDependencies) => {
       readMore: () => {
         if (
           current.phase === "settled" &&
-          !refused &&
+          refusedUntil === null &&
           current.days.some((day) => day.unread > 0)
         )
           running = readNext();

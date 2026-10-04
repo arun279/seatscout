@@ -35,7 +35,7 @@ const reading = async (
         coverage: covering(candidates, checked),
         phase,
         days: [],
-        refused: false,
+        refusedUntil: null,
       }}
     />,
   );

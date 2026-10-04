@@ -1,6 +1,7 @@
 import type { Movie, Reading, Theater } from "@seatscout/core";
 import type { CatalogueDependencies } from "./catalogue.js";
 import { fannedOut } from "./fan-out.js";
+import type { SourceLimits } from "./limits.js";
 import type { CachedProgramme } from "./store.js";
 
 const CACHE_FOR_MS = 2 * 60 * 60 * 1000;
@@ -29,14 +30,18 @@ const keyOf = (area: string, date: string) =>
 const byTitle = (left: Movie, right: Movie) =>
   left.title.localeCompare(right.title, "en");
 
+export interface ProgrammeDependencies extends CatalogueDependencies {
+  readonly limits: SourceLimits;
+}
+
 const playingAt = async (
-  deps: CatalogueDependencies,
+  deps: ProgrammeDependencies,
   theaters: readonly Theater[],
   date: string,
 ): Promise<Programme> => {
   const movies = new Map<string, Movie>();
   const failed = new Set<string>();
-  await fannedOut(theaters, async (theater) => {
+  await fannedOut(theaters, deps.limits.width, async (theater) => {
     const reading = await deps.source.moviesAt(theater.id, date);
     if (!reading.ok) {
       failed.add(theater.id);
@@ -51,7 +56,7 @@ const playingAt = async (
   };
 };
 
-export const openProgramme = (deps: CatalogueDependencies) => {
+export const openProgramme = (deps: ProgrammeDependencies) => {
   const cacheFor = deps.cacheForMs ?? CACHE_FOR_MS;
   return async (area: string, date: string): Promise<Reading<Programme>> => {
     const key = keyOf(area, date);

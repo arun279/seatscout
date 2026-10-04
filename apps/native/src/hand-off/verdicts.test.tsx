@@ -159,7 +159,9 @@ describe("the unreachable verdict", () => {
   it("says nothing was checked, offers to check again, and opens only once a check is answered", async () => {
     const counter = await taken({ status: 500 });
 
-    expect(heading()).toHaveTextContent("The Source could not be reached.");
+    expect(heading()).toHaveTextContent(
+      "The ticket site could not be reached.",
+    );
     expect(screen.queryByText(/^Tapping re-checks/)).toBeNull();
     expect(notificationAsync).not.toHaveBeenCalledWith(
       NotificationFeedbackType.Warning,
@@ -239,7 +241,9 @@ describe.each(INKS)("under house lights $appearance", (inks) => {
     houseLights(appearance);
     await taken({ status: 500 });
 
-    expect(heading()).toHaveTextContent("The Source could not be reached.");
+    expect(heading()).toHaveTextContent(
+      "The ticket site could not be reached.",
+    );
   });
 
   it("draws the sheet offline", async () => {

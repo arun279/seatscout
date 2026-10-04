@@ -13,6 +13,7 @@ export interface CachedProgramme {
 
 export interface RecentSearch {
   readonly movie: string;
+  readonly title?: string | undefined;
   readonly dates: readonly string[];
   readonly area: string;
   readonly partySize: number;
@@ -23,6 +24,7 @@ export interface Remembered {
   readonly programme: CachedProgramme;
   readonly profile: SeatProfile;
   readonly recent: readonly RecentSearch[];
+  readonly cooldown: number;
 }
 
 export type Stored = Remembered[keyof Remembered];

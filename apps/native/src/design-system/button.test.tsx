@@ -67,6 +67,15 @@ describe("the velvet control", () => {
     expect(String(control.boxShadow)).toContain("px");
   });
 
+  it("sizes the curtain to the control itself, so a renderer that defaults an unsized drawing cannot spill it past the edge", async () => {
+    await drawn("down");
+
+    expect(screen.getByTestId("curtain").props).toMatchObject({
+      width: "100%",
+      height: "100%",
+    });
+  });
+
   it("leaves it flat with the house lights up, because a lit room reads by edge", async () => {
     const { control } = await drawn("up");
 

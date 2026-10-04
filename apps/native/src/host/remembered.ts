@@ -7,7 +7,7 @@ export const useRemembered = (
   terms: Terms,
 ): readonly RecentSearch[] | undefined => {
   const [remembered, setRemembered] = useState<readonly RecentSearch[]>();
-  const { movie, area, partySize } = terms;
+  const { movie, title, area, partySize } = terms;
   const dates = valuesOf(terms).join(" ");
 
   useEffect(() => {
@@ -16,12 +16,13 @@ export const useRemembered = (
         ? seatscout.recent.remembered()
         : seatscout.recent.remember({
             movie,
+            title,
             dates: dates.split(" "),
             area,
             partySize,
           })
     ).then(setRemembered);
-  }, [seatscout, movie, dates, area, partySize]);
+  }, [seatscout, movie, title, dates, area, partySize]);
 
   return remembered;
 };

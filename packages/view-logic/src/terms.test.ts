@@ -101,6 +101,7 @@ describe("the query terms an address carries", () => {
   it("reads every narrowing term the glossary names: Chain, Theater, Format, Amenity, a time window and accessible seating", () => {
     expect(termsFrom(EVERY_PARAMETER, TODAY)).toEqual({
       movie: "245569",
+      title: "The Dog Stars (2026)",
       date: "2026-08-28",
       area: "75006",
       partySize: 2,
@@ -159,6 +160,31 @@ describe("the query terms an address carries", () => {
     ).toMatchObject({ from: "19:00", until: "21:00" });
     for (const clock of ["7:00", "x19:00", "19:00x", "24:00", "19:60"])
       expect(termsFrom([["from", clock]], TODAY).from).toBeUndefined();
+  });
+
+  it("keeps a title only beside the Movie it names, trimmed, and drops one left empty", () => {
+    expect(
+      termsFrom(
+        [
+          ["movie", "245569"],
+          ["title", " The Dog Stars (2026) "],
+        ],
+        TODAY,
+      ).title,
+    ).toBe("The Dog Stars (2026)");
+    expect(termsFrom([["title", "The Dog Stars (2026)"]], TODAY)).toEqual({
+      date: TODAY,
+      partySize: 2,
+    });
+    expect(
+      termsFrom(
+        [
+          ["movie", "245569"],
+          ["title", "  "],
+        ],
+        TODAY,
+      ),
+    ).toEqual({ movie: "245569", date: TODAY, partySize: 2 });
   });
 
   it("trims a Theater the address padded, and drops one it left empty", () => {

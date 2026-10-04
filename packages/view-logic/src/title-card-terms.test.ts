@@ -41,7 +41,7 @@ describe("the lines a title card states a Query in", () => {
       ),
     ).toEqual([
       [{ term: "partySize", words: "Two seats together" }],
-      [{ term: "movie", words: "245569" }],
+      [{ term: "movie", words: "Your movie" }],
       [
         { term: "date", words: "Today" },
         { term: "area", words: "Near 75006" },
@@ -71,7 +71,7 @@ describe("the lines a title card states a Query in", () => {
     ]);
   });
 
-  it("names the Movie by its title once the programme holds it, and by its identity until then", () => {
+  it("names the Movie by the programme's title, else by the title the query carries, and never by its identity", () => {
     const tonight: Terms = {
       movie: "245569",
       date: "2026-08-28",
@@ -84,12 +84,28 @@ describe("the lines a title card states a Query in", () => {
     ]);
     expect(
       termLinesOf(
+        { ...tonight, title: "Carried" },
+        playing(),
+        TODAY,
+        REFERENCE,
+      )[1],
+    ).toEqual([{ term: "movie", words: "The Dog Stars (2026)" }]);
+    expect(
+      termLinesOf(
+        { ...tonight, title: "The Dog Stars (2026)" },
+        NOTHING_READ,
+        TODAY,
+        REFERENCE,
+      )[1],
+    ).toEqual([{ term: "movie", words: "The Dog Stars (2026)" }]);
+    expect(
+      termLinesOf(
         { ...tonight, movie: "999999" },
         playing(),
         TODAY,
         REFERENCE,
       )[1],
-    ).toEqual([{ term: "movie", words: "999999" }]);
+    ).toEqual([{ term: "movie", words: "Your movie" }]);
   });
 
   it.each<[string, Pick<Terms, "from" | "until">, readonly TitleCardEntry[]]>([

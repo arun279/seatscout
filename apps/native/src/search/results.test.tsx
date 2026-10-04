@@ -252,24 +252,6 @@ describe("the searches that end with nothing to show", () => {
     expect(screen.getByRole("status")).toHaveTextContent("Nothing was read");
     expect(screen.queryAllByTestId("card")).toEqual([]);
   });
-
-  it("says the Source refused, never that nothing matched, when it refused every seat map", async () => {
-    await shown({
-      upstream: {
-        script: {},
-        through: (upstream) => (url, init) =>
-          url.includes(SEAT_MAP)
-            ? Promise.resolve({ status: 403, text: () => Promise.resolve("") })
-            : upstream(url, init),
-      },
-    });
-
-    expect(
-      await screen.findByText("The source refused, so the search stopped."),
-    ).toBeOnTheScreen();
-    expect(screen.queryByText(/^No showtime matches this query /)).toBeNull();
-    expect(screen.queryAllByTestId("card")).toEqual([]);
-  });
 });
 
 describe("what the list offers while the phone is offline", () => {

@@ -71,12 +71,26 @@ describe("the Ask sheet", () => {
     expect(found).toHaveBeenCalledWith(
       {
         movie: "23184",
+        title: "Akira",
         area: "75234",
         date: TODAY,
         partySize: 2,
       },
       REFERENCE,
     );
+  });
+
+  it("keeps the film the query carries, by its title, when what is playing cannot be read", async () => {
+    const carried = { ...NEAR, movie: "245569", title: "The Dog Stars (2026)" };
+    const { found } = await asking({ terms: carried });
+
+    expect(screen.getByLabelText("Film")).toHaveDisplayValue(
+      "The Dog Stars (2026)",
+    );
+    await fireEvent.press(screen.getByRole("button", { name: "More seats" }));
+    await submit();
+
+    expect(found).toHaveBeenCalledWith({ ...carried, partySize: 3 }, REFERENCE);
   });
 
   it("hands out the party a person stepped to", async () => {

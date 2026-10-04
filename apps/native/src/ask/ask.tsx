@@ -10,7 +10,8 @@ import {
   ASKING,
   costOf,
   FIND_SEATS,
-  movieOf,
+  chosenFrom,
+  knownFilms,
   programmeNear,
   termsOf,
   titleOf,
@@ -71,8 +72,8 @@ export const Ask = ({
   const playing = useSyncExternalStore(held.subscribe, held.snapshot);
   const [typed, setTyped] = useState<string>();
   const [holding, setHolding] = useState(false);
-  const film =
-    typed ?? titleOf(playing.movies, terms.movie) ?? terms.movie ?? "";
+  const films = knownFilms(playing.movies, terms);
+  const film = typed ?? titleOf(films, terms.movie) ?? terms.movie ?? "";
   const cost = costOf(draft, today);
 
   const patch = (change: Partial<Terms>) => {
@@ -101,10 +102,7 @@ export const Ask = ({
             label={FIND_SEATS}
             onPress={() =>
               onFind(
-                termsOf(
-                  { ...draft, movie: movieOf(film, playing.movies) },
-                  today,
-                ),
+                termsOf({ ...draft, ...chosenFrom(film, films) }, today),
                 profile,
               )
             }

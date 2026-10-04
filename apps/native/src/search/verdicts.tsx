@@ -6,6 +6,7 @@ import {
   notAnAnswerAbout,
   partialOf,
   RETRY_THE_SEARCH,
+  refusedOf,
   retryOf,
   talliesOf,
   type Term,
@@ -19,6 +20,7 @@ import type { ReactElement } from "react";
 import { StyleSheet, View } from "react-native";
 import { Ghost, Velvet } from "../design-system/button.js";
 import { Type } from "../design-system/type.js";
+import { clockAfter } from "../host/clock.js";
 
 interface RemedyProps {
   readonly online: boolean;
@@ -28,6 +30,11 @@ interface RemedyProps {
 
 interface VerdictProps extends RemedyProps {
   readonly snapshot: Snapshot;
+}
+
+export interface RefusedProps {
+  readonly snapshot: Snapshot;
+  readonly until: number;
 }
 
 export interface EmptyProps {
@@ -114,29 +121,38 @@ export const Partial = ({
   </View>
 );
 
+const Told = ({ said, ledes }: ReturnType<typeof emptyOf>): ReactElement => (
+  <>
+    <Type accessibilityRole="header" set="marqueeVerdict" tone="silver">
+      {said}
+    </Type>
+    {ledes.map((lede) => (
+      <Type key={lede} set="sentence" tone="silverDim">
+        {lede}
+      </Type>
+    ))}
+  </>
+);
+
+export const Refused = ({ snapshot, until }: RefusedProps): ReactElement => (
+  <View style={styles.verdict} testID="verdict">
+    <Told {...refusedOf(snapshot, clockAfter(until))} />
+  </View>
+);
+
 export const Empty = ({
   snapshot,
   terms,
   when,
   onEdit,
-}: EmptyProps): ReactElement => {
-  const nothingListed = snapshot.coverage.candidates === 0;
-  const verdict = emptyOf(snapshot, terms, when);
-
-  return (
-    <View style={styles.verdict} testID="verdict">
-      <Type accessibilityRole="header" set="marqueeVerdict" tone="silver">
-        {verdict.said}
-      </Type>
-      {verdict.ledes.map((lede) => (
-        <Type key={lede} set="sentence" tone="silverDim">
-          {lede}
-        </Type>
-      ))}
-      <Velvet
-        label={CHANGE_THE_QUERY}
-        onPress={() => onEdit(nothingListed ? "formats" : "partySize")}
-      />
-    </View>
-  );
-};
+}: EmptyProps): ReactElement => (
+  <View style={styles.verdict} testID="verdict">
+    <Told {...emptyOf(snapshot, terms, when)} />
+    <Velvet
+      label={CHANGE_THE_QUERY}
+      onPress={() =>
+        onEdit(snapshot.coverage.candidates === 0 ? "formats" : "partySize")
+      }
+    />
+  </View>
+);

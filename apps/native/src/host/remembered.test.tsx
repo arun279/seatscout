@@ -168,6 +168,37 @@ describe("the search a complete query is remembered as", () => {
     });
   });
 
+  it("keeps the title the film was picked by, and keeps it again when only the title changes", async () => {
+    const seatscout = keeping();
+    const asked: Terms = {
+      movie: "246473",
+      date: TODAY,
+      area: "75010",
+      partySize: 2,
+    };
+
+    const { result, rerender } = await renderHook(
+      (terms: Terms) => useRemembered(seatscout, terms),
+      { initialProps: asked },
+    );
+    await waitFor(() => {
+      expect(result.current).toHaveLength(1);
+    });
+    await rerender({ ...asked, title: "Sinners" });
+
+    await waitFor(() => {
+      expect(result.current).toEqual([
+        {
+          movie: "246473",
+          title: "Sinners",
+          dates: [TODAY],
+          area: "75010",
+          partySize: 2,
+        },
+      ]);
+    });
+  });
+
   it("keeps nothing while the query still wants a film", async () => {
     const seatscout = keeping();
 

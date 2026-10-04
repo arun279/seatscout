@@ -64,7 +64,7 @@ it was the listing that failed. A room stays in the unreached count until its re
 the ledger is closed while the retry is in flight and a retry abandoned part way leaves the
 rooms it had not reached still named.
 
-**A search is a URL.** The query lives in the address as `movie`, `date`, `area`,
+**A search is a URL.** The query lives in the address as `movie`, `title`, `date`, `area`,
 `partySize`, `chain`, `theater`, `format`, `amenity`, `from`, `until` and `accessibleSeating`,
 the glossary's own words, so the back button is the previous query and a test can open a journey
 by navigating to one. The Seat Profile is not among them: it is the device's, not the query's.
@@ -72,7 +72,10 @@ The title card states every term it holds, each value its own button that opens 
 with that field focused. The Movie is still the identity the Source states, and a title is now
 resolved against it: the Movies playing near the area on the date are read from the dated
 theater-centric route, so the sheet can offer a half-remembered title and the card can say the
-title rather than the number.
+title rather than the number. The title the film was picked by rides beside it as `title`, and a
+remembered search keeps it too, so the card still names the film when that route cannot be read,
+offline or while the Source is refusing. Nothing is searched by it, and a card that has neither
+says "Your movie" rather than the number.
 
 ## Consequences
 

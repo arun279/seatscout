@@ -7,7 +7,8 @@ Date: 2026-09-25
 Accepted. It amends [ADR 16](0016-a-search-reports-its-coverage.md), which read every seat map
 a listing named, and [ADR 17](0017-retry-and-the-breaker-follow-published-policy.md), which
 retried a 403. Amended 2026-10-03: a one-day search reads 48 seat maps at a time as well, now
-that the only screen offers the next 48.
+that the only screen offers the next 48. Amended again 2026-10-03: a refusal is remembered on the
+device until it should have passed, and every limit on reading the Source is one value.
 
 ## Context
 
@@ -36,11 +37,11 @@ before it asks for any seat map, so the candidates of every day are counted at o
 listing is cached under its own date, as a one-day listing always was.
 
 **Seat maps are read nearest day first, 48 at a time, over one day or several.**
-`SEAT_MAP_BUDGET` in `packages/client/src/budget.ts` is 48, the largest batch the Source was
-measured to answer without a refusal. The maps are asked for through the fan-out's width of 24,
-in the order the listings name them, the nearest day's first. What the budget leaves is counted
-per day as not read yet, and `readMore()` reads the next 48. Nothing asks for more on a
-person's behalf.
+`seatMapsPerStep` in `SOURCE_LIMITS`, `packages/client/src/limits.ts`, is 48, the largest batch
+the Source was measured to answer without a refusal. The maps are asked for through the
+fan-out's width of 24, in the order the listings name them, the nearest day's first. What the
+budget leaves is counted per day as not read yet, and `readMore()` reads the next 48. Nothing
+asks for more on a person's behalf.
 
 **A one-day search is held to 48 too.** It once read its whole listing, because the web app had
 no control to ask for more, and a one-day search held to 48 there would have had no way on. The
@@ -50,7 +51,18 @@ whatever the number of days, so nothing is left that the exception served.
 **A 403 stops the search.** Every route reads 403 as `refused`, answered at once and never
 retried, because asking again while the Source is refusing lengthens the refusal. A search that
 is refused asks for no further seat map, `readMore()` and `retry()` do nothing, and its snapshot
-says so. A new search is a deliberate act of the person and starts again.
+says so. A new search is a deliberate act of the person and starts again once the refusal has
+passed.
+
+**A refusal is remembered on the device.** A 403 on any route records the moment
+`refusalCooldownMs` later, 7 minutes, in the store the device already keeps, so a
+relaunch remembers it too. Until that moment no read reaches the Source: every route answers
+`refused` at once, so a new search reads no seat map, the programme reads nothing and a hand-off
+checks nothing. A search's snapshot carries the moment as `refusedUntil`, and the results
+screen names the minute a person can search again. The polling was still refused at 6 minutes
+2 seconds and first answered at 6 minutes 32 seconds, so the refusal ended somewhere between the
+two. Seven minutes is past the first answer, so a search the screen invites is not refused
+again by the refusal it is waiting out.
 
 **Each result carries its own day.** A result's `terms.date` is the day whose listing named its
 Showtime, which is what re-verification reads the listing by. The list is banded by day, nearest
@@ -81,10 +93,27 @@ cheapest reads the Source answers, and a week is the span people plan an evening
 
 What the Source counts is the burst, not the device, so the budget is spent per search rather
 than kept across searches. The measured refusal went with the burst rather than with the client,
-the hour or the route.
+the hour or the route. Once earned, though, it held every request from this client for minutes,
+so the cooldown is kept across searches and across launches.
 
-The budget is one constant and the horizon another, each defined once and each a measurement or
-a decision on record, so a change to either moves one line.
+The budget, the fan-out width, the retry and breaker policies and the cooldown are one value,
+`SOURCE_LIMITS` in `packages/client/src/limits.ts`, and the horizon is a constant of its own.
+The code carries no comment, so what each field rests on is kept here.
+
+| field | value | what it rests on |
+|---|---|---|
+| `seatMapsPerStep` | 48 | one burst of 48 seat maps met no refusal and 200 met 46, above |
+| `width` | 24 | the measured optimum of the timing table in [ADR 16](0016-a-search-reports-its-coverage.md) |
+| `retry.attempts` | 3 | [ADR 17](0017-retry-and-the-breaker-follow-published-policy.md): at the 7% error rate measured under fan-out, a third attempt leaves about one in 2,800 |
+| `retry.firstDelayMs` | 500 | ADR 17: one measured round trip |
+| `breaker.failuresBeforeOpening` | 3 | ADR 17: three failed readings are nine consecutive upstream failures |
+| `breaker.openForMs` | 5000 | ADR 17: the published default of Polly's circuit breaker, longer than a whole measured search |
+| `refusalCooldownMs` | 420,000 | seven minutes, past the first answer at 6 minutes 32 seconds, above |
+
+A change to any of them moves one line of code and one row of this table. It reaches the phones as an EAS update, the
+same way every other change does: there is no remote configuration, because there is no server
+to hold it ([ADR 2](0002-computation-on-the-client.md)). `createSeatScout` takes other limits
+in place of these, which is how a test reads a smaller step.
 
 Three things are left for later on purpose. Within the budget the order is the listing's own,
 not one that puts the likeliest rooms first by time or format. A step reads the next 48 seat maps

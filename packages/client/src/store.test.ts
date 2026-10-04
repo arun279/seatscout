@@ -18,6 +18,7 @@ const NAMES = [
   "a remembered programme reads back unchanged",
   "a remembered Seat Profile reads back unchanged",
   "a remembered history of searches reads back unchanged",
+  "a remembered cooldown reads back unchanged",
 ];
 
 const AWKWARD_KEY = 'a "quoted" \\ key with a ☃ in it';
@@ -124,6 +125,8 @@ describe("the key-value store contract", () => {
       "read profile",
       "write recent",
       "read recent",
+      "write cooldown",
+      "read cooldown",
     ]);
   });
 
@@ -153,6 +156,7 @@ describe("the key-value store contract", () => {
           NAMES[7],
           NAMES[8],
           NAMES[9],
+          NAMES[10],
         ],
       ],
       ["refusing to replace a value", [NAMES[2]]],
@@ -179,6 +183,7 @@ describe("the key-value store contract", () => {
       'programme read undefined rather than {"fetchedAt":8,"programme":{"theaters":[],"movies":[],"unreached":[]}}',
       'profile read undefined rather than {"targetDepth":0.5,"targetLateral":-0.25,"depthWeight":1.5,"offAxisWeight":0.75,"frontBandWeight":0,"wallBandWeight":0.125,"podDividerWeight":2,"screenGap":6,"rowPitch":1.71,"frontBand":6.97}',
       'recent read undefined rather than [{"movie":"245569","dates":["2026-08-28"],"area":"75006","partySize":2}]',
+      "cooldown read undefined rather than 1789000390000",
     ]);
   });
 

@@ -21,6 +21,7 @@ export interface Upstream {
   readonly script?: Omit<UpstreamScript, "seed"> | undefined;
   readonly through?: ((upstream: Fetch) => Fetch) | undefined;
   readonly playing?: Playing | undefined;
+  readonly coolingUntil?: number | undefined;
 }
 
 export interface Phone {
@@ -38,9 +39,12 @@ export const nearby = (id: string, name: string): readonly Theater[] =>
 
 const heldBy = (
   remembered: readonly RecentSearch[],
-  playing: Playing | undefined,
+  { playing, coolingUntil }: Upstream,
 ): KeyValueStore => {
-  const kept = new Map<string, unknown>([["seatscout.recent.v2", remembered]]);
+  const kept = new Map<string, unknown>([
+    ["seatscout.recent.v2", remembered],
+    ["seatscout.cooldown.v1", coolingUntil],
+  ]);
   if (playing !== undefined)
     kept.set(
       `seatscout.programme.v1.${JSON.stringify([playing.date, playing.area])}`,
@@ -83,7 +87,7 @@ export const phone = (
       now: () => NOW,
       wait: () => Promise.resolve(),
       random: () => 0,
-      store: heldBy(remembered, given.playing),
+      store: heldBy(remembered, given),
     }),
   };
 };

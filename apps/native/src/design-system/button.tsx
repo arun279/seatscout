@@ -46,7 +46,13 @@ const Curtain = ({
   readonly colours: Palette;
   readonly radius: number;
 }) => (
-  <Svg pointerEvents="none" style={StyleSheet.absoluteFill} testID="curtain">
+  <Svg
+    height="100%"
+    pointerEvents="none"
+    style={StyleSheet.absoluteFill}
+    testID="curtain"
+    width="100%"
+  >
     <Defs>
       <LinearGradient id="velvet" x1="0" x2="0" y1="0" y2="1">
         <Stop offset={0} stopColor={colours.velvet} />

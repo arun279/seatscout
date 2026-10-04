@@ -7,6 +7,7 @@ import {
   type UpstreamScript,
 } from "../testing/fake-upstream.js";
 import { openSource, type SourcePolicy } from "./aggregator.js";
+import { POLICY } from "./policy.fixtures.js";
 import type { Source } from "./port.js";
 
 const SEAT_MAP = "/napi/seatMap/562185322";
@@ -20,7 +21,7 @@ interface Rig {
 
 const rig = (
   script: Omit<UpstreamScript, "seed">,
-  policy?: SourcePolicy,
+  policy: SourcePolicy = POLICY,
 ): Rig => {
   const fetch = fakeUpstream({ seed: 4, ...script });
   const waits: number[] = [];
@@ -167,10 +168,8 @@ describe("the aggregating source", () => {
     const { fetch, source, at } = rig(
       { sequences: { [SEAT_MAP]: [500, 500] } },
       {
-        attempts: 1,
-        firstDelayMs: 500,
-        failuresBeforeOpening: 2,
-        openForMs: 5000,
+        retry: { attempts: 1, firstDelayMs: 500 },
+        breaker: { failuresBeforeOpening: 2, openForMs: 5000 },
       },
     );
 
@@ -196,10 +195,8 @@ describe("the aggregating source", () => {
     const { fetch, source } = rig(
       { sequences: { [SEAT_MAP]: [500], [other]: [500] } },
       {
-        attempts: 1,
-        firstDelayMs: 500,
-        failuresBeforeOpening: 2,
-        openForMs: 5000,
+        retry: { attempts: 1, firstDelayMs: 500 },
+        breaker: { failuresBeforeOpening: 2, openForMs: 5000 },
       },
     );
 
@@ -234,7 +231,7 @@ describe("the aggregating source", () => {
     );
   });
 
-  it("opens the circuit on the default policy's own threshold and break", async () => {
+  it("opens the circuit on the policy's own threshold and break", async () => {
     const dead = ["562185322", "561432171", "564755702"];
     const { fetch, source, at } = rig({
       sequences: Object.fromEntries(
@@ -264,14 +261,12 @@ describe("the aggregating source", () => {
     expect(fetch.requests).toHaveLength(opened + 1);
   });
 
-  it("takes a supplied policy in place of the default", async () => {
+  it("retries as often and waits as long as the policy it is given says", async () => {
     const { source, waits } = rig(
       { sequences: { [SEAT_MAP]: [500, 500] } },
       {
-        attempts: 2,
-        firstDelayMs: 40,
-        failuresBeforeOpening: 9,
-        openForMs: 1,
+        retry: { attempts: 2, firstDelayMs: 40 },
+        breaker: { failuresBeforeOpening: 9, openForMs: 1 },
       },
     );
     const reading = await source.seatsFor("562185322");

@@ -6,12 +6,16 @@ export interface Clock {
 }
 
 const SECOND = 1000;
+const MINUTE = 60 * SECOND;
 
 export const listingDate = (at: Date): string =>
   `${at.getFullYear()}-${twoDigits(at.getMonth() + 1)}-${twoDigits(at.getDate())}`;
 
 export const clockFor = (at: Date): string =>
   `${twoDigits(at.getHours())}:${twoDigits(at.getMinutes())}`;
+
+export const clockAfter = (at: number): string =>
+  clockFor(new Date(Math.ceil(at / MINUTE) * MINUTE));
 
 export const timeAt = (clock: string): Date =>
   new Date(2000, 0, 1, Number(clock.slice(0, 2)), Number(clock.slice(3, 5)));

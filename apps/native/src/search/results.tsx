@@ -29,7 +29,7 @@ import { useTheme } from "../theme.js";
 import { Card } from "./card.js";
 import { Strip } from "./coverage.js";
 import { TitleCard } from "./title-card.js";
-import { Empty, Partial, Unreachable } from "./verdicts.js";
+import { Empty, Partial, Refused, Unreachable } from "./verdicts.js";
 
 export interface ResultsProps {
   readonly seatscout: SeatScout;
@@ -169,6 +169,13 @@ const Verdict = ({
     void session.search.retry();
   };
 
+  if (snapshot.refusedUntil !== null)
+    return (
+      <>
+        <Refused snapshot={snapshot} until={snapshot.refusedUntil} />
+        {results.length > 0 && <Head snapshot={snapshot} tie={tie} />}
+      </>
+    );
   if (snapshot.phase === "unreachable")
     return (
       <Unreachable

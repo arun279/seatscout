@@ -3,7 +3,7 @@ import { describe, expect, it, jest } from "@jest/globals";
 import type { Term, Terms } from "@seatscout/view-logic";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import { settled, TODAY } from "../../test/rooms.js";
-import { Empty, Partial, Unreachable } from "./verdicts.js";
+import { Empty, Partial, Refused, Unreachable } from "./verdicts.js";
 
 const FAILING = { "/napi/seatMap/564402753": [500, 500, 500] };
 
@@ -136,7 +136,7 @@ describe("the search that found nothing", () => {
     results: [],
     phase: "settled",
     days: [],
-    refused: false,
+    refusedUntil: null,
     coverage: {
       started: [],
       noSeatMap: [],
@@ -198,5 +198,52 @@ describe("the search that found nothing", () => {
     );
 
     expect(asked).toHaveBeenCalledWith("formats");
+  });
+});
+
+describe("the search the ticket site refused", () => {
+  const AFTER = new Date(2026, 9, 3, 21, 47, 30).getTime();
+
+  const stopped = (phase: Snapshot["phase"], checked: number): Snapshot => ({
+    results: [],
+    phase,
+    days: [],
+    refusedUntil: AFTER,
+    coverage: {
+      started: [],
+      noSeatMap: [],
+      soldOut: [],
+      salesOff: [],
+      unidentified: [],
+      failed: [],
+      candidates: checked === 0 ? 0 : 172,
+      checked,
+    },
+  });
+
+  it("says once that it was asked to slow down and names the minute to search again, with nothing to press before then", async () => {
+    await render(
+      <Refused snapshot={stopped("unreachable", 0)} until={AFTER} />,
+    );
+
+    expect(screen.getByRole("header")).toHaveTextContent(
+      "The ticket site asked us to slow down.",
+    );
+    expect(
+      screen.getByText(
+        "Nothing was read, so this says nothing about seats yet. Search again after 9:48p.",
+      ),
+    ).toBeOnTheScreen();
+    expect(screen.queryAllByRole("button")).toEqual([]);
+  });
+
+  it("says how many rooms were read first when the refusal came part way through", async () => {
+    await render(<Refused snapshot={stopped("settled", 24)} until={AFTER} />);
+
+    expect(
+      screen.getByText(
+        "Only 24 of 172 rooms were read, so this says nothing about the rest yet. Search again after 9:48p.",
+      ),
+    ).toBeOnTheScreen();
   });
 });

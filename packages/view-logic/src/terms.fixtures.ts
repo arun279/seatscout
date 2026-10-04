@@ -4,6 +4,7 @@ export const TODAY = "2026-08-28";
 
 export const EVERY_PARAMETER: readonly Parameter[] = [
   ["movie", "245569"],
+  ["title", "The Dog Stars (2026)"],
   ["date", "2026-08-28"],
   ["area", "75006"],
   ["partySize", "2"],

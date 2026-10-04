@@ -36,6 +36,10 @@ export {
   type SeatProfile,
   scoringIn,
 } from "./domain/seat-profile.js";
-export { openSource, type SourceDependencies } from "./source/aggregator.js";
+export {
+  openSource,
+  type SourceDependencies,
+  type SourcePolicy,
+} from "./source/aggregator.js";
 export type { Reading, Source } from "./source/port.js";
 export type { Seat } from "./source/seat-map.js";

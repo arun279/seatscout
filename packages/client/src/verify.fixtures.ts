@@ -14,6 +14,8 @@ import {
   seatMapCaptures,
   type UpstreamScript,
 } from "@seatscout/core/testing";
+import { openCooldown } from "./cooldown.js";
+import { SOURCE_LIMITS } from "./limits.js";
 import type { SeatGroupResult } from "./ranking.js";
 import { openSearch, type SearchTerms } from "./search.js";
 import { inMemoryStore, type KeyValueStore } from "./store.js";
@@ -69,6 +71,7 @@ const sourceAt = (fetch: ReturnType<typeof fakeUpstream>, now: number) =>
     now: () => now,
     wait: () => Promise.resolve(),
     random: () => 0.5,
+    policy: SOURCE_LIMITS,
   });
 
 const capturedRoom = (room: string) => {
@@ -182,6 +185,12 @@ const searching = async (options: Options) => {
     ),
     store: warm,
     now: () => SEARCHED_AT,
+    limits: SOURCE_LIMITS,
+    cooldown: openCooldown({
+      store: warm,
+      now: () => SEARCHED_AT,
+      lastsMs: SOURCE_LIMITS.refusalCooldownMs,
+    }),
   })(terms).done;
   const result = searched.results[0];
   if (result === undefined) throw new Error("the search offered no result");

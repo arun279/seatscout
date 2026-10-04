@@ -2,6 +2,7 @@ import type { Catalogue, Reading, Source } from "@seatscout/core";
 import { openSource } from "@seatscout/core";
 import { fakeUpstream, type UpstreamScript } from "@seatscout/core/testing";
 import { type CatalogueTerms, openCatalogue } from "./catalogue.js";
+import { SOURCE_LIMITS } from "./limits.js";
 import { inMemoryStore, type KeyValueStore } from "./store.js";
 
 const AREA = "75006";
@@ -37,6 +38,7 @@ export const opened = (options: Options = {}): OpenedCatalogue => {
     now: () => clock.at,
     wait: () => Promise.resolve(),
     random: () => 0.5,
+    policy: SOURCE_LIMITS,
   });
   return {
     clock,

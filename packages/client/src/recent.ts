@@ -12,6 +12,7 @@ const areDates = (value: unknown): value is readonly string[] =>
 const isSearch = (value: unknown): value is RecentSearch =>
   isRecord(value) &&
   typeof value["movie"] === "string" &&
+  ["undefined", "string"].includes(typeof value["title"]) &&
   areDates(value["dates"]) &&
   typeof value["area"] === "string" &&
   typeof value["partySize"] === "number";
@@ -53,6 +54,7 @@ export const openRecentSearches = (
     remember: async (search: RecentSearch) => {
       const asked: RecentSearch = {
         movie: search.movie,
+        ...(search.title !== undefined && { title: search.title }),
         dates: search.dates,
         area: search.area,
         partySize: search.partySize,

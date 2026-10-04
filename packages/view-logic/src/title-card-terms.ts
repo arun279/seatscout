@@ -1,6 +1,6 @@
 import type { SeatProfile } from "@seatscout/client";
 import { partyOf, seatOf, timeOf } from "./phrases.js";
-import { type ProgrammeState, theaterNamed, titleOf } from "./programme.js";
+import { filmOf, type ProgrammeState, theaterNamed } from "./programme.js";
 import type { Terms } from "./terms.js";
 import { whenWordsOf } from "./when-phrases.js";
 
@@ -80,9 +80,9 @@ export const termLinesOf = (
       {
         term: "movie",
         words:
-          titleOf(programme.movies, terms.movie) ??
-          terms.movie ??
-          "Which movie?",
+          terms.movie === undefined
+            ? "Which movie?"
+            : filmOf(programme.movies, terms),
       },
     ],
     [

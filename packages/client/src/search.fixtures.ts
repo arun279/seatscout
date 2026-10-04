@@ -14,6 +14,8 @@ import {
   routeOf,
   type UpstreamScript,
 } from "@seatscout/core/testing";
+import { openCooldown } from "./cooldown.js";
+import { SOURCE_LIMITS } from "./limits.js";
 import type { Coverage, Search, SearchTerms, Snapshot } from "./search.js";
 import { openSearch } from "./search.js";
 import { type CachedCatalogue, inMemoryStore } from "./store.js";
@@ -62,6 +64,7 @@ export interface SearchRun {
   readonly snapshots: Snapshot[];
   readonly requested: () => number[];
   readonly paths: () => string[];
+  readonly seatMapsAsked: () => number;
 }
 
 const payloadOf = <Found>(reading: Reading<Found>): Found => {
@@ -160,6 +163,7 @@ export const listing = async (): Promise<Catalogue> => {
     now: () => AT,
     wait: () => Promise.resolve(),
     random: () => 0.5,
+    policy: SOURCE_LIMITS,
   });
   return payloadOf(await source.showtimesFor(WIDE_RELEASE, TODAY, AREA));
 };
@@ -193,18 +197,37 @@ export const searching = async (options: Options = {}): Promise<SearchRun> => {
   const store = inMemoryStore();
   if (options.cached !== undefined)
     await store.write("seed", options.cached(candidates));
-  const search = openSearch({
-    source: openSource({
+  const held =
+    options.cached === undefined
+      ? store
+      : { read: () => store.read("seed"), write: () => Promise.resolve() };
+  const cooldown = openCooldown({
+    store: held,
+    now: () => AT,
+    lastsMs: SOURCE_LIMITS.refusalCooldownMs,
+  });
+  const guarded = cooldown.guarded(
+    openSource({
       fetch: upstream,
       now: () => AT,
       wait: () => Promise.resolve(),
       random: () => 0.5,
+      policy: SOURCE_LIMITS,
     }),
-    store:
-      options.cached === undefined
-        ? store
-        : { read: () => store.read("seed"), write: () => Promise.resolve() },
+  );
+  let seatMapsAsked = 0;
+  const search = openSearch({
+    source: {
+      ...guarded,
+      seatsFor: (showtime) => {
+        seatMapsAsked += 1;
+        return guarded.seatsFor(showtime);
+      },
+    },
+    store: held,
     now: () => AT,
+    limits: SOURCE_LIMITS,
+    cooldown,
   })(terms);
   const snapshots: Snapshot[] = [];
   const frozen: string[] = [];
@@ -223,6 +246,7 @@ export const searching = async (options: Options = {}): Promise<SearchRun> => {
         .filter((path) => path.startsWith(SEAT_MAP))
         .map((path) => Number(path.slice(SEAT_MAP.length))),
     paths: () => upstream.requests.map((request) => routeOf(request.path)),
+    seatMapsAsked: () => seatMapsAsked,
   };
 };
 

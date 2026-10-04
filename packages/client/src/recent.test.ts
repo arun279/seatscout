@@ -92,9 +92,26 @@ describe("the searches a device remembers", () => {
       profile: { ...REFERENCE, targetDepth: 0.4 },
       theaters: [],
     };
-    await openRecentSearches(store).remember(asked);
+    const kept = await openRecentSearches(store).remember(asked);
 
+    expect(kept).toStrictEqual([TONIGHT]);
     expect(await store.read(KEY)).toEqual([TONIGHT]);
+  });
+
+  it("keeps the title a film was picked by beside it, in place of the same search kept without one", async () => {
+    const store = inMemoryStore();
+    const recent = openRecentSearches(store);
+    const titled = { ...TONIGHT, title: "The Dog Stars (2026)" };
+    await recent.remember(TONIGHT);
+
+    expect(await recent.remember(titled)).toEqual([titled]);
+    expect(await store.read(KEY)).toEqual([titled]);
+  });
+
+  it("reads back a search kept with its title, title and all", async () => {
+    const titled = { ...TONIGHT, title: "The Dog Stars (2026)" };
+
+    expect(await holding({ [KEY]: [titled] }).remembered()).toEqual([titled]);
   });
 
   it("forgets what the device holds when it was not written by this build, and starts again over it", async () => {
@@ -108,6 +125,7 @@ describe("the searches a device remembers", () => {
       [{ ...TONIGHT, dates: [20260828] }],
       [{ ...TONIGHT, dates: ["2026-08-28", 20260829] }],
       [{ ...TONIGHT, area: 75006 }],
+      [{ ...TONIGHT, title: 245569 }],
       [null],
     ];
     const read: unknown[] = [];

@@ -129,7 +129,9 @@ describe("the Search screen's prompt face", () => {
   });
 
   it("names the film in the marquee once the query carries one", async () => {
-    await showing({ terms: { ...SHORT, movie: "Spider-Man: Brand New Day" } });
+    await showing({
+      terms: { ...SHORT, movie: "246329", title: "Spider-Man: Brand New Day" },
+    });
 
     expect(
       screen.getByRole("button", { name: "Spider-Man: Brand New Day" }),
@@ -179,7 +181,8 @@ describe("what this phone remembers", () => {
       onRun: ran,
       remembered: [
         {
-          movie: "One Battle After Another",
+          movie: "245569",
+          title: "One Battle After Another",
           dates: [PROMPT_DAY],
           area: "75201",
           partySize: 4,
@@ -194,7 +197,8 @@ describe("what this phone remembers", () => {
     );
 
     expect(ran).toHaveBeenCalledWith({
-      movie: "One Battle After Another",
+      movie: "245569",
+      title: "One Battle After Another",
       date: PROMPT_DAY,
       area: "75201",
       partySize: 4,

@@ -13,6 +13,7 @@ export type Parameter = [name: string, value: string];
 
 export interface Terms {
   readonly movie?: string;
+  readonly title?: string;
   readonly date: string;
   readonly when?: When;
   readonly area?: string;
@@ -28,6 +29,7 @@ export interface Terms {
 
 export interface RawTerms {
   readonly movie?: string | undefined;
+  readonly title?: string | undefined;
   readonly date?: string | readonly string[] | undefined;
   readonly when?: When | undefined;
   readonly area?: string | undefined;
@@ -82,9 +84,11 @@ const datesOf = ({ date, when }: RawTerms) =>
 
 const identityOf = (raw: RawTerms, today: string) => {
   const movie = given(raw.movie);
+  const title = given(raw.title);
   const area = given(raw.area);
   return {
     ...(movie && { movie }),
+    ...(movie && title && { title }),
     ...spanOf(datesOf(raw), today),
     ...(area && { area }),
     partySize: partySizeOf(raw.partySize),
@@ -135,6 +139,7 @@ export const termsFrom = (
   termsOf(
     {
       movie: valueIn(parameters, "movie"),
+      title: valueIn(parameters, "title"),
       date: valuesIn(parameters, "date"),
       area: valueIn(parameters, "area"),
       partySize: valueIn(parameters, "partySize"),
@@ -149,27 +154,28 @@ export const termsFrom = (
     today,
   );
 
-const LISTS: readonly (readonly [
+const one = (value: string | undefined): readonly string[] =>
+  value === undefined ? [] : [value];
+
+const PARAMETERS: readonly (readonly [
   string,
-  (terms: Terms) => readonly string[] | undefined,
+  (terms: Terms) => readonly string[],
 ])[] = [
-  ["chain", (terms) => terms.chains],
-  ["theater", (terms) => terms.theaters],
-  ["format", (terms) => terms.formats],
-  ["amenity", (terms) => terms.amenities],
+  ["movie", (terms) => one(terms.movie)],
+  ["title", (terms) => one(terms.title)],
+  ["date", valuesOf],
+  ["area", (terms) => one(terms.area)],
+  ["partySize", (terms) => [`${terms.partySize}`]],
+  ["chain", (terms) => terms.chains ?? []],
+  ["theater", (terms) => terms.theaters ?? []],
+  ["format", (terms) => terms.formats ?? []],
+  ["amenity", (terms) => terms.amenities ?? []],
+  ["from", (terms) => one(terms.from)],
+  ["until", (terms) => one(terms.until)],
+  ["accessibleSeating", (terms) => (terms.accessibleSeating ? ["true"] : [])],
 ];
 
-export const parametersOf = (terms: Terms): readonly Parameter[] => {
-  const parameters: Parameter[] = [];
-  if (terms.movie !== undefined) parameters.push(["movie", terms.movie]);
-  for (const date of valuesOf(terms)) parameters.push(["date", date]);
-  if (terms.area !== undefined) parameters.push(["area", terms.area]);
-  parameters.push(["partySize", `${terms.partySize}`]);
-  for (const [name, listOf] of LISTS)
-    for (const value of listOf(terms) ?? []) parameters.push([name, value]);
-  if (terms.from !== undefined) parameters.push(["from", terms.from]);
-  if (terms.until !== undefined) parameters.push(["until", terms.until]);
-  if (terms.accessibleSeating === true)
-    parameters.push(["accessibleSeating", "true"]);
-  return parameters;
-};
+export const parametersOf = (terms: Terms): readonly Parameter[] =>
+  PARAMETERS.flatMap(([name, valuesFor]) =>
+    valuesFor(terms).map((value): Parameter => [name, value]),
+  );
