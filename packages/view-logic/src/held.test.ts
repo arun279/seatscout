@@ -16,7 +16,7 @@ const EMPTY: Snapshot = {
   },
   phase: "resolving",
   days: [],
-  refused: false,
+  refusedUntil: null,
 };
 
 const searching = () => {

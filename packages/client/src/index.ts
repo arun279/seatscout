@@ -12,8 +12,8 @@ export {
   type TheaterId,
   type TicketingUrl,
 } from "@seatscout/core";
-export { SEAT_MAP_BUDGET } from "./budget.js";
 export type { Day } from "./days.js";
+export { SOURCE_LIMITS } from "./limits.js";
 export { isReference } from "./profile.js";
 export type { Programme } from "./programme.js";
 export type { SeatGroupResult } from "./ranking.js";

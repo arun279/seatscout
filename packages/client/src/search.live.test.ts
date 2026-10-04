@@ -1,11 +1,12 @@
 import { openSource, type Reading } from "@seatscout/core";
 import "@seatscout/core/live-context";
 import { describe, expect, inject, it } from "vitest";
+import { openCooldown } from "./cooldown.js";
+import { SOURCE_LIMITS } from "./limits.js";
 import { openSearch } from "./search.js";
 import { inMemoryStore } from "./store.js";
 
 const SEAT_MAP = "/napi/seatMap/";
-const CONCURRENCY = 24;
 const MAPS_MEASURED = 48;
 const LISTING_MS = 375;
 const AT_TWENTY_FOUR_MS = 670;
@@ -34,6 +35,7 @@ const sourceOn = (reach: ReturnType<typeof reaching>) =>
     now: Date.now,
     wait: (ms: number) => new Promise<void>((done) => setTimeout(done, ms)),
     random: Math.random,
+    policy: SOURCE_LIMITS,
   });
 
 const payloadOf = <Found>(reading: Reading<Found>): Found => {
@@ -48,7 +50,7 @@ const rawly = async (
   const queue = paths[Symbol.iterator]();
   const at = Date.now();
   await Promise.all(
-    Array.from({ length: CONCURRENCY }, async () => {
+    Array.from({ length: SOURCE_LIMITS.width }, async () => {
       for (const path of queue) await (await reach(path)).text();
     }),
   );
@@ -70,10 +72,17 @@ describe("a full search against the live Source", () => {
 
     const marks: number[] = [];
     const started = Date.now();
+    const store = inMemoryStore();
     const search = openSearch({
       source: sourceOn(reaching(live.origin, live.headers)),
-      store: inMemoryStore(),
+      store,
       now: Date.now,
+      limits: SOURCE_LIMITS,
+      cooldown: openCooldown({
+        store,
+        now: Date.now,
+        lastsMs: SOURCE_LIMITS.refusalCooldownMs,
+      }),
     })({
       movie: terms.movie,
       dates: [terms.date],

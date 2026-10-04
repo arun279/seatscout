@@ -1,6 +1,7 @@
 import { openSource, type Reading } from "@seatscout/core";
 import { fakeUpstream, type UpstreamScript } from "@seatscout/core/testing";
 import { describe, expect, it } from "vitest";
+import { SOURCE_LIMITS } from "./limits.js";
 import { openProgramme, type Programme } from "./programme.js";
 import { inMemoryStore, type KeyValueStore, type Stored } from "./store.js";
 
@@ -75,6 +76,7 @@ const opened = (
     now: () => clock.at,
     wait: () => Promise.resolve(),
     random: () => 0.5,
+    policy: SOURCE_LIMITS,
   };
   return {
     clock,
@@ -82,6 +84,7 @@ const opened = (
       source: openSource(deps),
       store,
       now: () => clock.at,
+      limits: SOURCE_LIMITS,
     }),
     requested: () => ({
       areas: upstream.requests.filter((request) =>

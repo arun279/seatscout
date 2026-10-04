@@ -20,8 +20,9 @@ calls. A whole search here is forty eight.
 
 ## Decision
 
-Both policies are taken from a published source, both are one replaceable policy in the
-adapter, and every default cites a published figure or a measurement of the aggregator.
+Both policies are taken from a published source, both are given to the adapter as one
+replaceable policy held in `SOURCE_LIMITS` with the other limits on reading the Source, and every
+value cites a published figure or a measurement of the aggregator.
 
 **Retry is the "Full Jitter" of the AWS Architecture Blog's
 [Exponential Backoff And Jitter](https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/)**:

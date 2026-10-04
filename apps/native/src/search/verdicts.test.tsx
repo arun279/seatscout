@@ -3,7 +3,7 @@ import { describe, expect, it, jest } from "@jest/globals";
 import type { Term, Terms } from "@seatscout/view-logic";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import { settled, TODAY } from "../../test/rooms.js";
-import { Empty, Partial, Unreachable } from "./verdicts.js";
+import { Empty, Partial, Refused, Unreachable } from "./verdicts.js";
 
 const FAILING = { "/napi/seatMap/564402753": [500, 500, 500] };
 
@@ -136,7 +136,7 @@ describe("the search that found nothing", () => {
     results: [],
     phase: "settled",
     days: [],
-    refused: false,
+    refusedUntil: null,
     coverage: {
       started: [],
       noSeatMap: [],
@@ -198,5 +198,67 @@ describe("the search that found nothing", () => {
     );
 
     expect(asked).toHaveBeenCalledWith("formats");
+  });
+});
+
+describe("the search the source refused", () => {
+  const AFTER = new Date(2026, 9, 3, 21, 47, 30).getTime();
+
+  const stopped = (phase: Snapshot["phase"], checked: number): Snapshot => ({
+    results: [],
+    phase,
+    days: [],
+    refusedUntil: AFTER,
+    coverage: {
+      started: [],
+      noSeatMap: [],
+      soldOut: [],
+      salesOff: [],
+      unidentified: [],
+      failed: [],
+      candidates: checked === 0 ? 0 : 172,
+      checked,
+    },
+  });
+
+  it("names the minute a person can search again, and offers nothing to press before then", async () => {
+    await render(
+      <Refused
+        snapshot={stopped("unreachable", 0)}
+        until={AFTER}
+        when="today"
+      />,
+    );
+
+    expect(screen.getByRole("header")).toHaveTextContent(
+      "The source refused, so the search stopped.",
+    );
+    expect(
+      screen.getByText(
+        "Nothing was looked at, so this is not an answer about today.",
+      ),
+    ).toBeOnTheScreen();
+    expect(
+      screen.getByText(
+        "The source asked the app to slow down. Search again after 9:48p.",
+      ),
+    ).toBeOnTheScreen();
+    expect(screen.queryAllByRole("button")).toEqual([]);
+  });
+
+  it("says how much it answered first when the refusal came part way through", async () => {
+    await render(
+      <Refused
+        snapshot={stopped("settled", 24)}
+        until={AFTER}
+        when="tomorrow"
+      />,
+    );
+
+    expect(
+      screen.getByText(
+        "It answered 24 of the 172 candidates first, so this is not an answer about tomorrow.",
+      ),
+    ).toBeOnTheScreen();
   });
 });

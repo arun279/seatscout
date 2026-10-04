@@ -14,6 +14,8 @@ import {
   routeOf,
   type UpstreamScript,
 } from "@seatscout/core/testing";
+import { openCooldown } from "./cooldown.js";
+import { SOURCE_LIMITS } from "./limits.js";
 import type { Coverage, Search, SearchTerms, Snapshot } from "./search.js";
 import { openSearch } from "./search.js";
 import { type CachedCatalogue, inMemoryStore } from "./store.js";
@@ -160,6 +162,7 @@ export const listing = async (): Promise<Catalogue> => {
     now: () => AT,
     wait: () => Promise.resolve(),
     random: () => 0.5,
+    policy: SOURCE_LIMITS,
   });
   return payloadOf(await source.showtimesFor(WIDE_RELEASE, TODAY, AREA));
 };
@@ -193,18 +196,29 @@ export const searching = async (options: Options = {}): Promise<SearchRun> => {
   const store = inMemoryStore();
   if (options.cached !== undefined)
     await store.write("seed", options.cached(candidates));
-  const search = openSearch({
-    source: openSource({
-      fetch: upstream,
-      now: () => AT,
-      wait: () => Promise.resolve(),
-      random: () => 0.5,
-    }),
-    store:
-      options.cached === undefined
-        ? store
-        : { read: () => store.read("seed"), write: () => Promise.resolve() },
+  const held =
+    options.cached === undefined
+      ? store
+      : { read: () => store.read("seed"), write: () => Promise.resolve() };
+  const cooldown = openCooldown({
+    store: held,
     now: () => AT,
+    lastsMs: SOURCE_LIMITS.refusalCooldownMs,
+  });
+  const search = openSearch({
+    source: cooldown.guarded(
+      openSource({
+        fetch: upstream,
+        now: () => AT,
+        wait: () => Promise.resolve(),
+        random: () => 0.5,
+        policy: SOURCE_LIMITS,
+      }),
+    ),
+    store: held,
+    now: () => AT,
+    limits: SOURCE_LIMITS,
+    cooldown,
   })(terms);
   const snapshots: Snapshot[] = [];
   const frozen: string[] = [];

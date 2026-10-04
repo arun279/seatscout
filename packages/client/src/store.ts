@@ -23,6 +23,7 @@ export interface Remembered {
   readonly programme: CachedProgramme;
   readonly profile: SeatProfile;
   readonly recent: readonly RecentSearch[];
+  readonly cooldown: number;
 }
 
 export type Stored = Remembered[keyof Remembered];

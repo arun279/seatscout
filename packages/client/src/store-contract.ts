@@ -74,6 +74,12 @@ const PROGRAMME: Sample<CachedProgramme> = {
   text: '{"fetchedAt":8,"programme":{"theaters":[],"movies":[],"unreached":[]}}',
 };
 
+const COOLDOWN: Sample<number> = {
+  named: "cooldown",
+  value: 1_789_000_390_000,
+  text: "1789000390000",
+};
+
 const remembered = (): {
   readonly [Kind in keyof Remembered]: Sample<Remembered[Kind]>;
 } => ({
@@ -81,6 +87,7 @@ const remembered = (): {
   programme: PROGRAMME,
   profile: PROFILE,
   recent: RECENT,
+  cooldown: COOLDOWN,
 });
 
 const reads = async (store: KeyValueStore, key: string, expected: string) => {

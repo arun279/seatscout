@@ -228,7 +228,7 @@ describe("what the catalogue phase caches", () => {
     const { resolve } = opened({ store: watched.store });
     const reading = await resolve({ ...TERMS, formats: ["IMAX"] });
     const stored = watched.written[0]?.value;
-    if (stored === undefined || !("catalogue" in stored))
+    if (typeof stored !== "object" || !("catalogue" in stored))
       throw new Error("the listing was not stored as a catalogue");
 
     expect(watched.written).toHaveLength(1);

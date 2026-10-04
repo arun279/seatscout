@@ -101,7 +101,7 @@ describe("a search in flight", () => {
       },
       phase: "resolving",
       days: [{ date: TODAY, read: 0, reading: 0, unread: 0 }],
-      refused: false,
+      refusedUntil: null,
     });
 
     const settled = await run.search.done;
@@ -142,7 +142,7 @@ describe("a search in flight", () => {
       },
       phase: "unreachable",
       days: [{ date: TODAY, read: 0, reading: 0, unread: 0 }],
-      refused: false,
+      refusedUntil: null,
     });
     expect(run.requested()).toEqual([]);
   });

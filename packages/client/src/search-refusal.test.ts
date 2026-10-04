@@ -1,12 +1,16 @@
 import { describe, expect, it } from "vitest";
+import { SOURCE_LIMITS } from "./limits.js";
 import {
   ACROSS,
+  AT,
   LISTING,
   SEAT_MAP,
   searching,
   TODAY,
   WIDTH,
 } from "./search.fixtures.js";
+
+const COOLED = AT + SOURCE_LIMITS.refusalCooldownMs;
 
 const refusingEvery = async () => {
   const run = await searching({
@@ -21,7 +25,7 @@ describe("a search the Source refuses", () => {
     const { run, settled } = await refusingEvery();
 
     expect(run.requested()).toHaveLength(WIDTH);
-    expect(settled.refused).toBe(true);
+    expect(settled.refusedUntil).toBe(COOLED);
     expect(settled.phase).toBe("settled");
     expect(settled.coverage.checked).toBe(0);
     expect(settled.coverage.failed).toEqual([]);
@@ -50,7 +54,7 @@ describe("a search the Source refuses", () => {
     const settled = await run.search.done;
     const [day] = settled.days;
 
-    expect(settled.refused).toBe(true);
+    expect(settled.refusedUntil).toBe(COOLED);
     expect(settled.coverage.checked).toBe(30);
     expect(settled.results.length).toBeGreaterThan(0);
     expect(day).toEqual({ date: TODAY, read: 30, reading: 0, unread: 464 });
@@ -69,7 +73,7 @@ describe("a search the Source refuses", () => {
     const settled = await run.search.done;
 
     expect(settled.phase).toBe("unreachable");
-    expect(settled.refused).toBe(true);
+    expect(settled.refusedUntil).toBe(COOLED);
   });
 
   it("stops before any seat map when the listing is refused, and does not ask again", async () => {
@@ -81,7 +85,7 @@ describe("a search the Source refuses", () => {
     const again = await run.search.retry();
 
     expect(settled.phase).toBe("unreachable");
-    expect(settled.refused).toBe(true);
+    expect(settled.refusedUntil).toBe(COOLED);
     expect(again).toBe(settled);
     expect(run.paths()).toEqual([LISTING]);
   });

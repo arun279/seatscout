@@ -21,21 +21,17 @@ const SEAT_MAP_REFUSALS: Refusals = {
   410: "soldOut",
 };
 
-export type SourcePolicy = RetryPolicy & BreakerPolicy;
-
-const defaultPolicy: SourcePolicy = {
-  attempts: 3,
-  firstDelayMs: 500,
-  failuresBeforeOpening: 3,
-  openForMs: 5000,
-};
+export interface SourcePolicy {
+  readonly retry: RetryPolicy;
+  readonly breaker: BreakerPolicy;
+}
 
 export interface SourceDependencies {
   readonly fetch: Fetch;
   readonly now: () => number;
   readonly wait: (ms: number) => Promise<void>;
   readonly random: () => number;
-  readonly policy?: SourcePolicy | undefined;
+  readonly policy: SourcePolicy;
 }
 
 interface Answer {
@@ -44,8 +40,8 @@ interface Answer {
 }
 
 export const openSource = (deps: SourceDependencies): Source => {
-  const policy = deps.policy ?? defaultPolicy;
-  const breaker = circuitBreaker(policy, deps.now);
+  const { retry } = deps.policy;
+  const breaker = circuitBreaker(deps.policy.breaker, deps.now);
 
   const send = async (path: string): Promise<Answer | null> => {
     try {
@@ -86,7 +82,7 @@ export const openSource = (deps: SourceDependencies): Source => {
     translate: Translate<Payload>,
     refusals: Refusals = EVERY_ROUTE_REFUSES,
   ) => {
-    for (let attempt = 1; attempt <= policy.attempts; attempt += 1) {
+    for (let attempt = 1; attempt <= retry.attempts; attempt += 1) {
       if (breaker.refuses()) return unreachable(attempt - 1);
       const answer = await send(path);
       const reading = settled(answer, attempt, refusals, translate);
@@ -94,11 +90,11 @@ export const openSource = (deps: SourceDependencies): Source => {
         breaker.succeeded();
         return reading;
       }
-      if (attempt < policy.attempts)
-        await deps.wait(delayAfter(attempt, policy.firstDelayMs, deps.random));
+      if (attempt < retry.attempts)
+        await deps.wait(delayAfter(attempt, retry.firstDelayMs, deps.random));
     }
     breaker.failed();
-    return unreachable(policy.attempts);
+    return unreachable(retry.attempts);
   };
 
   return {

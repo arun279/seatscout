@@ -1,7 +1,7 @@
 import {
   type Coverage,
   type Day,
-  SEAT_MAP_BUDGET,
+  SOURCE_LIMITS,
   type SeatGroupResult,
   type Snapshot,
 } from "@seatscout/client";
@@ -12,7 +12,14 @@ import {
   unreachedIn,
   unreadIn,
 } from "./derived.js";
-import { capitalised, clockOf, noneOf, spokenOf, wordOf } from "./phrases.js";
+import {
+  capitalised,
+  clockOf,
+  noneOf,
+  spokenOf,
+  timeOf,
+  wordOf,
+} from "./phrases.js";
 import { dayOf, whenOf } from "./when-phrases.js";
 import type { Terms } from "./terms.js";
 
@@ -32,16 +39,16 @@ const countsOf = (snapshot: Snapshot): string => {
     `${account.checked} checked`,
     ...(toGo > 0 ? [`${toGo} to go`] : []),
     ...(unread > 0 ? [`${unread} not read yet`] : []),
-    ...(snapshot.refused ? [REFUSED] : []),
+    ...(snapshot.refusedUntil === null ? [] : [REFUSED]),
   ].join(" · ");
 };
 
 export const coverageOf = (snapshot: Snapshot): string => {
   if (snapshot.phase === "resolving") return "Reading the listing";
   if (snapshot.phase === "unreachable")
-    return snapshot.refused
-      ? `Nothing was read: ${REFUSED}`
-      : "Nothing was read";
+    return snapshot.refusedUntil === null
+      ? "Nothing was read"
+      : `Nothing was read: ${REFUSED}`;
   return countsOf(snapshot);
 };
 
@@ -58,14 +65,18 @@ export const readMoreOf = (
   snapshot: Snapshot,
   today: string,
 ): string | null => {
-  if (snapshot.phase !== "settled" || snapshot.refused) return null;
+  if (snapshot.phase !== "settled" || snapshot.refusedUntil !== null)
+    return null;
   const next = snapshot.days
     .filter((day) => day.unread > 0)
     .reduce<{ readonly count: number; readonly dates: readonly string[] }>(
       (taken, day) =>
-        taken.count < SEAT_MAP_BUDGET
+        taken.count < SOURCE_LIMITS.seatMapsPerStep
           ? {
-              count: Math.min(SEAT_MAP_BUDGET, taken.count + day.unread),
+              count: Math.min(
+                SOURCE_LIMITS.seatMapsPerStep,
+                taken.count + day.unread,
+              ),
               dates: [...taken.dates, day.date],
             }
           : taken,
@@ -165,15 +176,25 @@ export interface Verdict {
   readonly ledes: readonly string[];
 }
 
-const refusedOf = ({ coverage }: Snapshot, when: string): Verdict => ({
+export const refusedOf = (
+  { coverage, phase }: Snapshot,
+  when: string,
+  until: string,
+): Verdict => ({
   said: `${capitalised(REFUSED)}.`,
   ledes: [
-    `It answered ${coverage.checked} of the ${coverage.candidates} candidates first, so this is not an answer about ${when}.`,
-    "A refusal lasts at least six minutes. Search again after that.",
+    phase === "unreachable"
+      ? notAnAnswerAbout(when)
+      : `It answered ${coverage.checked} of the ${coverage.candidates} candidates first, so this is not an answer about ${when}.`,
+    `The source asked the app to slow down. Search again after ${timeOf(until)}.`,
   ],
 });
 
-const finishedOf = (snapshot: Snapshot, terms: Terms, when: string): Verdict =>
+export const emptyOf = (
+  snapshot: Snapshot,
+  terms: Terms,
+  when: string,
+): Verdict =>
   snapshot.coverage.checked === 0
     ? {
         said: `No showtime matches this query ${when}.`,
@@ -188,12 +209,3 @@ const finishedOf = (snapshot: Snapshot, terms: Terms, when: string): Verdict =>
           "Fewer seats together, another day or a wider area would change it.",
         ],
       };
-
-export const emptyOf = (
-  snapshot: Snapshot,
-  terms: Terms,
-  when: string,
-): Verdict =>
-  snapshot.refused
-    ? refusedOf(snapshot, when)
-    : finishedOf(snapshot, terms, when);

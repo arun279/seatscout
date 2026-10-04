@@ -19,6 +19,7 @@ import {
   type UpstreamScript,
 } from "../testing/fake-upstream.js";
 import { openSource } from "./aggregator.js";
+import { POLICY } from "./policy.fixtures.js";
 import type { Reading, Source } from "./port.js";
 
 export const NEARBY = "/napi/nearbyTheaters";
@@ -47,6 +48,7 @@ export const rig = (
       now: () => 1000,
       wait: () => Promise.resolve(),
       random: () => 0.5,
+      policy: POLICY,
     }),
   };
 };

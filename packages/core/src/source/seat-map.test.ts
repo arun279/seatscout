@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { seatMapCaptures } from "../corpus/captures.js";
 import { fakeUpstream, type UpstreamScript } from "../testing/fake-upstream.js";
 import { openSource } from "./aggregator.js";
+import { POLICY } from "./policy.fixtures.js";
 import type { Source } from "./port.js";
 import type { Designation, Seat } from "./seat-map.js";
 
@@ -19,6 +20,7 @@ const sourceOf = (routes?: UpstreamScript["routes"]) =>
     now: () => FETCHED_AT,
     wait: () => Promise.resolve(),
     random: () => 0.5,
+    policy: POLICY,
   });
 
 const capturedAnswer = (showtime: string) => {

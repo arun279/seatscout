@@ -15,14 +15,16 @@ export const reading = (
   coverage: Coverage,
   phase: Snapshot["phase"],
   days: readonly Day[] = [],
-  refused = false,
+  refusedUntil: number | null = null,
 ): Snapshot => ({
   results: [],
   coverage,
   phase,
   days,
-  refused,
+  refusedUntil,
 });
+
+export const COOLED = 1_789_000_390_000;
 
 export const TODAY = "2026-08-28";
 export const TOMORROW = "2026-08-29";

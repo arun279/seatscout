@@ -9,6 +9,7 @@ import {
   coverageOf,
   designationsOf,
   emptyOf,
+  refusedOf,
   headOf,
   LEDGER,
   nameOf,
@@ -26,7 +27,7 @@ import {
   WAITING_TO_RETRY,
   WIDEN,
 } from "./results-phrases.js";
-import { covering, reading } from "./results-phrases.fixtures.js";
+import { COOLED, covering, reading } from "./results-phrases.fixtures.js";
 import { ANGELIKA_5, searched } from "./rooms.fixtures.js";
 
 const dallasFailed = () =>
@@ -244,20 +245,26 @@ describe("the three ways a search can end without a whole list", () => {
     ).toBe("No showtime matches this query today.");
   });
 
-  it("says the source refused, never that nothing matched or that no seats were free, when a refusal stopped the search", () => {
-    const stopped = reading(covering(172, 24), "settled", [], true);
+  it("says the source refused and when to search again, never that nothing matched, when a refusal stopped the search", () => {
+    const stopped = reading(covering(172, 24), "settled", [], COOLED);
 
-    expect(
-      emptyOf(
-        stopped,
-        { date: "2026-08-28", area: "75006", partySize: 2 },
-        "today",
-      ),
-    ).toEqual({
+    expect(refusedOf(stopped, "today", "21:48")).toEqual({
       said: "The source refused, so the search stopped.",
       ledes: [
         "It answered 24 of the 172 candidates first, so this is not an answer about today.",
-        "A refusal lasts at least six minutes. Search again after that.",
+        "The source asked the app to slow down. Search again after 9:48p.",
+      ],
+    });
+  });
+
+  it("says nothing was looked at when the source was still refusing before the listing was read", () => {
+    const cooling = reading(covering(0, 0), "unreachable", [], COOLED);
+
+    expect(refusedOf(cooling, "tomorrow", "09:05")).toEqual({
+      said: "The source refused, so the search stopped.",
+      ledes: [
+        "Nothing was looked at, so this is not an answer about tomorrow.",
+        "The source asked the app to slow down. Search again after 9:05a.",
       ],
     });
   });
