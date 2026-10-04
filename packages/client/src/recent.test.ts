@@ -108,6 +108,12 @@ describe("the searches a device remembers", () => {
     expect(await store.read(KEY)).toEqual([titled]);
   });
 
+  it("reads back a search kept with its title, title and all", async () => {
+    const titled = { ...TONIGHT, title: "The Dog Stars (2026)" };
+
+    expect(await holding({ [KEY]: [titled] }).remembered()).toEqual([titled]);
+  });
+
   it("forgets what the device holds when it was not written by this build, and starts again over it", async () => {
     const held: unknown[] = [
       "245569",

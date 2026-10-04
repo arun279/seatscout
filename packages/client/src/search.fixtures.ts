@@ -64,6 +64,7 @@ export interface SearchRun {
   readonly snapshots: Snapshot[];
   readonly requested: () => number[];
   readonly paths: () => string[];
+  readonly seatMapsAsked: () => number;
 }
 
 const payloadOf = <Found>(reading: Reading<Found>): Found => {
@@ -205,16 +206,24 @@ export const searching = async (options: Options = {}): Promise<SearchRun> => {
     now: () => AT,
     lastsMs: SOURCE_LIMITS.refusalCooldownMs,
   });
+  const guarded = cooldown.guarded(
+    openSource({
+      fetch: upstream,
+      now: () => AT,
+      wait: () => Promise.resolve(),
+      random: () => 0.5,
+      policy: SOURCE_LIMITS,
+    }),
+  );
+  let seatMapsAsked = 0;
   const search = openSearch({
-    source: cooldown.guarded(
-      openSource({
-        fetch: upstream,
-        now: () => AT,
-        wait: () => Promise.resolve(),
-        random: () => 0.5,
-        policy: SOURCE_LIMITS,
-      }),
-    ),
+    source: {
+      ...guarded,
+      seatsFor: (showtime) => {
+        seatMapsAsked += 1;
+        return guarded.seatsFor(showtime);
+      },
+    },
     store: held,
     now: () => AT,
     limits: SOURCE_LIMITS,
@@ -237,6 +246,7 @@ export const searching = async (options: Options = {}): Promise<SearchRun> => {
         .filter((path) => path.startsWith(SEAT_MAP))
         .map((path) => Number(path.slice(SEAT_MAP.length))),
     paths: () => upstream.requests.map((request) => routeOf(request.path)),
+    seatMapsAsked: () => seatMapsAsked,
   };
 };
 

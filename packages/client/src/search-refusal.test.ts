@@ -34,6 +34,23 @@ describe("a search the Source refuses", () => {
     ]);
   });
 
+  it("asks for no seat map left in the step once one is refused, and marks every one of them back as not read", async () => {
+    const run = await searching({
+      answers: (bookable) =>
+        Object.fromEntries(
+          bookable
+            .slice(10)
+            .map((showtime) => [`${SEAT_MAP}${showtime.id}`, { status: 403 }]),
+        ),
+    });
+    const settled = await run.search.done;
+
+    expect(run.seatMapsAsked()).toBeLessThan(48);
+    expect(settled.days).toEqual([
+      { date: TODAY, read: 10, reading: 0, unread: 484 },
+    ]);
+  });
+
   it("neither reads more nor retries into the refusal", async () => {
     const { run, settled } = await refusingEvery();
 

@@ -97,8 +97,20 @@ the hour or the route. Once earned, though, it held every request from this clie
 so the cooldown is kept across searches and across launches.
 
 The budget, the fan-out width, the retry and breaker policies and the cooldown are one value,
-`SOURCE_LIMITS`, each field naming the measurement it rests on, and the horizon is a constant of
-its own. A change to any of them moves one line. It reaches the phones as an EAS update, the
+`SOURCE_LIMITS` in `packages/client/src/limits.ts`, and the horizon is a constant of its own.
+The code carries no comment, so what each field rests on is kept here.
+
+| field | value | what it rests on |
+|---|---|---|
+| `seatMapsPerStep` | 48 | one burst of 48 seat maps met no refusal and 200 met 46, above |
+| `width` | 24 | the measured optimum of the timing table in [ADR 16](0016-a-search-reports-its-coverage.md) |
+| `retry.attempts` | 3 | [ADR 17](0017-retry-and-the-breaker-follow-published-policy.md): at the 7% error rate measured under fan-out, a third attempt leaves about one in 2,800 |
+| `retry.firstDelayMs` | 500 | ADR 17: one measured round trip |
+| `breaker.failuresBeforeOpening` | 3 | ADR 17: three failed readings are nine consecutive upstream failures |
+| `breaker.openForMs` | 5000 | ADR 17: the published default of Polly's circuit breaker, longer than a whole measured search |
+| `refusalCooldownMs` | 420,000 | seven minutes, past the first answer at 6 minutes 32 seconds, above |
+
+A change to any of them moves one line of code and one row of this table. It reaches the phones as an EAS update, the
 same way every other change does: there is no remote configuration, because there is no server
 to hold it ([ADR 2](0002-computation-on-the-client.md)). `createSeatScout` takes other limits
 in place of these, which is how a test reads a smaller step.
