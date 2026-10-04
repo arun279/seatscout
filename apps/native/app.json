@@ -5,7 +5,7 @@
     "scheme": "seatscout",
     "owner": "arunkris-expo",
     "runtimeVersion": {
-      "policy": "sdkVersion"
+      "policy": "fingerprint"
     },
     "userInterfaceStyle": "automatic",
     "updates": {
@@ -18,7 +18,10 @@
     },
     "plugins": ["@react-native-community/datetimepicker"],
     "ios": {
-      "bundleIdentifier": "io.github.arun279.seatscout"
+      "bundleIdentifier": "io.github.arun279.seatscout",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "io.github.arun279.seatscout",
