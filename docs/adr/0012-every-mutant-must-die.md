@@ -64,31 +64,55 @@ the tree.
 
 **A pull request judges the files it changes.** The `changes` job lists the source files the
 pull request adds or modifies, plus the sources any changed test or fixture file imports, and
-`tools/mutation.mjs --plan` splits them by shard into jobs: up to eight files each under
-Vitest, and under Jest one range of about 60 lines each, cut only between top-level statements.
-Stryker keeps a mutant only when its node lies wholly inside a range, and every mutant lies
-inside one top-level statement, so no mutant falls between two ranges. The app is cut finer
-because each of its mutants re-runs every related screen test on both platforms: two whole
-screen files took one job past 30 minutes. A job may still take up to 60 minutes, because one
-top-level component, which no range can split, can hold over a hundred mutants that each wait
-on slow screen tests. Each job runs Stryker with `--mutate` set to exactly its files or range,
-under its shard's runner and test configuration, and breaks below 100 like a whole run. The job
-also holds Stryker's own count of the files it found to the number it was handed, so a path
-that reaches nothing fails rather than passing over less than it was given, and refuses a job
-in which every mutant errored, since that scores NaN and NaN is never below a threshold; a file
-whose mutants are all ignored, or that has none, has nothing to judge. A pull request that
-touches no source file runs no mutation job, except that a change to the mutation machinery
-itself (the shard list, the Stryker and Vitest configurations, the Jest configuration, the
-style-table ignorer, `tools/mutation.mjs` or the lockfile) judges the `canary` file each shard
-names, so a machinery change is seen killing mutants in every shard before it merges. A Jest
-shard's initial run gets 15 minutes rather than Stryker's default 5: the theme file reaches
-nearly every screen test, which take 1 minute 55 seconds on a runner uninstrumented and passed
-5 minutes under instrumentation. Under Jest a job mutates only the lines the change adds or
-edits, cut at top-level statements and packed up to 60 lines a job; a source reached only
-through a changed test, and a shard's canary, are mutated whole. This is the scope Google's
+`tools/mutation.mjs --plan` splits them by shard into jobs. Under Vitest a job holds up to
+eight files. Under Jest a job mutates only the lines the change adds or edits; a source reached
+only through a changed test, and a shard's canary, are mutated whole. This is the scope Google's
 code-review mutation testing reports on ([State of Mutation Testing at Google](https://research.google/pubs/state-of-mutation-testing-at-google/), 2018),
 and it is what made it necessary: a pull request touching ten lines of one large screen mutated
 all of it, and that one job took 58 minutes.
+
+**Under Jest a job holds a set number of mutants, each named by its exact place.** The app is
+cut finer than by file because each of its mutants re-runs every related screen test on both
+platforms. Lines are not fine enough either: one component of 42 mutants, which no line range
+could split, was cancelled at 60 minutes. So the plan finds the mutants first, with Stryker's
+own instrumenter (`@stryker-mutator/instrumenter`, pinned to the same version as
+`@stryker-mutator/core`) and the shard's `drawn-values` ignorer. It names each mutant by its
+node's place, `file:line:column-line:column`, and packs those places in source order, up to the
+`mutantsPerJob` its shard names in `stryker.shards.json`.
+
+Stryker keeps a mutant when its node lies wholly inside a range, so the range of a function
+would also take every mutant inside the function. The `exact-ranges` ignorer
+(`tools/stryker-exact-ranges.mjs`) stops that: a range given with columns names one node, and
+any mutant inside it is ignored unless its own node holds one of the job's ranges. A job judges
+the mutants it names, plus any that lie between two of its ranges, and the plan counts those
+too. Before it prints, the plan instruments each job again with the job's own ranges and both
+ignorers, and fails unless every mutant lands in a job and no job holds more than its shard
+allows. The job then holds Stryker's report to the plan: it must judge exactly as many mutants
+as the plan gave it.
+
+The limits are measured, against a job of 30 minutes. On PR #139 on 2026-10-04, 32 Jest jobs
+judged at least one mutant. Each paid an initial test run of 1 to 10 minutes, then ran its
+mutants four at a time, one on each of Stryker's test runner processes. A mutant of a Room
+screen, which reaches 196 tests, held a process for up to about 5.5 minutes after an initial
+run of up to 7: 12 mutants are three turns, about 24 minutes, so `search`, `ask` and `shell`
+take 12. Three design-system primitives, whose job reached 850 tests, held a process for about
+8 minutes a mutant after a 10-minute initial run: 12 would be about 34 minutes and 8 are about
+26, so `design-system` takes 8. The theme reaches more tests than any other file (900 on that
+pull request, with an 11-minute initial run), so it takes 8 as well.
+
+Each job runs Stryker with `--mutate` set to exactly its files or ranges, under its shard's
+runner and test configuration, and breaks below 100 like a whole run. The job also holds
+Stryker's own count of the files it found to the number it was handed, so a path that reaches
+nothing fails rather than passing over less than it was given, and refuses a job in which every
+mutant errored, since that scores NaN and NaN is never below a threshold; a file whose mutants
+are all ignored, or that has none, has nothing to judge. A pull request that touches no source
+file runs no mutation job, except that a change to the mutation machinery itself (the shard
+list, the Stryker and Vitest configurations, the Jest configuration, the two ignorers,
+`tools/mutation.mjs`, `tools/mutation-plan.mjs` or the lockfile) judges the `canary` file each
+shard names whenever the change itself plans no job in that shard, so a machinery change is
+seen killing mutants in every shard before it merges. A Jest shard's initial run gets 15 minutes
+rather than Stryker's default 5: the theme file reaches nearly every screen test, which take 1
+minute 55 seconds on a runner uninstrumented and passed 5 minutes under instrumentation.
 
 Stryker.NET ships this scope as its
 [`since`](https://stryker-mutator.io/docs/stryker-net/configuration/) option, which tests only

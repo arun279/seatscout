@@ -173,6 +173,14 @@ export const CLAIMS = [
     files: 1,
   },
   {
+    adr: "0012-every-mutant-must-die.md",
+    says: /The `exact-ranges` ignorer \(`tools\/stryker-exact-ranges\.mjs`\) stops that/,
+    holds: "the Jest shards' ignorer that keeps a job to the mutants it names",
+    pattern: '"exact-ranges"',
+    paths: [STRYKER],
+    files: 1,
+  },
+  {
     adr: "0013-only-the-catalogue-is-cached.md",
     says: /\*\*Every request the adapter makes asks for `no-store`\.\*\*/,
     holds: "modules naming the cache mode a read asks for",

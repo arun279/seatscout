@@ -9,7 +9,20 @@ import {
 import { join } from "node:path";
 
 const PLANTED = "tools/planted-red/planted";
+const MUTATION_TOOLS = [
+  "mutation.mjs",
+  "mutation-plan.mjs",
+  "stryker-exact-ranges.mjs",
+  "stryker-style-tables.mjs",
+];
 export const IGNORED = "reports/planted";
+
+export const copyMutationTools = (at: string): string => {
+  mkdirSync(join(at, "tools"));
+  for (const tool of MUTATION_TOOLS)
+    copyFileSync(`tools/${tool}`, join(at, "tools", tool));
+  return join(at, "tools/mutation.mjs");
+};
 
 export const ran = (...command: string[]): SpawnSyncReturns<string> =>
   spawnSync("pnpm", ["exec", ...command], { encoding: "utf8" });

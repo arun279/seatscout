@@ -1,14 +1,8 @@
 import { spawnSync } from "node:child_process";
-import {
-  copyFileSync,
-  mkdirSync,
-  mkdtempSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { IGNORED, said } from "./planted.fixtures.ts";
+import { copyMutationTools, IGNORED, said } from "./planted.fixtures.ts";
 
 const WORKSPACES = ["packages/kept", "apps/left"];
 const ORPHANED = "leaves these files to no shard, so nothing mutates them";
@@ -16,8 +10,7 @@ const ORPHANED = "leaves these files to no shard, so nothing mutates them";
 const dividedInto = (...mutated: readonly string[]) => {
   mkdirSync(IGNORED, { recursive: true });
   const at = mkdtempSync(join(IGNORED, "shards-"));
-  mkdirSync(join(at, "tools"));
-  copyFileSync("tools/mutation.mjs", join(at, "tools/mutation.mjs"));
+  const tool = copyMutationTools(at);
   for (const workspace of WORKSPACES) {
     mkdirSync(join(at, workspace, "src"), { recursive: true });
     writeFileSync(join(at, workspace, "src/index.ts"), "export {};\n");
@@ -32,11 +25,9 @@ const dividedInto = (...mutated: readonly string[]) => {
     ),
   );
   try {
-    return spawnSync(
-      "node",
-      [join(at, "tools/mutation.mjs"), "--shard", "unlisted"],
-      { encoding: "utf8" },
-    );
+    return spawnSync("node", [tool, "--shard", "unlisted"], {
+      encoding: "utf8",
+    });
   } finally {
     rmSync(at, { recursive: true, force: true });
   }

@@ -137,6 +137,7 @@ jobs:
         env:
           SHARD: ${{ matrix.shard }}
           FILES: ${{ matrix.files }}
+          MUTANTS: ${{ matrix.mutants }}
         run: |
           set -o pipefail
           VITEST_MAX_WORKERS=1 node tools/mutation.mjs --shard "$SHARD" --files "$FILES" 2>&1 | tee "$RUNNER_TEMP/stryker.log"
@@ -144,6 +145,14 @@ jobs:
           if ! grep -qE "Found $expected of [0-9]+ file\(s\) to be mutated" "$RUNNER_TEMP/stryker.log"; then
             echo "::error::Stryker was asked to mutate $expected file(s) and did not report finding them all, so this job would pass over less than it was given."
             exit 1
+          fi
+          if [ -n "$MUTANTS" ]; then
+            report="$(jq -r --arg shard "$SHARD" '.[] | select(.id == $shard) | .report' stryker.shards.json)"
+            judged="$(jq '[.files[].mutants[] | select(.status != "Ignored")] | length' "$report")"
+            if [ "$judged" != "$MUTANTS" ]; then
+              echo "::error::The plan gave this job $MUTANTS mutant(s) and Stryker judged $judged, so the plan and the run disagree about what this job covers."
+              exit 1
+            fi
           fi
 
   android:
