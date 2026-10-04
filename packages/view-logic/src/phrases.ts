@@ -25,7 +25,7 @@ const WORDS = [
 
 export const wordOf = (count: number): string => WORDS[count - 1] ?? `${count}`;
 
-const capitalised = (phrase: string): string =>
+export const capitalised = (phrase: string): string =>
   phrase.charAt(0).toUpperCase() + phrase.slice(1);
 
 export const twoDigits = (value: number): string => `${value}`.padStart(2, "0");
