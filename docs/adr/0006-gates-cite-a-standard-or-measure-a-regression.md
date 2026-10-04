@@ -820,17 +820,24 @@ checked the same way rather than assumed: eight consecutive builds of one tree p
 eight byte-identical bundles and one size.
 
 **One hook, and a job judges a tree once.** There was a pre-push hook that ran eleven checks
-`quality` also runs, some scoped to the change. It is gone. The pre-commit hook stays, because its
-checks over the staged files (secrets, format, lint, spelling and complexity) take seconds and are
-the only thing that runs before CI. CI is the judge of the whole tree, because
-a hook can be skipped, and it runs each check once per push. Nothing is reused from an earlier
-run: a cache of verdicts keyed by tree ids saved little, because a rebase changes the tree, and it
-was one more thing that could carry a stale answer. What keeps a push short instead is that a job
+`quality` also runs, some scoped to the change. It is gone. The pre-commit hook stays, because
+its checks over the staged files (secrets, format, lint, spelling and complexity) take seconds
+and are the only thing that runs before CI. CI is the judge of the whole tree, because a hook
+can be skipped, and it runs each check once per push. Nothing is reused from an earlier run: a
+cache of verdicts keyed by tree ids saved little, because a rebase changes the tree, and it was
+one more thing that could carry a stale answer. What keeps a push short instead is that a job
 runs only when the change reaches what it judges. Mutation judges the source files the change
 touches (see [ADR 12](0012-every-mutant-must-die.md)), and the `android` and `performance` jobs
-run only when the change touches the app, its workspace packages, the lockfile, the workspace or
-compiler settings, or the CI workflow. `footprint` waits for every job and refuses the change when
-any of them failed, or when one that runs on every change was skipped.
+run only when the change touches the app, its workspace packages, the lockfile, the workspace
+or compiler settings, or the CI workflow. `footprint` waits for every job and refuses the
+change when any of them failed, or when one that runs on every change was skipped. A draft runs
+only the fast jobs; the slow ones run once the pull request is marked ready. The ruleset no
+longer requires a branch to be up to date with `main` before it merges: with several pull
+requests open, each merge forced the next to rebase and run the whole suite again. GitHub's
+merge queue is the standard answer and gives the same protection without the loop, but it is
+offered only for repositories owned by an organization. In its place a pull request run tests
+the branch merged onto `main` as it stood, and each push to `main` runs `quality`, `secrets`
+and `dependencies` over the merged result.
 
 The line counter is [cloc](https://github.com/AlDanial/cloc), pinned to a released version
 and checked against its SHA-256 before use. scc and tokei were the alternatives for that
