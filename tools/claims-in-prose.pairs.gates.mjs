@@ -202,6 +202,22 @@ export const GATE_CLAIMS = [
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /Both are first rounded as Flashlight's own report rounds them/,
+    holds: "the precision each measure is compared at",
+    pattern: "roundedTo(value, axis.decimals)",
+    paths: ["tools/device/src"],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /run Baseline on main from the Actions tab with `accept` set to the reason/,
+    holds: "the input that keeps a reading by hand",
+    pattern: "inputs.accept",
+    paths: [BASELINE],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
     says: /`android` job reads them with `cache-read-only`/,
     holds: "the pull request's read-only Gradle caches",
     pattern: "cache-read-only: true",

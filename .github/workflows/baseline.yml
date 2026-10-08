@@ -5,6 +5,11 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      accept:
+        description: To keep this run's reading as the reference even if it reads worse, say why. The reason is recorded with the reading and on the device-red issue.
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -34,7 +39,13 @@ jobs:
       OUT: reports/device
       APK: apps/native/android/app/build/outputs/apk/release/app-release.apk
       WALK: apps/native/e2e/journey.yaml
+      ACCEPT: ${{ inputs.accept }}
     steps:
+      - name: Refuse to accept a reading off main, which no later run would be held to
+        if: inputs.accept != '' && github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::Only a run on main can set the reference the next Baseline run is held to."
+          exit 1
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set up pnpm and Node.js
@@ -104,14 +115,19 @@ jobs:
           [ -z "$PREVIOUS" ] || held=(--previous "$PREVIOUS")
           verdict=0
           node tools/device/src/index.ts --journey "$OUT/journey.json" "${held[@]}" > "$OUT/device.md" || verdict=$?
-          tee -a "$GITHUB_STEP_SUMMARY" < "$OUT/device.md"
           if [ ! -s "$OUT/device.md" ]; then
             echo "::error::The judge read no reading it could hold, so there is nothing to keep for the next run. Its own refusal is above."
             exit 1
           fi
+          if [ -n "$ACCEPT" ]; then
+            printf 'Kept as the reference the next run is held to, whatever it read: @%s accepted it on %s because %s\n' \
+              "$GITHUB_ACTOR" "$(date -u +%Y-%m-%d)" "$ACCEPT" >> "$OUT/device.md"
+          fi
+          tee -a "$GITHUB_STEP_SUMMARY" < "$OUT/device.md"
           echo "regressed=$([ "$verdict" = 0 ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
-      - name: Keep a reading that held for the next run to be held to
-        if: steps.held.outputs.regressed == 'false'
+          echo "keep=$([ "$verdict" = 0 ] || [ -n "$ACCEPT" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+      - name: Keep a reading that held, or one accepted by hand, for the next run to be held to
+        if: steps.held.outputs.keep == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: device-reading
@@ -140,13 +156,17 @@ jobs:
             gh issue create --label device-red --body-file device-red.md \
               --title "The app read worse on the emulator than the run before"
           fi
-      - name: Close what a reading that held answers
-        if: steps.held.outputs.regressed == 'false'
+      - name: Close what a reading that held, or one accepted by hand, answers
+        if: steps.held.outputs.keep == 'true'
         run: |
           open=$(gh issue list --label device-red --state open --limit 1 \
             --json number --jq '.[0].number // empty')
           if [ -n "$open" ]; then
-            gh issue comment "$open" --body \
-              "A later Baseline run read no steady measure worse than the run before it. $RUN"
+            if [ -n "$ACCEPT" ]; then
+              body="@$GITHUB_ACTOR accepted this Baseline run's reading as the new reference because $ACCEPT $RUN"
+            else
+              body="A later Baseline run read no steady measure worse than the run before it. $RUN"
+            fi
+            gh issue comment "$open" --body "$body"
             gh issue close "$open" --reason completed
           fi

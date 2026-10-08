@@ -694,11 +694,20 @@ main, and not on the nightly schedule, which would read the same commit again. I
 journey and has Flashlight read the walk for its default ten iterations with the app's data
 cleared before each: the walk's own time, frame rate, CPU and memory. A measure is worse when
 this commit's median is worse than the worst iteration of the reading the previous Baseline run
-left, The previous reading is the newest `device-reading` artifact a run on main left, and a
-first run, with none to collect, is held to nothing. A run keeps its reading only when it held,
-so a worse reading never becomes the one the next run is held to. It stays the reference for
-the 14 days an artifact is kept; after that the next reading is held to nothing and becomes the
-reference, which is how a cost that was accepted stops alarming. Each measure is held only
+left. Both are first rounded as Flashlight's own report rounds them (`getAverageMetrics` in its
+reporter's
+[`Report.ts`](https://github.com/bamlab/flashlight/blob/v0.18.0/packages/core/reporter/src/reporting/Report.ts)):
+the walk to the millisecond, and frame rate, CPU and memory to a tenth. A difference finer than
+the instrument reports is not called worse; run 37163610363 had called 58.8 FPS worse than 58.8.
+The previous reading is the newest `device-reading` artifact a run on main left, and a first
+run, with none to collect, is held to nothing. A run keeps its reading only when it held, so a
+worse reading never becomes the one the next run is held to by accident. A cost a change was
+meant to carry, such as a new screen in the walk, is accepted by hand: run Baseline on main from
+the Actions tab with `accept` set to the reason. That run keeps its reading whatever it read,
+and records who accepted it, when and why in the report it keeps and on the open `device-red`
+issue, which it then closes. A run off main may not accept, since no later run is held to its
+reading. Otherwise a reading stays the reference for the 14 days an artifact is kept; after
+that the next reading is held to nothing and becomes the reference. Each measure is held only
 while its spread on both readings, the coefficient of variation that Reassure's own glossary
 names for how steady a run is
 ([CONTEXT.md](https://github.com/callstack/reassure/blob/main/CONTEXT.md)), stays below the 5
