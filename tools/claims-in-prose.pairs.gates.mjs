@@ -202,7 +202,15 @@ export const GATE_CLAIMS = [
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /Both are first rounded as Flashlight's own report rounds them/,
+    says: /A push never\s+cancels a reading in progress/,
+    holds: "the Baseline concurrency that lets a reading finish",
+    pattern: "cancel-in-progress: false",
+    paths: [BASELINE],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /The judge rounds this commit's median and the previous run's worst to those same places/,
     holds: "the precision each measure is compared at",
     pattern: "roundedTo(value, axis.decimals)",
     paths: ["tools/device/src"],

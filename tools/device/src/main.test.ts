@@ -18,7 +18,7 @@ describe("what the emulator measured, each measure held to the previous run whil
       [
         "### On the Android emulator",
         "",
-        "One emulator, one build of main. The walk is Flashlight over 3 iterations with the app's data cleared before each. This commit's median stands beside the previous Baseline run's worst; the spread is the standard deviation as a share of the mean, and a measure is held only while it stays under the 5 per cent Reassure calls steady. Both sides are rounded as Flashlight's own report rounds them, the walk to the millisecond and the rest to a tenth, before they are compared.",
+        "One emulator, one build of main. The walk is Flashlight over 3 iterations with the app's data cleared before each. This commit's median stands beside the previous Baseline run's worst; the spread is the standard deviation as a share of the mean, and a measure is held only while it stays under the 5 per cent Reassure calls steady. Both sides are rounded before they are compared, to the places Flashlight's report gives its averages: ms to 0 decimals, FPS to 1 decimal, % to 1 decimal, MB to 1 decimal.",
         "",
         "| Measure | This commit, median | Spread | Previous run, worst | Spread |",
         "| --- | --- | --- | --- | --- |",
@@ -127,7 +127,7 @@ describe("what the emulator measured, each measure held to the previous run whil
 
     expect(report.out).not.toContain("| Measure |");
     expect(report.out).toContain(
-      "before they are compared.\n\nLeft out, too unsteady to hold:",
+      "MB to 1 decimal.\n\nLeft out, too unsteady to hold:",
     );
     expect(report.out).toContain(
       `Left out, too unsteady to hold: ${WALK} (40.8%), Frame rate over the walk (40.8%), CPU over the walk (40.8%), Memory over the walk (40.8%).\n\nNo earlier Baseline run left a reading`,
