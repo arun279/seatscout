@@ -1,3 +1,4 @@
+import type { Bundle, Weighing } from "./bundles.js";
 import type { Gates, Limits } from "./limits.js";
 import { type Measurement, render, type Report } from "./report.js";
 import type { Suites } from "./suites.js";
@@ -31,14 +32,19 @@ export const LIMITS: Limits = {
 
 export const SUITES: Suites = { unit: 487, screens: 76, endToEnd: 7 };
 
+export const weighed = (
+  bundles: readonly Bundle[],
+  globsChanged = false,
+): Weighing => ({ kind: "weighed", bundles, globsChanged });
+
 export const measurement = (over: Partial<Measurement> = {}): Measurement => ({
   base: side("0123456789abcdef0123456789abcdef01234567"),
   head: side("fedcba9876543210fedcba9876543210fedcba98"),
   diff: { added: {}, removed: {}, modified: {} },
-  bundles: [
-    { name: "app for iOS", size: 15, sizeLimit: 15, passed: true },
-    { name: "app's faces and images", size: 4, sizeLimit: 4, passed: true },
-  ],
+  bundles: weighed([
+    { name: "app for iOS", main: 15, change: 15 },
+    { name: "app's faces and images", main: 4, change: 4 },
+  ]),
   gates: GATES,
   limits: LIMITS,
   suites: SUITES,
@@ -46,8 +52,10 @@ export const measurement = (over: Partial<Measurement> = {}): Measurement => ({
   ...over,
 });
 
-export const reportOn = (over: Partial<Measurement> = {}): Report =>
-  render(measurement(over));
+export const reportOn = (
+  over: Partial<Measurement> = {},
+  bundleGrows = false,
+): Report => render(measurement(over), bundleGrows);
 
 export const between = (base: Tree, head: Tree, comments = 0): Report =>
   reportOn({

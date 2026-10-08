@@ -1,4 +1,5 @@
-import type { Bundle } from "./bundles.js";
+import { join } from "node:path";
+import type { Weighing } from "./bundles.js";
 import {
   BIOME,
   type Gates,
@@ -13,6 +14,15 @@ import { type Suites, suitesFrom } from "./suites.js";
 import { type Diff, filesOf, type Side, type Tree } from "./volume.js";
 
 export const RATCHET = ".footprint.json";
+export const BUNDLES = ".size-limit.json";
+
+const weighedAs = (configuration: string): string =>
+  JSON.stringify(
+    JSON.parse(configuration).map(
+      ({ limit: _limit, ...weighing }: Readonly<Record<string, unknown>>) =>
+        weighing,
+    ),
+  );
 const NATIVE_JEST = "apps/native/jest.config.js";
 
 const NATIVE_JEST_RUN: readonly string[] = [
@@ -67,19 +77,58 @@ export const measureWith = (run: Run, read: (path: string) => string) => {
 
   const sideOf = (ref: string): Side => ({ ref, tree: treeOf(ref) });
 
-  const bundles = (): readonly Bundle[] => {
-    const weighed = JSON.parse(whatever(["size-limit", "--json"]));
+  const sizesOn = (
+    side: "main" | "this change",
+    config: string,
+  ): ReadonlyMap<string, number> | string => {
+    const weighed = JSON.parse(
+      whatever(["size-limit", "--json", "--config", config]),
+    );
     if (
       !Array.isArray(weighed) ||
       weighed.length === 0 ||
       weighed.some(
-        (bundle) => typeof bundle.sizeLimit !== "number" || !(bundle.size > 0),
+        (bundle) =>
+          typeof bundle.name !== "string" || typeof bundle.size !== "number",
       )
     )
-      throw new Error(
-        `size-limit weighed no bundle against a ratchet:\n${JSON.stringify(weighed)}`,
-      );
-    return weighed;
+      return `size-limit weighed nothing by ${config} on ${side}: ${JSON.stringify(weighed)}`;
+    const empty = weighed.filter((bundle) => bundle.size === 0);
+    if (side === "this change" && empty.length > 0)
+      return `${empty.map((bundle) => bundle.name).join(", ")} weighed 0 B on this change, so its glob matched no file`;
+    return new Map(weighed.map((bundle) => [bundle.name, bundle.size]));
+  };
+
+  const globsChanged = (mainTree: string): boolean =>
+    weighedAs(read(BUNDLES)) !==
+    weighedAs(git("-C", mainTree, "show", `HEAD:${BUNDLES}`));
+
+  const weighing = (mainTree: string, mainExported: boolean): Weighing => {
+    if (!mainExported)
+      return {
+        kind: "unweighed",
+        reason:
+          "main could not be checked out and exported, and the step that tried says why",
+      };
+    const change = sizesOn("this change", BUNDLES);
+    const main = sizesOn("main", join(mainTree, BUNDLES));
+    if (typeof change === "string")
+      return { kind: "unweighed", reason: change };
+    if (typeof main === "string") return { kind: "unweighed", reason: main };
+    const paired = [...change].flatMap(([name, size]) => {
+      const before = main.get(name);
+      return before === undefined ? [] : [{ name, main: before, change: size }];
+    });
+    return paired.length === main.size && paired.length === change.size
+      ? {
+          kind: "weighed",
+          bundles: paired,
+          globsChanged: globsChanged(mainTree),
+        }
+      : {
+          kind: "unweighed",
+          reason: `size-limit weighed ${[...main.keys()].join(", ")} on main against ${[...change.keys()].join(", ")} on this change`,
+        };
   };
 
   const gates = (): Gates => gatesFrom(read(OXLINT), read(BIOME));
@@ -121,7 +170,12 @@ export const measureWith = (run: Run, read: (path: string) => string) => {
     };
   };
 
-  return (baseRef: string, headRef: string): Measurement => {
+  return (
+    baseRef: string,
+    headRef: string,
+    mainTree: string,
+    mainExported: boolean,
+  ): Measurement => {
     const head = git("rev-parse", headRef);
     const base = git("merge-base", baseRef, head);
     const against = gates();
@@ -129,7 +183,7 @@ export const measureWith = (run: Run, read: (path: string) => string) => {
       base: sideOf(base),
       head: sideOf(head),
       diff: diffOf(base, head),
-      bundles: bundles(),
+      bundles: weighing(mainTree, mainExported),
       gates: against,
       limits: observed(against),
       suites: collected(),

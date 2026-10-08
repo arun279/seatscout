@@ -227,7 +227,7 @@ as a package under `tools/<name>/src` keeps its fixtures beside its source; the 
 are somebody else's tool keep theirs under `tools/planted-red/planted`, with one test file
 each for the cognitive limit, the cyclomatic limit and its variant, the file length limit,
 the written declaration option, the duplication window, the import cycle
-rule and the bundle ratchets. That whole set answers in about seven seconds on two workers,
+rule and the bundle weighing. That whole set answers in about seven seconds on two workers,
 which is why it sits in `pnpm test:unit` beside everything else rather than in a job of its
 own. The fixtures live outside `src`, where they are neither product code nor mutated.
 
@@ -244,7 +244,7 @@ that carries a number or a rule name is also paired with a search of the tree in
 and two sentences that carried neither a number nor a name were dropped along with the grep
 that was their only witness, since the red beside them says everything they said. Others are
 sentences no fixture can reach at all: the mutation gate's break threshold, which nothing can
-be planted against short of a whole mutation run; the bundle glob and the ratchet each is
+be planted against short of a whole mutation run; the bundle globs and the main side each is
 weighed against; the counter this decision picked; and the licence flag the `dependencies` job
 carries, which already has a planted red of its own in that job because osv-scanner is the
 job's tool rather than the workspace's.
@@ -460,45 +460,56 @@ growth: a hundred lines carrying ten comments becoming a thousand carrying a hun
 the density and adds ninety comments, which is neither downward pressure nor a number any
 reviewer approved. And it passes over nothing when the merge base has no code, because the
 inequality then reads `comments * 0 <= 0 * code`, which holds for every branch there is.
-A count held to a committed number has neither property, and it is the form the bundle gate
-beside it already takes: the figure is what a reviewer last accepted, it stands in a file,
-and it rises only by a line in a diff.
+A count held to a committed number has neither property: the figure is what a reviewer last
+accepted, it stands in a file, and it rises only by a line in a diff.
 
 The ratchet stands at zero, which is what the tree holds, so the gate is absolute today: one
 comment fails it and no amount of accompanying code rescues it. That is the intended reading
 of a norm of none. The first deliberate comment is a line in `.footprint.json` in the same
 diff, where the question of whether it belongs gets asked by a reviewer looking at both.
 
-**Bundle size** is a ratchet recorded in `.size-limit.json` and enforced by size-limit.
-Nothing measures `main` at review time: the recorded figure is whatever a reviewer last
-accepted, and the gate holds the branch to it. It is lowered as the build improves, and it
-rises only by editing the file, which is a reviewed line in a diff. The glob covers every
-emitted script rather than an entry point, so deferring bytes into a chunk that loads
-later does not move the number. The measured size is printed beside the ratchet, so a
-ratchet that has drifted above the real size is visible from the two figures.
+**Bundle size is held to main, weighed in the same job.** The `measure` job exports the app
+twice: from the merge of the change into main that a pull request checks out, and from that
+merge commit's first parent, which is main as the change merges into it. size-limit weighs both
+with the globs in the change's `.size-limit.json`, which the job copies over main's so the two
+sides are weighed alike. A bundle bigger than on main fails the job, by a byte or more, unless
+the pull request carries the `bundle-grows` label. A bundle main does not ship yet weighs 0 B
+there, so it is growth from nothing and needs the label too. So does any change to what
+`.size-limit.json` weighs, read from main's own commit: every field of an entry but `limit`, which
+weighs nothing. Narrowing or deleting a glob would otherwise drop a bundle from both sides and
+pass. Applying a label takes GitHub's triage role or higher,
+and the pull request's timeline records who applied it and when. Nothing requires a second
+person: the label makes growth a deliberate, visible decision, not a reviewed one. The job reads
+the labels from GitHub's API when it runs rather than from the event that started
+it, so adding the label and running the failed jobs again is enough. The footprint comment
+prints both figures and their difference for every bundle, label or not. A bundle that shrinks
+makes main smaller for the next change, so the bar moves down by itself and rises only through
+the label. The glob covers every emitted script rather than an entry point, so deferring bytes
+into a chunk that loads later does not move the number.
 
-Every kind of file the export ships is weighed, each against a ratchet of its own: the script
-Hermes compiles for iOS, the one for Android, and the faces and images every platform ships.
-Gating one kind and leaving another unbounded would let bytes move from the weighed kind to the
-free one, which is the deferred chunk under another name. Each glob is pointed at
-`apps/native/dist`, because the export is what ships.
+It is held to the merge commit's first parent and not to `git merge-base`. The merge base is
+where the branch left main, so main's own growth since then would count against the change;
+the first parent holds everything main has merged since, so the difference is the change's
+alone. Until this form, each figure stood in `.size-limit.json` as a ratchet a reviewer raised
+in the diff. Every app change edited that one file, so two app pull requests landing one after
+the other conflicted on it, and the second paid a whole CI run to settle one line. Weighing main
+in the job removes the shared file, and the label keeps the one thing it gave: a deliberate,
+recorded step before a bundle may grow.
 
-A ratchet a glob no longer reaches is worse than no ratchet, because it reads 0 B and passes.
-Two fixture `size-limit` configurations are committed beside a planted file: over the planted
-file the ratchet is refused by name, by ratchet and by the byte it went over, and over globs
-that reach nothing `size-limit` reports 0 B for each, holds neither to a ratchet, and passes
-each. The report refuses that reading rather than printing it: every entry must have weighed at
-least one file and must have been held to a number, and a list where any entry fails either
-test throws instead of becoming a verdict.
+Every kind of file the export ships is weighed: the script Hermes compiles for iOS, the one for
+Android, and the faces and images every platform ships. Gating one kind and leaving another
+unbounded would let bytes move from the weighed kind to the free one, which is the deferred
+chunk under another name. Each glob is pointed at `apps/native/dist`, because the export is
+what ships.
 
-Their difference is not printed as a third. The ratchet is not a budget derived from a
-device, a network or a page, so the room left under it is distance to a number this
-project chose rather than a quantity about the world: no published standard sets a point
-on that distance, and size-limit's own configuration has no notion of one. The regression
-form is closed for the reason given above, that nothing measures `main` at review time, so
-there is no earlier headroom to compare a branch's against. What is left is a figure a
-reader cannot act on without weighing it, which is the test this decision sets for
-anything it does not gate.
+A glob that no longer reaches anything is worse than no gate, because it reads 0 B on both sides
+and holds. Two fixture `size-limit` configurations are committed beside a planted file: over the
+planted file size-limit weighs the glob from the directory its configuration sits in, which is
+how main's export is weighed by the change's globs, and over globs that reach nothing it reports
+0 B for each. The report refuses that reading rather than comparing it: every entry on the change
+must have weighed at least one file, both sides must have weighed the same bundles, and main must
+have been checked out and exported. When any of these fails, the footprint comment says which,
+and the job fails whatever the labels say.
 
 What a glob is pointed at has to be what ships rather than a stand-in for it, and for the
 scripts that means the output of the application's own bundler. That is the load-bearing half
@@ -510,14 +521,9 @@ stand-in, which is the failure named at the top of this decision arriving one st
 the deferred chunk. The app is therefore weighed over `expo export`, which is what Metro bundles
 for a phone.
 
-size-limit signals a breach through its exit status while still printing its verdict, so
-the report reads `passed` out of its JSON rather than looking at the status. That is why
-it is the one subprocess here whose exit code is ignored. The status cannot say which of
-two things happened, because size-limit exits non-zero both for a breach and for a glob
-that matched no file. In that second case it prints `passed: true` at a size of zero and
-omits `sizeLimit` entirely, since a check whose glob matched nothing has its limit cleared
-before the verdict is printed. The report therefore reads the shape rather than the status,
-and refuses a run that weighed no bundle or weighed one against no ratchet.
+size-limit exits non-zero for a glob that matched no file while still printing its weights,
+so the report reads the shape of its JSON rather than the status. That is why it is the one
+subprocess here whose exit code is ignored, and why it refuses a run that weighed no bundle.
 `@size-limit/file` compresses each matched file on its own and adds the results, so the
 figure is a sum of per-file brotli rather than the brotli of everything concatenated.
 
@@ -767,9 +773,8 @@ writes the caches from main, and a pull request can read what the default branch
 `android` job reads them with `cache-read-only`, so there is one entry for every pull request rather
 than one per pull request.
 
-**The app's bundles are three ratchets.** The script Hermes compiles for iOS and for Android,
-and the faces and images every platform ships, each against its own figure in
-`.size-limit.json`. The phones' scripts are weighed before Hermes compiles them, from `expo
+**The app's bundles are three figures.** The script Hermes compiles for iOS and for Android,
+and the faces and images every platform ships, each named in `.size-limit.json`. The phones' scripts are weighed before Hermes compiles them, from `expo
 export --no-bytecode`, because the bytecode is not the same twice: Expo's exporter compiles
 from a temporary directory named with `Math.random()` and the time (`exportHermes.js` in
 `@expo/metro-config`), and Hermes writes that path into the bytecode. Metro's own output was
@@ -777,9 +782,8 @@ not the same twice either: Expo numbers modules in the order Metro meets them, a
 weighed 992708 and 990513 B for iOS on two runs of the same job (run 36231517101). So
 `metro.config.ts` gives each module an id hashed from its path, refusing a clash by name, and
 `quality` exports the scripts twice and fails if a byte differs. The longer ids cost bytes,
-which is the price of a size that means the same thing on every run. Each ratchet went in at 1
-B and the `footprint` job refused it, naming each and printing its size; those sizes are the
-ratchets.
+which is the price of a size that means the same thing on every run, and what lets the two
+sides of the bundle gate be weighed in one job and compared byte for byte.
 
 **A colour written into a screen is refused** by a Grit plugin, `tools/lint/no-colour-literals.grit`,
 which `biome.json` points at `apps/native/src` except the theme and the tests. It refuses a string
@@ -905,8 +909,8 @@ the report itself when the gate fails, because a gate that fails without naming 
 is a wall: make the code say what the comment was going to, or raise the ratchet in the same
 diff, where a reviewer sees it beside the comment it pays for.
 
-Raising the bundle ratchet is a line in a diff that a reviewer sees, rather than a number
-that quietly stops meaning anything.
+Growing a bundle takes the `bundle-grows` label, which a reviewer sees on the pull request,
+rather than a number that quietly stops meaning anything.
 
 The app's figure is everything Metro bundles for a phone, the slice of the shared packages it
 reaches included, compressed. It is defined as what the export publishes rather than as what one

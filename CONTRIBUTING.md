@@ -109,7 +109,8 @@ merged result, so a clash between two pull requests shows there within minutes.
 
 ## When a gate refuses
 
-Each of these has one way through and no exemption to grant.
+Each of these has one way through. The one exception is a bundle bigger than on main, which
+the `bundle-grows` label lets through.
 
 - **Complexity.** The failure names the file, the function, its score and the limit.
   Extract part of the function. Suppressing the rule would take a comment, and comment load
@@ -117,7 +118,12 @@ Each of these has one way through and no exemption to grant.
 - **File length.** Split the file.
 - **A comment.** Say it in the code, or raise the ratchet in `.footprint.json` in the same
   diff, where a reviewer sees the comment it pays for. Every ratchet in this repository
-  moves that way, the bundle's included.
+  moves that way.
+- **A bundle bigger than on main, or a change to what `.size-limit.json` weighs.** The `measure` job exports
+  the app from your change merged into main and from main itself, and weighs both. Make the
+  bundle smaller, or add the `bundle-grows` label to the pull request, where a reviewer sees it,
+  and run the failed jobs again. When the job could not weigh at all, the footprint comment says
+  why, and no label lets it through.
 - **A count stated in prose, or a claim a record makes about this repository.** Correct the
   sentence or correct the tree, then follow the sentence into
   `tools/counts-in-prose/claims.ts` or `tools/claims-in-prose.pairs.mjs`, where every pair is
@@ -210,11 +216,11 @@ Each of these has one way through and no exemption to grant.
 
 Take a ratchet's new value from the `footprint` comment on the pull request rather than from a
 local run: the job measures the merge of your branch with `main` rather than the branch alone,
-so the bundle's bytes and the sum of the unit and end-to-end counts are what that merge weighs,
-and a floor derived locally read 25 too high the moment `main` had dropped a package's tests.
-`.size-limit.json` holds three ratchets over what the app's export emits: the script Hermes
-compiles for iOS and for Android, and the faces and images every platform ships. The comment
-prints each measured figure beside its own ratchet.
+so the sum of the unit and end-to-end counts is what that merge holds, and a floor derived
+locally read 25 too high the moment `main` had dropped a package's tests.
+`.size-limit.json` names the three bundles the app's export emits: the script Hermes compiles
+for iOS and for Android, and the faces and images every platform ships. The comment prints
+each one on main and on your change, and the difference.
 
 A pull request that changes what a person sees or does carries its headed pass as images or
 video: run the app on a phone or a simulator, screenshot each state the change adds or alters,
@@ -256,9 +262,9 @@ configuration this workspace ships, reading each tool's own diagnostic rather th
 status. Loosening a rule in `biome.json`, `.oxlintrc.json`, `.jscpd.json` or
 `tsconfig.base.json` therefore fails the unit suite instead of passing quietly, and the
 fixture moves in the same diff as the rule, where a reviewer sees both. The size-limit
-fixtures are the exception: they carry ratchets of their own rather than the shipped ones, so
-what they watch is that size-limit still refuses a file over a ratchet and still reports a
-glob that reached nothing. The eight files answer in about seven seconds on two workers,
+fixtures are the exception: they carry globs of their own rather than the shipped ones, so
+what they watch is that size-limit still weighs a glob from its configuration's directory and
+still reports a glob that reached nothing. The eight files answer in about seven seconds on two workers,
 inside `pnpm test:unit`.
 
 Substitute at `fetch`, never at the Source port. `fakeUpstream` in
@@ -269,13 +275,14 @@ is there and not at the port.
 
 ## The reports
 
-The footprint report compares `HEAD` with its merge base against `origin/main`. It needs a
-built tree and a mutation report already on disk:
+The footprint report compares `HEAD` with its merge base against `origin/main`, and weighs
+the app's export against main's export in the tree `--main-tree` names. CI exports both. By
+hand, export main the same way in a second worktree, then:
 
 ```sh
 pnpm build
-pnpm test:mutation
-pnpm footprint
+pnpm --filter @seatscout/native run weigh
+pnpm footprint --main-tree <main's worktree>
 ```
 
 The mutation gate is divided into shards. `stryker.shards.json` names them, and

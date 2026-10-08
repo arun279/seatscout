@@ -1,5 +1,5 @@
 const BIOME = "biome.json";
-const RATCHET = ".size-limit.json";
+const BUNDLES = ".size-limit.json";
 const STRYKER = "stryker.config.mjs";
 const CYCLOMATIC = ".oxlintrc.json";
 const DUPLICATION = ".jscpd.json";
@@ -73,18 +73,26 @@ export const GATE_CLAIMS = [
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /\*\*Bundle size\*\* is a ratchet recorded in `\.size-limit\.json`/,
-    holds: "the ratchet a reviewer last accepted",
-    pattern: '"limit"',
-    paths: [RATCHET],
+    says: /\*\*Bundle size is held to main, weighed in the same job\.\*\*/,
+    holds: "the main side the measure job exports",
+    pattern: '--main-tree "$RUNNER_TEMP/main"',
+    paths: [WORKFLOW],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /unless\s+the pull request carries the `bundle-grows` label/,
+    holds: "the label that accepts a bigger bundle",
+    pattern: "grep -qx bundle-grows",
+    paths: [WORKFLOW],
     files: 1,
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
     says: /The glob covers every emitted script rather than an entry point/,
-    holds: "the glob the ratchet weighs",
+    holds: "the glob each bundle is weighed by",
     pattern: "dist/_expo/static/js/",
-    paths: [RATCHET],
+    paths: [BUNDLES],
     files: 1,
   },
   {

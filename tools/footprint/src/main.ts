@@ -5,7 +5,15 @@ export interface Writer {
   readonly write: (text: string) => void;
 }
 
-export type Measure = (base: string, head: string) => Measurement;
+export type Measure = (
+  base: string,
+  head: string,
+  mainTree: string,
+  mainExported: boolean,
+) => Measurement;
+
+const USAGE =
+  "usage: footprint --main-tree <main, exported> [--base <ref>] [--head <ref>] [--main-unexported] [--bundle-grows] [--out <file>]\n";
 
 export const main = (
   argv: readonly string[],
@@ -18,12 +26,26 @@ export const main = (
     options: {
       base: { type: "string" },
       head: { type: "string" },
+      "main-tree": { type: "string" },
+      "main-unexported": { type: "boolean" },
+      "bundle-grows": { type: "boolean" },
       out: { type: "string" },
     },
   });
+  const mainTree = values["main-tree"];
+  if (mainTree === undefined) {
+    out.write(USAGE);
+    return 2;
+  }
 
   const report = render(
-    measure(values.base ?? "origin/main", values.head ?? "HEAD"),
+    measure(
+      values.base ?? "origin/main",
+      values.head ?? "HEAD",
+      mainTree,
+      values["main-unexported"] !== true,
+    ),
+    values["bundle-grows"] ?? false,
   );
 
   if (values.out) writeFile(values.out, report.markdown);

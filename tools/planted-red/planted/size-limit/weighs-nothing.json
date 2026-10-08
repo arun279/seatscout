@@ -1,12 +1,10 @@
 [
   {
     "name": "fonts",
-    "path": "serves/*.woff2",
-    "limit": "118924 B"
+    "path": "serves/*.woff2"
   },
   {
     "name": "icons",
-    "path": ["serves/*.png", "serves/*.ico"],
-    "limit": "134269 B"
+    "path": ["serves/*.png", "serves/*.ico"]
   }
 ]
