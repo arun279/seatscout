@@ -38,12 +38,25 @@ export const answeredByTheCorpus = async (page: Page): Promise<void> => {
   });
 };
 
+const idsSharedOn = (page: Page): Promise<readonly string[]> =>
+  page.evaluate(() => {
+    const counted = new Map<string, number>();
+    for (const element of document.querySelectorAll("[id]"))
+      counted.set(element.id, (counted.get(element.id) ?? 0) + 1);
+    return [...counted].filter(([, count]) => count > 1).map(([id]) => id);
+  });
+
 export const violationsOn = async (
   page: Page,
-): Promise<readonly { readonly id: string; readonly targets: unknown }[]> =>
-  (await new AxeBuilder({ page }).withTags([...WCAG]).analyze()).violations.map(
-    (violation) => ({
-      id: violation.id,
-      targets: violation.nodes.map((node) => node.target),
-    }),
-  );
+): Promise<readonly { readonly id: string; readonly targets: unknown }[]> => [
+  ...(
+    await new AxeBuilder({ page }).withTags([...WCAG]).analyze()
+  ).violations.map((violation) => ({
+    id: violation.id,
+    targets: violation.nodes.map((node) => node.target),
+  })),
+  ...(await idsSharedOn(page)).map((id) => ({
+    id: "id-shared",
+    targets: [`#${id}`],
+  })),
+];

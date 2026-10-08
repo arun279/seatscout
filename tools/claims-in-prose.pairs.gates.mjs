@@ -177,10 +177,18 @@ export const GATE_CLAIMS = [
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /\*\*An id written as a literal is refused\*\* by a second Grit plugin/,
+    says: /The cheap first layer is a Grit plugin, `tools\/lint\/no-literal-ids\.grit`/,
     holds: "the rule that refuses a literal id",
     pattern: "no-literal-ids.grit",
     paths: [BIOME],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /also lists each id that two elements carry, and any such id fails the/,
+    holds: "the scan's own check for a shared id",
+    pattern: 'id: "id-shared"',
+    paths: ["tests/app"],
     files: 1,
   },
   {

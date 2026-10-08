@@ -4,6 +4,7 @@ export const Glow = () => {
     <>
       <LinearGradient id={id} />
       <LinearGradient id={`${id}-fall`} />
+      <LinearGradient id={id + "-edge"} />
       <Rect fill={`url(#${id})`} />
     </>
   );

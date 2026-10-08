@@ -2,7 +2,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { overPlanted, ran, said } from "./planted.fixtures.ts";
 
-const REFUSAL = "This id is written as a literal";
+const REFUSAL = "This id is a literal";
 
 const drawn = (named: string) =>
   overPlanted("ids", (at) =>
@@ -22,7 +22,7 @@ describe("the planted red under the literal id gate", () => {
       expect(said(run)).toContain(REFUSAL);
     });
 
-  it("passes ids derived from useId, alone or as a prefix, so it is not refusing every id", () => {
+  it("passes ids built from useId, alone, in a template or joined to a string, so it is not refusing every id", () => {
     const run = drawn("derived.tsx");
 
     expect(run.status).toBe(0);

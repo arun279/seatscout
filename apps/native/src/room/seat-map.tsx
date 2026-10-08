@@ -124,7 +124,7 @@ const Seat = ({
       stroke: theme.colours.beamDim,
       strokeWidth: DRAWN.space.stroke,
     })}
-    {...(lit && theme.appearance === "down" && { filter: lamp })}
+    {...(lit && theme.appearance === "down" && { filter: `url(#${lamp})` })}
   />
 );
 
@@ -261,7 +261,7 @@ export const SeatMap = ({
                   {row.seats.map((held) => (
                     <Seat
                       key={held.id}
-                      lamp={`url(#${lamp})`}
+                      lamp={lamp}
                       lit={holds(chosen, held)}
                       name={seatNameOf(held, recommended, accessibleSeating)}
                       ringed={holds(result, held) && !holds(chosen, held)}

@@ -13,9 +13,11 @@ export const definedUnder = (
 ): readonly unknown[] =>
   drawnUnder(testID, kind).map((node) => node.props["name"]);
 
+const BRUSH_FROM_URL = 1;
+
 export const paintedWith = (
   id: unknown,
 ): { readonly type: number; readonly brushRef: unknown } => ({
-  type: 1,
+  type: BRUSH_FROM_URL,
   brushRef: id,
 });
