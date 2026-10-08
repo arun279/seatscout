@@ -8,10 +8,12 @@ allowBuilds:
   lefthook: true
 
 overrides:
+  compression@1.8.1: 1.8.2
   '@types/jsdom': 30.0.0
   decode-uri-component: 0.5.0
   exit: npm:exit-x@0.2.2
   qs: 6.16.0
+  source-map-js@1.2.1: 1.2.2
   react: 19.2.3
   uuid: 11.1.1
 
