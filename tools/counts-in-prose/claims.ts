@@ -92,7 +92,7 @@ export const CLAIMS: readonly Claim[] = [
     document: CONTRIBUTING,
     says: /The (\w+) test files in `tools\/planted-red\/src`/,
     about: `the test files under ${PLANTED_RED}`,
-    count: () => globSync(`${PLANTED_RED}/*.test.ts`).length,
+    count: () => globSync("*.test.ts", { cwd: PLANTED_RED }).length,
   },
   {
     document: CONTRIBUTING,

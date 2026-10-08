@@ -128,7 +128,9 @@ const mutantJobs = async (root, { mutantsPerJob }, files, changed) => {
       `The plan leaves these mutants to no job:\n${missed.map((mutant) => mutant.key).join("\n")}`,
     );
   }
-  const crowded = judged.findIndex((job) => job.length > mutantsPerJob);
+  const crowded = judged.findIndex(
+    (job, index) => job.length > mutantsPerJob && jobs[index].length > 1,
+  );
   if (crowded !== -1) {
     throw new Error(
       `A job would judge ${judged[crowded].length} mutants, over ${mutantsPerJob}:\n${jobs[crowded].map((pin) => pin.range).join("\n")}`,
