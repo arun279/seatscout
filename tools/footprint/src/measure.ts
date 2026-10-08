@@ -1,3 +1,4 @@
+import { join } from "node:path";
 import type { Bundle } from "./bundles.js";
 import {
   BIOME,
@@ -13,6 +14,7 @@ import { type Suites, suitesFrom } from "./suites.js";
 import { type Diff, filesOf, type Side, type Tree } from "./volume.js";
 
 export const RATCHET = ".footprint.json";
+export const BUNDLES = ".size-limit.json";
 const NATIVE_JEST = "apps/native/jest.config.js";
 
 const NATIVE_JEST_RUN: readonly string[] = [
@@ -67,19 +69,35 @@ export const measureWith = (run: Run, read: (path: string) => string) => {
 
   const sideOf = (ref: string): Side => ({ ref, tree: treeOf(ref) });
 
-  const bundles = (): readonly Bundle[] => {
-    const weighed = JSON.parse(whatever(["size-limit", "--json"]));
+  const weighedBy = (config: string): ReadonlyMap<string, number> => {
+    const weighed = JSON.parse(
+      whatever(["size-limit", "--json", "--config", config]),
+    );
     if (
       !Array.isArray(weighed) ||
       weighed.length === 0 ||
       weighed.some(
-        (bundle) => typeof bundle.sizeLimit !== "number" || !(bundle.size > 0),
+        (bundle) => typeof bundle.name !== "string" || !(bundle.size > 0),
       )
     )
       throw new Error(
-        `size-limit weighed no bundle against a ratchet:\n${JSON.stringify(weighed)}`,
+        `size-limit weighed no bundle by ${config}:\n${JSON.stringify(weighed)}`,
       );
-    return weighed;
+    return new Map(weighed.map((bundle) => [bundle.name, bundle.size]));
+  };
+
+  const bundles = (mainTree: string): readonly Bundle[] => {
+    const change = weighedBy(BUNDLES);
+    const main = weighedBy(join(mainTree, BUNDLES));
+    const held = [...change].flatMap(([name, size]) => {
+      const before = main.get(name);
+      return before === undefined ? [] : [{ name, main: before, change: size }];
+    });
+    if (held.length !== main.size || held.length !== change.size)
+      throw new Error(
+        `size-limit weighed different bundles on main and on this change: ${[...main.keys()].join(", ")} against ${[...change.keys()].join(", ")}`,
+      );
+    return held;
   };
 
   const gates = (): Gates => gatesFrom(read(OXLINT), read(BIOME));
@@ -121,7 +139,7 @@ export const measureWith = (run: Run, read: (path: string) => string) => {
     };
   };
 
-  return (baseRef: string, headRef: string): Measurement => {
+  return (baseRef: string, headRef: string, mainTree: string): Measurement => {
     const head = git("rev-parse", headRef);
     const base = git("merge-base", baseRef, head);
     const against = gates();
@@ -129,7 +147,7 @@ export const measureWith = (run: Run, read: (path: string) => string) => {
       base: sideOf(base),
       head: sideOf(head),
       diff: diffOf(base, head),
-      bundles: bundles(),
+      bundles: bundles(mainTree),
       gates: against,
       limits: observed(against),
       suites: collected(),

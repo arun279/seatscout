@@ -55,9 +55,7 @@ const PLAYWRIGHT_OUTPUT = JSON.stringify({
 
 const JEST_OUTPUT = JSON.stringify({ numTotalTests: 3, success: true });
 
-const SIZE_LIMIT_OUTPUT = JSON.stringify([
-  { name: "app for iOS", size: 15, sizeLimit: 15, passed: true },
-]);
+const SIZE_LIMIT_OUTPUT = JSON.stringify([{ name: "app for iOS", size: 15 }]);
 
 const CLOC_TREE = JSON.stringify({
   header: { cloc_version: "2.10" },

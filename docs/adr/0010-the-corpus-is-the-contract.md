@@ -49,7 +49,7 @@ The corpus is not part of Core's compiled product. `tsconfig.json` excludes it a
 the index together, so nothing that compares the two can notice a thinner capture.
 `SPAN_THE_CAPTURE_REACHED` in `captures.test.ts` is what notices: the Chains, Auditoriums and
 Auditorium sizes this corpus reaches, which a refresh may exceed and may not fall below.
-Lowering it is a reviewed line in a diff, like the bundle ratchet.
+Lowering it is a reviewed line in a diff, like the comment ratchet in `.footprint.json`.
 
 `seat-map.test.ts` asserts exact corpus-wide tallies instead, and those a refresh does have
 to re-derive. They are floors nowhere, because a floor cannot tell a mutation that judges one

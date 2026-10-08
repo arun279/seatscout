@@ -24,7 +24,10 @@ export interface Report {
   readonly passed: boolean;
 }
 
-export const render = (measurement: Measurement): Report => {
+export const render = (
+  measurement: Measurement,
+  bundleGrows: boolean,
+): Report => {
   const sections = [
     volume(
       measurement.base,
@@ -32,7 +35,7 @@ export const render = (measurement: Measurement): Report => {
       measurement.diff,
       measurement.ratchets.comments,
     ),
-    bundles(measurement.bundles),
+    bundles(measurement.bundles, bundleGrows),
     limits(measurement.limits, measurement.gates),
     suites(measurement.suites, measurement.ratchets.tests),
   ];

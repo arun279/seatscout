@@ -4,90 +4,96 @@ import { measuring, recorder } from "./measure.fixtures.js";
 import { RATCHET } from "./measure.js";
 import type { Run } from "./shell.js";
 
-const sizeLimitExitingNonZero = (stdout: string): Run =>
-  recorder((command) =>
-    command.command === "pnpm" && command.args[1] === "size-limit"
-      ? { ok: false, stdout, stderr: "" }
-      : undefined,
-  ).run;
-
 const measured = (over: Record<string, string>) => () =>
-  measuring(recorder().run, over)("origin/main", "HEAD");
+  measuring(recorder().run, over)("origin/main", "HEAD", "main");
 
 describe("what size-limit reported", () => {
-  it("reads the bundle verdict even when size-limit exits non-zero", () => {
-    const run = sizeLimitExitingNonZero(
-      JSON.stringify([
-        { name: "app for iOS", size: 90, sizeLimit: 15, passed: false },
-      ]),
-    );
+  const weighing = (byConfig: Record<string, unknown>): Run =>
+    recorder((command) => {
+      if (command.command !== "pnpm" || command.args[1] !== "size-limit")
+        return undefined;
+      const config = command.args[command.args.indexOf("--config") + 1] ?? "";
+      return {
+        ok: false,
+        stdout: JSON.stringify(byConfig[config]),
+        stderr: "",
+      };
+    }).run;
 
-    expect(measuring(run)("origin/main", "HEAD").bundles).toStrictEqual([
-      { name: "app for iOS", size: 90, sizeLimit: 15, passed: false },
-    ]);
-  });
+  const IOS = { name: "app for iOS", size: 15 };
 
-  it("refuses the verdict a glob matching nothing reports, which passes at no ratchet", () => {
-    const run = sizeLimitExitingNonZero(
-      JSON.stringify([{ name: "app for iOS", passed: true, size: 0 }]),
-    );
+  it("weighs main by the configuration in its tree and this change by its own, whatever size-limit exits", () => {
+    const run = weighing({
+      ".size-limit.json": [{ ...IOS, size: 90 }],
+      "main/.size-limit.json": [IOS],
+    });
 
-    expect(() => measuring(run)("origin/main", "HEAD")).toThrow(
-      'size-limit weighed no bundle against a ratchet:\n[{"name":"app for iOS","passed":true,"size":0}]',
-    );
-  });
-
-  it("refuses a bundle weighed against no ratchet at all, which size-limit exits zero on", () => {
-    const run = sizeLimitExitingNonZero(
-      JSON.stringify([{ name: "icons", size: 118 }]),
-    );
-
-    expect(() => measuring(run)("origin/main", "HEAD")).toThrow(
-      "size-limit weighed no bundle against a ratchet",
+    expect(measuring(run)("origin/main", "HEAD", "main").bundles).toStrictEqual(
+      [{ name: "app for iOS", main: 15, change: 90 }],
     );
   });
 
-  it("refuses a bundle held to a ratchet that weighed nothing, which passes at any ratchet", () => {
-    const run = sizeLimitExitingNonZero(
-      JSON.stringify([
-        { name: "app for iOS", size: 15, sizeLimit: 15, passed: true },
-        { name: "app for Android", size: 0, sizeLimit: 15, passed: true },
-      ]),
-    );
+  it.each([
+    [
+      "a glob matching nothing, which size-limit passes at 0 B",
+      [{ ...IOS, size: 0 }],
+    ],
+    ["a bundle with no size", [{ name: "app for iOS" }]],
+    ["a bundle with no name", [{ size: 15 }]],
+    ["no bundle at all", []],
+    ["size-limit's error object", { error: "SizeLimitError: config is empty" }],
+  ])("refuses %s on main", (_, reported) => {
+    const run = weighing({
+      ".size-limit.json": [IOS],
+      "main/.size-limit.json": reported,
+    });
 
-    expect(() => measuring(run)("origin/main", "HEAD")).toThrow(
-      "size-limit weighed no bundle against a ratchet",
-    );
-  });
-
-  it("refuses a list where one bundle was weighed and another was not", () => {
-    const run = sizeLimitExitingNonZero(
-      JSON.stringify([
-        { name: "app for iOS", size: 15, sizeLimit: 15, passed: true },
-        { name: "app for Android", passed: true, size: 0 },
-      ]),
-    );
-
-    expect(() => measuring(run)("origin/main", "HEAD")).toThrow(
-      "size-limit weighed no bundle against a ratchet",
+    expect(() => measuring(run)("origin/main", "HEAD", "main")).toThrow(
+      "size-limit weighed no bundle by main/.size-limit.json",
     );
   });
 
-  it("refuses a run that weighed no bundle at all", () => {
-    const run = sizeLimitExitingNonZero("[]");
+  it("refuses a glob matching nothing on this change, as on main", () => {
+    const run = weighing({
+      ".size-limit.json": [IOS, { ...IOS, name: "app for Android", size: 0 }],
+      "main/.size-limit.json": [IOS],
+    });
 
-    expect(() => measuring(run)("origin/main", "HEAD")).toThrow(
-      "size-limit weighed no bundle against a ratchet",
+    expect(() => measuring(run)("origin/main", "HEAD", "main")).toThrow(
+      "size-limit weighed no bundle by .size-limit.json",
     );
   });
 
-  it("refuses size-limit's error object, which is not a list of bundles", () => {
-    const run = sizeLimitExitingNonZero(
-      '{"error":"SizeLimitError: config is empty"}',
-    );
+  it("refuses two sides that weighed different bundles, so each is held to its own figure on main", () => {
+    const run = weighing({
+      ".size-limit.json": [IOS, { ...IOS, name: "app for Android" }],
+      "main/.size-limit.json": [IOS],
+    });
 
-    expect(() => measuring(run)("origin/main", "HEAD")).toThrow(
-      "size-limit weighed no bundle against a ratchet",
+    expect(() => measuring(run)("origin/main", "HEAD", "main")).toThrow(
+      "size-limit weighed different bundles on main and on this change: app for iOS against app for iOS, app for Android",
+    );
+  });
+
+  it("refuses as many bundles on each side under different names", () => {
+    const run = weighing({
+      ".size-limit.json": [IOS, { ...IOS, name: "app for Android" }],
+      "main/.size-limit.json": [IOS, { ...IOS, name: "app for the web" }],
+    });
+
+    expect(() => measuring(run)("origin/main", "HEAD", "main")).toThrow(
+      "size-limit weighed different bundles on main and on this change",
+    );
+  });
+
+  it("refuses a bundle main weighed that this change did not", () => {
+    const run = weighing({
+      ".size-limit.json": [IOS],
+      "main/.size-limit.json": [IOS, { ...IOS, name: "app for Android" }],
+    });
+
+    expect(() => measuring(run)("origin/main", "HEAD", "main")).toThrow(
+      "size-limit weighed different bundles on main and on this change",
     );
   });
 });
@@ -96,7 +102,7 @@ describe("the ratchets the tree is held to", () => {
   it("reads both numbers out of the one file that holds them", () => {
     const { ratchets } = measuring(recorder().run, {
       [RATCHET]: JSON.stringify({ comments: 7, tests: 486 }),
-    })("origin/main", "HEAD");
+    })("origin/main", "HEAD", "main");
 
     expect(ratchets).toStrictEqual({ comments: 7, tests: 486 });
   });

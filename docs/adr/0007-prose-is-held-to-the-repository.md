@@ -74,7 +74,7 @@ read, because a pair that quietly stops matching is a pair that has stopped hold
 ## Consequences
 
 Rewording one of those sentences costs a line in the declaration too, which is the trade the
-bundle ratchet already makes: the number moves in a diff a reviewer reads. Adding a record
+comment ratchet in `.footprint.json` already makes: the number moves in a diff a reviewer reads. Adding a record
 costs a line as well, because an unclassified one fails the gate.
 
 Two limits are worth having in front of you rather than discovering. A count written

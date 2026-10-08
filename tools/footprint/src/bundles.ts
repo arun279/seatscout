@@ -1,20 +1,32 @@
-import { type Section, table, verdict } from "./markdown.js";
+import { type Section, table } from "./markdown.js";
 
 export interface Bundle {
   readonly name: string;
-  readonly size: number;
-  readonly sizeLimit: number;
-  readonly passed: boolean;
+  readonly main: number;
+  readonly change: number;
 }
 
-const REMEDY =
-  "Either make the bundle smaller, or raise the ratchet in this diff, where a reviewer sees it.";
+const LABEL = "bundle-grows";
 
-export const bundles = (weighed: readonly Bundle[]): Section => {
-  const withinRatchet = weighed.every((bundle) => bundle.passed);
+const difference = ({ main, change }: Bundle) =>
+  `${change > main ? "+" : ""}${change - main} B`;
+
+const verdictOn = (grown: readonly Bundle[], accepted: boolean) => {
+  const named = grown.map((bundle) => bundle.name).join(", ");
+  if (grown.length === 0) return "No bundle is bigger than on main.";
+  return accepted
+    ? `Bigger than on main: ${named}. The \`${LABEL}\` label on this pull request accepts it.`
+    : `Bigger than on main: ${named}. Make it smaller, or add the \`${LABEL}\` label to this pull request, where a reviewer sees it, and run this job again.`;
+};
+
+export const bundles = (
+  weighed: readonly Bundle[],
+  accepted: boolean,
+): Section => {
+  const grown = weighed.filter((bundle) => bundle.change > bundle.main);
 
   return {
-    passed: withinRatchet,
+    passed: grown.length === 0 || accepted,
     lines: [
       "### Bundle size",
       "",
@@ -22,18 +34,19 @@ export const bundles = (weighed: readonly Bundle[]): Section => {
       "compiles for each phone, with the workspace packages it reaches inlined, and",
       "the faces and images the app ships. Every emitted chunk counts, including one",
       "no screen has loaded, so this is what a build publishes rather than what one",
-      "launch reads.",
+      "launch reads. Main is weighed as this change merges into it, in the same job.",
       "",
       ...table(
-        ["Bundle", "Brotli", "Ratchet"],
+        ["Bundle", "Main", "This change", "Difference"],
         weighed.map((bundle) => [
           bundle.name,
-          `${bundle.size} B`,
-          `${bundle.sizeLimit} B`,
+          `${bundle.main} B`,
+          `${bundle.change} B`,
+          difference(bundle),
         ]),
       ),
       "",
-      `Bundle size may not exceed the ratchet in \`.size-limit.json\`. ${verdict(withinRatchet, REMEDY)}`,
+      `A bundle may not grow without the \`${LABEL}\` label. ${verdictOn(grown, accepted)}`,
       "",
     ],
   };

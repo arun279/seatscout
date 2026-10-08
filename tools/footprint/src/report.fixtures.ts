@@ -36,8 +36,8 @@ export const measurement = (over: Partial<Measurement> = {}): Measurement => ({
   head: side("fedcba9876543210fedcba9876543210fedcba98"),
   diff: { added: {}, removed: {}, modified: {} },
   bundles: [
-    { name: "app for iOS", size: 15, sizeLimit: 15, passed: true },
-    { name: "app's faces and images", size: 4, sizeLimit: 4, passed: true },
+    { name: "app for iOS", main: 15, change: 15 },
+    { name: "app's faces and images", main: 4, change: 4 },
   ],
   gates: GATES,
   limits: LIMITS,
@@ -46,8 +46,10 @@ export const measurement = (over: Partial<Measurement> = {}): Measurement => ({
   ...over,
 });
 
-export const reportOn = (over: Partial<Measurement> = {}): Report =>
-  render(measurement(over));
+export const reportOn = (
+  over: Partial<Measurement> = {},
+  bundleGrows = false,
+): Report => render(measurement(over), bundleGrows);
 
 export const between = (base: Tree, head: Tree, comments = 0): Report =>
   reportOn({

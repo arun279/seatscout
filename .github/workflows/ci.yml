@@ -99,7 +99,7 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
       - name: Scan every screen of the app's web build with axe
         run: pnpm test:e2e
-      - name: Check the same source exports the same scripts twice, so a size ratchet weighs the change and not the build
+      - name: Check the same source exports the same scripts twice, so the size gate weighs the change and not the build
         working-directory: apps/native
         run: |
           pnpm run weigh
@@ -318,6 +318,9 @@ jobs:
     if: github.event_name == 'pull_request' && !github.event.pull_request.draft
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -333,13 +336,36 @@ jobs:
       - run: pnpm build
       - name: Export the scripts the app ships for both phones, so they are weighed
         run: pnpm --filter @seatscout/native run weigh
+      - name: Check out main as this change merges into it, to be weighed by this change's globs
+        run: |
+          if ! git rev-parse --verify --quiet HEAD^2 > /dev/null; then
+            echo "::error::The checkout is not this change merged into main, so there is no main side to weigh."
+            exit 1
+          fi
+          git worktree add --detach "$RUNNER_TEMP/main" HEAD^1
+          cp .size-limit.json "$RUNNER_TEMP/main/.size-limit.json"
+      - name: Export main's scripts for both phones the same way
+        working-directory: ${{ runner.temp }}/main
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+          pnpm --filter @seatscout/native run weigh
       - name: Install the counter
         run: |
           curl -fsSL -o "$RUNNER_TEMP/cloc" https://github.com/AlDanial/cloc/releases/download/v2.10/cloc-2.10.pl
           echo "bf59272455172108072a0a106379f7509fd4349bdcfd85203bac038ccd286d83  $RUNNER_TEMP/cloc" | sha256sum --check
           sudo install -m 0755 "$RUNNER_TEMP/cloc" /usr/local/bin/cloc
-      - name: Measure the footprint
-        run: pnpm footprint --base "$BASE" --head "$HEAD" --out footprint.md
+      - name: Measure the footprint, accepting a bigger bundle only under the bundle-grows label
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          grows=()
+          labels="$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/labels" --jq '.[].name')"
+          if grep -qx bundle-grows <<< "$labels"; then
+            grows=(--bundle-grows)
+          fi
+          pnpm footprint --base "$BASE" --head "$HEAD" --main-tree "$RUNNER_TEMP/main" "${grows[@]}" --out footprint.md
       - name: Hand the measurement to the job that reports every gate
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

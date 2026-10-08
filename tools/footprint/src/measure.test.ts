@@ -3,6 +3,7 @@ import { BIOME, OXLINT } from "./limits.js";
 import { lines, measuring, reading, recorder } from "./measure.fixtures.js";
 import {
   BIOME_REPORT,
+  BUNDLES,
   measureWith,
   OXLINT_REPORT,
   RATCHET,
@@ -11,6 +12,7 @@ import {
 describe("measuring a change", () => {
   it("names every file it reads a number or a path out of", () => {
     expect(RATCHET).toBe(".footprint.json");
+    expect(BUNDLES).toBe(".size-limit.json");
     expect(OXLINT_REPORT).toBe(".oxlintrc.report.json");
     expect(BIOME_REPORT).toBe("biome.report.json");
   });
@@ -18,7 +20,7 @@ describe("measuring a change", () => {
   it("resolves the head first, then the merge base against it", () => {
     const { run, commands } = recorder();
 
-    measuring(run)("origin/main", "HEAD");
+    measuring(run)("origin/main", "HEAD", "main");
 
     expect(lines(commands).slice(0, 2)).toStrictEqual([
       "git rev-parse HEAD",
@@ -29,7 +31,7 @@ describe("measuring a change", () => {
   it("counts each side and the diff between them, reading a comment marker inside a string as the string it is", () => {
     const { run, commands } = recorder();
 
-    measuring(run)("origin/main", "HEAD");
+    measuring(run)("origin/main", "HEAD", "main");
 
     expect(lines(commands)).toContain(
       "cloc --git base-sha --by-file --json --hide-rate --quiet --strip-str-comments",
@@ -42,18 +44,23 @@ describe("measuring a change", () => {
     );
   });
 
-  it("asks size-limit for its verdict as machine readable output", () => {
+  it("asks size-limit to weigh this change and main's export, each by the configuration beside it", () => {
     const { run, commands } = recorder();
 
-    measuring(run)("origin/main", "HEAD");
+    measuring(run)("origin/main", "HEAD", "main");
 
-    expect(lines(commands)).toContain("pnpm exec size-limit --json");
+    expect(lines(commands)).toContain(
+      "pnpm exec size-limit --json --config .size-limit.json",
+    );
+    expect(lines(commands)).toContain(
+      "pnpm exec size-limit --json --config main/.size-limit.json",
+    );
   });
 
   it("asks each linter for the same rule again, at a threshold of one", () => {
     const { run, commands } = recorder();
 
-    measuring(run)("origin/main", "HEAD");
+    measuring(run)("origin/main", "HEAD", "main");
 
     expect(lines(commands)).toContain(
       `pnpm exec oxlint --config ${OXLINT_REPORT} --format json`,
@@ -66,7 +73,7 @@ describe("measuring a change", () => {
   it("asks each runner to list its tests rather than to run them", () => {
     const { run, commands } = recorder();
 
-    measuring(run)("origin/main", "HEAD");
+    measuring(run)("origin/main", "HEAD", "main");
 
     expect(lines(commands)).toContain("pnpm exec vitest list --json");
     expect(lines(commands)).toContain(
@@ -78,7 +85,7 @@ describe("measuring a change", () => {
     const { run } = recorder();
     const { read, asked } = reading();
 
-    const measurement = measureWith(run, read)("origin/main", "HEAD");
+    const measurement = measureWith(run, read)("origin/main", "HEAD", "main");
 
     expect(measurement.gates).toStrictEqual({
       cyclomatic: 10,
@@ -92,7 +99,7 @@ describe("measuring a change", () => {
   it("carries the counter's numbers into the measurement", () => {
     const { run } = recorder();
 
-    const measurement = measuring(run)("origin/main", "HEAD");
+    const measurement = measuring(run)("origin/main", "HEAD", "main");
 
     expect(measurement.base.ref).toBe("base-sha");
     expect(measurement.head.ref).toBe("head-sha");
@@ -103,14 +110,14 @@ describe("measuring a change", () => {
       "packages/core/src/seat.ts": { code: 5, comment: 0 },
     });
     expect(measurement.bundles).toStrictEqual([
-      { name: "app for iOS", size: 15, sizeLimit: 15, passed: true },
+      { name: "app for iOS", main: 15, change: 15 },
     ]);
   });
 
   it("carries each linter's highest reading into the measurement", () => {
     const { run } = recorder();
 
-    const { limits } = measuring(run)("origin/main", "HEAD");
+    const { limits } = measuring(run)("origin/main", "HEAD", "main");
 
     expect(limits.cyclomatic).toStrictEqual({
       value: 9,
@@ -129,7 +136,7 @@ describe("measuring a change", () => {
   it("carries every test count", () => {
     const { run } = recorder();
 
-    const measurement = measuring(run)("origin/main", "HEAD");
+    const measurement = measuring(run)("origin/main", "HEAD", "main");
 
     expect(measurement.suites).toStrictEqual({
       unit: 2,
@@ -145,7 +152,7 @@ describe("measuring a change", () => {
         : undefined,
     );
 
-    expect(() => measuring(run)("origin/main", "HEAD")).toThrow(
+    expect(() => measuring(run)("origin/main", "HEAD", "main")).toThrow(
       "git rev-parse HEAD\nunknown revision",
     );
   });

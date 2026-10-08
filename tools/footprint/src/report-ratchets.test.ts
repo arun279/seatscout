@@ -165,38 +165,60 @@ describe("what was counted", () => {
   });
 });
 
-describe("the bundle ratchet", () => {
-  it("names both ways through when a bundle breaks its ratchet", () => {
-    const { markdown } = reportOn({
-      bundles: [
-        { name: "app for iOS", size: 2048, sizeLimit: 1024, passed: false },
-      ],
-    });
+describe("the bundle gate against main", () => {
+  const GREW = [
+    { name: "app for iOS", main: 1024, change: 2048 },
+    { name: "app for Android", main: 90, change: 90 },
+  ];
 
-    expect(markdown).toContain(
-      "Above it. Either make the bundle smaller, or raise the ratchet in this diff, where a reviewer sees it.",
+  it("fails a bundle bigger than on main, naming it and both ways through", () => {
+    const report = reportOn({ bundles: GREW });
+
+    expect(report.passed).toBe(false);
+    expect(report.markdown).toContain(
+      "| app for iOS | 1024 B | 2048 B | +1024 B |",
+    );
+    expect(report.markdown).toContain(
+      "Bigger than on main: app for iOS. Make it smaller, or add the `bundle-grows` label to this pull request, where a reviewer sees it, and run this job again.",
     );
   });
 
-  it("fails when any one bundle breaks its ratchet, not only when all do", () => {
+  it("fails when any one bundle grows, not only when all do", () => {
+    expect(reportOn({ bundles: GREW }).passed).toBe(false);
+  });
+
+  it("fails a bundle that grew by a single byte, since no tolerance is set", () => {
     const report = reportOn({
-      bundles: [
-        { name: "app for iOS", size: 15, sizeLimit: 15, passed: true },
-        { name: "app for Android", size: 90, sizeLimit: 15, passed: false },
-      ],
+      bundles: [{ name: "app for iOS", main: 15, change: 16 }],
     });
 
     expect(report.passed).toBe(false);
   });
 
-  it("fails when a bundle breaks its ratchet", () => {
+  it("passes growth the bundle-grows label accepts, and says so beside both figures", () => {
+    const report = reportOn({ bundles: GREW }, true);
+
+    expect(report.passed).toBe(true);
+    expect(report.markdown).toContain(
+      "| app for iOS | 1024 B | 2048 B | +1024 B |",
+    );
+    expect(report.markdown).toContain(
+      "Bigger than on main: app for iOS. The `bundle-grows` label on this pull request accepts it.",
+    );
+  });
+
+  it("passes a bundle that shrank or held, and prints how much it shrank", () => {
     const report = reportOn({
       bundles: [
-        { name: "app for iOS", size: 2048, sizeLimit: 1024, passed: false },
+        { name: "app for iOS", main: 2048, change: 1024 },
+        { name: "app for Android", main: 90, change: 90 },
       ],
     });
 
-    expect(report.passed).toBe(false);
-    expect(report.markdown).toContain("| app for iOS | 2048 B | 1024 B |");
+    expect(report.passed).toBe(true);
+    expect(report.markdown).toContain(
+      "| app for iOS | 2048 B | 1024 B | -1024 B |",
+    );
+    expect(report.markdown).toContain("No bundle is bigger than on main.");
   });
 });

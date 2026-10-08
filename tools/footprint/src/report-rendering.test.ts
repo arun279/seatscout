@@ -51,14 +51,14 @@ Brotli, summed per file, over what each build publishes: the script Hermes
 compiles for each phone, with the workspace packages it reaches inlined, and
 the faces and images the app ships. Every emitted chunk counts, including one
 no screen has loaded, so this is what a build publishes rather than what one
-launch reads.
+launch reads. Main is weighed as this change merges into it, in the same job.
 
-| Bundle | Brotli | Ratchet |
-| --- | ---: | ---: |
-| app for iOS | 15 B | 15 B |
-| app's faces and images | 4 B | 4 B |
+| Bundle | Main | This change | Difference |
+| --- | ---: | ---: | ---: |
+| app for iOS | 15 B | 15 B | 0 B |
+| app's faces and images | 4 B | 4 B | 0 B |
 
-Bundle size may not exceed the ratchet in \`.size-limit.json\`. Within it.
+A bundle may not grow without the \`bundle-grows\` label. No bundle is bigger than on main.
 
 ### Complexity and file length
 
@@ -129,8 +129,8 @@ const MEASURED: Measurement = {
     modified: { "vitest.config.ts": counts(2, 0) },
   },
   bundles: [
-    { name: "app for iOS", size: 15, sizeLimit: 15, passed: true },
-    { name: "app's faces and images", size: 4, sizeLimit: 4, passed: true },
+    { name: "app for iOS", main: 15, change: 15 },
+    { name: "app's faces and images", main: 4, change: 4 },
   ],
   gates: GATES,
   limits: LIMITS,
@@ -140,12 +140,12 @@ const MEASURED: Measurement = {
 
 describe("one measurement, always the same bytes", () => {
   it("renders exactly this", () => {
-    expect(render(MEASURED).markdown).toBe(RENDERED);
+    expect(render(MEASURED, false).markdown).toBe(RENDERED);
   });
 
   it("renders the same bytes and the same verdict when it is run again", () => {
-    const first = render(MEASURED);
-    const again = render(MEASURED);
+    const first = render(MEASURED, false);
+    const again = render(MEASURED, false);
 
     expect(again.markdown).toBe(first.markdown);
     expect(again.passed).toBe(first.passed);

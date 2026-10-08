@@ -25,7 +25,7 @@ const measuring = (swapped: Record<string, string> = {}) => {
       ? undefined
       : { ok: true, stdout: planted(fixture), stderr: "" };
   });
-  return () => measureWith(run, reading().read)("origin/main", "HEAD");
+  return () => measureWith(run, reading().read)("origin/main", "HEAD", "main");
 };
 
 describe("the planted red", () => {
