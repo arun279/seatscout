@@ -1,0 +1,6 @@
+export const Glow = () => (
+  <>
+    <LinearGradient id="glow" />
+    <Rect fill="url(#glow)" />
+  </>
+);

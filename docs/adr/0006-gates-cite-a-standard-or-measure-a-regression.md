@@ -792,6 +792,25 @@ the rule asks for.
 and `tools/planted-red/src/colour-literals.test.ts` runs the rule over each: the hex, the
 functional and the named colour are each refused by name, and the token read passes in silence.
 
+**An id two elements share is refused, by the web scan and first by a lint rule.** On the web
+build every SVG id lives in one document. Two copies of a component, or two screens still
+mounted, can define the same id. `url(#id)` then resolves to the first definition in the
+document, which can sit in a screen hidden beneath. That is how the Room's glow vanished while it
+borrowed a result card's. React's [`useId`](https://react.dev/reference/react/useId) gives each
+copy its own id, and its documentation builds several related ids from one call.
+
+The direct check is in the axe pass over the web build. On every screen it scans,
+`tests/app/app.fixtures.ts` also lists each id that two elements carry, and any such id fails the
+scan. `tests/app/ids.spec.ts` plants two drawings that share an id beside one that does not, and
+watches the scan name the shared one and only it.
+
+The cheap first layer is a Grit plugin, `tools/lint/no-literal-ids.grit`, over `apps/native/src`
+except the tests. It refuses an `id` whose whole value is a literal: a string, a string in braces,
+or a template with nothing in it. It passes an id built from a value, such as `useId()` alone, in a
+template, or joined to a string. It cannot see a literal that reaches `id` through a constant or an
+object, which is what the scan is for. `tools/planted-red/planted/ids` holds a file for each form,
+and `tools/planted-red/src/literal-ids.test.ts` runs the rule over them.
+
 **An import of a package the nearest manifest does not declare is refused** by Biome's
 [`noUndeclaredDependencies`](https://biomejs.dev/linter/rules/no-undeclared-dependencies/). In a
 pnpm workspace such an import resolves from the root's `node_modules` in development and fails

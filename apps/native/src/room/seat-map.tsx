@@ -16,7 +16,7 @@ import {
   type Point,
   seatNameOf,
 } from "@seatscout/view-logic";
-import type { ReactElement, ReactNode } from "react";
+import { type ReactElement, type ReactNode, useId } from "react";
 import { Platform, StyleSheet, View } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import Animated from "react-native-reanimated";
@@ -97,12 +97,14 @@ const inkFor = (seat: PositionedSeat, lit: boolean, colours: Palette): Ink => {
 const Seat = ({
   seat,
   lit,
+  lamp,
   ringed,
   name,
   theme,
 }: {
   readonly seat: PositionedSeat;
   readonly lit: boolean;
+  readonly lamp: string;
   readonly ringed: boolean;
   readonly name: string;
   readonly theme: Theme;
@@ -122,7 +124,7 @@ const Seat = ({
       stroke: theme.colours.beamDim,
       strokeWidth: DRAWN.space.stroke,
     })}
-    {...(lit && theme.appearance === "down" && { filter: "url(#seat-lit)" })}
+    {...(lit && theme.appearance === "down" && { filter: `url(#${lamp})` })}
   />
 );
 
@@ -207,6 +209,7 @@ export const SeatMap = ({
   );
   const recommended = result.seats.map((seat) => seat.id);
   const aim = aimedAt(chosen, auditorium.map);
+  const lamp = useId();
 
   return (
     <GestureDetector gesture={gesture}>
@@ -225,7 +228,7 @@ export const SeatMap = ({
           width={drawn.width}
         >
           <Defs>
-            <Filter id="seat-lit">
+            <Filter id={lamp}>
               <FeDropShadow
                 dx={0}
                 dy={0}
@@ -258,6 +261,7 @@ export const SeatMap = ({
                   {row.seats.map((held) => (
                     <Seat
                       key={held.id}
+                      lamp={lamp}
                       lit={holds(chosen, held)}
                       name={seatNameOf(held, recommended, accessibleSeating)}
                       ringed={holds(result, held) && !holds(chosen, held)}

@@ -1,0 +1,11 @@
+export const Glow = () => {
+  const id = useId();
+  return (
+    <>
+      <LinearGradient id={id} />
+      <LinearGradient id={`${id}-fall`} />
+      <LinearGradient id={id + "-edge"} />
+      <Rect fill={`url(#${id})`} />
+    </>
+  );
+};

@@ -177,6 +177,22 @@ export const GATE_CLAIMS = [
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /The cheap first layer is a Grit plugin, `tools\/lint\/no-literal-ids\.grit`/,
+    holds: "the rule that refuses a literal id",
+    pattern: "no-literal-ids.grit",
+    paths: [BIOME],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /also lists each id that two elements carry, and any such id fails the/,
+    holds: "the scan's own check for a shared id",
+    pattern: 'querySelectorAll("[id]")',
+    paths: ["tests/app/app.fixtures.ts"],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
     says: /\*\*What the emulator reads is measured on main, held to the run before/,
     holds: "the Flashlight reading of the walk",
     pattern: "flashlight test",

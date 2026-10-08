@@ -4,7 +4,7 @@ import {
   type SeatProfile,
 } from "@seatscout/client";
 import { marksOf } from "@seatscout/view-logic";
-import type { ReactElement } from "react";
+import { type ReactElement, useId } from "react";
 import { View } from "react-native";
 import Svg, {
   Circle,
@@ -23,7 +23,7 @@ const DRAWN = {
   target: { radius: 4.5, width: 1, dashes: "2 2.5", fill: "none" },
   was: { radius: 2, width: 1 },
   lost: { radius: 2.6, width: 1.3, fill: "none" },
-  pair: { radius: 3, spread: 1.75, lit: 0.9, lamp: "url(#lit)", unlit: "" },
+  pair: { radius: 3, spread: 1.75, lit: 0.9, unlit: "" },
 } as const;
 
 type Target = Pick<SeatProfile, "targetDepth" | "targetLateral">;
@@ -54,6 +54,7 @@ export const PlanDrawing = ({
   across,
 }: PlanDrawingProps): ReactElement => {
   const { appearance, colours } = useTheme();
+  const lamp = useId();
   const marks = marksOf(plan, position, target);
   const reference = was && marksOf(plan, position, was).target;
   const gone = lost && marksOf(plan, lost, target).pair;
@@ -73,7 +74,7 @@ export const PlanDrawing = ({
           <Filter
             filterUnits="userSpaceOnUse"
             height={DRAWN.down}
-            id="lit"
+            id={lamp}
             width={DRAWN.across}
             x={0}
             y={0}
@@ -146,7 +147,7 @@ export const PlanDrawing = ({
           cx={marks.pair.cx}
           cy={marks.pair.cy}
           fill={colours.beam}
-          filter={appearance === "down" ? DRAWN.pair.lamp : DRAWN.pair.unlit}
+          filter={appearance === "down" ? `url(#${lamp})` : DRAWN.pair.unlit}
           r={DRAWN.pair.radius}
           testID="pair"
         />

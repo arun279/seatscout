@@ -8,6 +8,7 @@ import {
 import { fireEvent, screen } from "@testing-library/react-native";
 import { processColor } from "react-native";
 import { houseLights } from "../../test/lights.js";
+import { definedUnder } from "../../test/svg.js";
 import { themeFor } from "../theme.js";
 import { otherThan, seatNamed, shown } from "./room.fixtures.js";
 
@@ -80,10 +81,12 @@ describe("how each Seat is inked", () => {
 
   it("glows the lit Seats, and nothing else, with the house lights down", async () => {
     await shown({ room: WEST_PLANO_10 });
+    const [lamp] = definedUnder("plan", "RNSVGFilter");
 
+    expect(lamp).toEqual(expect.any(String));
     expect(["N14", "N13", "N12"].map((id) => drawnAs(id).filter)).toEqual([
-      "seat-lit",
-      "seat-lit",
+      lamp,
+      lamp,
       undefined,
     ]);
   });

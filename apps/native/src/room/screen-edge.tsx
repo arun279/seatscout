@@ -1,4 +1,4 @@
-import type { ReactElement } from "react";
+import { type ReactElement, useId } from "react";
 import { StyleSheet, View } from "react-native";
 import Svg, {
   Defs,
@@ -56,6 +56,7 @@ const Lit = ({
   readonly colours: Palette;
 }) => {
   const edge = edgeOn(span);
+  const id = useId();
 
   return (
     <Svg
@@ -66,7 +67,7 @@ const Lit = ({
       width={span}
     >
       <Defs>
-        <LinearGradient id="map-edge" x1="0" x2="1" y1="0" y2="0">
+        <LinearGradient id={`${id}-edge`} x1="0" x2="1" y1="0" y2="0">
           {DRAWN.across.map((stop) => (
             <Stop
               key={stop.at}
@@ -79,7 +80,7 @@ const Lit = ({
         <Filter
           filterUnits="userSpaceOnUse"
           height={DRAWN.band.height}
-          id="map-glow"
+          id={`${id}-glow`}
           width={span}
           x={0}
           y={0}
@@ -94,8 +95,8 @@ const Lit = ({
         </Filter>
       </Defs>
       <Rect
-        fill="url(#map-edge)"
-        filter="url(#map-glow)"
+        fill={`url(#${id}-edge)`}
+        filter={`url(#${id}-glow)`}
         height={DRAWN.edge.height}
         rx={DRAWN.edge.radius}
         testID="edge"

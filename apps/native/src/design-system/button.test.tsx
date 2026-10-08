@@ -4,6 +4,7 @@ import { impactAsync, notificationAsync, selectionAsync } from "expo-haptics";
 import { Platform, StyleSheet } from "react-native";
 import { contrastOf } from "../../test/contrast.js";
 import { houseLights } from "../../test/lights.js";
+import { definedUnder, drawnUnder, paintedWith } from "../../test/svg.js";
 import { type Appearance, themeFor } from "../theme.js";
 import { Ghost, Velvet } from "./button.js";
 
@@ -74,6 +75,15 @@ describe("the velvet control", () => {
       width: "100%",
       height: "100%",
     });
+  });
+
+  it("paints the curtain with the gradient it draws itself", async () => {
+    await drawn("down");
+    const [velvet] = definedUnder("curtain", "RNSVGLinearGradient");
+    const [cloth] = drawnUnder("curtain", "RNSVGRect");
+
+    expect(velvet).toEqual(expect.any(String));
+    expect(cloth?.props["fill"]).toEqual(paintedWith(velvet));
   });
 
   it("leaves it flat with the house lights up, because a lit room reads by edge", async () => {

@@ -62,6 +62,15 @@
       "plugins": ["./tools/lint/no-colour-literals.grit"]
     },
     {
+      "includes": [
+        "apps/native/src/**",
+        "reports/planted/ids-*/**",
+        "!apps/native/src/**/*.test.ts",
+        "!apps/native/src/**/*.test.tsx"
+      ],
+      "plugins": ["./tools/lint/no-literal-ids.grit"]
+    },
+    {
       "includes": ["packages/**"],
       "linter": {
         "rules": {

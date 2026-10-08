@@ -3,6 +3,7 @@ import { describe, expect, it } from "@jest/globals";
 import { render, screen } from "@testing-library/react-native";
 import { houseLights } from "../../test/lights.js";
 import { first, settled } from "../../test/rooms.js";
+import { definedUnder } from "../../test/svg.js";
 import type { Appearance } from "../theme.js";
 import { PlanDrawing, RoomPlan } from "./room-plan.js";
 
@@ -80,10 +81,27 @@ describe("the room a card draws to scale", () => {
     expect(numberAt("plan", "height")).toBeCloseTo((ACROSS * down) / across, 5);
   });
 
-  it("lights the offered pair with the house lights down", async () => {
+  it("lights the offered pair with the house lights down, by the glow its own plan draws", async () => {
     await drawn("down");
 
-    expect(propAt("pair", "filter")).toBe("lit");
+    expect(definedUnder("plan", "RNSVGFilter")).toEqual([
+      propAt("pair", "filter"),
+    ]);
+  });
+
+  it("names each card's glow apart, so on the web one card's glow never resolves to another's", async () => {
+    houseLights("down");
+    const result = first(await settled());
+    await render(
+      <>
+        <RoomPlan across={ACROSS} result={result} />
+        <RoomPlan across={ACROSS} result={result} />
+      </>,
+    );
+    const lamps = definedUnder("plan", "RNSVGFilter");
+
+    expect(lamps).toHaveLength(2);
+    expect(new Set(lamps).size).toBe(2);
   });
 
   it("lets the lit room carry it by edge instead, because light is information in the dark", async () => {
