@@ -1,3 +1,4 @@
+import type { Showtime } from "@seatscout/core";
 import { describe, expect, it } from "vitest";
 import { SOURCE_LIMITS } from "./limits.js";
 import {
@@ -11,6 +12,22 @@ import {
 } from "./search.fixtures.js";
 
 const COOLED = AT + SOURCE_LIMITS.refusalCooldownMs;
+
+const refusedPast = (theaters: number) => (bookable: readonly Showtime[]) => {
+  const answered = [
+    ...Map.groupBy(
+      bookable,
+      (showtime) => showtime.presentation.theater.id,
+    ).values(),
+  ]
+    .slice(0, theaters)
+    .map(([first]) => first?.id);
+  return Object.fromEntries(
+    bookable
+      .filter((showtime) => !answered.includes(showtime.id))
+      .map((showtime) => [`${SEAT_MAP}${showtime.id}`, { status: 403 }]),
+  );
+};
 
 const refusingEvery = async () => {
   const run = await searching({
@@ -35,14 +52,7 @@ describe("a search the Source refuses", () => {
   });
 
   it("asks for no seat map left in the step once one is refused, and marks every one of them back as not read", async () => {
-    const run = await searching({
-      answers: (bookable) =>
-        Object.fromEntries(
-          bookable
-            .slice(10)
-            .map((showtime) => [`${SEAT_MAP}${showtime.id}`, { status: 403 }]),
-        ),
-    });
+    const run = await searching({ answers: refusedPast(10) });
     const settled = await run.search.done;
 
     expect(run.seatMapsAsked()).toBeLessThan(48);
@@ -60,14 +70,7 @@ describe("a search the Source refuses", () => {
   });
 
   it("keeps what it read before the refusal and names the rest as not read yet", async () => {
-    const run = await searching({
-      answers: (bookable) =>
-        Object.fromEntries(
-          bookable
-            .slice(30)
-            .map((showtime) => [`${SEAT_MAP}${showtime.id}`, { status: 403 }]),
-        ),
-    });
+    const run = await searching({ answers: refusedPast(30) });
     const settled = await run.search.done;
     const [day] = settled.days;
 

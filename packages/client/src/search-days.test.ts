@@ -6,6 +6,7 @@ import {
   LISTING,
   listing,
   SEAT_MAP,
+  type SearchRun,
   searching,
   TODAY,
 } from "./search.fixtures.js";
@@ -16,35 +17,87 @@ const EARLIER = "2026-09-19";
 const datesIn = (snapshot: Snapshot) =>
   snapshot.results.map((result) => result.terms.date);
 
+const perTheater = (run: SearchRun): number[] => {
+  const asked = new Set(run.requested());
+  const theaters = Map.groupBy(
+    run.candidates.bookable,
+    (showtime) => showtime.presentation.theater.id,
+  );
+  return [...theaters.values()].map(
+    (showtimes) =>
+      showtimes.filter((showtime) => asked.has(showtime.id)).length,
+  );
+};
+
+const inListingOrder = (run: SearchRun): boolean => {
+  const asked = run.requested();
+  const theaters = Map.groupBy(
+    run.candidates.bookable,
+    (showtime) => showtime.presentation.theater.id,
+  );
+  return [...theaters.values()].every((showtimes) => {
+    const ids: readonly number[] = showtimes.map((showtime) => showtime.id);
+    const read = asked.filter((id) => ids.includes(id));
+    return read.every((id, at) => id === ids[at]);
+  });
+};
+
 describe("a search's budget", () => {
   it("reads the first 48 seat maps of a one-day search, counts the rest as not read yet, and reads the next 48 when asked", async () => {
     const run = await searching({});
     const settled = await run.search.done;
+    const first = run.requested();
 
-    expect(run.requested()).toEqual(
-      run.candidates.bookable.slice(0, 48).map((showtime) => showtime.id),
-    );
+    expect(first).toHaveLength(48);
     expect(settled.days).toEqual([
       { date: TODAY, read: 48, reading: 0, unread: 446 },
     ]);
 
     const more = await run.search.readMore();
 
-    expect(run.requested()).toEqual(
-      run.candidates.bookable.slice(0, 96).map((showtime) => showtime.id),
-    );
+    expect(run.requested()).toHaveLength(96);
+    expect(new Set(run.requested()).size).toBe(96);
+    expect(run.requested().slice(0, 48)).toEqual(first);
     expect(more.days).toEqual([
       { date: TODAY, read: 96, reading: 0, unread: 398 },
     ]);
   });
 
-  it("asks for no more than 48 seat maps over several days, the first 48 the nearest listing names", async () => {
+  it("spreads a one-day search's first 48 seat maps over all 31 theaters its listing names, one from each in turn", async () => {
+    const run = await searching({});
+    await run.search.done;
+
+    expect(perTheater(run)).toEqual([
+      ...Array.from({ length: 17 }, () => 2),
+      ...Array.from({ length: 14 }, () => 1),
+    ]);
+    expect(inListingOrder(run)).toBe(true);
+  });
+
+  it("goes on taking the theaters in turn when a person asks for the next 48", async () => {
+    const run = await searching({});
+    await run.search.done;
+
+    await run.search.readMore();
+
+    expect(perTheater(run)).toEqual([
+      4,
+      4,
+      4,
+      ...Array.from({ length: 28 }, () => 3),
+    ]);
+    expect(inListingOrder(run)).toBe(true);
+  });
+
+  it("asks for no more than 48 seat maps over several days, all of them from the nearest day's listing", async () => {
     const run = await searching(ACROSS);
     const settled = await run.search.done;
-
-    expect(run.requested()).toEqual(
-      run.candidates.bookable.slice(0, 48).map((showtime) => showtime.id),
+    const nearest = new Set<number>(
+      run.candidates.bookable.map((showtime) => showtime.id),
     );
+
+    expect(run.requested()).toHaveLength(48);
+    expect(run.requested().every((id) => nearest.has(id))).toBe(true);
     expect(settled.phase).toBe("settled");
     expect(settled.coverage.checked).toBe(48);
   });
@@ -69,11 +122,12 @@ describe("a search's budget", () => {
     const run = await searching(ACROSS);
     await run.search.done;
 
+    const first = run.requested();
+
     const more = await run.search.readMore();
 
-    expect(run.requested()).toEqual(
-      run.candidates.bookable.slice(0, 96).map((showtime) => showtime.id),
-    );
+    expect(new Set(run.requested()).size).toBe(96);
+    expect(run.requested().slice(0, 48)).toEqual(first);
     expect(more.coverage.checked).toBe(96);
     expect(more.days[0]).toEqual({
       date: TODAY,

@@ -8,7 +8,8 @@ Accepted. It amends [ADR 16](0016-a-search-reports-its-coverage.md), which read 
 a listing named, and [ADR 17](0017-retry-and-the-breaker-follow-published-policy.md), which
 retried a 403. Amended 2026-10-03: a one-day search reads 48 seat maps at a time as well, now
 that the only screen offers the next 48. Amended again 2026-10-03: a refusal is remembered on the
-device until it should have passed, and every limit on reading the Source is one value.
+device until it should have passed, and every limit on reading the Source is one value. Amended
+2026-10-07: within a day, the seat maps are taken one Theater at a time in turn.
 
 ## Context
 
@@ -39,9 +40,13 @@ listing is cached under its own date, as a one-day listing always was.
 **Seat maps are read nearest day first, 48 at a time, over one day or several.**
 `seatMapsPerStep` in `SOURCE_LIMITS`, `packages/client/src/limits.ts`, is 48, the largest batch
 the Source was measured to answer without a refusal. The maps are asked for through the
-fan-out's width of 24, in the order the listings name them, the nearest day's first. What the
-budget leaves is counted per day as not read yet, and `readMore()` reads the next 48. Nothing
-asks for more on a person's behalf.
+fan-out's width of 24, the nearest day's first. Within a day they are taken one Theater at a
+time in turn: the first Showtime of each Theater the listing names, then the second of each, and
+so on, each Theater's Showtimes in the listing's own order. A listing groups its Showtimes by
+Theater, so in the listing's order the first 48 of a wide one-day search were almost all one
+Theater's; taken in turn, the first step reads every Theater the listing names, up to 48 of them.
+What the budget leaves is counted per day as not read yet, and `readMore()` reads the next 48.
+Nothing asks for more on a person's behalf.
 
 **A one-day search is held to 48 too.** It once read its whole listing, because the web app had
 no control to ask for more, and a one-day search held to 48 there would have had no way on. The
@@ -115,7 +120,8 @@ same way every other change does: there is no remote configuration, because ther
 to hold it ([ADR 2](0002-computation-on-the-client.md)). `createSeatScout` takes other limits
 in place of these, which is how a test reads a smaller step.
 
-Three things are left for later on purpose. Within the budget the order is the listing's own,
-not one that puts the likeliest rooms first by time or format. A step reads the next 48 seat maps
+Three things are left for later on purpose. Within the budget the order takes the Theaters in
+turn and otherwise keeps the listing's own, not one that puts the likeliest rooms first by time
+or format. A step reads the next 48 seat maps
 rather than the next whole day, so a step can end part way through a day and say so. And a Query
 that names no day still means today.

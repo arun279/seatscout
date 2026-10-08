@@ -5,7 +5,7 @@ import { fireEvent, render, screen } from "@testing-library/react-native";
 import { settled, TODAY } from "../../test/rooms.js";
 import { Empty, Partial, Refused, Unreachable } from "./verdicts.js";
 
-const FAILING = { "/napi/seatMap/564402753": [500, 500, 500] };
+const FAILING = { "/napi/seatMap/564500146": [500, 500, 500] };
 
 const WHOLE_LISTING: SearchTerms = {
   movie: "246473",
