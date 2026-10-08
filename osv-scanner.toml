@@ -10,3 +10,28 @@ reason = "braces (through micromatch) expands only glob patterns this repository
 id = "GHSA-86w9-cpqp-85rv"
 ignoreUntil = 2026-11-03T00:00:00Z
 reason = "node-forge is used by @expo/cli on the developer's machine; the app bundle does not include it and verifies no RSA signature with it."
+
+[[IgnoredVulns]]
+id = "GHSA-858h-whjf-mvg5"
+ignoreUntil = 2026-11-07T00:00:00Z
+reason = "simple-git comes only through reassure (render-performance tooling, CI and developer machines), whose latest release still requires simple-git 3; it runs git with fixed arguments to read the branch and commit, never with outside input."
+
+[[IgnoredVulns]]
+id = "GHSA-g4wm-2vf7-vfgr"
+ignoreUntil = 2026-11-07T00:00:00Z
+reason = "simple-git comes only through reassure; see GHSA-858h-whjf-mvg5."
+
+[[IgnoredVulns]]
+id = "GHSA-x6jw-m9v5-85vh"
+ignoreUntil = 2026-11-07T00:00:00Z
+reason = "simple-git comes only through reassure; see GHSA-858h-whjf-mvg5."
+
+[[IgnoredVulns]]
+id = "GHSA-v5rq-49vh-5v5c"
+ignoreUntil = 2026-11-07T00:00:00Z
+reason = "@simple-git/argv-parser comes only through simple-git under reassure; see GHSA-858h-whjf-mvg5."
+
+[[IgnoredVulns]]
+id = "GHSA-hp3w-g68c-fv3c"
+ignoreUntil = 2026-11-07T00:00:00Z
+reason = "sprintf-js comes only through Jest's coverage instrumentation (babel-plugin-istanbul, js-yaml, argparse) in tests; it formats the tool's own strings, never outside input, and no release fixes it."
