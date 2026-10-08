@@ -187,8 +187,8 @@ export const GATE_CLAIMS = [
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
     says: /also lists each id that two elements carry, and any such id fails the/,
     holds: "the scan's own check for a shared id",
-    pattern: 'id: "id-shared"',
-    paths: ["tests/app"],
+    pattern: 'querySelectorAll("[id]")',
+    paths: ["tests/app/app.fixtures.ts"],
     files: 1,
   },
   {
