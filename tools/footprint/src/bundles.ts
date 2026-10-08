@@ -30,13 +30,19 @@ const HEADING = [
 const difference = ({ main, change }: Bundle) =>
   `${change > main ? "+" : ""}${change - main} B`;
 
-const verdictOn = (needs: readonly string[], bundleGrows: boolean) => {
+interface Need {
+  readonly cause: string;
+  readonly remedy: string;
+}
+
+const verdictOn = (needs: readonly Need[], bundleGrows: boolean) => {
   if (needs.length === 0)
     return "No bundle is bigger than on main, and `.size-limit.json` is main's.";
-  const named = `Needs the \`${LABEL}\` label: ${needs.join("; ")}.`;
+  const named = `Needs the \`${LABEL}\` label: ${needs.map((need) => need.cause).join("; ")}.`;
+  const remedies = [...new Set(needs.map((need) => need.remedy))].join(" and ");
   return bundleGrows
     ? `${named} The label on this pull request accepts it.`
-    : `${named} Make it smaller, or add the label to this pull request, where a reviewer sees it, and run the failed jobs again.`;
+    : `${named} ${remedies.charAt(0).toUpperCase()}${remedies.slice(1)}, or add the label to this pull request, where a reviewer sees it, and run the failed jobs again.`;
 };
 
 const weighedSection = (
@@ -44,11 +50,21 @@ const weighedSection = (
   globsChanged: boolean,
   bundleGrows: boolean,
 ): Section => {
-  const needs = [
+  const needs: readonly Need[] = [
     ...bundles
       .filter((bundle) => bundle.change > bundle.main)
-      .map((bundle) => `${bundle.name} grew`),
-    ...(globsChanged ? ["`.size-limit.json` differs from main's"] : []),
+      .map((bundle) => ({
+        cause: `${bundle.name} grew`,
+        remedy: "make the bundle smaller",
+      })),
+    ...(globsChanged
+      ? [
+          {
+            cause: "`.size-limit.json` differs from main's",
+            remedy: "put `.size-limit.json` back as main's",
+          },
+        ]
+      : []),
   ];
   return {
     passed: needs.length === 0 || bundleGrows,

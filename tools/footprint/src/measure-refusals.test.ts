@@ -60,6 +60,37 @@ describe("what size-limit reported", () => {
     expect(weighedBy(run)).toMatchObject({ globsChanged: true });
   });
 
+  it("does not count a removed limit as a glob change, since a limit decides nothing about what is weighed", () => {
+    const run = weighing(
+      { ".size-limit.json": [IOS], "main/.size-limit.json": [IOS] },
+      JSON.stringify([
+        { name: "app for iOS", path: "dist/ios/*.js", limit: "534414 B" },
+      ]),
+    );
+
+    expect(weighedBy(run)).toMatchObject({ globsChanged: false });
+  });
+
+  it.each([
+    ["a path", { name: "app for iOS", path: "dist/**/*.js" }],
+    ["a name", { name: "the iOS app", path: "dist/ios/*.js" }],
+    [
+      "a compression",
+      { name: "app for iOS", path: "dist/ios/*.js", gzip: true },
+    ],
+    [
+      "an ignore list",
+      { name: "app for iOS", path: "dist/ios/*.js", ignore: ["x"] },
+    ],
+  ])("counts a changed %s as a glob change", (_, entry) => {
+    const run = weighing(
+      { ".size-limit.json": [IOS], "main/.size-limit.json": [IOS] },
+      JSON.stringify([entry]),
+    );
+
+    expect(weighedBy(run)).toMatchObject({ globsChanged: true });
+  });
+
   it("takes a bundle that weighs 0 B on main as one main does not ship yet", () => {
     const run = weighing({
       ".size-limit.json": [IOS],
@@ -74,6 +105,10 @@ describe("what size-limit reported", () => {
   it.each([
     ["a bundle with no size", [{ name: "app for iOS" }]],
     ["a bundle with no name", [{ size: 15 }]],
+    [
+      "one good bundle beside one with no size",
+      [IOS, { name: "app for Android" }],
+    ],
     ["no bundle at all", []],
     ["size-limit's error object", { error: "SizeLimitError: config is empty" }],
   ])("does not weigh over %s on main, and says so", (_, reported) => {
@@ -98,6 +133,21 @@ describe("what size-limit reported", () => {
       kind: "unweighed",
       reason:
         "app for Android weighed 0 B on this change, so its glob matched no file",
+    });
+  });
+
+  it("names every bundle that matched no file on this change", () => {
+    const run = weighing({
+      ".size-limit.json": [
+        { ...IOS, size: 0 },
+        { ...IOS, name: "app for Android", size: 0 },
+      ],
+      "main/.size-limit.json": [IOS, { ...IOS, name: "app for Android" }],
+    });
+
+    expect(weighedBy(run)).toMatchObject({
+      reason:
+        "app for iOS, app for Android weighed 0 B on this change, so its glob matched no file",
     });
   });
 

@@ -15,6 +15,14 @@ import { type Diff, filesOf, type Side, type Tree } from "./volume.js";
 
 export const RATCHET = ".footprint.json";
 export const BUNDLES = ".size-limit.json";
+
+const weighedAs = (configuration: string): string =>
+  JSON.stringify(
+    JSON.parse(configuration).map(
+      ({ limit: _limit, ...weighing }: Readonly<Record<string, unknown>>) =>
+        weighing,
+    ),
+  );
 const NATIVE_JEST = "apps/native/jest.config.js";
 
 const NATIVE_JEST_RUN: readonly string[] = [
@@ -92,8 +100,8 @@ export const measureWith = (run: Run, read: (path: string) => string) => {
   };
 
   const globsChanged = (mainTree: string): boolean =>
-    JSON.stringify(JSON.parse(read(BUNDLES))) !==
-    JSON.stringify(JSON.parse(git("-C", mainTree, "show", `HEAD:${BUNDLES}`)));
+    weighedAs(read(BUNDLES)) !==
+    weighedAs(git("-C", mainTree, "show", `HEAD:${BUNDLES}`));
 
   const weighing = (mainTree: string, mainExported: boolean): Weighing => {
     if (!mainExported)

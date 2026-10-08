@@ -119,7 +119,7 @@ the `bundle-grows` label lets through.
 - **A comment.** Say it in the code, or raise the ratchet in `.footprint.json` in the same
   diff, where a reviewer sees the comment it pays for. Every ratchet in this repository
   moves that way.
-- **A bundle bigger than on main, or a change to `.size-limit.json`.** The `measure` job exports
+- **A bundle bigger than on main, or a change to what `.size-limit.json` weighs.** The `measure` job exports
   the app from your change merged into main and from main itself, and weighs both. Make the
   bundle smaller, or add the `bundle-grows` label to the pull request, where a reviewer sees it,
   and run the failed jobs again. When the job could not weigh at all, the footprint comment says

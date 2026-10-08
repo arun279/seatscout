@@ -474,9 +474,10 @@ merge commit's first parent, which is main as the change merges into it. size-li
 with the globs in the change's `.size-limit.json`, which the job copies over main's so the two
 sides are weighed alike. A bundle bigger than on main fails the job, by a byte or more, unless
 the pull request carries the `bundle-grows` label. A bundle main does not ship yet weighs 0 B
-there, so it is growth from nothing and needs the label too. So does any change to
-`.size-limit.json` itself, read from main's own commit, because narrowing or deleting a glob would
-drop a bundle from both sides and pass. Applying a label takes GitHub's triage role or higher,
+there, so it is growth from nothing and needs the label too. So does any change to what
+`.size-limit.json` weighs, read from main's own commit: every field of an entry but `limit`, which
+weighs nothing. Narrowing or deleting a glob would otherwise drop a bundle from both sides and
+pass. Applying a label takes GitHub's triage role or higher,
 and the pull request's timeline records who applied it and when. Nothing requires a second
 person: the label makes growth a deliberate, visible decision, not a reviewed one. The job reads
 the labels from GitHub's API when it runs rather than from the event that started

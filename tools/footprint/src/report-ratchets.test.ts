@@ -176,8 +176,9 @@ describe("the bundle gate against main", () => {
     { name: "app for iOS", main: 1024, change: 2048 },
     { name: "app for Android", main: 90, change: 90 },
   ];
-  const ASK =
-    "Make it smaller, or add the label to this pull request, where a reviewer sees it, and run the failed jobs again.";
+  const LABEL_IT =
+    "add the label to this pull request, where a reviewer sees it, and run the failed jobs again.";
+  const ASK = `Make the bundle smaller, or ${LABEL_IT}`;
 
   it("fails a bundle bigger than on main, naming it and both ways through", () => {
     const report = reportOn({ bundles: weighed(GREW) });
@@ -200,7 +201,7 @@ describe("the bundle gate against main", () => {
     });
 
     expect(markdown).toContain(
-      "Needs the `bundle-grows` label: app for iOS grew; app for Android grew.",
+      `Needs the \`bundle-grows\` label: app for iOS grew; app for Android grew. ${ASK}`,
     );
   });
 
@@ -230,7 +231,17 @@ describe("the bundle gate against main", () => {
 
     expect(report.passed).toBe(false);
     expect(report.markdown).toContain(
-      `Needs the \`bundle-grows\` label: \`.size-limit.json\` differs from main's. ${ASK}`,
+      `Needs the \`bundle-grows\` label: \`.size-limit.json\` differs from main's. Put \`.size-limit.json\` back as main's, or ${LABEL_IT}`,
+    );
+  });
+
+  it("names both causes, and both remedies, when a bundle grew and the globs changed", () => {
+    const report = reportOn({
+      bundles: weighed([{ name: "app for iOS", main: 15, change: 16 }], true),
+    });
+
+    expect(report.markdown).toContain(
+      `Make the bundle smaller and put \`.size-limit.json\` back as main's, or ${LABEL_IT}`,
     );
   });
 
@@ -271,7 +282,7 @@ describe("the bundle gate against main", () => {
 
     expect(report.passed).toBe(false);
     expect(report.markdown).toContain(
-      "The bundles were not weighed: main could not be exported. With nothing to compare, the gate refuses the change.",
+      "The bundles were not weighed: main could not be exported. With nothing to compare, the gate refuses the change.\n\n### ",
     );
   });
 });
