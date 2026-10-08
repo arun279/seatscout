@@ -2,6 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 import { render, screen } from "@testing-library/react-native";
 import { Dimensions, StyleSheet } from "react-native";
 import { houseLights } from "../../test/lights.js";
+import { definedUnder, paintedWith } from "../../test/svg.js";
 import type { Appearance } from "../theme.js";
 import { ScreenBand } from "./screen-band.js";
 
@@ -52,6 +53,17 @@ describe("the screen band", () => {
     await lights("down");
 
     expect(screen.getByTestId("beam", hidden)).toBeOnTheScreen();
+  });
+
+  it("lights the screen and the beam by the gradients and the glow the band draws itself", async () => {
+    await lights("down");
+    const [edge, fall] = definedUnder("lights", "RNSVGLinearGradient");
+    const [glow] = definedUnder("lights", "RNSVGFilter");
+
+    expect(drawnAt("screen")["filter"]).toBe(glow);
+    expect(drawnAt("screen")["fill"]).toEqual(paintedWith(edge));
+    expect(drawnAt("beam")["fill"]).toEqual(paintedWith(fall));
+    expect(new Set([edge, fall, glow]).size).toBe(3);
   });
 
   it("lets none fall with the house lights up, because the projector is off", async () => {
