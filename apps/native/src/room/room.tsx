@@ -12,6 +12,7 @@ import {
   notBookableIn,
   type Place,
   partyOf,
+  placeHolding,
   readingOf,
   refusalOf,
   rowOf,
@@ -268,14 +269,14 @@ export const Room = ({
         <TouchableOpacity
           accessibilityRole="button"
           onPress={() => {
-            setCursor(auditorium.recommended);
+            setCursor(placeHolding(auditorium.map, chosen));
             setNotice(null);
           }}
           style={[styles.return, { borderColor: colours.hairline }]}
           testID="return"
         >
           <Type set="sentence" tone="silverDim">
-            {centreOnOf(result)}
+            {centreOnOf(chosen)}
           </Type>
         </TouchableOpacity>
         <View style={styles.section}>

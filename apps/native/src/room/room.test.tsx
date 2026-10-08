@@ -213,7 +213,7 @@ describe("choosing another Seat Group in the room", () => {
     expect(rowBar().queryByText("ROW D")).toBeNull();
   });
 
-  it("puts the row back when the return control is pressed", async () => {
+  it("puts the recommendation's row back when the return control is pressed and nothing else was chosen", async () => {
     const room = await shown();
     const refused = refusedIn(room);
 
@@ -223,6 +223,21 @@ describe("choosing another Seat Group in the room", () => {
     );
 
     expect(rowBar().getByText("ROW D")).toBeOnTheScreen();
+  });
+
+  it("names the chosen pair on the return control, and centres the map on it", async () => {
+    const room = await shown({ room: HOOKY_SOUTHLAKE });
+
+    await fireEvent.press(screen.getByRole("radio", { name: /^F12·F11 / }));
+    await tapped(room, refusedIn(room).id);
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Centre the map on F12 and F11" }),
+    );
+
+    expect(rowBar().getByText("ROW F")).toBeOnTheScreen();
+    expect(
+      screen.queryByRole("button", { name: /^Centre the map on .* and .*$/ }),
+    ).toHaveTextContent("Centre the map on F12 and F11");
   });
 });
 

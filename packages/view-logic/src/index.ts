@@ -128,6 +128,7 @@ export { everyGroupIn } from "./seat-map.js";
 export type { Frame } from "./seat-map.js";
 export { frameOf } from "./seat-map.js";
 export { groupHolding } from "./seat-map.js";
+export { placeHolding } from "./seat-map.js";
 export { holds } from "./seat-map.js";
 export type { Place } from "./seat-map.js";
 export { signal } from "./signal.js";

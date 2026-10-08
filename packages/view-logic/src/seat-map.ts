@@ -8,6 +8,7 @@ import {
   type SeatRow,
 } from "@seatscout/client";
 import type { Box } from "./gesture.js";
+import { labelOf } from "./phrases.js";
 
 export interface Frame extends Box {
   readonly seatWidth: number;
@@ -46,6 +47,20 @@ export const groupHolding = (
   seat: PositionedSeat,
 ): SeatGroupResult | undefined =>
   auditorium.offered.find((offered) => holds(offered, seat));
+
+export const placeHolding = (
+  map: AuditoriumMap,
+  group: SeatGroupResult,
+): Place => {
+  const [place] = map.rows.flatMap((row) =>
+    row.seats
+      .filter((seat) => holds(group, seat))
+      .map((seat) => ({ row, seat })),
+  );
+  if (place === undefined)
+    throw new Error(`${labelOf(group)} is not in this room`);
+  return place;
+};
 
 export const consolesIn = (map: AuditoriumMap): boolean =>
   map.rows.some((row) => row.gapAfter.includes("pod"));
