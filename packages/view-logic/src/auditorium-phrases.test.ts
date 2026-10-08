@@ -170,10 +170,10 @@ describe("what the room calls things", () => {
     const { result } = openedRoom(VILLAGE_1);
 
     expect(chosenOf(result)).toBe(
-      "D18 and D17 chosen. They are re-checked when you continue.",
+      "D18 and D17 chosen. They are re-checked before the ticket site opens.",
     );
     expect(chosenOf({ ...result, seats: result.seats.slice(0, 1) })).toBe(
-      "D18 chosen. It is re-checked when you continue.",
+      "D18 chosen. It is re-checked before the ticket site opens.",
     );
   });
 

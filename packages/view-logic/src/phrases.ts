@@ -50,10 +50,8 @@ export const ageOf = (fetchedAt: number, now: number): string => {
 
 const seatsPhrase = (halves: number) => {
   const whole = Math.floor(halves / 2);
-  const half = halves % 2 === 1;
-  if (whole >= 10) return `${whole}${half ? "½" : ""} seats`;
-  if (!half) return `${wordOf(whole)} seat${whole === 1 ? "" : "s"}`;
-  return `${wordOf(whole)} and a half seats`;
+  if (halves % 2 === 1) return `${wordOf(whole)} and a half seats`;
+  return `${wordOf(whole)} seat${whole === 1 ? "" : "s"}`;
 };
 
 export const lateralOf = (seatsOffCentre: number): string => {

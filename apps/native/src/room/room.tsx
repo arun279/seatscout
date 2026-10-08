@@ -1,7 +1,7 @@
 import type { Auditorium, SeatGroupResult } from "@seatscout/client";
 import {
   BACK_TO_THE_LIST,
-  backToOf,
+  centreOnOf,
   chosenOf,
   consolesIn,
   creditsOf,
@@ -275,7 +275,7 @@ export const Room = ({
           testID="return"
         >
           <Type set="sentence" tone="silverDim">
-            {backToOf(result)}
+            {centreOnOf(result)}
           </Type>
         </TouchableOpacity>
         <View style={styles.section}>

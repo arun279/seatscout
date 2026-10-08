@@ -34,7 +34,7 @@ const RANKED_ALTERNATIVES = [
 ];
 
 const NOTHING_LEFT =
-  "The Source answered 0s ago and offered nothing else in this room for two seats together. This screening is no longer on offer to you: sold out, no longer offered by the listing, already begun, off sale, without a seat map, or simply short of two seats together, and the Source does not say which. seatscout never holds seats.";
+  "It may be sold out, off sale, already started or short of two seats together, and the ticket site does not say which.";
 
 interface Inks {
   readonly appearance: Appearance;
@@ -77,7 +77,7 @@ describe("the taken verdict", () => {
     );
     expect(
       screen.getByText(
-        "The Source answered 0s ago: at least one of them went while you were deciding. seatscout never holds seats, so the room has moved on. The plan is redrawn.",
+        "SeatScout never holds seats, so others can take them while you decide.",
       ),
     ).toBeOnTheScreen();
     expect(screen.getByText("next best")).toBeOnTheScreen();
@@ -94,19 +94,12 @@ describe("the taken verdict", () => {
     expect(
       screen.getByRole("button", { name: "Take F13 and F12" }),
     ).toBeOnTheScreen();
-    expect(
-      screen.getByText("Re-checked at hand-off · 0s ago"),
-    ).toBeOnTheScreen();
-    expect(
-      screen.getByText("Judged not bookable · nothing was held"),
-    ).toBeOnTheScreen();
+    expect(screen.getByText("Checked again 0s ago")).toBeOnTheScreen();
+    expect(screen.getByText("Only the ticket site says so")).toBeOnTheScreen();
 
     await act(() => clock.advance(8_000));
 
-    expect(screen.getByText(/^The Source answered 8s ago/)).toBeOnTheScreen();
-    expect(
-      screen.getByText("Re-checked at hand-off · 8s ago"),
-    ).toBeOnTheScreen();
+    expect(screen.getByText("Checked again 8s ago")).toBeOnTheScreen();
   });
 
   it("takes a chosen alternative as the Chosen with a tick, and verifies it in turn before opening", async () => {
@@ -120,7 +113,7 @@ describe("the taken verdict", () => {
 
     counter.holdSeatMaps();
     await take("D12 and D11");
-    await screen.findByText("Checking D12 and D11 with the Source");
+    await screen.findByText("Checking D12 and D11 are still there");
 
     expect(screen.queryAllByRole("radio")).toEqual([]);
     expect(screen.queryByText("Next best in this room")).toBeNull();
@@ -140,6 +133,8 @@ describe("the taken verdict", () => {
       "E12 and E11 just went, and nothing in this room replaces them.",
     );
     expect(screen.getByText(NOTHING_LEFT)).toBeOnTheScreen();
+    expect(screen.getByText("Checked again 0s ago")).toBeOnTheScreen();
+    expect(screen.getByText("Only the ticket site says so")).toBeOnTheScreen();
     expect(screen.queryByTestId("velvet")).toBeNull();
     expect(screen.queryAllByRole("radio")).toEqual([]);
     expect(screen.queryByTestId("lost", hidden)).toBeNull();
@@ -156,7 +151,7 @@ describe("the taken verdict", () => {
 });
 
 describe("the unreachable verdict", () => {
-  it("says nothing was checked, offers to check again, and opens only once a check is answered", async () => {
+  it("says the seats may still be there, offers to check again, and opens only once a check is answered", async () => {
     const counter = await taken({ status: 500 });
 
     expect(heading()).toHaveTextContent(
@@ -168,13 +163,11 @@ describe("the unreachable verdict", () => {
     );
     expect(
       screen.getByText(
-        "Nothing was checked, so E12 and E11 may well still be there. A checkout never opens on an answer that could not be judged.",
+        "E12 and E11 may still be there. SeatScout only opens the ticket site after a check.",
       ),
     ).toBeOnTheScreen();
-    expect(screen.getByText("Hand-off · 0s ago")).toBeOnTheScreen();
-    expect(
-      screen.getByText("Nothing was read · nothing was held"),
-    ).toBeOnTheScreen();
+    expect(screen.getByText("Tried 0s ago")).toBeOnTheScreen();
+    expect(screen.queryByText("Only the ticket site says so")).toBeNull();
 
     await fireEvent.press(screen.getByRole("button", { name: "Check again" }));
     await counter.answered();
@@ -215,7 +208,7 @@ describe.each(INKS)("under house lights $appearance", (inks) => {
     await take("E12 and E11");
 
     expect(
-      await screen.findByText("Checking E12 and E11 with the Source"),
+      await screen.findByText("Checking E12 and E11 are still there"),
     ).toBeOnTheScreen();
     counter.releaseSeatMaps();
     await counter.answered();

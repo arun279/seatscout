@@ -28,15 +28,11 @@ describe("the hand-off sheet as it opens", () => {
 
     expect(screen.getByRole("header")).toHaveTextContent(HOOKY_ADDISON);
     expect(screen.getByText("Today 9:00a · SDX")).toBeOnTheScreen();
-    expect(
-      screen.getByText("1 source · 0s ago · judged bookable"),
-    ).toBeOnTheScreen();
-    expect(
-      screen.getByText("Not confirmed by a second Source"),
-    ).toBeOnTheScreen();
+    expect(screen.getByText("Bookable when read 0s ago")).toBeOnTheScreen();
+    expect(screen.getByText("Only the ticket site says so")).toBeOnTheScreen();
     expect(screen.getByText("E12·E11, yours")).toBeOnTheScreen();
     expect(screen.getByRole("status")).toHaveTextContent(
-      /^Tapping re-checks these seats with the Source/,
+      "Tapping re-checks these seats, then opens the ticket site at this showtime. SeatScout never holds seats.",
     );
     expect(screen.getByRole("status").props["accessibilityLiveRegion"]).toBe(
       "polite",
@@ -55,9 +51,7 @@ describe("the hand-off sheet as it opens", () => {
 
     await act(() => clock.advance(8_000));
 
-    expect(
-      screen.getByText("1 source · 8s ago · judged bookable"),
-    ).toBeOnTheScreen();
+    expect(screen.getByText("Bookable when read 8s ago")).toBeOnTheScreen();
   });
 
   it("closes when its back control is pressed", async () => {
@@ -79,7 +73,7 @@ describe("no ticketing URL opens before Re-verification confirms", () => {
     await take("E12 and E11");
 
     expect(await screen.findByRole("status")).toHaveTextContent(
-      "Checking E12 and E11 with the Source",
+      "Checking E12 and E11 are still there",
     );
     expect(screen.getByRole("status").props["accessibilityLiveRegion"]).toBe(
       "polite",
@@ -93,7 +87,7 @@ describe("no ticketing URL opens before Re-verification confirms", () => {
     expect(verified.ok).toBe(true);
     expect(counter.checkout.mock.calls).toEqual([[HOOKY_TICKETING]]);
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Still there. Opening the ticketing page for 9:00a at Hooky Entertainment Addison + SDX.",
+      "Still there. Opening the ticket site for 9:00a at Hooky Entertainment Addison + SDX.",
     );
   });
 
@@ -113,7 +107,7 @@ describe("no ticketing URL opens before Re-verification confirms", () => {
     const counter = await opened();
     counter.holdSeatMaps();
     await take("E12 and E11");
-    await screen.findByText("Checking E12 and E11 with the Source");
+    await screen.findByText("Checking E12 and E11 are still there");
 
     await act(() => screen.unmount());
     counter.releaseSeatMaps();

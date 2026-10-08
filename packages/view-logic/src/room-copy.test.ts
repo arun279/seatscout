@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import {
   ALSO_IN_THE_LIST,
-  backToOf,
   CLEAR_OF_THE_FRONT,
+  centreOnOf,
   creditsOf,
   heldWhileOfflineOf,
   legendOf,
@@ -39,8 +39,10 @@ describe("what the room says beside the map", () => {
     );
   });
 
-  it("names the Seats the return control goes back to, spaced rather than joined", () => {
-    expect(backToOf(openedRoom(VILLAGE_1).result)).toBe("Back to D18 D17");
+  it("says the return control centres the map on the recommended Seats", () => {
+    expect(centreOnOf(openedRoom(VILLAGE_1).result)).toBe(
+      "Centre the map on D18 and D17",
+    );
   });
 
   it("counts the Seats a room will not sell against the Seats it has", () => {
@@ -50,12 +52,15 @@ describe("what the room says beside the map", () => {
   });
 
   it("attests one reading and how old it is", () => {
-    expect(readingOf(1000, 13_000)).toBe("1 source · read 12s ago");
+    expect(readingOf(1000, 13_000)).toBe("Read 12s ago");
   });
 
-  it("says the chosen Seats are still drawn while the connection is gone", () => {
+  it("says the chosen Seats are still drawn while the connection is gone, and why taking them waits", () => {
     expect(heldWhileOfflineOf(openedRoom(VILLAGE_1).result)).toBe(
       "D18 and D17 are here while you are offline.",
+    );
+    expect(WAITS_FOR_THE_CONNECTION).toBe(
+      "They are re-checked before the ticket site opens, so that waits for the connection.",
     );
   });
 });

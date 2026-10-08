@@ -17,7 +17,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: DRAWN.across,
     paddingVertical: DRAWN.down,
   },
-  label: { marginRight: DRAWN.gap },
+  label: { flexShrink: 0, marginRight: DRAWN.gap },
   text: { flexShrink: 1 },
 });
 

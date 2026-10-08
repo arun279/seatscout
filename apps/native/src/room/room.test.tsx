@@ -1,9 +1,9 @@
 import { describe, expect, it, jest } from "@jest/globals";
-import { chosenOf, labelOf, refusalOf } from "@seatscout/view-logic";
+import { chosenOf, labelOf, refusalOf, takeOf } from "@seatscout/view-logic";
 import { HOOKY_SOUTHLAKE, VILLAGE_1 } from "@seatscout/view-logic/testing";
 import { fireEvent, screen } from "@testing-library/react-native";
 import { selectionAsync } from "expo-haptics";
-import { AccessibilityInfo } from "react-native";
+import { AccessibilityInfo, StyleSheet } from "react-native";
 import { houseLights } from "../../test/lights.js";
 import {
   otherThan,
@@ -45,13 +45,23 @@ describe("the Room a Seat Group opens", () => {
     ).toBeOnTheScreen();
   });
 
+  it("keeps the row's name on one line beside its sentence", async () => {
+    await shown();
+
+    expect(
+      StyleSheet.flatten(rowBar().getByText("ROW D").props["style"]),
+    ).toMatchObject({ flexShrink: 0 });
+  });
+
   it("offers one way back to the list and one control to commit with", async () => {
     const room = await shown();
 
     await fireEvent.press(
       screen.getByRole("button", { name: "‹ Back to the list" }),
     );
-    await fireEvent.press(screen.getByTestId("velvet"));
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Take D18 and D17" }),
+    );
 
     expect(room.left).toEqual(["back"]);
     expect(room.handedOff.map(labelOf)).toEqual(["D18·D17"]);
@@ -74,10 +84,8 @@ describe("the Room a Seat Group opens", () => {
   it("attests one reading, its age and that nothing confirmed it", async () => {
     await shown();
 
-    expect(screen.getByText("1 source · read 12s ago")).toBeOnTheScreen();
-    expect(
-      screen.getByText("Not confirmed by a second Source"),
-    ).toBeOnTheScreen();
+    expect(screen.getByText("Read 12s ago")).toBeOnTheScreen();
+    expect(screen.getByText("Only the ticket site says so")).toBeOnTheScreen();
   });
 
   it("counts the Seats the room will not sell", async () => {
@@ -117,7 +125,7 @@ describe("choosing another Seat Group in the room", () => {
     await fireEvent.press(
       screen.getByRole("radio", { name: new RegExp(`^${labelOf(other)} `) }),
     );
-    await fireEvent.press(screen.getByTestId("velvet"));
+    await fireEvent.press(screen.getByRole("button", { name: takeOf(other) }));
 
     expect(room.handedOff.map((group) => group.key)).toEqual([other.key]);
   });
@@ -211,7 +219,7 @@ describe("choosing another Seat Group in the room", () => {
 
     await tapped(room, refused.id);
     await fireEvent.press(
-      screen.getByRole("button", { name: "Back to D18 D17" }),
+      screen.getByRole("button", { name: "Centre the map on D18 and D17" }),
     );
 
     expect(rowBar().getByText("ROW D")).toBeOnTheScreen();
@@ -227,7 +235,7 @@ describe("the Room while the connection is gone", () => {
     ).toBeOnTheScreen();
     expect(
       screen.getByText(
-        "Continuing re-checks them with the Source, so it waits for the connection.",
+        "They are re-checked before the ticket site opens, so that waits for the connection.",
       ),
     ).toBeOnTheScreen();
     expect(screen.queryByTestId("velvet")).toBeNull();

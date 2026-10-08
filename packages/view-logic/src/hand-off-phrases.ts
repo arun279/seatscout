@@ -5,16 +5,15 @@ import { dayOf } from "./when-phrases.js";
 export const BACK_TO_THE_LIST = "Back to the list";
 
 export const RE_CHECKED_THEN_OPENED =
-  "Tapping re-checks these seats with the Source, then opens the ticketing page with this showtime selected. seatscout never holds seats.";
+  "Tapping re-checks these seats, then opens the ticket site at this showtime. SeatScout never holds seats.";
 
 export const OFFLINE_AT_HAND_OFF =
   "Offline. Seats are never cached, so this hand-off can be checked when the connection returns.";
 
-export const UNCONFIRMED = "Not confirmed by a second Source";
+export const UNCONFIRMED = "Only the ticket site says so";
 
-export const NOTHING_WAS_HELD = "Judged not bookable · nothing was held";
-
-export const NOTHING_WAS_READ = "Nothing was read · nothing was held";
+export const MOVED_ON =
+  "SeatScout never holds seats, so others can take them while you decide.";
 
 export const NEXT_BEST = "Next best in this room";
 
@@ -34,31 +33,25 @@ export const takeOf = (chosen: SeatGroupResult): string =>
   `Take ${spokenOf(chosen)}`;
 
 export const checkingOf = (chosen: SeatGroupResult): string =>
-  `Checking ${spokenOf(chosen)} with the Source`;
+  `Checking ${spokenOf(chosen)} are still there`;
 
 export const openingOf = (chosen: SeatGroupResult): string =>
-  `Still there. Opening the ticketing page for ${clockOf(chosen.showtime.startsAt)} at ${chosen.showtime.presentation.theater.name}.`;
+  `Still there. Opening the ticket site for ${clockOf(chosen.showtime.startsAt)} at ${chosen.showtime.presentation.theater.name}.`;
 
 export const judgedOf = (age: string): string =>
-  `1 source · ${age} ago · judged bookable`;
+  `Bookable when read ${age} ago`;
 
-export const recheckedOf = (age: string): string =>
-  `Re-checked at hand-off · ${age} ago`;
+export const recheckedOf = (age: string): string => `Checked again ${age} ago`;
 
-export const handedOffOf = (age: string): string => `Hand-off · ${age} ago`;
+export const triedOf = (age: string): string => `Tried ${age} ago`;
 
 export const wentOf = (lost: SeatGroupResult, replaced: boolean): string =>
   replaced
     ? `${spokenOf(lost)} just went.`
     : `${spokenOf(lost)} just went, and nothing in this room replaces them.`;
 
-export const movedOnOf = (age: string): string =>
-  `The Source answered ${age} ago: at least one of them went while you were deciding. seatscout never holds seats, so the room has moved on. The plan is redrawn.`;
-
-export const offNowOf = (age: string, partySize: number): string => {
-  const party = partyOf(partySize).toLowerCase();
-  return `The Source answered ${age} ago and offered nothing else in this room for ${party}. This screening is no longer on offer to you: sold out, no longer offered by the listing, already begun, off sale, without a seat map, or simply short of ${party}, and the Source does not say which. seatscout never holds seats.`;
-};
+export const offNowOf = (partySize: number): string =>
+  `It may be sold out, off sale, already started or short of ${partyOf(partySize).toLowerCase()}, and the ticket site does not say which.`;
 
 export const yoursOf = (chosen: SeatGroupResult): string =>
   `${labelOf(chosen)}, yours`;
@@ -70,4 +63,4 @@ export const placeOf = (alternative: SeatGroupResult): string =>
   `Row ${alternative.reasons.rowFromFront} · ${lateralOf(alternative.reasons.seatsOffCentre)}`;
 
 export const uncheckedOf = (chosen: SeatGroupResult): string =>
-  `Nothing was checked, so ${spokenOf(chosen)} may well still be there. A checkout never opens on an answer that could not be judged.`;
+  `${spokenOf(chosen)} may still be there. SeatScout only opens the ticket site after a check.`;

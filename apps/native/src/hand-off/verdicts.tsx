@@ -2,20 +2,18 @@ import type { SeatGroupResult } from "@seatscout/client";
 import {
   ageOf,
   checkingOf,
-  handedOffOf,
   judgedOf,
   labelOf,
-  movedOnOf,
+  MOVED_ON,
   NEXT_BEST,
   NEXT_BEST_MARK,
-  NOTHING_WAS_HELD,
-  NOTHING_WAS_READ,
   OFFLINE_AT_HAND_OFF,
   offNowOf,
   openingOf,
   placeOf,
   recheckedOf,
   showingOf,
+  triedOf,
   UNCONFIRMED,
   whereTheyWereOf,
   whyOf,
@@ -86,7 +84,7 @@ const Provenance = ({
   note,
 }: {
   readonly line: ReactNode;
-  readonly note: string;
+  readonly note?: string;
 }) => {
   const { colours } = useTheme();
 
@@ -96,9 +94,11 @@ const Provenance = ({
       testID="provenance"
     >
       {line}
-      <Type set="ledgerLabel" tone="velvetLit">
-        {note}
-      </Type>
+      {note !== undefined && (
+        <Type set="ledgerLabel" tone="velvetLit">
+          {note}
+        </Type>
+      )}
     </View>
   );
 };
@@ -236,26 +236,25 @@ export const Gone = ({
   const provenance = (
     <Provenance
       line={<Aged at={at} clock={clock} say={recheckedOf} set="ledgerLabel" />}
-      note={NOTHING_WAS_HELD}
+      note={UNCONFIRMED}
     />
   );
 
   if (alternatives.length === 0)
     return (
       <>
-        <Aged
-          at={at}
-          clock={clock}
-          say={(age) => offNowOf(age, chosen.terms.partySize)}
-          set="sentence"
-        />
+        <Type set="sentence" tone="silverDim">
+          {offNowOf(chosen.terms.partySize)}
+        </Type>
         {provenance}
       </>
     );
 
   return (
     <>
-      <Aged at={at} clock={clock} say={movedOnOf} set="sentence" />
+      <Type set="sentence" tone="silverDim">
+        {MOVED_ON}
+      </Type>
       <View style={styles.plan}>
         <RoomPlan across={PLAN_ACROSS} lost={lost} result={chosen} />
       </View>
@@ -296,8 +295,7 @@ export const Unchecked = ({
       {said}
     </Type>
     <Provenance
-      line={<Aged at={at} clock={clock} say={handedOffOf} set="ledgerLabel" />}
-      note={NOTHING_WAS_READ}
+      line={<Aged at={at} clock={clock} say={triedOf} set="ledgerLabel" />}
     />
   </>
 );
