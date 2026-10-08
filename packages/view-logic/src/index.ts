@@ -95,7 +95,6 @@ export type { ProgrammeState } from "./programme.js";
 export { markedIn } from "./programme.js";
 export { carriedTitleOf } from "./programme.js";
 export { chosenFrom } from "./programme.js";
-export { filmOf } from "./programme.js";
 export { knownFilms } from "./programme.js";
 export { offeredFor } from "./programme.js";
 export { programmeNear } from "./programme.js";
