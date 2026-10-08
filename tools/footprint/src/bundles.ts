@@ -6,39 +6,57 @@ export interface Bundle {
   readonly change: number;
 }
 
+export type Weighing =
+  | {
+      readonly kind: "weighed";
+      readonly bundles: readonly Bundle[];
+      readonly globsChanged: boolean;
+    }
+  | { readonly kind: "unweighed"; readonly reason: string };
+
 const LABEL = "bundle-grows";
+
+const HEADING = [
+  "### Bundle size",
+  "",
+  "Brotli, summed per file, over what each build publishes: the script Hermes",
+  "compiles for each phone, with the workspace packages it reaches inlined, and",
+  "the faces and images the app ships. Every emitted chunk counts, including one",
+  "no screen has loaded, so this is what a build publishes rather than what one",
+  "launch reads. Main is weighed as this change merges into it, in the same job.",
+  "",
+];
 
 const difference = ({ main, change }: Bundle) =>
   `${change > main ? "+" : ""}${change - main} B`;
 
-const verdictOn = (grown: readonly Bundle[], accepted: boolean) => {
-  const named = grown.map((bundle) => bundle.name).join(", ");
-  if (grown.length === 0) return "No bundle is bigger than on main.";
-  return accepted
-    ? `Bigger than on main: ${named}. The \`${LABEL}\` label on this pull request accepts it.`
-    : `Bigger than on main: ${named}. Make it smaller, or add the \`${LABEL}\` label to this pull request, where a reviewer sees it, and run this job again.`;
+const verdictOn = (needs: readonly string[], bundleGrows: boolean) => {
+  if (needs.length === 0)
+    return "No bundle is bigger than on main, and `.size-limit.json` is main's.";
+  const named = `Needs the \`${LABEL}\` label: ${needs.join("; ")}.`;
+  return bundleGrows
+    ? `${named} The label on this pull request accepts it.`
+    : `${named} Make it smaller, or add the label to this pull request, where a reviewer sees it, and run the failed jobs again.`;
 };
 
-export const bundles = (
-  weighed: readonly Bundle[],
-  accepted: boolean,
+const weighedSection = (
+  bundles: readonly Bundle[],
+  globsChanged: boolean,
+  bundleGrows: boolean,
 ): Section => {
-  const grown = weighed.filter((bundle) => bundle.change > bundle.main);
-
+  const needs = [
+    ...bundles
+      .filter((bundle) => bundle.change > bundle.main)
+      .map((bundle) => `${bundle.name} grew`),
+    ...(globsChanged ? ["`.size-limit.json` differs from main's"] : []),
+  ];
   return {
-    passed: grown.length === 0 || accepted,
+    passed: needs.length === 0 || bundleGrows,
     lines: [
-      "### Bundle size",
-      "",
-      "Brotli, summed per file, over what each build publishes: the script Hermes",
-      "compiles for each phone, with the workspace packages it reaches inlined, and",
-      "the faces and images the app ships. Every emitted chunk counts, including one",
-      "no screen has loaded, so this is what a build publishes rather than what one",
-      "launch reads. Main is weighed as this change merges into it, in the same job.",
-      "",
+      ...HEADING,
       ...table(
         ["Bundle", "Main", "This change", "Difference"],
-        weighed.map((bundle) => [
+        bundles.map((bundle) => [
           bundle.name,
           `${bundle.main} B`,
           `${bundle.change} B`,
@@ -46,8 +64,20 @@ export const bundles = (
         ]),
       ),
       "",
-      `A bundle may not grow without the \`${LABEL}\` label. ${verdictOn(grown, accepted)}`,
+      verdictOn(needs, bundleGrows),
       "",
     ],
   };
 };
+
+export const bundles = (weighing: Weighing, bundleGrows: boolean): Section =>
+  weighing.kind === "weighed"
+    ? weighedSection(weighing.bundles, weighing.globsChanged, bundleGrows)
+    : {
+        passed: false,
+        lines: [
+          ...HEADING,
+          `The bundles were not weighed: ${weighing.reason}. With nothing to compare, the gate refuses the change.`,
+          "",
+        ],
+      };

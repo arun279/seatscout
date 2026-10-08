@@ -109,7 +109,8 @@ merged result, so a clash between two pull requests shows there within minutes.
 
 ## When a gate refuses
 
-Each of these has one way through and no exemption to grant.
+Each of these has one way through. The one exception is a bundle bigger than on main, which
+the `bundle-grows` label lets through.
 
 - **Complexity.** The failure names the file, the function, its score and the limit.
   Extract part of the function. Suppressing the rule would take a comment, and comment load
@@ -118,10 +119,11 @@ Each of these has one way through and no exemption to grant.
 - **A comment.** Say it in the code, or raise the ratchet in `.footprint.json` in the same
   diff, where a reviewer sees the comment it pays for. Every ratchet in this repository
   moves that way.
-- **A bundle bigger than on main.** The `measure` job exports the app from your change merged
-  into main and from main itself, and weighs both. Make the bundle smaller, or add the
-  `bundle-grows` label to the pull request, where a reviewer sees it, and run the failed jobs
-  again.
+- **A bundle bigger than on main, or a change to `.size-limit.json`.** The `measure` job exports
+  the app from your change merged into main and from main itself, and weighs both. Make the
+  bundle smaller, or add the `bundle-grows` label to the pull request, where a reviewer sees it,
+  and run the failed jobs again. When the job could not weigh at all, the footprint comment says
+  why, and no label lets it through.
 - **A count stated in prose, or a claim a record makes about this repository.** Correct the
   sentence or correct the tree, then follow the sentence into
   `tools/counts-in-prose/claims.ts` or `tools/claims-in-prose.pairs.mjs`, where every pair is

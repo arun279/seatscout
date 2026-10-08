@@ -1,4 +1,4 @@
-import { type Bundle, bundles } from "./bundles.js";
+import { bundles, type Weighing } from "./bundles.js";
 import { type Gates, type Limits, limits } from "./limits.js";
 import { type Suites, suites } from "./suites.js";
 import { type Diff, type Side, volume } from "./volume.js";
@@ -12,7 +12,7 @@ export interface Measurement {
   readonly base: Side;
   readonly head: Side;
   readonly diff: Diff;
-  readonly bundles: readonly Bundle[];
+  readonly bundles: Weighing;
   readonly gates: Gates;
   readonly limits: Limits;
   readonly suites: Suites;

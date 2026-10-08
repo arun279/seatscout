@@ -473,9 +473,13 @@ twice: from the merge of the change into main that a pull request checks out, an
 merge commit's first parent, which is main as the change merges into it. size-limit weighs both
 with the globs in the change's `.size-limit.json`, which the job copies over main's so the two
 sides are weighed alike. A bundle bigger than on main fails the job, by a byte or more, unless
-the pull request carries the `bundle-grows` label. Applying a label takes GitHub's triage role
-or higher, and the pull request's timeline records who applied it, so growth is a reviewed act.
-The job reads the labels from GitHub's API when it runs rather than from the event that started
+the pull request carries the `bundle-grows` label. A bundle main does not ship yet weighs 0 B
+there, so it is growth from nothing and needs the label too. So does any change to
+`.size-limit.json` itself, read from main's own commit, because narrowing or deleting a glob would
+drop a bundle from both sides and pass. Applying a label takes GitHub's triage role or higher,
+and the pull request's timeline records who applied it and when. Nothing requires a second
+person: the label makes growth a deliberate, visible decision, not a reviewed one. The job reads
+the labels from GitHub's API when it runs rather than from the event that started
 it, so adding the label and running the failed jobs again is enough. The footprint comment
 prints both figures and their difference for every bundle, label or not. A bundle that shrinks
 makes main smaller for the next change, so the bar moves down by itself and rises only through
@@ -488,8 +492,8 @@ the first parent holds everything main has merged since, so the difference is th
 alone. Until this form, each figure stood in `.size-limit.json` as a ratchet a reviewer raised
 in the diff. Every app change edited that one file, so two app pull requests landing one after
 the other conflicted on it, and the second paid a whole CI run to settle one line. Weighing main
-in the job removes the shared file, and the label keeps the one thing it gave, a reviewed act
-before a bundle may grow.
+in the job removes the shared file, and the label keeps the one thing it gave: a deliberate,
+recorded step before a bundle may grow.
 
 Every kind of file the export ships is weighed: the script Hermes compiles for iOS, the one for
 Android, and the faces and images every platform ships. Gating one kind and leaving another
@@ -501,9 +505,10 @@ A glob that no longer reaches anything is worse than no gate, because it reads 0
 and holds. Two fixture `size-limit` configurations are committed beside a planted file: over the
 planted file size-limit weighs the glob from the directory its configuration sits in, which is
 how main's export is weighed by the change's globs, and over globs that reach nothing it reports
-0 B for each. The report refuses that reading rather than comparing it: every entry on each side
-must have weighed at least one file, and both sides must have weighed the same bundles, or it
-throws instead of becoming a verdict.
+0 B for each. The report refuses that reading rather than comparing it: every entry on the change
+must have weighed at least one file, both sides must have weighed the same bundles, and main must
+have been checked out and exported. When any of these fails, the footprint comment says which,
+and the job fails whatever the labels say.
 
 What a glob is pointed at has to be what ships rather than a stand-in for it, and for the
 scripts that means the output of the application's own bundler. That is the load-bearing half

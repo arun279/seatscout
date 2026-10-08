@@ -337,6 +337,8 @@ jobs:
       - name: Export the scripts the app ships for both phones, so they are weighed
         run: pnpm --filter @seatscout/native run weigh
       - name: Check out main as this change merges into it, to be weighed by this change's globs
+        id: main_checkout
+        continue-on-error: true
         run: |
           if ! git rev-parse --verify --quiet HEAD^2 > /dev/null; then
             echo "::error::The checkout is not this change merged into main, so there is no main side to weigh."
@@ -345,6 +347,9 @@ jobs:
           git worktree add --detach "$RUNNER_TEMP/main" HEAD^1
           cp .size-limit.json "$RUNNER_TEMP/main/.size-limit.json"
       - name: Export main's scripts for both phones the same way
+        id: main_export
+        if: steps.main_checkout.outcome == 'success'
+        continue-on-error: true
         working-directory: ${{ runner.temp }}/main
         run: |
           pnpm install --frozen-lockfile
@@ -359,13 +364,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
+          MAIN_EXPORT: ${{ steps.main_export.outcome }}
         run: |
-          grows=()
+          flags=()
           labels="$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/labels" --jq '.[].name')"
           if grep -qx bundle-grows <<< "$labels"; then
-            grows=(--bundle-grows)
+            flags+=(--bundle-grows)
           fi
-          pnpm footprint --base "$BASE" --head "$HEAD" --main-tree "$RUNNER_TEMP/main" "${grows[@]}" --out footprint.md
+          if [ "$MAIN_EXPORT" != success ]; then
+            flags+=(--main-unexported)
+          fi
+          pnpm footprint --base "$BASE" --head "$HEAD" --main-tree "$RUNNER_TEMP/main" "${flags[@]}" --out footprint.md
       - name: Hand the measurement to the job that reports every gate
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

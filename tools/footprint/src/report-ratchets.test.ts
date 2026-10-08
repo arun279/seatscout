@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { between, counts, reportOn, SOME_SOURCE } from "./report.fixtures.js";
+import {
+  between,
+  counts,
+  reportOn,
+  SOME_SOURCE,
+  weighed,
+} from "./report.fixtures.js";
 
 describe("the comment ratchet", () => {
   it("passes a tree whose comments sit at the ratchet", () => {
@@ -170,68 +176,102 @@ describe("the bundle gate against main", () => {
     { name: "app for iOS", main: 1024, change: 2048 },
     { name: "app for Android", main: 90, change: 90 },
   ];
+  const ASK =
+    "Make it smaller, or add the label to this pull request, where a reviewer sees it, and run the failed jobs again.";
 
   it("fails a bundle bigger than on main, naming it and both ways through", () => {
-    const report = reportOn({ bundles: GREW });
+    const report = reportOn({ bundles: weighed(GREW) });
 
     expect(report.passed).toBe(false);
     expect(report.markdown).toContain(
       "| app for iOS | 1024 B | 2048 B | +1024 B |",
     );
     expect(report.markdown).toContain(
-      "Bigger than on main: app for iOS. Make it smaller, or add the `bundle-grows` label to this pull request, where a reviewer sees it, and run this job again.",
+      `Needs the \`bundle-grows\` label: app for iOS grew. ${ASK}`,
     );
-  });
-
-  it("fails when any one bundle grows, not only when all do", () => {
-    expect(reportOn({ bundles: GREW }).passed).toBe(false);
   });
 
   it("names every bundle that grew", () => {
     const { markdown } = reportOn({
-      bundles: [
+      bundles: weighed([
         { name: "app for iOS", main: 1024, change: 2048 },
         { name: "app for Android", main: 90, change: 91 },
-      ],
+      ]),
     });
 
     expect(markdown).toContain(
-      "Bigger than on main: app for iOS, app for Android. Make it smaller",
+      "Needs the `bundle-grows` label: app for iOS grew; app for Android grew.",
     );
   });
 
   it("fails a bundle that grew by a single byte, since no tolerance is set", () => {
     const report = reportOn({
-      bundles: [{ name: "app for iOS", main: 15, change: 16 }],
+      bundles: weighed([{ name: "app for iOS", main: 15, change: 16 }]),
     });
 
     expect(report.passed).toBe(false);
   });
 
+  it("holds a bundle main does not have yet as growth from nothing, which the label can accept", () => {
+    const report = reportOn({
+      bundles: weighed([{ name: "app for the web", main: 0, change: 300 }]),
+    });
+
+    expect(report.passed).toBe(false);
+    expect(report.markdown).toContain(
+      "| app for the web | 0 B | 300 B | +300 B |",
+    );
+  });
+
+  it("fails a change to the globs even when every bundle held, because narrowing a glob would hide growth", () => {
+    const report = reportOn({
+      bundles: weighed([{ name: "app for iOS", main: 15, change: 15 }], true),
+    });
+
+    expect(report.passed).toBe(false);
+    expect(report.markdown).toContain(
+      `Needs the \`bundle-grows\` label: \`.size-limit.json\` differs from main's. ${ASK}`,
+    );
+  });
+
   it("passes growth the bundle-grows label accepts, and says so beside both figures", () => {
-    const report = reportOn({ bundles: GREW }, true);
+    const report = reportOn({ bundles: weighed(GREW, true) }, true);
 
     expect(report.passed).toBe(true);
     expect(report.markdown).toContain(
       "| app for iOS | 1024 B | 2048 B | +1024 B |",
     );
     expect(report.markdown).toContain(
-      "Bigger than on main: app for iOS. The `bundle-grows` label on this pull request accepts it.",
+      "Needs the `bundle-grows` label: app for iOS grew; `.size-limit.json` differs from main's. The label on this pull request accepts it.",
     );
   });
 
   it("passes a bundle that shrank or held, and prints how much it shrank", () => {
     const report = reportOn({
-      bundles: [
+      bundles: weighed([
         { name: "app for iOS", main: 2048, change: 1024 },
         { name: "app for Android", main: 90, change: 90 },
-      ],
+      ]),
     });
 
     expect(report.passed).toBe(true);
     expect(report.markdown).toContain(
       "| app for iOS | 2048 B | 1024 B | -1024 B |",
     );
-    expect(report.markdown).toContain("No bundle is bigger than on main.");
+    expect(report.markdown).toContain(
+      "No bundle is bigger than on main, and `.size-limit.json` is main's.",
+    );
+  });
+
+  it("fails a change it could not weigh, saying why in the comment, label or not", () => {
+    const report = reportOn(
+      { bundles: { kind: "unweighed", reason: "main could not be exported" } },
+      true,
+    );
+
+    expect(report.passed).toBe(false);
+    expect(report.markdown).toContain(
+      "The bundles were not weighed: main could not be exported. With nothing to compare, the gate refuses the change.",
+    );
   });
 });

@@ -9,10 +9,11 @@ export type Measure = (
   base: string,
   head: string,
   mainTree: string,
+  mainExported: boolean,
 ) => Measurement;
 
 const USAGE =
-  "usage: footprint --main-tree <main, exported> [--base <ref>] [--head <ref>] [--bundle-grows] [--out <file>]\n";
+  "usage: footprint --main-tree <main, exported> [--base <ref>] [--head <ref>] [--main-unexported] [--bundle-grows] [--out <file>]\n";
 
 export const main = (
   argv: readonly string[],
@@ -26,6 +27,7 @@ export const main = (
       base: { type: "string" },
       head: { type: "string" },
       "main-tree": { type: "string" },
+      "main-unexported": { type: "boolean" },
       "bundle-grows": { type: "boolean" },
       out: { type: "string" },
     },
@@ -37,7 +39,12 @@ export const main = (
   }
 
   const report = render(
-    measure(values.base ?? "origin/main", values.head ?? "HEAD", mainTree),
+    measure(
+      values.base ?? "origin/main",
+      values.head ?? "HEAD",
+      mainTree,
+      values["main-unexported"] !== true,
+    ),
     values["bundle-grows"] ?? false,
   );
 

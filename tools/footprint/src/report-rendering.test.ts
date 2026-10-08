@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { counts, GATES, LIMITS, SUITES } from "./report.fixtures.js";
+import { counts, GATES, LIMITS, SUITES, weighed } from "./report.fixtures.js";
 import { type Measurement, render } from "./report.js";
 
 const RENDERED = `### Code footprint
@@ -58,7 +58,7 @@ launch reads. Main is weighed as this change merges into it, in the same job.
 | app for iOS | 15 B | 15 B | 0 B |
 | app's faces and images | 4 B | 4 B | 0 B |
 
-A bundle may not grow without the \`bundle-grows\` label. No bundle is bigger than on main.
+No bundle is bigger than on main, and \`.size-limit.json\` is main's.
 
 ### Complexity and file length
 
@@ -128,10 +128,10 @@ const MEASURED: Measurement = {
     removed: { "packages/core/src/label.ts": counts(5, 1) },
     modified: { "vitest.config.ts": counts(2, 0) },
   },
-  bundles: [
+  bundles: weighed([
     { name: "app for iOS", main: 15, change: 15 },
     { name: "app's faces and images", main: 4, change: 4 },
-  ],
+  ]),
   gates: GATES,
   limits: LIMITS,
   suites: SUITES,

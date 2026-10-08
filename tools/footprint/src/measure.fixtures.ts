@@ -1,6 +1,6 @@
 import { BIOME, OXLINT } from "./limits.js";
 import type { Measure } from "./main.js";
-import { measureWith, RATCHET } from "./measure.js";
+import { BUNDLES, measureWith, RATCHET } from "./measure.js";
 import type { Completed, Run } from "./shell.js";
 
 export interface Command {
@@ -57,6 +57,10 @@ const JEST_OUTPUT = JSON.stringify({ numTotalTests: 3, success: true });
 
 const SIZE_LIMIT_OUTPUT = JSON.stringify([{ name: "app for iOS", size: 15 }]);
 
+export const GLOBS: string = JSON.stringify([
+  { name: "app for iOS", path: "dist/ios/*.js" },
+]);
+
 const CLOC_TREE = JSON.stringify({
   header: { cloc_version: "2.10" },
   "packages/core/src/seat.ts": { code: 40, comment: 1 },
@@ -85,6 +89,7 @@ const jestAnswer = (args: readonly string[]) =>
 
 const FILES: Record<string, string> = {
   [RATCHET]: JSON.stringify({ comments: 0, tests: 1 }),
+  [BUNDLES]: GLOBS,
   [OXLINT]: JSON.stringify({
     rules: { complexity: ["error", { max: 10, variant: "classic" }] },
   }),
@@ -105,7 +110,9 @@ const FILES: Record<string, string> = {
 };
 
 const ANSWERS: Record<string, (args: readonly string[]) => string> = {
-  git: (args) => (args[0] === "merge-base" ? "base-sha\n" : "head-sha\n"),
+  git: (args) =>
+    ({ "merge-base": "base-sha\n", "-C": GLOBS })[args[0] ?? ""] ??
+    "head-sha\n",
   cloc: (args) => (args[1] === "--diff" ? CLOC_DIFF : CLOC_TREE),
   pnpm: (args) =>
     args[1] === "jest" ? jestAnswer(args) : (FROM_PNPM[args[1] ?? ""] ?? ""),

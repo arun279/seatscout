@@ -1,19 +1,24 @@
 import { describe, expect, it } from "vitest";
 import type { Bundle } from "./bundles.js";
 import { main, type Measure } from "./main.js";
-import { measurement } from "./report.fixtures.js";
+import { measurement, weighed } from "./report.fixtures.js";
 
 const WITHIN: Bundle = { name: "app for iOS", main: 15, change: 15 };
 const GREW: Bundle = { name: "app for iOS", main: 15, change: 90 };
 
 const harness = (bundle: Bundle = WITHIN) => {
-  const asked: { base: string; head: string; mainTree: string }[] = [];
+  const asked: {
+    base: string;
+    head: string;
+    mainTree: string;
+    mainExported: boolean;
+  }[] = [];
   const written: { path: string; contents: string }[] = [];
   const printed: string[] = [];
 
-  const measure: Measure = (base, head, mainTree) => {
-    asked.push({ base, head, mainTree });
-    return measurement({ bundles: [bundle] });
+  const measure: Measure = (base, head, mainTree, mainExported) => {
+    asked.push({ base, head, mainTree, mainExported });
+    return measurement({ bundles: weighed([bundle]) });
   };
 
   const run = (...argv: readonly string[]) =>
@@ -40,8 +45,21 @@ describe("the command line", () => {
     run("--main-tree", "main");
 
     expect(asked).toStrictEqual([
-      { base: "origin/main", head: "HEAD", mainTree: "main" },
+      {
+        base: "origin/main",
+        head: "HEAD",
+        mainTree: "main",
+        mainExported: true,
+      },
     ]);
+  });
+
+  it("tells the measurement when main could not be exported", () => {
+    const { run, asked } = harness();
+
+    run("--main-tree", "main", "--main-unexported");
+
+    expect(asked).toMatchObject([{ mainExported: false }]);
   });
 
   it("compares whatever base and head it is given", () => {
@@ -50,7 +68,7 @@ describe("the command line", () => {
     run("--base", "abc123", "--head", "def456", "--main-tree", "main");
 
     expect(asked).toStrictEqual([
-      { base: "abc123", head: "def456", mainTree: "main" },
+      { base: "abc123", head: "def456", mainTree: "main", mainExported: true },
     ]);
   });
 
