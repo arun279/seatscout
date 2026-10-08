@@ -21,6 +21,19 @@ interface DayCounts {
   readonly days: () => readonly Day[];
 }
 
+const inTurn = (bookable: readonly Showtime[]): Showtime[] => {
+  const taken = new Map<Showtime["presentation"]["theater"]["id"], number>();
+  return bookable
+    .map((showtime) => {
+      const theater = showtime.presentation.theater.id;
+      const turn = taken.get(theater) ?? 0;
+      taken.set(theater, turn + 1);
+      return { showtime, turn };
+    })
+    .sort((left, right) => left.turn - right.turn)
+    .map(({ showtime }) => showtime);
+};
+
 export const openDays = (
   dates: readonly string[],
   perStep: number,
@@ -30,7 +43,7 @@ export const openDays = (
 
   return {
     list: (date: string, bookable: readonly Showtime[]) => {
-      order.push(...bookable.map((showtime) => ({ showtime, date })));
+      order.push(...inTurn(bookable).map((showtime) => ({ showtime, date })));
     },
     next: () =>
       order
