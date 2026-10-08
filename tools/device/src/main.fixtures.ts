@@ -34,6 +34,21 @@ const times = (
 const FILES: Readonly<Record<string, string>> = {
   "head-walk.json": times([20000, 20400, 20200], [60, 60, 60], [200, 202, 201]),
   "base-walk.json": times([20100, 20500, 20300], [60, 60, 60], [200, 203, 201]),
+  "base-fractions.json": times(
+    [20100, 20500.4, 20300],
+    [60, 59.94, 60],
+    [200, 203, 201],
+  ),
+  "within-precision.json": times(
+    [20500.2, 20500.2, 20500.2],
+    [59.86, 59.86, 59.86],
+    [200, 202, 201],
+  ),
+  "one-tenth-fewer.json": times(
+    [20000, 20400, 20200],
+    [59.8, 59.8, 59.8],
+    [200, 202, 201],
+  ),
   "slower-walk.json": times(
     [21000, 21400, 21200],
     [60, 60, 60],

@@ -51,7 +51,8 @@ const sumOf = (values: readonly number[]) =>
 
 const meanOf = (values: readonly number[]) => sumOf(values) / values.length;
 
-export const tenths = (value: number): number => Math.round(value * 10) / 10;
+export const roundedTo = (value: number, decimals: number): number =>
+  Math.round(value * 10 ** decimals) / 10 ** decimals;
 
 const medianOf = (values: readonly number[]) => {
   const sorted = values.toSorted((one, other) => one - other);
@@ -66,8 +67,8 @@ const figureOf = (values: readonly number[]): Figure => {
   );
   return {
     values,
-    median: tenths(medianOf(values)),
-    spread: tenths((deviation / mean) * 100),
+    median: medianOf(values),
+    spread: roundedTo((deviation / mean) * 100, 1),
   };
 };
 

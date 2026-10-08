@@ -1,8 +1,9 @@
-import { type Figure, type Reading, tenths } from "./flashlight.ts";
+import { type Figure, type Reading, roundedTo } from "./flashlight.ts";
 
 interface Axis {
   readonly name: string;
   readonly unit: string;
+  readonly decimals: number;
   readonly of: (side: Reading) => Figure;
   readonly worse: (one: number, other: number) => boolean;
 }
@@ -14,24 +15,28 @@ const AXES: readonly Axis[] = [
   {
     name: "Walk, as Maestro makes it",
     unit: " ms",
+    decimals: 0,
     of: (side) => side.runtime,
     worse: higher,
   },
   {
     name: "Frame rate over the walk",
     unit: " FPS",
+    decimals: 1,
     of: (side) => side.fps,
     worse: lower,
   },
   {
     name: "CPU over the walk",
     unit: "%",
+    decimals: 1,
     of: (side) => side.cpu,
     worse: higher,
   },
   {
     name: "Memory over the walk",
     unit: " MB",
+    decimals: 1,
     of: (side) => side.ram,
     worse: higher,
   },
@@ -39,9 +44,19 @@ const AXES: readonly Axis[] = [
 
 const STEADY = 5;
 
-const worstOf = (axis: Axis, figure: Figure) =>
-  figure.values.reduce((worst, value) =>
-    axis.worse(value, worst) ? value : worst,
+const shown = (axis: Axis, value: number) => roundedTo(value, axis.decimals);
+
+const medianOf = (axis: Axis, side: Reading) =>
+  shown(axis, axis.of(side).median);
+
+const worstOf = (axis: Axis, side: Reading) =>
+  shown(
+    axis,
+    axis
+      .of(side)
+      .values.reduce((worst, value) =>
+        axis.worse(value, worst) ? value : worst,
+      ),
   );
 
 const spreadOf = (axis: Axis, latest: Reading, previous: Reading | null) =>
@@ -51,13 +66,15 @@ const spreadOf = (axis: Axis, latest: Reading, previous: Reading | null) =>
   );
 
 const row = (axis: Axis, latest: Reading, previous: Reading | null) => {
-  const ours = axis.of(latest);
-  const cells = [axis.name, `${ours.median}${axis.unit}`, `${ours.spread}%`];
+  const cells = [
+    axis.name,
+    `${medianOf(axis, latest)}${axis.unit}`,
+    `${axis.of(latest).spread}%`,
+  ];
   if (previous !== null) {
-    const theirs = axis.of(previous);
     cells.push(
-      `${tenths(worstOf(axis, theirs))}${axis.unit}`,
-      `${theirs.spread}%`,
+      `${worstOf(axis, previous)}${axis.unit}`,
+      `${axis.of(previous).spread}%`,
     );
   }
   return `| ${cells.join(" | ")} |`;
@@ -92,7 +109,7 @@ const verdictOf = (
       line: "No earlier Baseline run left a reading, so nothing here is held to one.",
     };
   const worse = kept.filter((axis) =>
-    axis.worse(axis.of(latest).median, worstOf(axis, axis.of(previous))),
+    axis.worse(medianOf(axis, latest), worstOf(axis, previous)),
   );
   return worse.length > 0
     ? {
@@ -119,7 +136,7 @@ export const judged = (
     report: [
       "### On the Android emulator",
       "",
-      `One emulator, one build of main. The walk is Flashlight over ${latest.iterations} iterations with the app's data cleared before each. This commit's median stands beside the previous Baseline run's worst; the spread is the standard deviation as a share of the mean, and a measure is held only while it stays under the ${STEADY} per cent Reassure calls steady.`,
+      `One emulator, one build of main. The walk is Flashlight over ${latest.iterations} iterations with the app's data cleared before each. This commit's median stands beside the previous Baseline run's worst; the spread is the standard deviation as a share of the mean, and a measure is held only while it stays under the ${STEADY} per cent Reassure calls steady. Both sides are rounded as Flashlight's own report rounds them, the walk to the millisecond and the rest to a tenth, before they are compared.`,
       "",
       ...table(kept, latest, previous),
       ...(unsteady.length === 0
