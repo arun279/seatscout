@@ -177,6 +177,14 @@ export const GATE_CLAIMS = [
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /\*\*An id written as a literal is refused\*\* by a second Grit plugin/,
+    holds: "the rule that refuses a literal id",
+    pattern: "no-literal-ids.grit",
+    paths: [BIOME],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
     says: /\*\*What the emulator reads is measured on main, held to the run before/,
     holds: "the Flashlight reading of the walk",
     pattern: "flashlight test",

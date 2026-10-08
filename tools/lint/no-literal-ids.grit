@@ -1,0 +1,13 @@
+language js
+
+JsxAttribute(name=$name, initializer=$value) as $attribute where {
+  $name <: `id`,
+  $value <: or {
+    contains JsxString(),
+    contains JsStringLiteralExpression(),
+    contains JsTemplateExpression() as $template where {
+      $template <: not contains JsTemplateElement()
+    }
+  },
+  register_diagnostic(span=$attribute, message="This id is written as a literal, so every copy of the component, and on the web every screen still mounted, defines the same id, and a url(#id) can resolve to another copy's definition. Derive it from React's useId.")
+}

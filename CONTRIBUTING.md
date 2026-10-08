@@ -184,6 +184,9 @@ Each of these has one way through and no exemption to grant.
   refuses a string that reads as a colour in any notation. Name the colour in
   `apps/native/src/theme.ts` and read it through the theme, because a token carries both
   appearances and a literal carries one.
+- **An id written as a literal.** `pnpm lint` runs `tools/lint/no-literal-ids.grit` over
+  `apps/native/src` except the tests. Build the id from React's `useId`, because on the web every
+  copy of a component shares one document and a literal id names all of them at once.
 - **A screen that fails the accessibility audit.** After every screen test, before the screen is
   torn down, `apps/native/test/setup.tsx` runs `test/audit.ts` over everything the test rendered.
   No test opts in and none opts out. It refuses, naming the control and the criterion: words under

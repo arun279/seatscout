@@ -776,6 +776,17 @@ the rule asks for.
 and `tools/planted-red/src/colour-literals.test.ts` runs the rule over each: the hex, the
 functional and the named colour are each refused by name, and the token read passes in silence.
 
+**An id written as a literal is refused** by a second Grit plugin, `tools/lint/no-literal-ids.grit`,
+over `apps/native/src` except the tests. On the web build every SVG id lives in one document, so two
+copies of a component, or two screens still mounted, define the same id, and `url(#id)` resolves to
+the first definition in the document, which can sit in a screen hidden beneath. That is how the
+Room's glow vanished while it borrowed a result card's. React's
+[`useId`](https://react.dev/reference/react/useId) gives each copy its own id, and its
+documentation shows one call as the shared prefix of several related ids. The rule refuses an `id`
+written as a string, as a string in braces or as a template with nothing in it, and passes one
+built from `useId`. `tools/planted-red/planted/ids` holds a file for each, and
+`tools/planted-red/src/literal-ids.test.ts` runs the rule over them.
+
 **An import of a package the nearest manifest does not declare is refused** by Biome's
 [`noUndeclaredDependencies`](https://biomejs.dev/linter/rules/no-undeclared-dependencies/). In a
 pnpm workspace such an import resolves from the root's `node_modules` in development and fails

@@ -1,0 +1,1 @@
+export const Glow = () => <Filter id={`glow`} />;

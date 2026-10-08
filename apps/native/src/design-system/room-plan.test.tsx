@@ -1,6 +1,7 @@
 import { REFERENCE, type SeatGroupResult } from "@seatscout/client";
 import { describe, expect, it } from "@jest/globals";
 import { render, screen } from "@testing-library/react-native";
+import { type Host, hosts } from "../../test/audit-tree.js";
 import { houseLights } from "../../test/lights.js";
 import { first, settled } from "../../test/rooms.js";
 import type { Appearance } from "../theme.js";
@@ -21,6 +22,13 @@ const propAt = (testID: string, prop: string) =>
   screen.getByTestId(testID, hidden).props[prop];
 
 const numberAt = (testID: string, prop: string) => Number(propAt(testID, prop));
+
+const lampsIn = (plans: readonly Host[]) =>
+  plans.flatMap((plan) =>
+    hosts(plan)
+      .filter((node) => node.type === "RNSVGFilter")
+      .map((node) => node.props["name"]),
+  );
 
 const frame = () => ({
   across: numberAt("plan", "vbWidth"),
@@ -80,10 +88,27 @@ describe("the room a card draws to scale", () => {
     expect(numberAt("plan", "height")).toBeCloseTo((ACROSS * down) / across, 5);
   });
 
-  it("lights the offered pair with the house lights down", async () => {
+  it("lights the offered pair with the house lights down, by the glow its own plan draws", async () => {
     await drawn("down");
 
-    expect(propAt("pair", "filter")).toBe("lit");
+    expect(lampsIn([screen.getByTestId("plan", hidden)])).toEqual([
+      propAt("pair", "filter"),
+    ]);
+  });
+
+  it("names each card's glow apart, so on the web one card's glow never resolves to another's", async () => {
+    houseLights("down");
+    const result = first(await settled());
+    await render(
+      <>
+        <RoomPlan across={ACROSS} result={result} />
+        <RoomPlan across={ACROSS} result={result} />
+      </>,
+    );
+    const lamps = lampsIn(screen.getAllByTestId("plan", hidden));
+
+    expect(lamps).toHaveLength(2);
+    expect(new Set(lamps).size).toBe(2);
   });
 
   it("lets the lit room carry it by edge instead, because light is information in the dark", async () => {

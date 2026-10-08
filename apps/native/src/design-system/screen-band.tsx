@@ -1,4 +1,4 @@
-import type { ReactElement } from "react";
+import { type ReactElement, useId } from "react";
 import { StyleSheet, useWindowDimensions, View } from "react-native";
 import Svg, {
   Defs,
@@ -62,6 +62,7 @@ const Lit = ({
   readonly colours: Palette;
 }) => {
   const edge = edgeOn(band);
+  const id = useId();
 
   return (
     <Svg
@@ -72,7 +73,7 @@ const Lit = ({
       width={band}
     >
       <Defs>
-        <LinearGradient id="edge" x1="0" x2="1" y1="0" y2="0">
+        <LinearGradient id={`${id}-edge`} x1="0" x2="1" y1="0" y2="0">
           {DRAWN.across.map((stop) => (
             <Stop
               key={stop.at}
@@ -82,7 +83,7 @@ const Lit = ({
             />
           ))}
         </LinearGradient>
-        <LinearGradient id="fall" x1="0" x2="0" y1="0" y2="1">
+        <LinearGradient id={`${id}-fall`} x1="0" x2="0" y1="0" y2="1">
           <Stop
             offset={0}
             stopColor={colours.beam}
@@ -93,7 +94,7 @@ const Lit = ({
         <Filter
           filterUnits="userSpaceOnUse"
           height={DRAWN.fall.reach}
-          id="glow"
+          id={`${id}-glow`}
           width={band}
           x={0}
           y={0}
@@ -114,10 +115,10 @@ const Lit = ({
           />
         </Filter>
       </Defs>
-      <Polygon fill="url(#fall)" points={coneOn(band)} testID="beam" />
+      <Polygon fill={`url(#${id}-fall)`} points={coneOn(band)} testID="beam" />
       <Rect
-        fill="url(#edge)"
-        filter="url(#glow)"
+        fill={`url(#${id}-edge)`}
+        filter={`url(#${id}-glow)`}
         height={DRAWN.edge.height}
         rx={DRAWN.edge.radius}
         testID="screen"
