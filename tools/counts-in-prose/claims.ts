@@ -1,3 +1,4 @@
+import { globSync } from "node:fs";
 import type { Claim } from "./src/judge.ts";
 import {
   alternativesOf,
@@ -11,6 +12,7 @@ import {
 } from "./src/structures.ts";
 
 const BIOME = "biome.json";
+const PLANTED_RED = "tools/planted-red/src";
 const LEFTHOOK = "lefthook.yml";
 const PACKAGES = "packages";
 const ADAPTER = "packages/core/src/source/catalogue.ts";
@@ -86,6 +88,12 @@ const PROFILE_RECORD =
 const SEARCH_RECORD = "docs/adr/0016-a-search-reports-its-coverage.md";
 
 export const CLAIMS: readonly Claim[] = [
+  {
+    document: CONTRIBUTING,
+    says: /The (\w+) test files in `tools\/planted-red\/src`/,
+    about: `the test files under ${PLANTED_RED}`,
+    count: () => globSync(`${PLANTED_RED}/*.test.ts`).length,
+  },
   {
     document: CONTRIBUTING,
     says: /The pre-commit hook runs (\w+) checks over staged files/,

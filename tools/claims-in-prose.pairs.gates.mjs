@@ -65,6 +65,23 @@ export const GATE_CLAIMS = [
   },
   {
     adr: "0012-every-mutant-must-die.md",
+    says: /So a Jest shard runs two at a time\./,
+    holds: "the two Jest runners a shard runs at once",
+    pattern: "JEST_RUNNERS_AT_ONCE = 2",
+    paths: [STRYKER],
+    files: 1,
+  },
+  {
+    adr: "0012-every-mutant-must-die.md",
+    says: /`stryker\.config\.mjs` multiplies the 1\.5 by the number of projects/,
+    holds: "the timeout factor a Jest shard scales by its projects",
+    pattern:
+      "STRYKER_DEFAULT_TIMEOUT_FACTOR * (await projectCountIn(shard.jest))",
+    paths: [STRYKER],
+    files: 1,
+  },
+  {
+    adr: "0012-every-mutant-must-die.md",
     says: /The Vitest runner's `vitest\.related` is turned off for the/,
     holds: "the setting that keeps related mode off a shard's static mutants",
     pattern: "related: false",

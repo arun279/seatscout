@@ -264,8 +264,8 @@ status. Loosening a rule in `biome.json`, `.oxlintrc.json`, `.jscpd.json` or
 fixture moves in the same diff as the rule, where a reviewer sees both. The size-limit
 fixtures are the exception: they carry globs of their own rather than the shipped ones, so
 what they watch is that size-limit still weighs a glob from its configuration's directory and
-still reports a glob that reached nothing. The eight files answer in about seven seconds on two workers,
-inside `pnpm test:unit`.
+still reports a glob that reached nothing. The thirteen test files in `tools/planted-red/src`
+answer in under half a minute on two workers, inside `pnpm test:unit`.
 
 Substitute at `fetch`, never at the Source port. `fakeUpstream` in
 `packages/core/src/testing/fake-upstream.ts` is that seam: it replays the captured corpus by
