@@ -8,6 +8,7 @@ export {
   type Format,
   type Movie,
   nearestInRow,
+  type Place,
   type PositionedSeat,
   REFERENCE,
   type SeatProfile,
@@ -16,13 +17,13 @@ export {
   type TheaterId,
   type TicketingUrl,
 } from "@seatscout/core";
+export type { Auditorium, PlacedGroup } from "./auditorium.js";
 export type { Day } from "./days.js";
 export { SOURCE_LIMITS } from "./limits.js";
 export { isReference } from "./profile.js";
 export type { Programme } from "./programme.js";
 export type { SeatGroupResult } from "./ranking.js";
 export type {
-  Auditorium,
   Coverage,
   Search,
   SearchTerms,

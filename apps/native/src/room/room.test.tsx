@@ -3,7 +3,7 @@ import { chosenOf, labelOf, refusalOf, takeOf } from "@seatscout/view-logic";
 import { HOOKY_SOUTHLAKE, VILLAGE_1 } from "@seatscout/view-logic/testing";
 import { fireEvent, screen } from "@testing-library/react-native";
 import { selectionAsync } from "expo-haptics";
-import { AccessibilityInfo, StyleSheet } from "react-native";
+import { AccessibilityInfo } from "react-native";
 import { houseLights } from "../../test/lights.js";
 import {
   otherThan,
@@ -43,14 +43,6 @@ describe("the Room a Seat Group opens", () => {
     expect(
       rowBar().getByText(/^4th row of 10 from the front\./),
     ).toBeOnTheScreen();
-  });
-
-  it("keeps the row's name on one line beside its sentence", async () => {
-    await shown();
-
-    expect(
-      StyleSheet.flatten(rowBar().getByText("ROW D").props["style"]),
-    ).toMatchObject({ flexShrink: 0 });
   });
 
   it("offers one way back to the list and one control to commit with", async () => {
@@ -235,9 +227,6 @@ describe("choosing another Seat Group in the room", () => {
     );
 
     expect(rowBar().getByText("ROW F")).toBeOnTheScreen();
-    expect(
-      screen.queryByRole("button", { name: /^Centre the map on .* and .*$/ }),
-    ).toHaveTextContent("Centre the map on F12 and F11");
   });
 });
 

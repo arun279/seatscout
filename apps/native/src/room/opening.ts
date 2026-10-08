@@ -1,5 +1,6 @@
 import type {
   Auditorium,
+  PlacedGroup,
   SearchTerms,
   SeatGroupResult,
   SeatScout,
@@ -10,7 +11,7 @@ import { useSession } from "../host/session.js";
 export interface Opened {
   readonly auditorium: Auditorium;
   readonly result: SeatGroupResult;
-  readonly opening: SeatGroupResult;
+  readonly opening: PlacedGroup;
 }
 
 export const useOpenedRoom = (
@@ -33,7 +34,8 @@ export const useOpenedRoom = (
       auditorium,
       result,
       opening:
-        auditorium.offered.find((offered) => offered.key === group) ?? result,
+        auditorium.offered.find((offered) => offered.group.key === group) ??
+        auditorium.recommended,
     };
   }, [group, result, session]);
 };

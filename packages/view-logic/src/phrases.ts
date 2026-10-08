@@ -71,6 +71,16 @@ export const spokenOf = (result: SeatGroupResult): string => {
     .join(" and ");
 };
 
+export interface Agreement {
+  readonly they: string;
+  readonly are: string;
+}
+
+export const agreementOf = (result: SeatGroupResult): Agreement =>
+  result.seats.length === 1
+    ? { they: "It", are: "is" }
+    : { they: "They", are: "are" };
+
 export const partyOf = (party: number): string =>
   party === 1 ? "One seat" : `${capitalised(wordOf(party))} seats together`;
 

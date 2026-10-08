@@ -3,7 +3,7 @@ import {
   heldWhileOfflineOf,
   RE_CHECKED_ON_THE_TAP,
   takeOf,
-  WAITS_FOR_THE_CONNECTION,
+  waitingOf,
 } from "@seatscout/view-logic";
 import type { ReactElement } from "react";
 import { StyleSheet, View } from "react-native";
@@ -61,7 +61,7 @@ export const Dock = ({
             {heldWhileOfflineOf(chosen)}
           </Type>
           <Type set="sentenceSmall" style={styles.centred} tone="silverFaint">
-            {WAITS_FOR_THE_CONNECTION}
+            {waitingOf(chosen)}
           </Type>
         </>
       )}

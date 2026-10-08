@@ -1,4 +1,8 @@
-import type { Auditorium, SeatGroupResult } from "@seatscout/client";
+import type {
+  Auditorium,
+  PlacedGroup,
+  SeatGroupResult,
+} from "@seatscout/client";
 import {
   BACK_TO_THE_LIST,
   centreOnOf,
@@ -12,7 +16,6 @@ import {
   notBookableIn,
   type Place,
   partyOf,
-  placeHolding,
   readingOf,
   refusalOf,
   rowOf,
@@ -120,7 +123,7 @@ const styles = StyleSheet.create({
 export interface RoomProps {
   readonly auditorium: Auditorium;
   readonly result: SeatGroupResult;
-  readonly opening: SeatGroupResult;
+  readonly opening: PlacedGroup;
   readonly today: string;
   readonly clock: Clock;
   readonly online: boolean;
@@ -191,7 +194,7 @@ export const Room = ({
     width: 0,
     height: 0,
   });
-  const [cursor, setCursor] = useState<Place>(auditorium.recommended);
+  const [cursor, setCursor] = useState<Place>(auditorium.recommended.place);
   const [chosen, setChosen] = useState(opening);
   const [notice, setNotice] = useState<string | null>(null);
   const { theater, amenities } = result.showtime.presentation;
@@ -200,17 +203,17 @@ export const Room = ({
 
   useSpoken(notice);
 
-  const choose = felt((group: SeatGroupResult) => {
-    setChosen(group);
-    setNotice(chosenOf(group));
+  const choose = felt((placed: PlacedGroup) => {
+    setChosen(placed);
+    setNotice(chosenOf(placed.group));
   });
 
   const activate = (place: Place) => {
     setCursor(place);
-    const group = groupHolding(auditorium, place.seat);
-    if (group === undefined)
+    const placed = groupHolding(auditorium, place.seat);
+    if (placed === undefined)
       setNotice(refusalOf(place.seat, partySize, accessibleSeating));
-    else choose(group);
+    else choose(placed);
   };
 
   return (
@@ -258,7 +261,7 @@ export const Room = ({
           <SeatMap
             accessibleSeating={accessibleSeating}
             auditorium={auditorium}
-            chosen={chosen}
+            chosen={chosen.group}
             cursor={cursor}
             drawn={drawn}
             frame={frame}
@@ -269,28 +272,28 @@ export const Room = ({
         <TouchableOpacity
           accessibilityRole="button"
           onPress={() => {
-            setCursor(placeHolding(auditorium.map, chosen));
+            setCursor(chosen.place);
             setNotice(null);
           }}
           style={[styles.return, { borderColor: colours.hairline }]}
           testID="return"
         >
           <Type set="sentence" tone="silverDim">
-            {centreOnOf(chosen)}
+            {centreOnOf(chosen.group)}
           </Type>
         </TouchableOpacity>
         <View style={styles.section}>
           <Legend
             accessibleSeating={accessibleSeating}
-            chosen={chosen}
+            chosen={chosen.group}
             consoles={consolesIn(auditorium.map)}
           />
         </View>
-        <Billing group={chosen} />
+        <Billing group={chosen.group} />
         <View style={styles.section}>
           <Alternates
             chosen={chosen}
-            listed={everyGroupIn(auditorium, result)}
+            listed={everyGroupIn(auditorium)}
             offered={auditorium.offered.length}
             onChoose={choose}
             partySize={partySize}
@@ -317,7 +320,7 @@ export const Room = ({
         </View>
       </ScrollView>
       {!online && <Banner />}
-      <Dock chosen={chosen} online={online} onHandOff={onHandOff} />
+      <Dock chosen={chosen.group} online={online} onHandOff={onHandOff} />
     </SafeAreaView>
   );
 };

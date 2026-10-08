@@ -5,6 +5,8 @@ export {
   type AuditoriumPlan,
   auditoriumMap,
   nearestInRow,
+  type Place,
+  placeOf,
   planOf,
   type PositionedSeat,
   type SeatRow,

@@ -1,4 +1,4 @@
-import type { SeatGroupResult } from "@seatscout/client";
+import type { PlacedGroup } from "@seatscout/client";
 import {
   groupsOf,
   labelOf,
@@ -51,11 +51,11 @@ const styles = StyleSheet.create({
 });
 
 export interface AlternatesProps {
-  readonly listed: readonly SeatGroupResult[];
-  readonly chosen: SeatGroupResult;
+  readonly listed: readonly PlacedGroup[];
+  readonly chosen: PlacedGroup;
   readonly offered: number;
   readonly partySize: number;
-  readonly onChoose: (group: SeatGroupResult) => void;
+  readonly onChoose: (placed: PlacedGroup) => void;
 }
 
 export const Alternates = ({
@@ -72,8 +72,9 @@ export const Alternates = ({
       <Type set="ledgerLabel" tone="silverFaint">
         {YOUR_SEATS_IN_THIS_ROOM}
       </Type>
-      {listed.map((group) => {
-        const on = group.key === chosen.key;
+      {listed.map((placed) => {
+        const { group } = placed;
+        const on = group.key === chosen.group.key;
         return (
           <TouchableOpacity
             key={group.key}
@@ -81,7 +82,7 @@ export const Alternates = ({
             accessibilityState={{ checked: on }}
             aria-checked={on}
             hitSlop={SLOP}
-            onPress={() => onChoose(group)}
+            onPress={() => onChoose(placed)}
             style={[
               styles.alternate,
               on

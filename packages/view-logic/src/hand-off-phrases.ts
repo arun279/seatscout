@@ -1,5 +1,12 @@
 import type { SeatGroupResult } from "@seatscout/client";
-import { clockOf, labelOf, lateralOf, partyOf, spokenOf } from "./phrases.js";
+import {
+  agreementOf,
+  clockOf,
+  labelOf,
+  lateralOf,
+  partyOf,
+  spokenOf,
+} from "./phrases.js";
 import { dayOf } from "./when-phrases.js";
 
 export const BACK_TO_THE_LIST = "Back to the list";
@@ -33,7 +40,7 @@ export const takeOf = (chosen: SeatGroupResult): string =>
   `Take ${spokenOf(chosen)}`;
 
 export const checkingOf = (chosen: SeatGroupResult): string =>
-  `Checking ${spokenOf(chosen)} are still there`;
+  `Checking that ${spokenOf(chosen)} ${agreementOf(chosen).are} still there`;
 
 export const openingOf = (chosen: SeatGroupResult): string =>
   `Still there. Opening the ticket site for ${clockOf(chosen.showtime.startsAt)} at ${chosen.showtime.presentation.theater.name}.`;
@@ -51,7 +58,7 @@ export const wentOf = (lost: SeatGroupResult, replaced: boolean): string =>
     : `${spokenOf(lost)} just went, and nothing in this room replaces them.`;
 
 export const offNowOf = (partySize: number): string =>
-  `It may be sold out, off sale, already started or short of ${partyOf(partySize).toLowerCase()}, and the ticket site does not say which.`;
+  `This showing may be sold out, off sale, already started or short of ${partyOf(partySize).toLowerCase()}, and the ticket site does not say which.`;
 
 export const yoursOf = (chosen: SeatGroupResult): string =>
   `${labelOf(chosen)}, yours`;

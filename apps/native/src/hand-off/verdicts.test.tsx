@@ -34,7 +34,7 @@ const RANKED_ALTERNATIVES = [
 ];
 
 const NOTHING_LEFT =
-  "It may be sold out, off sale, already started or short of two seats together, and the ticket site does not say which.";
+  "This showing may be sold out, off sale, already started or short of two seats together, and the ticket site does not say which.";
 
 interface Inks {
   readonly appearance: Appearance;
@@ -113,7 +113,7 @@ describe("the taken verdict", () => {
 
     counter.holdSeatMaps();
     await take("D12 and D11");
-    await screen.findByText("Checking D12 and D11 are still there");
+    await screen.findByText("Checking that D12 and D11 are still there");
 
     expect(screen.queryAllByRole("radio")).toEqual([]);
     expect(screen.queryByText("Next best in this room")).toBeNull();
@@ -208,7 +208,7 @@ describe.each(INKS)("under house lights $appearance", (inks) => {
     await take("E12 and E11");
 
     expect(
-      await screen.findByText("Checking E12 and E11 are still there"),
+      await screen.findByText("Checking that E12 and E11 are still there"),
     ).toBeOnTheScreen();
     counter.releaseSeatMaps();
     await counter.answered();

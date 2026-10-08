@@ -58,7 +58,12 @@ describe("what the hand-off says of the Seat Group it takes", () => {
 
     expect(takeOf(chosen)).toBe("Take E12 and E11");
     expect(yoursOf(chosen)).toBe("E12·E11, yours");
-    expect(checkingOf(chosen)).toBe("Checking E12 and E11 are still there");
+    expect(checkingOf(chosen)).toBe(
+      "Checking that E12 and E11 are still there",
+    );
+    expect(checkingOf({ ...chosen, seats: chosen.seats.slice(0, 1) })).toBe(
+      "Checking that E12 is still there",
+    );
     expect(openingOf(chosen)).toBe(
       "Still there. Opening the ticket site for 9:00a at Hooky Entertainment Addison + SDX.",
     );
@@ -89,10 +94,10 @@ describe("what the hand-off says when the Seat Group is taken", () => {
 
   it("names the party the room could no longer seat when there is none", () => {
     expect(offNowOf(2)).toBe(
-      "It may be sold out, off sale, already started or short of two seats together, and the ticket site does not say which.",
+      "This showing may be sold out, off sale, already started or short of two seats together, and the ticket site does not say which.",
     );
     expect(offNowOf(1)).toBe(
-      "It may be sold out, off sale, already started or short of one seat, and the ticket site does not say which.",
+      "This showing may be sold out, off sale, already started or short of one seat, and the ticket site does not say which.",
     );
   });
 
@@ -111,13 +116,6 @@ describe("what the hand-off says when the ticket site could not be reached", () 
 });
 
 describe("the lines the hand-off says as they are", () => {
-  it("re-checks before the ticket site opens, and says only the ticket site vouches for a reading", () => {
-    expect(RE_CHECKED_THEN_OPENED).toBe(
-      "Tapping re-checks these seats, then opens the ticket site at this showtime. SeatScout never holds seats.",
-    );
-    expect(UNCONFIRMED).toBe("Only the ticket site says so");
-  });
-
   it("leaves none of them empty and says no two alike", () => {
     const said = [
       BACK_TO_THE_LIST,

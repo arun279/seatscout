@@ -166,15 +166,10 @@ describe("what the room calls things", () => {
     );
   });
 
-  it("says what was chosen and what happens to it", () => {
+  it("says what was chosen, and leaves the re-check to the line above the commit control", () => {
     const { result } = openedRoom(VILLAGE_1);
 
-    expect(chosenOf(result)).toBe(
-      "D18 and D17 chosen. They are re-checked before the ticket site opens.",
-    );
-    expect(chosenOf({ ...result, seats: result.seats.slice(0, 1) })).toBe(
-      "D18 chosen. It is re-checked before the ticket site opens.",
-    );
+    expect(chosenOf(result)).toBe("D18 and D17 chosen.");
   });
 
   it("counts the Seat Groups a room holds in the party's own word", () => {

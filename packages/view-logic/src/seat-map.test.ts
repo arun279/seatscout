@@ -14,7 +14,6 @@ import {
   frameOf,
   groupHolding,
   holds,
-  placeHolding,
 } from "./seat-map.js";
 
 let rooms: readonly OpenedRoom[] = [];
@@ -125,50 +124,29 @@ describe("which Seats a person may choose from the map", () => {
     const { auditorium, result } = openedRoom(WEST_PLANO_10);
     const unoffered = auditorium.map.rows
       .flatMap((row) => row.seats)
-      .find((seat) => !auditorium.offered.some((group) => holds(group, seat)));
+      .find(
+        (seat) => !auditorium.offered.some(({ group }) => holds(group, seat)),
+      );
     if (unoffered === undefined) throw new Error("every Seat is offered");
 
     expect(
       result.seats.map(
-        (held) => groupHolding(auditorium, seatNamed(auditorium, held.id))?.key,
+        (held) =>
+          groupHolding(auditorium, seatNamed(auditorium, held.id))?.group.key,
       ),
     ).toEqual(result.seats.map(() => result.key));
     expect(groupHolding(auditorium, unoffered)).toBeUndefined();
   });
 });
 
-describe("where a group sits on the map", () => {
-  it("finds the recommendation where the map does, and another group at its own first Seat", () => {
-    const { auditorium, result } = openedRoom(HOOKY_SOUTHLAKE);
-    const other = auditorium.offered.find((group) => group.key !== result.key);
-    if (other === undefined) throw new Error("the room offers one group");
-    const place = placeHolding(auditorium.map, other);
-
-    expect(placeHolding(auditorium.map, result)).toEqual(
-      auditorium.recommended,
-    );
-    expect(other.seats.map((seat) => seat.id)).toEqual(["F12", "F11"]);
-    expect([place.row.label, place.seat.id]).toEqual(["F", "F12"]);
-  });
-
-  it("refuses a group the room does not hold", () => {
-    const { auditorium } = openedRoom(VILLAGE_1);
-    const { result } = openedRoom(WEST_PLANO_10);
-
-    expect(() => placeHolding(auditorium.map, result)).toThrow(
-      "N14·N13 is not in this room",
-    );
-  });
-});
-
 describe("every Seat Group the phone's room lists", () => {
   it("lists the recommendation first and then every other group the room offers, each once", () => {
     const { auditorium, result } = openedRoom(HOOKY_SOUTHLAKE);
-    const listed = everyGroupIn(auditorium, result);
+    const listed = everyGroupIn(auditorium);
 
     expect(listed).toHaveLength(31);
-    expect(listed.at(0)?.key).toBe(result.key);
-    expect(new Set(listed.map((group) => group.key)).size).toBe(31);
+    expect(listed.at(0)?.group.key).toBe(result.key);
+    expect(new Set(listed.map(({ group }) => group.key)).size).toBe(31);
   });
 });
 

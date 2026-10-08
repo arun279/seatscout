@@ -2,22 +2,19 @@ import {
   type Auditorium,
   type AuditoriumMap,
   nearestInRow,
+  type PlacedGroup,
   type PositionedSeat,
   REFERENCE,
   type SeatGroupResult,
   type SeatRow,
 } from "@seatscout/client";
 import type { Box } from "./gesture.js";
-import { labelOf } from "./phrases.js";
 
 export interface Frame extends Box {
   readonly seatWidth: number;
 }
 
-export interface Place {
-  readonly row: SeatRow;
-  readonly seat: PositionedSeat;
-}
+export type { Place } from "@seatscout/client";
 
 export const frameOf = (auditorium: Auditorium): Frame => {
   const seats = auditorium.map.rows.flatMap((row) => row.seats);
@@ -45,22 +42,8 @@ export const holds = (group: SeatGroupResult, seat: PositionedSeat): boolean =>
 export const groupHolding = (
   auditorium: Auditorium,
   seat: PositionedSeat,
-): SeatGroupResult | undefined =>
-  auditorium.offered.find((offered) => holds(offered, seat));
-
-export const placeHolding = (
-  map: AuditoriumMap,
-  group: SeatGroupResult,
-): Place => {
-  const [place] = map.rows.flatMap((row) =>
-    row.seats
-      .filter((seat) => holds(group, seat))
-      .map((seat) => ({ row, seat })),
-  );
-  if (place === undefined)
-    throw new Error(`${labelOf(group)} is not in this room`);
-  return place;
-};
+): PlacedGroup | undefined =>
+  auditorium.offered.find(({ group }) => holds(group, seat));
 
 export const consolesIn = (map: AuditoriumMap): boolean =>
   map.rows.some((row) => row.gapAfter.includes("pod"));
@@ -96,10 +79,10 @@ export const aimedAt = (result: SeatGroupResult, map: AuditoriumMap): Box => {
   return { x: seat.x, y: seat.y, width: seat.width, height: seat.height };
 };
 
-export const everyGroupIn = (
-  auditorium: Auditorium,
-  result: SeatGroupResult,
-): readonly SeatGroupResult[] => [
-  result,
-  ...auditorium.offered.filter((offered) => offered.key !== result.key),
+export const everyGroupIn = ({
+  recommended,
+  offered,
+}: Auditorium): readonly PlacedGroup[] => [
+  recommended,
+  ...offered.filter(({ group }) => group.key !== recommended.group.key),
 ];

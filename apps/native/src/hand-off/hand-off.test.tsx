@@ -73,7 +73,7 @@ describe("no ticketing URL opens before Re-verification confirms", () => {
     await take("E12 and E11");
 
     expect(await screen.findByRole("status")).toHaveTextContent(
-      "Checking E12 and E11 are still there",
+      "Checking that E12 and E11 are still there",
     );
     expect(screen.getByRole("status").props["accessibilityLiveRegion"]).toBe(
       "polite",
@@ -107,7 +107,7 @@ describe("no ticketing URL opens before Re-verification confirms", () => {
     const counter = await opened();
     counter.holdSeatMaps();
     await take("E12 and E11");
-    await screen.findByText("Checking E12 and E11 are still there");
+    await screen.findByText("Checking that E12 and E11 are still there");
 
     await act(() => screen.unmount());
     counter.releaseSeatMaps();
