@@ -23,19 +23,20 @@ describe("the Auditorium a search opens for a result", () => {
     expect(auditorium.map.rows).toHaveLength(14);
     expect(auditorium.map.seatCount).toBe(303);
     expect(auditorium.map.bookableCount).toBe(266);
-    expect(auditorium.recommended.row.ordinalFromFront).toBe(13);
-    expect(auditorium.recommended.seat.id).toBe("N14");
+    expect(auditorium.recommended.group).toBe(result);
+    expect(auditorium.recommended.place.row.ordinalFromFront).toBe(13);
+    expect(auditorium.recommended.place.seat.id).toBe("N14");
     expect(row?.ordinalFromFront).toBe(8);
     expect(row?.label).toBe("H");
     expect(row?.seats[9]?.id).toBe("H14");
     expect(row?.seats[10]?.id).toBe("H13");
   });
 
-  it("carries the room's ranked Seat Groups as results, the recommended one first", async () => {
+  it("carries the room's ranked Seat Groups as results, the recommended one first, each placed at its first Seat", async () => {
     const { search, result } = await resultOf([WEST_PLANO_10]);
     const auditorium = search.auditorium(result);
 
-    expect(auditorium.offered.map((offered) => offered.key)).toEqual([
+    expect(auditorium.offered.map((offered) => offered.group.key)).toEqual([
       "564362581:N14+N13",
       "564362581:E14+E13",
       "564362581:K21+K20",
@@ -60,8 +61,16 @@ describe("the Auditorium a search opens for a result", () => {
       "564362581:B20+B19",
       "564362581:B7+B6",
     ]);
-    expect(auditorium.offered[0]).toEqual(result);
-    expect(auditorium.offered[1]?.terms).toEqual(result.terms);
+    expect(auditorium.offered[0]).toEqual(auditorium.recommended);
+    expect(auditorium.offered[1]?.group.terms).toEqual(result.terms);
+    expect(
+      auditorium.offered
+        .slice(1, 3)
+        .map(({ place }) => [place.row.label, place.seat.id]),
+    ).toEqual([
+      ["E", "E14"],
+      ["K", "K21"],
+    ]);
   });
 
   it("refuses a Seat Group the room does not hold", async () => {

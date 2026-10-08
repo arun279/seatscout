@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import {
   ALSO_IN_THE_LIST,
-  backToOf,
   CLEAR_OF_THE_FRONT,
+  centreOnOf,
   creditsOf,
   heldWhileOfflineOf,
   legendOf,
@@ -10,7 +10,7 @@ import {
   RE_CHECKED_ON_THE_TAP,
   readingOf,
   rowOf,
-  WAITS_FOR_THE_CONNECTION,
+  waitingOf,
   YOUR_SEATS_IN_THIS_ROOM,
 } from "./auditorium-phrases.js";
 import {
@@ -39,8 +39,10 @@ describe("what the room says beside the map", () => {
     );
   });
 
-  it("names the Seats the return control goes back to, spaced rather than joined", () => {
-    expect(backToOf(openedRoom(VILLAGE_1).result)).toBe("Back to D18 D17");
+  it("says the return control centres the map on the recommended Seats", () => {
+    expect(centreOnOf(openedRoom(VILLAGE_1).result)).toBe(
+      "Centre the map on D18 and D17",
+    );
   });
 
   it("counts the Seats a room will not sell against the Seats it has", () => {
@@ -50,12 +52,22 @@ describe("what the room says beside the map", () => {
   });
 
   it("attests one reading and how old it is", () => {
-    expect(readingOf(1000, 13_000)).toBe("1 source · read 12s ago");
+    expect(readingOf(1000, 13_000)).toBe("Read 12s ago");
   });
 
-  it("says the chosen Seats are still drawn while the connection is gone", () => {
-    expect(heldWhileOfflineOf(openedRoom(VILLAGE_1).result)).toBe(
+  it("says the chosen Seats are still drawn while the connection is gone, and why taking them waits, in the number of Seats chosen", () => {
+    const { result } = openedRoom(VILLAGE_1);
+    const one = { ...result, seats: result.seats.slice(0, 1) };
+
+    expect(heldWhileOfflineOf(result)).toBe(
       "D18 and D17 are here while you are offline.",
+    );
+    expect(waitingOf(result)).toBe(
+      "They are re-checked before the ticket site opens, so that waits for the connection.",
+    );
+    expect(heldWhileOfflineOf(one)).toBe("D18 is here while you are offline.");
+    expect(waitingOf(one)).toBe(
+      "It is re-checked before the ticket site opens, so that waits for the connection.",
     );
   });
 });
@@ -143,7 +155,6 @@ describe("the lines a screen reader says in the room", () => {
       YOUR_SEATS_IN_THIS_ROOM,
       CLEAR_OF_THE_FRONT,
       RE_CHECKED_ON_THE_TAP,
-      WAITS_FOR_THE_CONNECTION,
     ];
 
     expect(said.filter((line) => line.trim().length === 0)).toEqual([]);

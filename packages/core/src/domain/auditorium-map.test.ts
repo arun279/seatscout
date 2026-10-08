@@ -120,7 +120,7 @@ describe("the Auditorium map, its rows front to back and its Seats left to right
 
     fc.assert(
       fc.property(auditoriums, (seats) => {
-        const map = auditoriumMap(seats, []);
+        const map = auditoriumMap(seats);
         const widths = new Set(map.rows.map((row) => row.seats.length));
 
         if (map.rows.length === 1) shapes.oneRow += 1;
@@ -149,7 +149,7 @@ describe("the Auditorium map, its rows front to back and its Seats left to right
   it("numbers the rows from one at the front, with no gaps", () => {
     fc.assert(
       fc.property(auditoriums, (seats) => {
-        const map = auditoriumMap(seats, []);
+        const map = auditoriumMap(seats);
         const drawnAt = ascending(seats.map((seat) => seat.y));
 
         expect(map.rows.map((row) => row.ordinalFromFront)).toEqual(
@@ -177,7 +177,7 @@ describe("the Auditorium map, its rows front to back and its Seats left to right
 
     fc.assert(
       fc.property(auditoriums, (seats) => {
-        const map = auditoriumMap(seats, []);
+        const map = auditoriumMap(seats);
 
         for (const row of map.rows)
           if (
@@ -203,7 +203,7 @@ describe("the Auditorium map, its rows front to back and its Seats left to right
   it("answers a Seat's own lateral with that Seat", () => {
     fc.assert(
       fc.property(auditoriums, (seats) => {
-        const map = auditoriumMap(seats, []);
+        const map = auditoriumMap(seats);
 
         expect(
           map.rows.map((row) =>
@@ -219,7 +219,6 @@ describe("the Auditorium map, its rows front to back and its Seats left to right
     const space = { away: 10, width: 10, accessible: false, bookable: true };
     const map = auditoriumMap(
       drawn([{ gap: 1, origin: 0, spaces: [space, space, space] }]),
-      [],
     );
 
     expect(map.rows.map((row) => lateralsOf(row.seats))).toEqual([[-1, 0, 1]]);
@@ -233,7 +232,7 @@ describe("the Auditorium map, its rows front to back and its Seats left to right
     fc.assert(
       fc.property(auditoriums, fc.func(fc.string()), (seats, label) => {
         const placesOf = (auditorium: readonly Seat[]) =>
-          auditoriumMap(auditorium, []).rows.map((row) =>
+          auditoriumMap(auditorium).rows.map((row) =>
             row.seats.map((seat) => `${seat.x}|${seat.y}`),
           );
 
@@ -250,7 +249,7 @@ describe("the Auditorium map, its rows front to back and its Seats left to right
 
     fc.assert(
       fc.property(auditoriums, (seats) => {
-        const rows = auditoriumMap(seats, []).rows;
+        const rows = auditoriumMap(seats).rows;
 
         for (const row of rows)
           if (row.seats.every(accessibleLabel)) shapes.accessible += 1;
@@ -288,7 +287,6 @@ describe("the Auditorium map, its rows front to back and its Seats left to right
           spaces: [seatOf(0, 20), seatOf(30, 40), seatOf(40, 2)],
         },
       ]),
-      [],
     );
 
     expect(map.rows.map((row) => row.seats.map((seat) => seat.x))).toEqual([

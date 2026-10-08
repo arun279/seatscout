@@ -1,9 +1,9 @@
 import type { SeatGroupResult } from "@seatscout/client";
 import {
   heldWhileOfflineOf,
-  labelOf,
   RE_CHECKED_ON_THE_TAP,
-  WAITS_FOR_THE_CONNECTION,
+  takeOf,
+  waitingOf,
 } from "@seatscout/view-logic";
 import type { ReactElement } from "react";
 import { StyleSheet, View } from "react-native";
@@ -53,7 +53,7 @@ export const Dock = ({
           <Type set="sentenceSmall" style={styles.centred} tone="silverDim">
             {RE_CHECKED_ON_THE_TAP}
           </Type>
-          <Velvet label={labelOf(chosen)} onPress={() => onHandOff(chosen)} />
+          <Velvet label={takeOf(chosen)} onPress={() => onHandOff(chosen)} />
         </>
       ) : (
         <>
@@ -61,7 +61,7 @@ export const Dock = ({
             {heldWhileOfflineOf(chosen)}
           </Type>
           <Type set="sentenceSmall" style={styles.centred} tone="silverFaint">
-            {WAITS_FOR_THE_CONNECTION}
+            {waitingOf(chosen)}
           </Type>
         </>
       )}

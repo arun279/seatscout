@@ -6,7 +6,7 @@ import {
   lateralsOf,
   seatsOf,
 } from "./auditorium-map.fixtures.js";
-import { auditoriumMap } from "./auditorium-map.js";
+import { auditoriumMap, placeOf } from "./auditorium-map.js";
 import { seatGroupsIn } from "./seat-group.js";
 
 const AUDITORIUM_WHOSE_ROW_INDEX_SKIPS_TWO = "562212808";
@@ -17,7 +17,7 @@ describe("the Auditorium map over the captured corpus", () => {
   it("reads every captured Auditorium into contiguous rows of ordered Seats", () => {
     const captured = capturedSeatMaps().map((body) => ({
       seats: seatsOf(body),
-      map: auditoriumMap(seatsOf(body), []),
+      map: auditoriumMap(seatsOf(body)),
     }));
 
     expect(captured).toHaveLength(42);
@@ -60,7 +60,7 @@ describe("the Auditorium map over the captured corpus", () => {
 
   it("numbers fourteen rows one to fourteen where the payload's own row index runs to sixteen", () => {
     const body = capturedSeatMap(AUDITORIUM_WHOSE_ROW_INDEX_SKIPS_TWO);
-    const map = auditoriumMap(seatsOf(body), []);
+    const map = auditoriumMap(seatsOf(body));
 
     expect(Math.max(...body.seats.map((seat) => seat.row))).toBe(16);
     expect(map.rows.map((row) => row.ordinalFromFront)).toEqual([
@@ -86,7 +86,7 @@ describe("the Auditorium map over the captured corpus", () => {
 
   it("leaves the six captured rows that agree on no prefix unlabelled", () => {
     const rows = capturedSeatMaps().flatMap(
-      (body) => auditoriumMap(seatsOf(body), []).rows,
+      (body) => auditoriumMap(seatsOf(body)).rows,
     );
     const unlabelled = rows.filter((row) => row.label === null);
 
@@ -111,7 +111,7 @@ describe("the Auditorium map over the captured corpus", () => {
 
   it("tells every row of a captured Auditorium apart by its label", () => {
     const labelled = capturedSeatMaps().map((body) =>
-      auditoriumMap(seatsOf(body), [])
+      auditoriumMap(seatsOf(body))
         .rows.map((row) => row.label)
         .filter((label) => label !== null),
     );
@@ -125,11 +125,9 @@ describe("the Auditorium map over the captured corpus", () => {
   it("labels an Auditorium that skips a row letter, and one numbered without letters at all", () => {
     const skipping = auditoriumMap(
       seatsOf(capturedSeatMap(AUDITORIUM_WHOSE_ROW_LETTERS_SKIP_ONE)),
-      [],
     );
     const withoutLetters = auditoriumMap(
       seatsOf(capturedSeatMap(AUDITORIUM_NUMBERED_WITHOUT_LETTERS)),
-      [],
     );
 
     expect(skipping.rows.map((row) => row.label)).toEqual([
@@ -161,7 +159,7 @@ describe("the Auditorium map over the captured corpus", () => {
 
   it("records the gap after each Seat, in the three bands the corpus draws", () => {
     const captured = capturedSeatMaps().map((body) =>
-      auditoriumMap(seatsOf(body), []),
+      auditoriumMap(seatsOf(body)),
     );
     const gaps = captured.flatMap((map) =>
       map.rows.flatMap((row) => row.gapAfter),
@@ -187,8 +185,7 @@ describe("the Auditorium map over the captured corpus", () => {
       return seatGroupsIn(seats, { partySize: 3, accessibleSeating: false })
         .slice(0, 1)
         .flatMap((group) => {
-          const map = auditoriumMap(seats, group.seats);
-          const recommended = map.recommended;
+          const recommended = placeOf(auditoriumMap(seats), group.seats);
           return recommended === null
             ? []
             : [
@@ -216,23 +213,21 @@ describe("the Auditorium map over the captured corpus", () => {
     expect(new Set(located.map((entry) => entry.row)).size).toBeGreaterThan(1);
   });
 
-  it("recommends nothing when the Seat Group is not in this Auditorium", () => {
+  it("places nothing when the Seat Group is not in this Auditorium", () => {
     const map = auditoriumMap(
       seatsOf(capturedSeatMap(AUDITORIUM_WHOSE_ROW_LETTERS_SKIP_ONE)),
-      [],
     );
 
     expect(map.rows.length).toBeGreaterThan(1);
-    expect(map.recommended).toBeNull();
+    expect(placeOf(map, [])).toBeNull();
   });
 
   it("counts the bookable Seats of the Auditorium and of every row", () => {
     const captured = capturedSeatMaps().map((body) =>
-      auditoriumMap(seatsOf(body), []),
+      auditoriumMap(seatsOf(body)),
     );
     const skipping = auditoriumMap(
       seatsOf(capturedSeatMap(AUDITORIUM_WHOSE_ROW_INDEX_SKIPS_TWO)),
-      [],
     );
 
     expect(skipping.seatCount).toBe(303);

@@ -124,12 +124,15 @@ describe("which Seats a person may choose from the map", () => {
     const { auditorium, result } = openedRoom(WEST_PLANO_10);
     const unoffered = auditorium.map.rows
       .flatMap((row) => row.seats)
-      .find((seat) => !auditorium.offered.some((group) => holds(group, seat)));
+      .find(
+        (seat) => !auditorium.offered.some(({ group }) => holds(group, seat)),
+      );
     if (unoffered === undefined) throw new Error("every Seat is offered");
 
     expect(
       result.seats.map(
-        (held) => groupHolding(auditorium, seatNamed(auditorium, held.id))?.key,
+        (held) =>
+          groupHolding(auditorium, seatNamed(auditorium, held.id))?.group.key,
       ),
     ).toEqual(result.seats.map(() => result.key));
     expect(groupHolding(auditorium, unoffered)).toBeUndefined();
@@ -139,11 +142,11 @@ describe("which Seats a person may choose from the map", () => {
 describe("every Seat Group the phone's room lists", () => {
   it("lists the recommendation first and then every other group the room offers, each once", () => {
     const { auditorium, result } = openedRoom(HOOKY_SOUTHLAKE);
-    const listed = everyGroupIn(auditorium, result);
+    const listed = everyGroupIn(auditorium);
 
     expect(listed).toHaveLength(31);
-    expect(listed.at(0)?.key).toBe(result.key);
-    expect(new Set(listed.map((group) => group.key)).size).toBe(31);
+    expect(listed.at(0)?.group.key).toBe(result.key);
+    expect(new Set(listed.map(({ group }) => group.key)).size).toBe(31);
   });
 });
 

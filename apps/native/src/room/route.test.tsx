@@ -121,8 +121,8 @@ describe("the Room a deep link opens", () => {
     const [room] = await openedRooms(undefined, [VILLAGE_1]);
     if (room === undefined) throw new Error("the room was never opened");
     const other = room.auditorium.offered.find(
-      (group) => group.key !== room.result.key,
-    );
+      ({ group }) => group.key !== room.result.key,
+    )?.group;
     if (other === undefined) throw new Error("the room offers one group");
 
     await settled(opened(roomLink(VILLAGE_1.showtime, other.key)));
@@ -144,8 +144,8 @@ describe("the Room a deep link opens", () => {
     const [room] = await openedRooms(undefined, [VILLAGE_1]);
     if (room === undefined) throw new Error("the room was never opened");
     const other = room.auditorium.offered.find(
-      (group) => group.key !== room.result.key,
-    );
+      ({ group }) => group.key !== room.result.key,
+    )?.group;
     if (other === undefined) throw new Error("the room offers one group");
     const app = opened(roomLink(VILLAGE_1.showtime, other.key));
     await settled(app);

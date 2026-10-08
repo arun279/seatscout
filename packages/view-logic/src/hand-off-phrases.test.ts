@@ -4,13 +4,10 @@ import {
   BACK_TO_THE_LIST,
   CHECK_AGAIN,
   checkingOf,
-  handedOffOf,
   judgedOf,
-  movedOnOf,
+  MOVED_ON,
   NEXT_BEST,
   NEXT_BEST_MARK,
-  NOTHING_WAS_HELD,
-  NOTHING_WAS_READ,
   OFFLINE_AT_HAND_OFF,
   offNowOf,
   openingOf,
@@ -19,6 +16,7 @@ import {
   recheckedOf,
   showingOf,
   takeOf,
+  triedOf,
   UNCONFIRMED,
   uncheckedOf,
   UNREACHABLE,
@@ -60,16 +58,21 @@ describe("what the hand-off says of the Seat Group it takes", () => {
 
     expect(takeOf(chosen)).toBe("Take E12 and E11");
     expect(yoursOf(chosen)).toBe("E12·E11, yours");
-    expect(checkingOf(chosen)).toBe("Checking E12 and E11 with the Source");
+    expect(checkingOf(chosen)).toBe(
+      "Checking that E12 and E11 are still there",
+    );
+    expect(checkingOf({ ...chosen, seats: chosen.seats.slice(0, 1) })).toBe(
+      "Checking that E12 is still there",
+    );
     expect(openingOf(chosen)).toBe(
-      "Still there. Opening the ticketing page for 9:00a at Hooky Entertainment Addison + SDX.",
+      "Still there. Opening the ticket site for 9:00a at Hooky Entertainment Addison + SDX.",
     );
   });
 
   it("dates each verdict's provenance by the age it is given", () => {
-    expect(judgedOf("12s")).toBe("1 source · 12s ago · judged bookable");
-    expect(recheckedOf("3s")).toBe("Re-checked at hand-off · 3s ago");
-    expect(handedOffOf("1m 04s")).toBe("Hand-off · 1m 04s ago");
+    expect(judgedOf("12s")).toBe("Bookable when read 12s ago");
+    expect(recheckedOf("3s")).toBe("Checked again 3s ago");
+    expect(triedOf("1m 04s")).toBe("Tried 1m 04s ago");
   });
 });
 
@@ -83,15 +86,18 @@ describe("what the hand-off says when the Seat Group is taken", () => {
     );
   });
 
-  it("says the room moved on when there is a next best", () => {
-    expect(movedOnOf("4s")).toBe(
-      "The Source answered 4s ago: at least one of them went while you were deciding. seatscout never holds seats, so the room has moved on. The plan is redrawn.",
+  it("says why seats can go when there is a next best", () => {
+    expect(MOVED_ON).toBe(
+      "SeatScout never holds seats, so others can take them while you decide.",
     );
   });
 
   it("names the party the room could no longer seat when there is none", () => {
-    expect(offNowOf("9s", 2)).toBe(
-      "The Source answered 9s ago and offered nothing else in this room for two seats together. This screening is no longer on offer to you: sold out, no longer offered by the listing, already begun, off sale, without a seat map, or simply short of two seats together, and the Source does not say which. seatscout never holds seats.",
+    expect(offNowOf(2)).toBe(
+      "This showing may be sold out, off sale, already started or short of two seats together, and the ticket site does not say which.",
+    );
+    expect(offNowOf(1)).toBe(
+      "This showing may be sold out, off sale, already started or short of one seat, and the ticket site does not say which.",
     );
   });
 
@@ -101,10 +107,10 @@ describe("what the hand-off says when the Seat Group is taken", () => {
   });
 });
 
-describe("what the hand-off says when the Source could not be reached", () => {
-  it("says nothing was checked and no checkout opens on it", () => {
+describe("what the hand-off says when the ticket site could not be reached", () => {
+  it("says the seats may still be there and the ticket site opens only after a check", () => {
     expect(uncheckedOf(at(HOOKY_ADDISON_9AM))).toBe(
-      "Nothing was checked, so E12 and E11 may well still be there. A checkout never opens on an answer that could not be judged.",
+      "E12 and E11 may still be there. SeatScout only opens the ticket site after a check.",
     );
   });
 });
@@ -116,8 +122,7 @@ describe("the lines the hand-off says as they are", () => {
       RE_CHECKED_THEN_OPENED,
       OFFLINE_AT_HAND_OFF,
       UNCONFIRMED,
-      NOTHING_WAS_HELD,
-      NOTHING_WAS_READ,
+      MOVED_ON,
       NEXT_BEST,
       NEXT_BEST_MARK,
       UNREACHABLE,

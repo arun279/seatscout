@@ -7,6 +7,7 @@ import type {
 } from "@seatscout/client";
 import {
   ageOf,
+  agreementOf,
   capitalised,
   clockOf,
   labelOf,
@@ -135,7 +136,7 @@ export const refusalOf = (
 };
 
 export const chosenOf = (result: SeatGroupResult): string =>
-  `${spokenOf(result)} chosen. ${result.seats.length === 1 ? "It is" : "They are"} re-checked when you continue.`;
+  `${spokenOf(result)} chosen.`;
 
 export const groupsOf = (count: number, partySize: number): string => {
   const [one, many] = groupWordsOf(partySize);
@@ -154,20 +155,22 @@ export const CLEAR_OF_THE_FRONT = "Clear of the front rows and the walls";
 export const RE_CHECKED_ON_THE_TAP =
   "Availability is re-checked the instant you tap. SeatScout never holds seats.";
 
-export const WAITS_FOR_THE_CONNECTION =
-  "Continuing re-checks them with the Source, so it waits for the connection.";
+export const waitingOf = (chosen: SeatGroupResult): string => {
+  const { they, are } = agreementOf(chosen);
+  return `${they} ${are} re-checked before the ticket site opens, so that waits for the connection.`;
+};
 
-export const backToOf = (result: SeatGroupResult): string =>
-  `Back to ${result.seats.map((seat) => seat.id).join(" ")}`;
+export const centreOnOf = (result: SeatGroupResult): string =>
+  `Centre the map on ${spokenOf(result)}`;
 
 export const heldWhileOfflineOf = (chosen: SeatGroupResult): string =>
-  `${spokenOf(chosen)} are here while you are offline.`;
+  `${spokenOf(chosen)} ${agreementOf(chosen).are} here while you are offline.`;
 
 export const notBookableIn = (map: AuditoriumMap): string =>
   `${map.seatCount - map.bookableCount} of ${map.seatCount} not bookable`;
 
 export const readingOf = (fetchedAt: number, now: number): string =>
-  `1 source · read ${ageOf(fetchedAt, now)} ago`;
+  `Read ${ageOf(fetchedAt, now)} ago`;
 
 export type LegendMark =
   | "lit"

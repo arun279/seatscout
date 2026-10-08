@@ -61,7 +61,7 @@ describe("the words a card uses", () => {
     expect(lateralOf(6.5)).toBe("six and a half seats right of centre");
     expect(lateralOf(9.5)).toBe("nine and a half seats right of centre");
     expect(lateralOf(10)).toBe("10 seats right of centre");
-    expect(lateralOf(-10.3)).toBe("10½ seats left of centre");
+    expect(lateralOf(-10.3)).toBe("10 and a half seats left of centre");
     expect(lateralOf(-12.2)).toBe("12 seats left of centre");
   });
 
