@@ -113,11 +113,13 @@ relabels every generated room with a generated function and holds the order unch
 
 The map answers with the Auditorium's Rows front to back, each holding its Seats left to
 right, its own number, its label, how many of its Seats are bookable and what sits in each gap
-along it. It also says where the recommended Seat Group is: the Row that holds it and the first of its
-Seats along that Row, and null where the Seat Group is not in this Auditorium at all. It says
+along it. `placeOf` says where a Seat Group is in that map: the Row that holds it and the first of
+its Seats along that Row, and null where the Seat Group is not in this Auditorium at all. It says
 so with the Row and the Seat themselves rather than with places in `rows` and `seats`, because a
 place would need either an unchecked index or a branch nothing can reach, and a branch nothing
-can reach is a mutant nothing kills.
+can reach is a mutant nothing kills. The search places every Seat Group a room offers when it
+opens that room, and refuses one the room does not hold there, so a screen always holds a Seat
+Group together with its place and never looks one up.
 
 The gap after each Seat is the Seat Group bands, not a second opinion. `gapBetween` is shared
 with `seat-group.ts`, so a console is a console in both, and it measures centre to centre so
