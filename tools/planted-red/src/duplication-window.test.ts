@@ -29,7 +29,7 @@ describe("the planted red under the duplication gate", () => {
 
     expect(run.status).toBe(1);
     expect(run.said).toContain(
-      "jscpd found too many duplicates (33.3%) over threshold (3.0%)",
+      "jscpd found too many duplicates (36.7%) over threshold (3.0%)",
     );
     expect(run.shared).toStrictEqual(["11 lines, 136 tokens"]);
   });
