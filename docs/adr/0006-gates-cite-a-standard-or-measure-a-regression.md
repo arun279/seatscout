@@ -580,7 +580,7 @@ moved to the versions it named. Expo documents `expo.install.exclude` as
 the way to hold a package back from that check, and `apps/native/package.json` carries no such
 list, because a package in it is a package the SDK is no longer asked about. The check this
 workspace expected to fight, the one that refuses an override breaking a critical dependency
-chain, passes over all six overrides in `pnpm-workspace.yaml`.
+chain, passes over all eight overrides in `pnpm-workspace.yaml`.
 
 Neither is on a hook, and the reason is not only what they cost. Measured over this workspace,
 `expo install --check` answers in 1.7 seconds and `expo-doctor` takes 35, so the first is cheap
