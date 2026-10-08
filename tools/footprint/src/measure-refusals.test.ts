@@ -93,7 +93,7 @@ describe("what size-limit reported", () => {
     });
 
     expect(() => measuring(run)("origin/main", "HEAD", "main")).toThrow(
-      "size-limit weighed different bundles on main and on this change",
+      "size-limit weighed different bundles on main and on this change: app for iOS, app for Android against app for iOS",
     );
   });
 });

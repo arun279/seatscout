@@ -187,6 +187,19 @@ describe("the bundle gate against main", () => {
     expect(reportOn({ bundles: GREW }).passed).toBe(false);
   });
 
+  it("names every bundle that grew", () => {
+    const { markdown } = reportOn({
+      bundles: [
+        { name: "app for iOS", main: 1024, change: 2048 },
+        { name: "app for Android", main: 90, change: 91 },
+      ],
+    });
+
+    expect(markdown).toContain(
+      "Bigger than on main: app for iOS, app for Android. Make it smaller",
+    );
+  });
+
   it("fails a bundle that grew by a single byte, since no tolerance is set", () => {
     const report = reportOn({
       bundles: [{ name: "app for iOS", main: 15, change: 16 }],
