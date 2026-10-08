@@ -44,13 +44,19 @@ const AXES: readonly Axis[] = [
 
 const STEADY = 5;
 
-const shown = (axis: Axis, value: number) => roundedTo(value, axis.decimals);
+const PLACES = AXES.map(
+  (axis) =>
+    `${axis.unit.trim()} to ${axis.decimals} decimal${axis.decimals === 1 ? "" : "s"}`,
+).join(", ");
 
-const medianOf = (axis: Axis, side: Reading) =>
-  shown(axis, axis.of(side).median);
+const atPrecision = (axis: Axis, value: number) =>
+  roundedTo(value, axis.decimals);
 
-const worstOf = (axis: Axis, side: Reading) =>
-  shown(
+const medianAtPrecision = (axis: Axis, side: Reading) =>
+  atPrecision(axis, axis.of(side).median);
+
+const worstAtPrecision = (axis: Axis, side: Reading) =>
+  atPrecision(
     axis,
     axis
       .of(side)
@@ -68,12 +74,12 @@ const spreadOf = (axis: Axis, latest: Reading, previous: Reading | null) =>
 const row = (axis: Axis, latest: Reading, previous: Reading | null) => {
   const cells = [
     axis.name,
-    `${medianOf(axis, latest)}${axis.unit}`,
+    `${medianAtPrecision(axis, latest)}${axis.unit}`,
     `${axis.of(latest).spread}%`,
   ];
   if (previous !== null) {
     cells.push(
-      `${worstOf(axis, previous)}${axis.unit}`,
+      `${worstAtPrecision(axis, previous)}${axis.unit}`,
       `${axis.of(previous).spread}%`,
     );
   }
@@ -109,7 +115,10 @@ const verdictOf = (
       line: "No earlier Baseline run left a reading, so nothing here is held to one.",
     };
   const worse = kept.filter((axis) =>
-    axis.worse(medianOf(axis, latest), worstOf(axis, previous)),
+    axis.worse(
+      medianAtPrecision(axis, latest),
+      worstAtPrecision(axis, previous),
+    ),
   );
   return worse.length > 0
     ? {
@@ -136,7 +145,7 @@ export const judged = (
     report: [
       "### On the Android emulator",
       "",
-      `One emulator, one build of main. The walk is Flashlight over ${latest.iterations} iterations with the app's data cleared before each. This commit's median stands beside the previous Baseline run's worst; the spread is the standard deviation as a share of the mean, and a measure is held only while it stays under the ${STEADY} per cent Reassure calls steady. Both sides are rounded as Flashlight's own report rounds them, the walk to the millisecond and the rest to a tenth, before they are compared.`,
+      `One emulator, one build of main. The walk is Flashlight over ${latest.iterations} iterations with the app's data cleared before each. This commit's median stands beside the previous Baseline run's worst; the spread is the standard deviation as a share of the mean, and a measure is held only while it stays under the ${STEADY} per cent Reassure calls steady. Both sides are rounded before they are compared, to the places Flashlight's report gives its averages: ${PLACES}.`,
       "",
       ...table(kept, latest, previous),
       ...(unsteady.length === 0

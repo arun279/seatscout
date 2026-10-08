@@ -690,23 +690,30 @@ and its iOS frame rate needs a native module Expo Go does not bundle.
 
 **What the emulator reads is measured on main, held to the run before, one measure at a time,
 while it is steady.** The Baseline workflow's `device` job builds main's app on every push to
-main, and not on the nightly schedule, which would read the same commit again. It walks the
+main, and not on the nightly schedule, which would read the same commit again. A push never
+cancels a reading in progress: merges land faster than a reading takes, and cancelling let five
+merges in a row go unread. GitHub lets the running reading finish and keeps only the newest one
+waiting ([concurrency](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency)),
+so every reading that starts finishes and the queue never grows past one. Runs started by hand
+wait in a group of their own, so a push cannot replace one either. It walks the
 journey and has Flashlight read the walk for its default ten iterations with the app's data
 cleared before each: the walk's own time, frame rate, CPU and memory. A measure is worse when
 this commit's median is worse than the worst iteration of the reading the previous Baseline run
-left. Both are first rounded as Flashlight's own report rounds them (`getAverageMetrics` in its
-reporter's
-[`Report.ts`](https://github.com/bamlab/flashlight/blob/v0.18.0/packages/core/reporter/src/reporting/Report.ts)):
-the walk to the millisecond, and frame rate, CPU and memory to a tenth. A difference finer than
-the instrument reports is not called worse; run 37163610363 had called 58.8 FPS worse than 58.8.
+left. Flashlight's report has no median. It shows the average walk to the millisecond and the
+average frame rate, CPU and memory to a tenth (`getAverageMetrics` in its reporter's
+[`Report.ts`](https://github.com/bamlab/flashlight/blob/v0.18.0/packages/core/reporter/src/reporting/Report.ts)).
+The judge rounds this commit's median and the previous run's worst to those same places before it
+compares them, so a difference finer than the instrument shows its averages at is not called
+worse. Before that, a median of 58.8 FPS was called worse than a worst iteration of 58.845 FPS.
 The previous reading is the newest `device-reading` artifact a run on main left, and a first
 run, with none to collect, is held to nothing. A run keeps its reading only when it held, so a
 worse reading never becomes the one the next run is held to by accident. A cost a change was
 meant to carry, such as a new screen in the walk, is accepted by hand: run Baseline on main from
-the Actions tab with `accept` set to the reason. That run keeps its reading whatever it read,
-and records who accepted it, when and why in the report it keeps and on the open `device-red`
-issue, which it then closes. A run off main may not accept, since no later run is held to its
-reading. Otherwise a reading stays the reference for the 14 days an artifact is kept; after
+the Actions tab with `accept` set to the reason. That run keeps its reading whatever it read. It
+records who started it, when and why in the report it keeps, and on an issue labelled
+`device-red`, which outlives the 14-day artifact: the open one, which it then closes, or a new one
+it files closed. A reason made only of spaces accepts nothing. A run may accept only on main's
+newest commit, so re-running an old accept run cannot bring back a stale reading. Otherwise a reading stays the reference for the 14 days an artifact is kept; after
 that the next reading is held to nothing and becomes the reference. Each measure is held only
 while its spread on both readings, the coefficient of variation that Reassure's own glossary
 names for how steady a run is
