@@ -38,7 +38,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set up pnpm and Node.js
-        uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
+        uses: pnpm/setup@fbda4c85fc2e1e08721cd8763afea8f48d60f024 # v3.0.0
         with:
           runtime: node@24.20.0
           cache: true
@@ -47,7 +47,7 @@ jobs:
       - name: Write the Android project the app's configuration describes
         run: pnpm --filter @seatscout/native exec expo prebuild --platform android --no-install
       - name: Set up Gradle, writing its caches from main for every pull request to read
-        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
         with:
           cache-provider: basic
       - name: Build main's release app for the emulator's processor, with the Source answered from the corpus
