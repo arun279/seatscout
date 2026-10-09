@@ -8,7 +8,7 @@ import { useTheme } from "../theme.js";
 
 const styles = StyleSheet.create({ screen: { flex: 1 } });
 
-export const Reading = ({
+export const Unopened = ({
   session,
   today,
   onLedger,
@@ -20,7 +20,10 @@ export const Reading = ({
   const { colours } = useTheme();
 
   return (
-    <SafeAreaView style={[styles.screen, { backgroundColor: colours.house }]}>
+    <SafeAreaView
+      style={[styles.screen, { backgroundColor: colours.house }]}
+      testID="stage"
+    >
       <ScreenBand />
       <Strip
         onLedger={onLedger}

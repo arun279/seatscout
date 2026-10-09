@@ -1,4 +1,4 @@
-import { describe, expect, it, jest } from "@jest/globals";
+import { afterEach, describe, expect, it, jest } from "@jest/globals";
 import { createSeatScout, REFERENCE } from "@seatscout/client";
 import { fakeUpstream } from "@seatscout/client/testing";
 import { BACK_TO_THE_LIST, labelOf, takeOf } from "@seatscout/view-logic";
@@ -9,6 +9,8 @@ import {
 } from "@seatscout/view-logic/testing";
 import { act, fireEvent, screen } from "@testing-library/react-native";
 import { renderRouter } from "expo-router/testing-library";
+import { StyleSheet } from "react-native";
+import { houseLights } from "../../test/lights.js";
 import Layout, { unstable_settings } from "../app/_layout.js";
 import Ask from "../app/ask.js";
 import HandOffRoute from "../app/hand-off.js";
@@ -16,8 +18,10 @@ import Index from "../app/index.js";
 import LedgerRoute from "../app/ledger.js";
 import RoomRoute from "../app/room.js";
 import { seatProfile } from "../host/source.js";
+import { themeFor } from "../theme.js";
 import { listLink, roomLink } from "./room.fixtures.js";
 
+jest.mock("react-native/Libraries/Utilities/useColorScheme");
 jest.mock("expo-font", () => ({ useFonts: () => [true, null] }));
 jest.mock("expo-network", () => ({
   useNetworkState: () => ({ isInternetReachable: true }),
@@ -75,13 +79,12 @@ const settled = async (app: PromiseLike<unknown>) => {
   await screen.findByText(THEATER);
 };
 
-const holdingSeatMaps = () => {
-  mockHolding = true;
-  return () => {
-    mockHolding = false;
-    for (const go of mockHeld.splice(0)) go();
-  };
+const release = () => {
+  mockHolding = false;
+  for (const go of mockHeld.splice(0)) go();
 };
+
+afterEach(release);
 
 const checkedCount = () =>
   screen
@@ -176,13 +179,18 @@ describe("the Room a deep link opens", () => {
 
 describe("the Room a deep link opens before its search has settled", () => {
   it("shows the line the list shows while the search reads, then the room", async () => {
-    const release = holdingSeatMaps();
+    mockHolding = true;
+    houseLights("up");
     await opened(roomLink(VILLAGE_1.showtime));
 
     expect(
       await screen.findByText(/^\d+ candidates · \d+ checked/),
     ).toBeOnTheScreen();
     expect(screen.getByTestId("progress")).toBeOnTheScreen();
+    expect(
+      StyleSheet.flatten(screen.getByTestId("stage").props["style"])
+        .backgroundColor,
+    ).toBe(themeFor("up").colours.house);
     expect(screen.queryByText(THEATER)).toBeNull();
 
     release();
@@ -191,7 +199,7 @@ describe("the Room a deep link opens before its search has settled", () => {
   });
 
   it("opens the ledger from that line, as the list does", async () => {
-    const release = holdingSeatMaps();
+    mockHolding = true;
     const app = opened(roomLink(VILLAGE_1.showtime));
     await app;
 

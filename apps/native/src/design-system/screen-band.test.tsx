@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react-native";
 import { Dimensions, StyleSheet } from "react-native";
 import { houseLights } from "../../test/lights.js";
 import { definedUnder, drawnUnder, paintedWith } from "../../test/svg.js";
-import type { Appearance } from "../theme.js";
+import { type Appearance, themeFor } from "../theme.js";
 import { OVER_THE_MAP, ScreenBand } from "./screen-band.js";
 
 const hidden = { includeHiddenElements: true } as const;
@@ -191,6 +191,7 @@ describe("the screen over the map", () => {
 
     expect(Number(bar.left) + Number(bar.width) / 2).toBeCloseTo(SPAN / 2, 5);
     expect(Number(bar.width)).toBeLessThan(SPAN);
+    expect(bar.backgroundColor).toBe(themeFor("up").colours.beam);
   });
 
   it("lights the screen by its own gradient and glow, and glows down onto the map", async () => {
@@ -201,6 +202,7 @@ describe("the screen over the map", () => {
     expect(drawnAt("screen")["fill"]).toEqual(paintedWith(gradient));
     expect(drawnAt("screen")["filter"]).toBe(glow);
     expect(alphasAcross().at(0)).toBe(0);
+    expect(glowsFall().length).toBeGreaterThan(0);
     expect(glowsFall().every((dy) => dy > 0)).toBe(true);
   });
 });

@@ -17,7 +17,7 @@ import Svg, {
 import { type Palette, useTheme } from "../theme.js";
 import { Type } from "./type.js";
 
-type Tone = "beamDim" | "silver";
+type Tone = Extract<keyof Palette, "beamDim" | "silver">;
 
 interface Fall {
   readonly inset: number;
@@ -122,9 +122,11 @@ const Beam = ({
   span,
   reach,
   colours,
-}: Omit<Lighting, "drawing"> & {
+}: {
   readonly fall: Fall;
+  readonly span: number;
   readonly reach: number;
+  readonly colours: Palette;
 }) => {
   const id = useId();
 
@@ -225,7 +227,7 @@ export const ScreenBand = ({
     <View
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      style={[styles.band, drawing.band, { width: band }]}
+      style={[styles.band, drawing.band, { width: span }]}
       testID="screen-band"
     >
       {appearance === "down" ? (

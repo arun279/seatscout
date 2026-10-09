@@ -8,8 +8,8 @@ import { useOnline } from "../host/online.js";
 import { useProfile } from "../host/profile.js";
 import { seatProfile, seatscout } from "../host/source.js";
 import { useOpenedRoom } from "../room/opening.js";
-import { Reading } from "../room/reading.js";
 import { Room } from "../room/room.js";
+import { Unopened } from "../room/unopened.js";
 
 const clock = deviceClock();
 
@@ -29,7 +29,7 @@ const Opened = ({
 
   if (opened === null)
     return (
-      <Reading
+      <Unopened
         onLedger={() => router.push("/ledger")}
         session={session}
         today={date}
