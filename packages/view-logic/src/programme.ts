@@ -74,8 +74,11 @@ export const chosenFrom = (typed: string, movies: readonly Movie[]): Picked => {
   return { movie, title: titleOf(movies, movie) };
 };
 
+export const carriedTitleOf = ({ title }: Picked): string =>
+  title ?? "Your movie";
+
 export const filmOf = (movies: readonly Movie[], picked: Picked): string =>
-  titleOf(movies, picked.movie) ?? picked.title ?? "Your movie";
+  titleOf(movies, picked.movie) ?? carriedTitleOf(picked);
 
 export const theaterNamed = (
   theaters: readonly Theater[],

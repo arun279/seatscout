@@ -1,15 +1,25 @@
 import { readFileSync } from "node:fs";
 
+const STRYKER_DEFAULT_TIMEOUT_FACTOR = 1.5;
+
+const JEST_RUNNERS_AT_ONCE = 2;
+
+const projectCountIn = async (config) =>
+  (await import(new URL(config, import.meta.url))).default.projects.length;
+
 const RUNNERS = {
   vitest: () => ({
     testRunner: "vitest",
     vitest: { related: false, configFile: "vitest.stryker.config.ts" },
   }),
-  jest: (shard) => ({
+  jest: async (shard) => ({
     testRunner: "jest",
     ignorers: ["drawn-values", "exact-ranges"],
     coverageAnalysis: "off",
     dryRunTimeoutMinutes: 15,
+    concurrency: JEST_RUNNERS_AT_ONCE,
+    timeoutFactor:
+      STRYKER_DEFAULT_TIMEOUT_FACTOR * (await projectCountIn(shard.jest)),
     jest: {
       projectType: "custom",
       configFile: shard.jest,
@@ -46,7 +56,7 @@ if (shard === undefined) {
 }
 
 export default {
-  ...RUNNERS[shard.runner](shard),
+  ...(await RUNNERS[shard.runner](shard)),
   plugins: [
     "@stryker-mutator/vitest-runner",
     "@stryker-mutator/jest-runner",

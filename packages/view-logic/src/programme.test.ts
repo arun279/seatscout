@@ -3,6 +3,7 @@ import { fakeUpstream, type UpstreamScript } from "@seatscout/client/testing";
 import { describe, expect, it } from "vitest";
 import {
   chosenFrom,
+  carriedTitleOf,
   filmOf,
   knownFilms,
   markedIn,
@@ -234,5 +235,12 @@ describe("the films a query can be named from", () => {
     );
     expect(filmOf([], { movie: "245893", title: "Carried" })).toBe("Carried");
     expect(filmOf([], { movie: "245893" })).toBe("Your movie");
+  });
+
+  it("names a film by the title carried with it alone, when there is no programme to read", () => {
+    expect(carriedTitleOf({ movie: "245893", title: "Carried" })).toBe(
+      "Carried",
+    );
+    expect(carriedTitleOf({ movie: "245893" })).toBe("Your movie");
   });
 });

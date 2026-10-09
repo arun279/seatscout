@@ -24,7 +24,7 @@ const IDENTITY = [
   "user.email=planted@example.invalid",
 ];
 
-const plannedOver = (source: string): Job[] => {
+const plannedOver = (source: string, perJob = PER_JOB): Job[] => {
   mkdirSync(IGNORED, { recursive: true });
   const at = mkdtempSync(join(IGNORED, "plan-"));
   const run = (command: string, ...args: string[]) =>
@@ -48,7 +48,7 @@ const plannedOver = (source: string): Job[] => {
           id: "app",
           runner: "jest",
           mutate: ["apps/app/src/**/*.{ts,tsx}"],
-          mutantsPerJob: PER_JOB,
+          mutantsPerJob: perJob,
           canary: "apps/app/src/index.ts",
         },
       ]),
@@ -97,6 +97,19 @@ describe("the mutation plan under Jest", () => {
     expect(ranges).toContain(
       spanOf(STATEMENT.slice(STATEMENT.indexOf("()"), -1)),
     );
+  });
+
+  it("gives a range holding more mutants than a job allows a job of its own, since a range cannot be split", () => {
+    const comparison = 's === "light"';
+    const source = `export const up = (s: string) => ${comparison} ? "up" : "down";`;
+    const from = source.indexOf(comparison);
+    const range = `${SOURCE}:1:${from}-1:${from + comparison.length}`;
+
+    const holding = plannedOver(source, 2).filter((job) =>
+      job.files.split(",").includes(range),
+    );
+
+    expect(holding).toEqual([{ shard: "app", files: range, mutants: 3 }]);
   });
 
   it("plans nothing for a change that holds no mutant", () => {

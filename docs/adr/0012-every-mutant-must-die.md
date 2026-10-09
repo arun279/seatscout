@@ -142,6 +142,46 @@ nothing else, so it needs no narrowing of its own. It must not be given `testFil
 naming the files turns off the related-test filter the Jest runner applies to every mutant, so
 every mutant would run every test.
 
+**A Jest shard runs two mutants at a time, and allows each one Stryker's 1.5 per platform.**
+Stryker allows a mutant `timeoutFactor` times the summed time of the dry run's tests, plus
+`timeoutMS` (5 s) and the dry run's overhead, and `timeoutFactor` defaults to 1.5. Two things
+made that allowance too short for the app. Most app mutants ended as timeouts, and Stryker counts
+a timeout as detected, even when no test would have killed the mutant.
+
+First, Stryker's Jest runner keeps one result per test name, and `apps/native/jest.config.js`
+runs every test twice under the same name, once as iOS and once as Android. On a local run over
+the Room's row bar and screen edge, the dry run's tests summed 190.9 s with 46.0 s of overhead,
+and each mutant was allowed 193.0 s. That is 1.5 × 94.7 s + 5 s + 46.0 s: Stryker had counted
+one run of each test in two. `stryker.config.mjs` multiplies the 1.5 by the number of projects the
+shard's Jest configuration declares.
+
+Second, the dry run is one process, but the mutants ran four at a time on a runner with four
+virtual CPUs. So each mutant ran slower than the dry run that set its allowance. On two canaries,
+the recent-searches list (12 mutants, 104 tests) and the film field (3 mutants, 196 tests), the
+mutants ended like this:
+
+| Runners at once | Factor | Recent searches: killed, timed out | Film field: killed, timed out |
+| ---: | ---: | --- | --- |
+| 4 | 1.5 | 0, 12 | 0, 3 |
+| 4 | 3 | 4, 8 | 0, 3 |
+| 3 | 3 | 9, 3 | 0, 3 |
+| 2 | 1.5 | 10, 2 | 1, 2 |
+| 2 | 3 | 12, 0 | 3, 0 |
+| 1 | 1.5 | 11, 1 | 0, 3 |
+| 1 | 3 | 12, 0 | 3, 0 |
+
+Only both changes together ended every mutant killed. One runner at a time did that too, but its
+jobs took 917 s and 989 s against 621 s and 545 s for two. So a Jest shard runs two at a time.
+A shorter Testing Library wait, 250 ms instead of 1 s, changed no verdict at any setting, so a
+wrong render waiting out its queries was not the cost.
+
+A mutant that runs to the end costs more than one cut off by a timeout, so an app job now holds
+fewer. With two runners, one mutant took 0.83 and 0.93 of its dry run's time on the two canaries.
+So a job of N mutants takes about 30 s to start, plus its dry run D, plus D again for every two
+mutants. Each app shard's `mutantsPerJob` is the largest N that keeps the shard's slowest dry run
+seen on CI within the slowest app job before this change, 1,510 s: the design system (D 645 s)
+and the theme (632 s) take 2, the shell (414 s) 4, Ask (270 s) 8, and search (118 s) keeps 12.
+
 **One kind of value is ignored, by a plugin rather than by file.** `tools/stryker-style-tables.mjs`
 skips the argument of `StyleSheet.create`, and a table declared at the top of a file the plugin
 names: the theme, whose two appearances, type roles and scales are all table; the router's layout,
