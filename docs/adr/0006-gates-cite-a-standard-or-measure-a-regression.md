@@ -42,8 +42,8 @@ the verdicts stop being reached long before the figure stops being printed.
 
 ## Decision
 
-Every gate either cites a published standard or compares the branch against its merge base
-with `main`. The absolute figure is reported either way.
+Every gate either cites a published standard or compares the change against `main`. The
+absolute figure is reported either way.
 
 **Complexity** is measured twice, per function, each measure at a limit its own publisher
 set, and both fail the build.
@@ -649,7 +649,8 @@ the area it does not list, is refused by name with the dependency it missed and 
 it. The same hook moved inside an `if` is refused as called conditionally. Taken out again, the
 file passes in silence, which is what the whole tree does today.
 
-**A screen's render cost is held to main as the change merges into it, and the runner says whether it may hold it.**
+**A screen's render cost is held to main as the change merges into it, and the runner says
+whether it may hold it.**
 [Reassure](https://github.com/callstack/reassure) renders each screen's Testing Library scenario
 repeatedly, on the base and on the head, and reports a statistically significant change rather than
 a threshold anyone here chose. Callstack publish the two figures the `performance` job reads: a
@@ -665,7 +666,7 @@ baseline measurement and a comparison over the same commit.
 reading at all, because the failure was piped into `tee` and lost, and the step that reads the
 figure then took its own no-reading branch and passed. Both were corrected together: the reading is
 taken under `pipefail`, and a missing reading now fails the job. The one absence that reports rather
-than fails is a main with no measurement to compare against, which the step that measures the
+than fails is when main has no screen to measure, which the step that measures the
 base records for the step that judges. With the reading taken, the same runner reads 3.9 per cent
 and the job gates.
 

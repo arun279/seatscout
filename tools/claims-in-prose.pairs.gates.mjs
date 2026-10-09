@@ -9,14 +9,6 @@ const BASELINE = ".github/workflows/baseline.yml";
 
 export const GATE_CLAIMS = [
   {
-    adr: "0012-every-mutant-must-die.md",
-    says: /The change is read against the merge commit's first parent/,
-    holds: "the plan read against the merge commit's first parent",
-    pattern: "--plan HEAD^1",
-    paths: [WORKFLOW],
-    files: 1,
-  },
-  {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
     says: /by Biome's \[`noExcessiveCognitiveComplexity`\]/,
     holds: "the complexity rule that gates the build",
@@ -60,6 +52,14 @@ export const GATE_CLAIMS = [
     holds: "the mutation gate's breaking threshold",
     pattern: "break: 100",
     paths: [STRYKER],
+    files: 1,
+  },
+  {
+    adr: "0012-every-mutant-must-die.md",
+    says: /The change is read against the merge commit's first parent/,
+    holds: "the plan read against the merge commit's first parent",
+    pattern: "--plan HEAD^1",
+    paths: [WORKFLOW],
     files: 1,
   },
   {

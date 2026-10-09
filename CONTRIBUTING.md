@@ -88,8 +88,8 @@ corpus (`SEATSCOUT_UPSTREAM=corpus`, which Metro reads to swap `src/host/upstrea
 `e2e/upstream.ts`), reading the Gradle caches main's Baseline run leaves, and walks
 `apps/native/e2e/journey.yaml` over it with Maestro on an emulator, once; the walk gates.
 `performance` measures each screen's Testing Library scenario with Reassure on main as the
-change merges into it and on the change, and reads how steady the runner is before it judges either. Both run only when
-the change touches the app. The Flashlight reading of the walk's frame rate, CPU and memory
+change merges into it, and on the change, and reads how steady the runner is before it judges
+either. Both run only when the change touches the app. The Flashlight reading of the walk's frame rate, CPU and memory
 runs on main instead, in the Baseline workflow, held to the run before it; ADR 6 says why.
 `measure` measures what the change weighs. `secrets` scans the pull request's commits with
 gitleaks. `dependencies` scans the lockfile against the OSV database and fails on any advisory,
