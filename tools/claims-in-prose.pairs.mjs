@@ -222,6 +222,14 @@ export const CLAIMS = [
   },
   {
     adr: "0012-every-mutant-must-die.md",
+    says: /a Grit plugin,\s+`tools\/lint\/no-retried-or-concurrent-tests\.grit`, refuses both in the app/,
+    holds: "the rule that refuses a retried or concurrent test in the app",
+    pattern: "no-retried-or-concurrent-tests.grit",
+    paths: ["biome.json"],
+    files: 1,
+  },
+  {
+    adr: "0012-every-mutant-must-die.md",
     says: /skips the argument of `StyleSheet\.create`, and a table declared at the top of a file the plugin/,
     holds: "the plugin that skips a drawn value",
     pattern: "StyleSheet.create",

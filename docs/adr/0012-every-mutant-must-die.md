@@ -231,45 +231,56 @@ the first failing test, unless
 is set. Its Jest runner cannot: it sets Jest's `bail` to false, because Jest bails by exiting the
 process ([jest#11766](https://github.com/jestjs/jest/issues/11766)), which would end Stryker's
 runner. So a killed app mutant ran every test that reached it, failing one after another. Under
-`theme.ts`'s `appearanceOf`, whose mutants fail most of the 908 tests the theme reaches, that run
+`theme.ts`'s `appearanceOf`, whose mutants fail most of the 910 tests the theme reaches, that run
 grew until it ran out of memory, and Stryker scored two of its three mutants as runtime errors
 rather than kills. `apps/native/test/stop-at-first-failure.cjs` does what `bail` would. The marked
 environment calls it on every test event, and it acts only while `__STRYKER_ACTIVE_MUTANT__` is
 set, which is during a mutant's run. Once a test fails under that mutant, it marks each later test
 to be skipped, which jest-circus honours. A mutant is still killed by the test that failed, and a
 survivor still runs every test, since nothing failed. `tools/planted-red/src/native-environment.test.ts`
-holds the rule, including that a dry run or a plain run, with no active mutant, never skips. On CI,
-with two runners and the shard's own coverage:
+holds the rule, including that a dry run or a plain run, with no active mutant, never skips, and
+that the next mutant in the same process starts afresh. Two Jest features would let a skip turn a
+kill into a survivor, `jest.retryTimes` and `test.concurrent`, so a Grit plugin,
+`tools/lint/no-retried-or-concurrent-tests.grit`, refuses both in the app. On CI, with two runners
+and the shard's own coverage:
 
-| Canary | Before: killed, errors, tests per mutant, job | After |
-| --- | --- | --- |
-| theme, `appearanceOf` (`off`) | 1, 2, 225, 3,097 s | 3, 0, 4, 690 s |
-| theme, tokens (`off`) | 2, 0, 899, 1,353 s | 2, 0, 430, 551 s |
-| recent searches (`perTest`) | 12, 0, 40, 375 s | 12, 0, 8, 197 s |
-| film field (`perTest`) | 3, 0, 109, 409 s | 3, 0, 25, 440 s |
-| banner (`perTest`) | 8, 0, 16, 668 s | 8, 0, 6, 547 s |
+| Canary | Coverage | Killed before | Errors before | Tests per mutant before | Job before | Killed after | Errors after | Tests per mutant after | Job after |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| theme, `appearanceOf` | `off` | 1 | 2 | 225 | 3,097 s | 3 | 0 | 4 | 690 s |
+| theme, tokens | `off` | 2 | 0 | 899 | 1,353 s | 2 | 0 | 430 | 551 s |
+| recent searches | `perTest` | 12 | 0 | 40 | 375 s | 12 | 0 | 8 | 197 s |
+| film field | `perTest` | 3 | 0 | 109 | 409 s | 3 | 0 | 25 | 440 s |
+| banner | `perTest` | 8 | 0 | 16 | 668 s | 8 | 0 | 6 | 547 s |
+
+A mutant that makes a test file throw while it loads, or makes an `afterAll` fail, ends as a
+runtime error rather than a kill, because Jest reports the whole file as failing to run rather
+than any test failing. The job refuses it, naming the mutant. The remedy is in the test: move the
+work that broke out of module scope and out of `afterAll` into a test, so the mutant fails that
+test and is killed.
 
 How long a mutant costs depends on the shard, so each shard's `mutantsPerJob` comes from its own
 measurements. With two runners, a job of N mutants takes about 30 s to start, plus its dry run D,
-plus r·D for every two mutants, where r is the time of one mutant's run over its dry run. With
-each run stopped at its first failure, r measured on CI is 0.067 for the design system's banner,
-0.22 for the recent-searches list, 0.30 for the film field and 0.61 for the theme's tokens. The
-shell has no measurement with the stop yet, so it keeps its earlier 0.51, an upper bound, since
-stopping early only shortens a run. D is the shard's slowest dry run across 84 recent jobs under
-`off`, times 1.24 for the `perTest` shards, the largest gap measured between the two on the same
-runner. Each `mutantsPerJob` is the largest N that keeps the estimate within the slowest app job
-before these changes, 1,510 s:
+plus r·D for every two mutants, where r is the time of one mutant's run over its dry run. D is the
+shard's slowest dry run across 84 recent jobs under `off`, times 1.24 for the `perTest` shards, the
+largest gap measured between the two on the same runner.
 
-| Shard | D | r | `mutantsPerJob` | Estimate |
-| --- | ---: | ---: | ---: | ---: |
-| design system | 800 s | 0.067 | 24 | 1,473 s |
-| shell | 513 s | 0.51 | 6 | 1,328 s |
-| Ask | 335 s | 0.30 | 22 | 1,471 s |
-| search | 146 s | 0.22 | 82 | 1,496 s |
-| theme | 692 s | 0.61 | 2 | 1,144 s |
+A job is held to two limits. A job whose mutants are all killed, the only kind that passes, must
+fit the slowest app job before these changes, 1,510 s. That uses r for a killed mutant with the
+stop, measured on one canary per shard: 0.067 for the design system, 0.22 for search, 0.30 for Ask
+and 0.61 for the theme; the shell has no canary yet and keeps its earlier 0.51. A job whose
+mutants all survive runs every test for each, at the r measured before the stop: 0.21, 0.55, 0.99,
+1.88 and 0.51. That job must still finish within 3,300 s, five minutes inside the job's 60-minute
+limit, because Stryker writes its report only once every mutant is done (`reportAll` in its
+mutation test executor), so a job cut off by the limit leaves no report naming its survivors.
+Each `mutantsPerJob` is the largest N that meets both:
 
-These are the costs of killed mutants, since a job whose every mutant dies is the only kind that
-passes. A survivor runs every test that reaches it, so a job holding one takes longer, and fails.
+| Shard | D (s) | r, killed | r, survived | `mutantsPerJob` | All killed (s) | All survived (s) |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| design system | 800 | 0.067 | 0.21 | 24 | 1,473 | 2,846 |
+| shell | 513 | 0.51 | 0.51 | 6 | 1,328 | 1,328 |
+| Ask | 335 | 0.30 | 0.99 | 16 | 1,169 | 3,018 |
+| search | 146 | 0.22 | 0.55 | 76 | 1,397 | 3,227 |
+| theme | 692 | 0.61 | 1.88 | 2 | 1,144 | 2,023 |
 
 **One kind of value is ignored, by a plugin rather than by file.** `tools/stryker-style-tables.mjs`
 skips the argument of `StyleSheet.create`, and a table declared at the top of a file the plugin
