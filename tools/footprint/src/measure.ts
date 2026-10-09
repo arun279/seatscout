@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { Weighing } from "./bundles.js";
 import {
   BIOME,
@@ -14,6 +15,7 @@ import { type Suites, suitesFrom } from "./suites.js";
 import { type Diff, filesOf, type Side, type Tree } from "./volume.js";
 
 export const RATCHET = ".footprint.json";
+const BLANKER = fileURLToPath(new URL("./blank-index.js", import.meta.url));
 export const BUNDLES = ".size-limit.json";
 
 const weighedAs = (configuration: string): string =>
@@ -61,21 +63,38 @@ export const measureWith = (run: Run, read: (path: string) => string) => {
     output("git", args).trim();
 
   const cloc = (...args: readonly string[]): string =>
-    output("cloc", [
-      ...args,
-      "--by-file",
-      "--json",
-      "--hide-rate",
-      "--quiet",
-      "--strip-str-comments",
-    ]);
+    output("cloc", [...args, "--by-file", "--json", "--hide-rate", "--quiet"]);
 
-  const treeOf = (ref: string): Tree => filesOf(JSON.parse(cloc("--git", ref)));
+  const snapshot = (ref: string): string => {
+    const at = output("mktemp", ["-d"]).trim();
+    output("git", ["archive", "--format=tar", "-o", `${at}.tar`, ref]);
+    output("tar", ["-xf", `${at}.tar`, "-C", at]);
+    output(process.execPath, [BLANKER, at]);
+    return at;
+  };
 
-  const diffOf = (base: string, head: string): Diff =>
-    JSON.parse(cloc("--git", "--diff", base, head));
+  const relativeTo = (at: string, tree: Tree): Tree =>
+    Object.fromEntries(
+      Object.entries(tree).map(([path, counts]) => [
+        path.replace(`${at}/`, ""),
+        counts,
+      ]),
+    );
 
-  const sideOf = (ref: string): Side => ({ ref, tree: treeOf(ref) });
+  const diffOf = (base: string, head: string): Diff => {
+    const { added, removed, modified } = JSON.parse(cloc("--diff", base, head));
+    const both = (tree: Tree) => relativeTo(head, relativeTo(base, tree));
+    return {
+      added: both(added),
+      removed: both(removed),
+      modified: both(modified),
+    };
+  };
+
+  const sideOf = (ref: string, at: string): Side => ({
+    ref,
+    tree: relativeTo(at, filesOf(JSON.parse(cloc(at)))),
+  });
 
   const sizesOn = (
     side: "main" | "this change",
@@ -131,6 +150,20 @@ export const measureWith = (run: Run, read: (path: string) => string) => {
         };
   };
 
+  const counted = (base: string, head: string) => {
+    const baseAt = snapshot(base);
+    const headAt = snapshot(head);
+    try {
+      return {
+        base: sideOf(base, baseAt),
+        head: sideOf(head, headAt),
+        diff: diffOf(baseAt, headAt),
+      };
+    } finally {
+      run("rm", ["-rf", baseAt, `${baseAt}.tar`, headAt, `${headAt}.tar`]);
+    }
+  };
+
   const gates = (): Gates => gatesFrom(read(OXLINT), read(BIOME));
 
   const observed = (against: Gates): Limits =>
@@ -180,9 +213,7 @@ export const measureWith = (run: Run, read: (path: string) => string) => {
     const base = git("merge-base", baseRef, head);
     const against = gates();
     return {
-      base: sideOf(base),
-      head: sideOf(head),
-      diff: diffOf(base, head),
+      ...counted(base, head),
       bundles: weighing(mainTree, mainExported),
       gates: against,
       limits: observed(against),

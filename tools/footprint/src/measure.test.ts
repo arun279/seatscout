@@ -26,19 +26,28 @@ describe("measuring a change", () => {
     ]);
   });
 
-  it("counts each side and the diff between them, reading a comment marker inside a string as the string it is", () => {
+  it("counts each side and the diff between them over copies whose literals the parser has blanked, so a comment marker inside a string stays code", () => {
     const { run, commands } = recorder();
 
     measuring(run)("origin/main", "HEAD", "main", true);
 
-    expect(lines(commands)).toContain(
-      "cloc --git base-sha --by-file --json --hide-rate --quiet --strip-str-comments",
+    const said = lines(commands);
+    for (const [ref, at] of [
+      ["base-sha", "/tmp/snapshot-1"],
+      ["head-sha", "/tmp/snapshot-2"],
+    ] as const) {
+      expect(said).toContain(`git archive --format=tar -o ${at}.tar ${ref}`);
+      expect(said).toContain(`tar -xf ${at}.tar -C ${at}`);
+      expect(said.some((line) => line.endsWith(`blank-index.js ${at}`))).toBe(
+        true,
+      );
+      expect(said).toContain(`cloc ${at} --by-file --json --hide-rate --quiet`);
+    }
+    expect(said).toContain(
+      "cloc --diff /tmp/snapshot-1 /tmp/snapshot-2 --by-file --json --hide-rate --quiet",
     );
-    expect(lines(commands)).toContain(
-      "cloc --git head-sha --by-file --json --hide-rate --quiet --strip-str-comments",
-    );
-    expect(lines(commands)).toContain(
-      "cloc --git --diff base-sha head-sha --by-file --json --hide-rate --quiet --strip-str-comments",
+    expect(said).toContain(
+      "rm -rf /tmp/snapshot-1 /tmp/snapshot-1.tar /tmp/snapshot-2 /tmp/snapshot-2.tar",
     );
   });
 
@@ -99,7 +108,7 @@ describe("measuring a change", () => {
     expect(asked).toContain(BIOME);
   });
 
-  it("carries the counter's numbers into the measurement", () => {
+  it("carries the counter's numbers into the measurement, each file named by its path in the repository rather than in the copy", () => {
     const { run } = recorder();
 
     const measurement = measuring(run)("origin/main", "HEAD", "main", true);
@@ -109,8 +118,10 @@ describe("measuring a change", () => {
     expect(measurement.head.tree).toStrictEqual({
       "packages/core/src/seat.ts": { code: 40, comment: 1 },
     });
-    expect(measurement.diff.added).toStrictEqual({
-      "packages/core/src/seat.ts": { code: 5, comment: 0 },
+    expect(measurement.diff).toStrictEqual({
+      added: { "packages/core/src/new.ts": { code: 5, comment: 0 } },
+      removed: { "packages/core/src/old.ts": { code: 2, comment: 0 } },
+      modified: { "packages/core/src/seat.ts": { code: 3, comment: 1 } },
     });
     expect(measurement.bundles).toStrictEqual({
       kind: "weighed",

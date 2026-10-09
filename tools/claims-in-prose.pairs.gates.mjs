@@ -280,4 +280,12 @@ export const GATE_CLAIMS = [
     paths: ["apps/native/test/reassure.cjs"],
     files: 1,
   },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /and its blanked copy, which a test holds\s+byte for byte/,
+    holds: "the test that holds the blanked copy of the planted script",
+    pattern: "strings-holding-comment-markers.blanked.ts.txt",
+    paths: ["tools/footprint/src"],
+    files: 1,
+  },
 ];

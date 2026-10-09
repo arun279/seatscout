@@ -1,0 +1,10 @@
+const ROOT = "xxxxxxxxxxxxxxxxxxxxx";
+const TESTS = xxxROOTxxxxxxxxxxxx;
+const GLOBS = ["xxxxxxxxxxxx", "xxxxxxxxxxxxxxxxx"];
+const OPENER = "xx";
+const PATTERN = /xxxx/;
+const CLOSER = "xx";
+// the one line comment in this file
+export const PLANTED = [TESTS, GLOBS, OPENER, PATTERN, CLOSER];
+/* and one block
+   over two lines */
