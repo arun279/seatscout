@@ -13,6 +13,10 @@ describe("the planted red under the module-scope call gate", () => {
   for (const [written, named] of [
     ["a value read from an app module as the file loads", "read-at-load.tsx"],
     ["a fixture built by a test helper as the file loads", "built-at-load.tsx"],
+    [
+      "a value read in a describe body, which Jest runs as it loads the file",
+      "read-in-describe.tsx",
+    ],
   ])
     it(`refuses ${written}`, () => {
       const run = linted(named ?? "");
@@ -21,7 +25,7 @@ describe("the planted red under the module-scope call gate", () => {
       expect(said(run)).toContain(REFUSAL);
     });
 
-  it("passes calls made inside each test, plain data, and calls into packages, so it is not refusing every file", () => {
+  it("passes calls made inside each test, hook, function or method, plain data, and calls into packages, so it is not refusing every file", () => {
     const run = linted("read-in-test.tsx");
 
     expect(run.status).toBe(0);

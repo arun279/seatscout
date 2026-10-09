@@ -7,11 +7,35 @@ pattern imported_from_this_repository($name) {
   }
 }
 
-JsCallExpression(callee=$callee) as $call where {
-  $call <: not within or {
+pattern a_function() {
+  or {
     JsArrowFunctionExpression(),
     JsFunctionDeclaration(),
-    JsFunctionExpression()
+    JsFunctionExpression(),
+    JsMethodObjectMember(),
+    JsMethodClassMember(),
+    JsGetterObjectMember(),
+    JsGetterClassMember(),
+    JsSetterObjectMember(),
+    JsSetterClassMember(),
+    JsConstructorClassMember()
+  }
+}
+
+pattern a_describe_body() {
+  $body where {
+    $body <: within or {
+      `describe($_, $body)`,
+      `describe.skip($_, $body)`,
+      `describe.only($_, $body)`,
+      `describe.each($_)($_, $body)`
+    }
+  }
+}
+
+JsCallExpression(callee=$callee) as $call where {
+  $call <: not within a_function() as $function where {
+    $function <: not a_describe_body()
   },
   $callee <: or {
     JsIdentifierExpression() as $name,
@@ -19,5 +43,5 @@ JsCallExpression(callee=$callee) as $call where {
   },
   $call <: within JsModule() as $module,
   $module <: contains imported_from_this_repository($name),
-  register_diagnostic(span=$call, message="This call runs while the test file loads. A mutant that breaks it stops the whole file from loading, which Stryker scores as a runtime error rather than a kill. Make the call inside each test, or keep the value as plain data.")
+  register_diagnostic(span=$call, message="This call runs while the test file loads, at its top level or in a describe body. A mutant that breaks it stops the whole file from loading, which Stryker scores as a runtime error rather than a kill. Make the call inside each test, or keep the value as plain data.")
 }

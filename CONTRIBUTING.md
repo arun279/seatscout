@@ -119,8 +119,8 @@ as it is. Where another record explains a gate, the item links it.
   workspace already uses.
 - **A retried or concurrent test in the app.** Remove `jest.retryTimes` or `.concurrent`.
   ([ADR 12](docs/adr/0012-every-mutant-must-die.md))
-- **A call at a test file's top level.** Make the call inside each test, or keep the value as
-  plain data. ([ADR 12](docs/adr/0012-every-mutant-must-die.md))
+- **A call at a test file's top level or in a describe body.** Make the call inside each test,
+  or keep the value as plain data. ([ADR 12](docs/adr/0012-every-mutant-must-die.md))
 - **The accessibility audit or the axe scan.** Fix the screen. The failure names the control
   and the criterion. Give a control below the touch floor the difference as `minHeight` and
   `minWidth`, and play haptic feedback through `src/design-system/feedback.ts`.
