@@ -1,39 +1,98 @@
+import type { Snapshot } from "@seatscout/client";
+import {
+  BACK_TO_THE_LIST,
+  GONE_FROM_THE_LISTING,
+  NOT_IN_THE_LISTING,
+  OPENING_THIS_SHOWTIME,
+  RETRY_THE_SEARCH,
+  UNREADABLE,
+} from "@seatscout/view-logic";
 import { type ReactElement, useSyncExternalStore } from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ScreenBand } from "../design-system/screen-band.js";
+import { Velvet } from "../design-system/button.js";
+import { Type } from "../design-system/type.js";
 import type { Session } from "../host/session.js";
 import { Strip } from "../search/coverage.js";
 import { useTheme } from "../theme.js";
+import { Back } from "./back.js";
 
-const styles = StyleSheet.create({ screen: { flex: 1 } });
+const styles = StyleSheet.create({
+  screen: { flex: 1 },
+  verdict: { gap: 11, paddingHorizontal: 18, paddingTop: 16 },
+});
+
+const Heading = ({ said }: { readonly said: string }) => (
+  <Type accessibilityRole="header" set="marqueeVerdict" tone="silver">
+    {said}
+  </Type>
+);
+
+const Verdict = ({
+  snapshot,
+  onRetry,
+  onBack,
+}: {
+  readonly snapshot: Snapshot;
+  readonly onRetry: () => void;
+  readonly onBack: () => void;
+}) => {
+  if (snapshot.phase === "unreachable")
+    return (
+      <>
+        <Heading said={UNREADABLE} />
+        <Velvet label={RETRY_THE_SEARCH} onPress={onRetry} />
+      </>
+    );
+  if (snapshot.phase === "settled")
+    return (
+      <>
+        <Heading said={NOT_IN_THE_LISTING} />
+        <Type set="sentence" tone="silverDim">
+          {GONE_FROM_THE_LISTING}
+        </Type>
+        <Velvet label={BACK_TO_THE_LIST} onPress={onBack} />
+      </>
+    );
+  return <Heading said={OPENING_THIS_SHOWTIME} />;
+};
 
 export const Unopened = ({
   session,
   today,
   onLedger,
+  onBack,
 }: {
   readonly session: Session;
   readonly today: string;
   readonly onLedger: () => void;
+  readonly onBack: () => void;
 }): ReactElement => {
   const { colours } = useTheme();
+  const snapshot = useSyncExternalStore(
+    session.held.subscribe,
+    session.held.snapshot,
+  );
 
   return (
     <SafeAreaView
       style={[styles.screen, { backgroundColor: colours.house }]}
       testID="stage"
     >
-      <ScreenBand />
+      <Back onBack={onBack} />
       <Strip
         onLedger={onLedger}
         onReadMore={session.search.readMore}
-        snapshot={useSyncExternalStore(
-          session.held.subscribe,
-          session.held.snapshot,
-        )}
+        snapshot={snapshot}
         today={today}
       />
+      <View style={styles.verdict}>
+        <Verdict
+          onBack={onBack}
+          onRetry={session.search.retry}
+          snapshot={snapshot}
+        />
+      </View>
     </SafeAreaView>
   );
 };

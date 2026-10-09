@@ -4,7 +4,6 @@ import type {
   SeatGroupResult,
 } from "@seatscout/client";
 import {
-  BACK_TO_THE_LIST,
   centreOnOf,
   chosenOf,
   consolesIn,
@@ -35,11 +34,12 @@ import { Banner } from "../design-system/banner.js";
 import { felt } from "../design-system/feedback.js";
 import { useSpoken } from "../design-system/live.js";
 import { OVER_THE_MAP, ScreenBand } from "../design-system/screen-band.js";
-import { SLOP, TOUCH_FLOOR } from "../design-system/touch.js";
+import { TOUCH_FLOOR } from "../design-system/touch.js";
 import { Type } from "../design-system/type.js";
 import type { Clock } from "../host/clock.js";
 import { useTheme } from "../theme.js";
 import { Alternates } from "./alternates.js";
+import { Back } from "./back.js";
 import { Dock } from "./dock.js";
 import { Legend } from "./legend.js";
 import type { Drawn } from "./pan-zoom.js";
@@ -63,12 +63,6 @@ const DRAWN = {
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   scroll: { paddingBottom: DRAWN.gap.section },
-  back: {
-    justifyContent: "center",
-    minHeight: TOUCH_FLOOR,
-    minWidth: TOUCH_FLOOR,
-    paddingHorizontal: DRAWN.across,
-  },
   head: {
     gap: DRAWN.gap.line,
     paddingHorizontal: DRAWN.across,
@@ -226,16 +220,7 @@ export const Room = ({
         onLayout={(event) => setStage(event.nativeEvent.layout)}
         testID="scroll"
       >
-        <TouchableOpacity
-          accessibilityRole="button"
-          hitSlop={SLOP}
-          onPress={onBack}
-          style={styles.back}
-        >
-          <Type set="sentence" tone="beamDim">
-            ‹ {BACK_TO_THE_LIST}
-          </Type>
-        </TouchableOpacity>
+        <Back onBack={onBack} />
         <View style={styles.head}>
           <Type set="ledgerLabel" tone="silverFaint">
             {`${partyOf(partySize)} · ${showingOf(result, today)}`}

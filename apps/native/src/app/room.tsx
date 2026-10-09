@@ -30,6 +30,7 @@ const Opened = ({
   if (opened === null)
     return (
       <Unopened
+        onBack={router.back}
         onLedger={() => router.push("/ledger")}
         session={session}
         today={date}

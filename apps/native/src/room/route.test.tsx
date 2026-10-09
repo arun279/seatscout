@@ -1,7 +1,16 @@
 import { afterEach, describe, expect, it, jest } from "@jest/globals";
 import { createSeatScout, REFERENCE } from "@seatscout/client";
 import { fakeUpstream } from "@seatscout/client/testing";
-import { BACK_TO_THE_LIST, labelOf, takeOf } from "@seatscout/view-logic";
+import {
+  BACK_TO_THE_LIST,
+  GONE_FROM_THE_LISTING,
+  labelOf,
+  NOT_IN_THE_LISTING,
+  OPENING_THIS_SHOWTIME,
+  RETRY_THE_SEARCH,
+  takeOf,
+  UNREADABLE,
+} from "@seatscout/view-logic";
 import {
   openedRooms,
   roomRoutes,
@@ -29,6 +38,7 @@ jest.mock("expo-network", () => ({
 const mockReads: string[] = [];
 const mockHeld: (() => void)[] = [];
 let mockHolding = false;
+let mockFailing = false;
 
 function mockSource() {
   const upstream = fakeUpstream({
@@ -39,6 +49,11 @@ function mockSource() {
   return createSeatScout({
     fetch: (url, init) => {
       mockReads.push(url);
+      if (mockFailing)
+        return Promise.resolve({
+          status: 500,
+          text: () => Promise.resolve(""),
+        });
       return mockHolding && url.includes("/napi/seatMap/")
         ? new Promise((done) => {
             mockHeld.push(() => {
@@ -80,6 +95,7 @@ const settled = async (app: PromiseLike<unknown>) => {
 };
 
 const release = () => {
+  mockFailing = false;
   mockHolding = false;
   for (const go of mockHeld.splice(0)) go();
 };
@@ -192,10 +208,57 @@ describe("the Room a deep link opens before its search has settled", () => {
         .backgroundColor,
     ).toBe(themeFor("up").colours.house);
     expect(screen.queryByText(THEATER)).toBeNull();
+    expect(
+      screen.getByRole("header", { name: OPENING_THIS_SHOWTIME }),
+    ).toBeOnTheScreen();
 
     release();
 
     expect(await screen.findByText(THEATER)).toBeOnTheScreen();
+  });
+
+  it("goes back to the list from the top while it reads, as the Room does", async () => {
+    mockHolding = true;
+    const app = opened(roomLink(VILLAGE_1.showtime));
+    await app;
+
+    await fireEvent.press(
+      await screen.findByRole("button", { name: `‹ ${BACK_TO_THE_LIST}` }),
+    );
+
+    expect(app.getPathname()).toBe("/");
+  });
+
+  it("says the listing could not be read, and opens the room once a retry reads it", async () => {
+    mockFailing = true;
+    await opened(roomLink(VILLAGE_1.showtime).replace("75006", "99999"));
+    expect(
+      await screen.findByRole("header", { name: UNREADABLE }),
+    ).toBeOnTheScreen();
+
+    mockFailing = false;
+    await fireEvent.press(
+      screen.getByRole("button", { name: RETRY_THE_SEARCH }),
+    );
+
+    expect(await screen.findByText(THEATER)).toBeOnTheScreen();
+  });
+
+  it("says the showtime is not in the listing, why it may not be, and goes back to the list", async () => {
+    const app = opened(roomLink(1));
+    await app;
+
+    expect(
+      await screen.findByRole("header", { name: NOT_IN_THE_LISTING }),
+    ).toBeOnTheScreen();
+    expect(screen.getByText(GONE_FROM_THE_LISTING)).toBeOnTheScreen();
+    expect(screen.getByText(/^\d+ candidates · \d+ checked/)).toBeOnTheScreen();
+
+    await fireEvent.press(
+      screen.getByRole("button", { name: BACK_TO_THE_LIST }),
+    );
+
+    expect(app.getPathname()).toBe("/");
   });
 
   it("opens the ledger from that line, as the list does", async () => {

@@ -4,9 +4,12 @@ import {
   CLEAR_OF_THE_FRONT,
   centreOnOf,
   creditsOf,
+  GONE_FROM_THE_LISTING,
   heldWhileOfflineOf,
   legendOf,
+  NOT_IN_THE_LISTING,
   notBookableIn,
+  OPENING_THIS_SHOWTIME,
   RE_CHECKED_ON_THE_TAP,
   readingOf,
   rowOf,
@@ -145,6 +148,19 @@ describe("the billing under the map", () => {
       "In the front rows",
       "Against a wall",
       "Across a console",
+    ]);
+  });
+});
+
+describe("what a link to a room says before the room opens", () => {
+  it("says the showtime is being opened while its search reads", () => {
+    expect(OPENING_THIS_SHOWTIME).toBe("Opening this showtime");
+  });
+
+  it("says plainly when the showtime is not in the listing, and why it may not be", () => {
+    expect([NOT_IN_THE_LISTING, GONE_FROM_THE_LISTING]).toEqual([
+      "This showtime is not in the listing",
+      "It may have started, or the theater may have removed it.",
     ]);
   });
 });
