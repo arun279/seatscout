@@ -633,7 +633,7 @@ moved to the versions it named. Expo documents `expo.install.exclude` as
 the way to hold a package back from that check, and `apps/native/package.json` carries no such
 list, because a package in it is a package the SDK is no longer asked about. The check this
 workspace expected to fight, the one that refuses an override breaking a critical dependency
-chain, passes over all eight overrides in `pnpm-workspace.yaml`.
+chain, passes over all ten overrides in `pnpm-workspace.yaml`.
 
 Neither is on a hook, and the reason is not only what they cost. Measured over this workspace,
 `expo install --check` answers in 1.7 seconds and `expo-doctor` takes 35, so the first is cheap
@@ -688,7 +688,13 @@ parser inside Expo Router; `compression` above
 [GHSA-vc2v-76pw-4v95](https://github.com/advisories/GHSA-vc2v-76pw-4v95), through Expo's CLI;
 and `source-map-js` above
 [GHSA-68fv-2mgg-jv7q](https://github.com/advisories/GHSA-68fv-2mgg-jv7q), through PostCSS and
-css-tree. The last two replace only the exact version that was asked for. `uuid` is held at
+css-tree. Two more come with markdownlint-cli2: `smol-toml` above
+[GHSA-r4xh-jqrq-34v2](https://github.com/advisories/GHSA-r4xh-jqrq-34v2), which it pins exactly,
+and `katex` above [GHSA-238p-pmpm-9mq7](https://github.com/advisories/GHSA-238p-pmpm-9mq7),
+which `micromark-extension-math` loads for rendering math to HTML, which the linter never does.
+The fix for `katex` is in 0.18, outside the range that extension asks for, so the lint's planted
+red is what shows the newer release still loads. The last four replace only the exact version
+that was asked for. `uuid` is held at
 11.1.1 rather than at the newest patched release, because that parser loads it with `require`
 and uuid dropped its CommonJS entry point after 11. `exit` is aliased to `exit-x`, because the
 package Jest's own runner pulls in states its licence in npm's pre-SPDX form, so the licence
