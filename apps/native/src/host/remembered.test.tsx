@@ -3,7 +3,7 @@ import type { KeyValueStore, RecentSearch, SeatScout } from "@seatscout/client";
 import { createSeatScout } from "@seatscout/client";
 import type { Terms } from "@seatscout/view-logic";
 import { renderHook, waitFor } from "@testing-library/react-native";
-import { useRemembered, useRememberWhenAnswered } from "./remembered.js";
+import { useRemembered, useRememberWhenSettled } from "./remembered.js";
 
 const TODAY = "2026-09-19";
 
@@ -79,12 +79,12 @@ describe("what this phone remembers", () => {
   });
 });
 
-describe("the search an answered query is remembered as", () => {
-  it("keeps the query the search answered", async () => {
+describe("the search a settled query is remembered as", () => {
+  it("keeps the query the search settled", async () => {
     const seatscout = keeping();
 
     await renderHook(() =>
-      useRememberWhenAnswered(
+      useRememberWhenSettled(
         seatscout,
         {
           movie: "One Battle After Another",
@@ -112,7 +112,7 @@ describe("the search an answered query is remembered as", () => {
     const seatscout = keeping();
 
     await renderHook(() =>
-      useRememberWhenAnswered(
+      useRememberWhenSettled(
         seatscout,
         {
           movie: "Sinners",
@@ -146,7 +146,7 @@ describe("the search an answered query is remembered as", () => {
       partySize: 2,
     };
     const { rerender } = await renderHook(
-      (terms: Terms) => useRememberWhenAnswered(seatscout, terms, true),
+      (terms: Terms) => useRememberWhenSettled(seatscout, terms, true),
       { initialProps: asked },
     );
     await waitFor(async () => {
@@ -168,15 +168,15 @@ describe("the search an answered query is remembered as", () => {
     });
   });
 
-  it("keeps nothing until the search has an answer", async () => {
+  it("keeps nothing until the search has settled", async () => {
     const seatscout = keeping();
     const remember = jest.spyOn(seatscout.recent, "remember");
     const { rerender } = await renderHook(
-      (answered: boolean) =>
-        useRememberWhenAnswered(
+      (settled: boolean) =>
+        useRememberWhenSettled(
           seatscout,
           { movie: "Sinners", date: TODAY, area: "75010", partySize: 2 },
-          answered,
+          settled,
         ),
       { initialProps: false },
     );
@@ -192,7 +192,7 @@ describe("the search an answered query is remembered as", () => {
     const seatscout = keeping();
     const remember = jest.spyOn(seatscout.recent, "remember");
     const { rerender } = await renderHook(
-      (terms: Terms) => useRememberWhenAnswered(seatscout, terms, true),
+      (terms: Terms) => useRememberWhenSettled(seatscout, terms, true),
       { initialProps: { date: TODAY, area: "75201", partySize: 2 } },
     );
 

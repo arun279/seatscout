@@ -22,7 +22,7 @@ import { FlatList, StyleSheet, View } from "react-native";
 import { ScreenBand } from "../design-system/screen-band.js";
 import { Type } from "../design-system/type.js";
 import type { Clock } from "../host/clock.js";
-import { useRememberWhenAnswered } from "../host/remembered.js";
+import { useRememberWhenSettled } from "../host/remembered.js";
 import { type Session, useSession } from "../host/session.js";
 import { useTheme } from "../theme.js";
 import { Card } from "./card.js";
@@ -212,7 +212,7 @@ export const Results = ({
     session.held.subscribe,
     session.held.painted,
   );
-  useRememberWhenAnswered(seatscout, terms, painted !== null);
+  useRememberWhenSettled(seatscout, terms, painted !== null);
   const results = painted === null ? [] : listed(painted.results);
   const tied = tiedIn(results);
   const tie = tied > 1;

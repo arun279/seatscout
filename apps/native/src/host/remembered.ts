@@ -14,16 +14,16 @@ export const useRemembered = (
   return remembered;
 };
 
-export const useRememberWhenAnswered = (
+export const useRememberWhenSettled = (
   seatscout: SeatScout,
   terms: Terms,
-  answered: boolean,
+  settled: boolean,
 ): void => {
   const { movie, title, area, partySize } = terms;
   const dates = valuesOf(terms).join(" ");
 
   useEffect(() => {
-    if (answered && movie !== undefined && area !== undefined)
+    if (settled && movie !== undefined && area !== undefined)
       void seatscout.recent.remember({
         movie,
         title,
@@ -31,5 +31,5 @@ export const useRememberWhenAnswered = (
         area,
         partySize,
       });
-  }, [seatscout, answered, movie, title, dates, area, partySize]);
+  }, [seatscout, settled, movie, title, dates, area, partySize]);
 };

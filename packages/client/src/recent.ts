@@ -49,7 +49,7 @@ export const openRecentSearches = (
     const migrated = Array.isArray(earlier) ? earlier.map(onItsDate) : earlier;
     return isHistory(migrated) ? migrated : [];
   };
-  const kept = async (search: RecentSearch) => {
+  const keep = async (search: RecentSearch) => {
     const asked: RecentSearch = {
       movie: search.movie,
       ...(search.title !== undefined && { title: search.title }),
@@ -68,7 +68,7 @@ export const openRecentSearches = (
   return {
     remembered,
     remember: (search: RecentSearch) => {
-      const keeping = last.then(() => kept(search));
+      const keeping = last.then(() => keep(search));
       last = keeping;
       return keeping;
     },
