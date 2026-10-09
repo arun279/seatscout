@@ -124,7 +124,7 @@ export const Partial = ({
         </Type>
       ))}
     </View>
-    <Remedy {...remedy} retry={retryOf(snapshot.coverage.failed.length)} />
+    <Remedy {...remedy} retry={retryOf(snapshot.coverage.failed)} />
   </View>
 );
 

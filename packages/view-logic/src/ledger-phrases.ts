@@ -56,9 +56,9 @@ const unreached = (snapshot: Snapshot): LedgerRow => {
         ...named(
           failed,
           UNREACHED,
-          "The room did not answer. A retry can fix this, and only this.",
+          "The room did not answer. Trying again may reach it.",
         ),
-        retry: retryOf(failed.length),
+        retry: retryOf(failed),
       }
     : named(failed, UNREACHED, "The room did not answer.");
 };

@@ -133,7 +133,7 @@ describe("the ledger of a search that has stopped reading", () => {
     const read = carried.reads.length;
 
     await fireEvent.press(
-      screen.getByRole("button", { name: "Retry the one unreached" }),
+      screen.getByRole("button", { name: "Try AMC Stonebriar 24 again" }),
     );
 
     expect(await screen.findByText("14 + 1 = 15 candidates")).toBeOnTheScreen();

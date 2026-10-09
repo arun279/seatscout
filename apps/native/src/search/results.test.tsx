@@ -203,7 +203,7 @@ describe("the search that did not reach every room", () => {
       upstream: { script: { sequences: FAILING } },
     });
     const again = await screen.findByRole("button", {
-      name: /^Retry the .+ unreached$/,
+      name: "Try AMC Stonebriar 24 again",
     });
     const read = carried.reads.length;
 

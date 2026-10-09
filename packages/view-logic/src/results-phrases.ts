@@ -12,7 +12,7 @@ import {
   unreachedIn,
   unreadIn,
 } from "./derived.js";
-import { clockOf, noneOf, spokenOf, timeOf, wordOf } from "./phrases.js";
+import { clockOf, noneOf, spokenOf, timeOf } from "./phrases.js";
 import { dayOf, whenOf } from "./when-phrases.js";
 import type { Terms } from "./terms.js";
 
@@ -130,8 +130,12 @@ export const notAnAnswerAbout = (when: string): string =>
 
 export const RETRY_THE_SEARCH = "Retry the search";
 
-export const retryOf = (unreached: number): string =>
-  `Retry the ${wordOf(unreached)} unreached`;
+export const retryOf = (failed: Coverage["failed"]): string => {
+  const [only, ...more] = failed;
+  return only === undefined || more.length > 0
+    ? `Try the ${failed.length} unreached again`
+    : `Try ${only.presentation.theater.name} again`;
+};
 
 export const WAITING_TO_RETRY = "Waiting for a connection to retry";
 

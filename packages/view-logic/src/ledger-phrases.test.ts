@@ -114,9 +114,9 @@ describe("the ledger's rows", () => {
       {
         count: 1,
         label: "Could not be reached",
-        remedy: "The room did not answer. A retry can fix this, and only this.",
+        remedy: "The room did not answer. Trying again may reach it.",
         named: ["Cinemark Dallas XD and IMAX · 10:45a"],
-        retry: "Retry the one unreached",
+        retry: "Try Cinemark Dallas XD and IMAX again",
       },
       {
         count: 446,
@@ -155,7 +155,7 @@ describe("the ledger's rows", () => {
       ],
       [
         "Could not be reached",
-        "The room did not answer. A retry can fix this, and only this.",
+        "The room did not answer. Trying again may reach it.",
       ],
     ]);
     expect(saidIn(rows).map((row) => row.named)).toEqual([
