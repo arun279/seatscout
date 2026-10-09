@@ -1,5 +1,6 @@
 import type {
   Auditorium,
+  PlacedGroup,
   PositionedSeat,
   SearchTerms,
   SeatGroupResult,
@@ -58,7 +59,7 @@ export const shown = async (
     readonly room?: CapturedRoom;
     readonly online?: boolean;
     readonly accessibleSeating?: boolean;
-    readonly opening?: (opened: OpenedRoom) => SeatGroupResult;
+    readonly opening?: (opened: OpenedRoom) => PlacedGroup;
     readonly stage?: LayoutRectangle | null;
     readonly reshaped?: (auditorium: Auditorium) => Auditorium;
   } = {},
@@ -79,7 +80,7 @@ export const shown = async (
       onBack={() => left.push("back")}
       onHandOff={(chosen) => handedOff.push(chosen)}
       online={over.online ?? true}
-      opening={over.opening?.(opened) ?? opened.result}
+      opening={over.opening?.(opened) ?? auditorium.recommended}
       result={opened.result}
       today={TODAY}
     />,
@@ -135,8 +136,8 @@ export const rowBar = (): ReturnType<typeof within> =>
 
 export const otherThan = (room: Shown): SeatGroupResult => {
   const other = room.auditorium.offered.find(
-    (group) => group.key !== room.result.key,
-  );
+    ({ group }) => group.key !== room.result.key,
+  )?.group;
   if (other === undefined) throw new Error("the room offers only one group");
   return other;
 };

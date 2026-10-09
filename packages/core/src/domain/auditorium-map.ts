@@ -17,10 +17,11 @@ export interface AuditoriumMap {
   readonly rows: readonly SeatRow[];
   readonly seatCount: number;
   readonly bookableCount: number;
-  readonly recommended: {
-    readonly row: SeatRow;
-    readonly seat: PositionedSeat;
-  } | null;
+}
+
+export interface Place {
+  readonly row: SeatRow;
+  readonly seat: PositionedSeat;
 }
 
 const bookableIn = (seats: readonly Seat[]) =>
@@ -56,23 +57,23 @@ const seatRowsOf = (seats: readonly Seat[]): readonly SeatRow[] =>
     gapAfter: gapsAlong(row),
   }));
 
-export const auditoriumMap = (
-  seats: readonly Seat[],
-  recommended: readonly Seat[],
-): AuditoriumMap => {
-  const wanted = new Set(recommended.map((seat) => seat.id));
-  const rows = seatRowsOf(seats);
+export const auditoriumMap = (seats: readonly Seat[]): AuditoriumMap => ({
+  rows: seatRowsOf(seats),
+  seatCount: seats.length,
+  bookableCount: bookableIn(seats),
+});
 
-  return {
-    rows,
-    seatCount: seats.length,
-    bookableCount: bookableIn(seats),
-    recommended:
-      rows.flatMap((row) => {
-        const [seat] = row.seats.filter((held) => wanted.has(held.id));
-        return seat === undefined ? [] : [{ row, seat }];
-      })[0] ?? null,
-  };
+export const placeOf = (
+  map: AuditoriumMap,
+  held: readonly Seat[],
+): Place | null => {
+  const wanted = new Set(held.map((seat) => seat.id));
+  return (
+    map.rows.flatMap((row) => {
+      const [seat] = row.seats.filter((drawn) => wanted.has(drawn.id));
+      return seat === undefined ? [] : [{ row, seat }];
+    })[0] ?? null
+  );
 };
 
 interface Run {

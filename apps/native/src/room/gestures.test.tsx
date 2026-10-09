@@ -96,7 +96,7 @@ describe("the map under the fingers", () => {
     const far = seats.reduce((most, seat) =>
       seat.x + seat.y > most.x + most.y ? seat : most,
     );
-    const opening = room.auditorium.recommended.seat;
+    const opening = room.auditorium.recommended.place.seat;
     const inView = () => {
       const { scale, tx, ty } = drawnView();
       const across = scale * (opening.x + opening.width / 2 - frame.x) + tx;

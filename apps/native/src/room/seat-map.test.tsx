@@ -129,7 +129,7 @@ describe("the Seats that are wheelchair spaces and companion seats", () => {
   it("never offers one of them while the query has not asked for accessible seating", async () => {
     const room = await shown();
     const offered = new Set(
-      room.auditorium.offered.flatMap((group) =>
+      room.auditorium.offered.flatMap(({ group }) =>
         group.seats.map((seat) => seat.id),
       ),
     );

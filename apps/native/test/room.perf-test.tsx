@@ -13,8 +13,8 @@ test("the largest room in the corpus, drawn and its choice moved", async () => {
   const [opened] = await openedRooms(undefined, [WEST_PLANO_10]);
   if (opened === undefined) throw new Error("the room was never opened");
   const other = opened.auditorium.offered.find(
-    (group) => group.key !== opened.result.key,
-  );
+    ({ group }) => group.key !== opened.result.key,
+  )?.group;
   if (other === undefined) throw new Error("the room offers one group");
 
   await measureRenders(
@@ -24,7 +24,7 @@ test("the largest room in the corpus, drawn and its choice moved", async () => {
       onBack={() => undefined}
       onHandOff={() => undefined}
       online
-      opening={opened.result}
+      opening={opened.auditorium.recommended}
       result={opened.result}
       today={TODAY}
     />,

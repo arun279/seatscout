@@ -41,14 +41,14 @@ jobs:
       - name: Split the source files this change touches into mutation jobs
         id: plan
         run: |
-          jobs="$(node tools/mutation.mjs --plan "$BASE")"
+          jobs="$(node tools/mutation.mjs --plan HEAD^1)"
           echo "$jobs" | jq .
           echo "jobs=$jobs" >> "$GITHUB_OUTPUT"
       - name: Say whether this change touches the app
         id: app
         run: |
           # shellcheck disable=SC2086
-          if git diff --quiet "$BASE...HEAD" -- $APP; then
+          if git diff --quiet HEAD^1 HEAD -- $APP; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -246,17 +246,18 @@ jobs:
           pnpm install --frozen-lockfile
           { pnpm reassure --baseline && pnpm reassure; } | tee "$RUNNER_TEMP/stability.md"
           rm -rf apps/native/.reassure
-      - name: Measure the screens at the merge base
+      - name: Measure the screens on main as the change merges into it
         run: |
-          git switch --detach "$BASE"
+          merged="$(git rev-parse HEAD)"
+          git switch --detach HEAD^1
           pnpm install --frozen-lockfile
           if [ -f apps/native/jest.perf.config.js ]; then
             pnpm reassure --baseline
           else
-            echo "The merge base has no screen to measure."
+            echo "Main has no screen to measure."
             touch "$RUNNER_TEMP/no-base-measurement"
           fi
-          git switch --detach "$HEAD"
+          git switch --detach "$merged"
           pnpm install --frozen-lockfile
       - name: Measure them on this branch and compare
         run: pnpm reassure
@@ -276,7 +277,7 @@ jobs:
             cat "$RUNNER_TEMP/stability.md"
             echo '```'
             echo
-            echo "### This branch against its merge base"
+            echo "### This change against main as it merges into it"
             echo
             cat apps/native/.reassure/output.md 2>/dev/null || echo "Nothing was measured."
           } > performance.md
@@ -298,10 +299,10 @@ jobs:
           fi
           if [ "$regressed" = unknown ]; then
             if [ -f "$RUNNER_TEMP/no-base-measurement" ]; then
-              echo "::notice::The merge base has no screen to measure, so this job reported only."
+              echo "::notice::Main has no screen to measure, so this job reported only."
               exit 0
             fi
-            echo "::error::The comparison left no answer although the merge base could be measured."
+            echo "::error::The comparison left no answer although main could be measured."
             exit 1
           fi
           if awk -v reading="$steady" 'BEGIN { exit !(reading < 5) }'; then

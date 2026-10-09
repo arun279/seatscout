@@ -56,6 +56,14 @@ export const GATE_CLAIMS = [
   },
   {
     adr: "0012-every-mutant-must-die.md",
+    says: /The change is read against the merge commit's first parent/,
+    holds: "the plan read against the merge commit's first parent",
+    pattern: "--plan HEAD^1",
+    paths: [WORKFLOW],
+    files: 1,
+  },
+  {
+    adr: "0012-every-mutant-must-die.md",
     says: /includes that workspace's test files and no others/,
     holds:
       "the configuration that limits a shard to the tests its workspace holds",

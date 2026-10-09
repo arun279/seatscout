@@ -1,5 +1,4 @@
 import {
-  type AuditoriumMap,
   auditoriumMap,
   type Reading,
   type Seat,
@@ -12,6 +11,7 @@ import {
   type CatalogueTerms,
   openCatalogue,
 } from "./catalogue.js";
+import { type Auditorium, placedIn } from "./auditorium.js";
 import type { Cooldown } from "./cooldown.js";
 import { type Day, type Listed, openDays, type SeatMapState } from "./days.js";
 import { fannedOut } from "./fan-out.js";
@@ -48,12 +48,6 @@ export interface Snapshot {
   readonly phase: Phase;
   readonly days: readonly Day[];
   readonly refusedUntil: number | null;
-}
-
-export interface Auditorium {
-  readonly map: AuditoriumMap;
-  readonly recommended: NonNullable<AuditoriumMap["recommended"]>;
-  readonly offered: readonly SeatGroupResult[];
 }
 
 export interface Search {
@@ -156,16 +150,13 @@ export const openSearch = (deps: SearchDependencies) => {
         throw new Error(
           `this search never read the room of Showtime ${result.showtime.id}`,
         );
-      const map = auditoriumMap(room.seats, result.seats);
-      if (map.recommended === null)
-        throw new Error(
-          `the Seat Group is not in the room of Showtime ${result.showtime.id}`,
-        );
+      const map = auditoriumMap(room.seats);
+      const placed = placedIn(map);
       return {
         map,
-        recommended: map.recommended,
+        recommended: placed(result),
         offered: room.ranking.offered.map((ranked) =>
-          room.ranking.resultOf(room.showtime, ranked),
+          placed(room.ranking.resultOf(room.showtime, ranked)),
         ),
       };
     };
