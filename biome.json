@@ -54,7 +54,6 @@
     {
       "includes": [
         "apps/native/src/**",
-        "reports/planted/colours-*/**",
         "!apps/native/src/theme.ts",
         "!apps/native/src/**/*.test.ts",
         "!apps/native/src/**/*.test.tsx"
@@ -64,22 +63,17 @@
     {
       "includes": [
         "apps/native/src/**",
-        "reports/planted/ids-*/**",
         "!apps/native/src/**/*.test.ts",
         "!apps/native/src/**/*.test.tsx"
       ],
       "plugins": ["./tools/lint/no-literal-ids.grit"]
     },
     {
-      "includes": ["apps/native/**", "reports/planted/retries-*/**"],
+      "includes": ["apps/native/**"],
       "plugins": ["./tools/lint/no-retried-or-concurrent-tests.grit"]
     },
     {
-      "includes": [
-        "apps/native/**/*.test.ts",
-        "apps/native/**/*.test.tsx",
-        "reports/planted/module-scope-*/**"
-      ],
+      "includes": ["apps/native/**/*.test.ts", "apps/native/**/*.test.tsx"],
       "plugins": ["./tools/lint/no-module-scope-app-calls.grit"]
     },
     {

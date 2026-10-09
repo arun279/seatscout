@@ -414,9 +414,11 @@ It belongs to Biome's `project` domain, so switching it on switches on Biome's s
 costs was measured rather than assumed before it joined the hook: over this tree `pnpm lint` runs in
 416 to 568 ms with the rule and 237 to 383 ms without it. The tree holds no cycle, so nothing had to be
 broken to turn it on. A planted pair of modules importing each other is committed under
-`tools/planted-red/planted`, and a test copies it into a git-ignored directory inside the project root
-and runs Biome over it, because the rule reads the module graph and only resolves an import inside the
-root it scanned. The pair is refused twice over, each import named with the path that closes the loop,
+`tools/planted-red/planted`, and a test copies it into a git-ignored directory of its own, with
+`biome.json` and `tools/lint` copied beside it, and runs Biome there, because the rule reads the module
+graph and only resolves an import inside the root it scanned. Every planted Biome run works this way:
+Biome scans its whole root before it lints, so a run rooted at the repository read the copies other
+tests were making and deleting at the same moment, and failed on a directory gone mid-scan. The pair is refused twice over, each import named with the path that closes the loop,
 and a planted pair that imports one way passes. `ignoreTypes` stays at the default the rule documents
 as enabled, which cuts a cycle only where the import is written `import type`; `verbatimModuleSyntax`
 is on here, so an inline

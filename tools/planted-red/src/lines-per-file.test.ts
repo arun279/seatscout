@@ -5,14 +5,15 @@ import { biomeOver, overPlanted, said } from "./planted.fixtures.ts";
 
 const RULE = "style/noExcessiveLinesPerFile";
 
-const plantedIn = (at: string) => join(at, "over.ts");
+const PLANTED = "over.ts";
+const plantedIn = (at: string) => join(at, PLANTED);
 
 const withoutTheLastLine = (source: string) =>
   `${source.split("\n").slice(0, -2).join("\n")}\n`;
 
 describe("the planted red under the file length gate", () => {
   it("refuses a planted file one line over the limit, by length and by limit", () => {
-    const run = overPlanted("lines", (at) => biomeOver(RULE, plantedIn(at)));
+    const run = overPlanted("lines", (at) => biomeOver(RULE, at, PLANTED));
 
     expect(run.status).toBe(1);
     expect(said(run)).toContain(
@@ -27,7 +28,7 @@ describe("the planted red under the file length gate", () => {
         plantedIn(at),
         withoutTheLastLine(readFileSync(plantedIn(at), "utf8")),
       );
-      return biomeOver(RULE, plantedIn(at));
+      return biomeOver(RULE, at, PLANTED);
     });
 
     expect(run.status).toBe(0);

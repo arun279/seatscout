@@ -1,13 +1,13 @@
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { overPlanted, ran, said } from "./planted.fixtures.ts";
+import { APP_SOURCE, biomeIn, overPlanted, said } from "./planted.fixtures.ts";
 
 const REFUSAL = "A mutant's run skips every test after its first failure";
 
 const linted = (named: string) =>
-  overPlanted("retries", (at) =>
-    ran("biome", "lint", "--vcs-enabled=false", join(at, named)),
-  );
+  overPlanted("retries", (at) => biomeIn(at, join(APP_SOURCE, named)), {
+    beneath: APP_SOURCE,
+  });
 
 describe("the planted red under the retried or concurrent test gate", () => {
   for (const [written, named] of [
