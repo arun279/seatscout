@@ -45,10 +45,6 @@ export const main = (
     err.write(`${path} ${measured.refused}`);
     return 1;
   }
-  if (measured.weighed === 0) {
-    err.write(kind.refusal(path));
-    return 1;
-  }
   out.write(`${path} ${measured.said}\n`);
   return 0;
 };

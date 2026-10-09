@@ -1,9 +1,18 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { MUTATION, WEIGHED } from "./mutation.ts";
 
 const report = (...statuses: readonly string[]) =>
   JSON.stringify({
-    files: { "a.ts": { mutants: statuses.map((status) => ({ status })) } },
+    files: {
+      "a.ts": {
+        mutants: statuses.map((status) => ({
+          status,
+          mutatorName: "BooleanLiteral",
+          location: { start: { line: 1, column: 1 } },
+        })),
+      },
+    },
   });
 
 const weighed = (...statuses: readonly string[]) =>
@@ -17,6 +26,21 @@ describe("counting what a mutation run weighed", () => {
   it("counts neither an ignored mutant nor one that would not compile", () => {
     expect(weighed("Ignored", "CompileError", "RuntimeError")).toBe(0);
     expect(weighed("Killed", "Ignored")).toBe(1);
+  });
+
+  it("counts by the statuses the CI job counts a planned job's mutants by, so the two cannot drift", () => {
+    const workflow = readFileSync(
+      new URL("../../../.github/workflows/ci.yml", import.meta.url),
+      "utf8",
+    );
+    const counted = [
+      ...workflow.matchAll(/select\(\.status \| IN\(([^)]*)\)\)/g),
+    ];
+
+    expect(counted).toHaveLength(1);
+    expect(
+      counted[0]?.[1]?.split(", ").map((status) => JSON.parse(status)),
+    ).toEqual(WEIGHED);
   });
 
   it("counts across every file the run judged", () => {
@@ -83,15 +107,41 @@ describe("a mutant Stryker could not judge", () => {
 });
 
 describe("what the mutation guard says", () => {
-  it("names the report, why the run passed its own gate, and what counts", () => {
-    expect(MUTATION.refusal("reports/mutation/core.json")).toBe(
-      "reports/mutation/core.json records a run that weighed no mutant.\n\n" +
+  it("says why a run that weighed nothing passed its own gate, and what counts", () => {
+    expect(
+      MUTATION.measure(
+        JSON.stringify({
+          files: { "a.ts": { mutants: [{ status: "Ignored" }] } },
+        }),
+      ).refused,
+    ).toBe(
+      "records a run that weighed no mutant.\n\n" +
         "Stryker scores such a run as NaN and breaks on score < threshold, so it passes its\n" +
         "own gate. A mutation score is a verdict over the mutants it weighed, and there were\n" +
         "none: this shard's mutate glob in stryker.shards.json reaches no source, or every\n" +
-        "mutant was ignored or failed to compile.\n" +
+        "mutant was ignored.\n" +
         "Killed, Survived, NoCoverage, Timeout are the statuses that count.\n",
     );
+  });
+
+  it("refuses a report that is not Stryker's, rather than counting nothing in it", () => {
+    expect(MUTATION.measure(JSON.stringify({ lcp: 1 })).refused).toBe(
+      "holds no Stryker report.\n",
+    );
+    expect(MUTATION.measure("null").refused).toBe("holds no Stryker report.\n");
+    expect(MUTATION.measure(JSON.stringify({ files: null })).refused).toBe(
+      "holds no Stryker report.\n",
+    );
+  });
+
+  it("refuses nothing in a run that weighed a mutant and judged them all", () => {
+    expect(
+      MUTATION.measure(
+        JSON.stringify({
+          files: { "a.ts": { mutants: [{ status: "Killed" }] } },
+        }),
+      ).refused,
+    ).toBeUndefined();
   });
 
   it("calls a shard that left no report a verdict rather than an omission", () => {
