@@ -14,7 +14,7 @@ import { otherThan, seatNamed, shown } from "./room.fixtures.js";
 
 jest.mock("react-native/Libraries/Utilities/useColorScheme");
 
-const DOWN = themeFor("down").colours;
+const downColours = () => themeFor("down").colours;
 
 const ink = (tone: string) => ({
   type: 0,
@@ -44,7 +44,7 @@ describe("how each Seat is inked", () => {
     if (free === undefined) throw new Error("nothing is for sale");
 
     expect(drawnAs(free.id)).toEqual({
-      fill: ink(DOWN.seatFree),
+      fill: ink(downColours().seatFree),
       stroke: undefined,
       strokeDasharray: undefined,
       filter: undefined,
@@ -61,7 +61,7 @@ describe("how each Seat is inked", () => {
 
     expect(drawnAs(gone.id)).toMatchObject({
       fill: null,
-      stroke: ink(DOWN.seatGone),
+      stroke: ink(downColours().seatGone),
       strokeDasharray: undefined,
     });
   });
@@ -75,7 +75,7 @@ describe("how each Seat is inked", () => {
 
     expect(drawnAs(space.id)).toMatchObject({
       fill: null,
-      stroke: ink(DOWN.beamDim),
+      stroke: ink(downColours().beamDim),
     });
   });
 
@@ -116,7 +116,7 @@ describe("how each Seat is inked", () => {
     );
 
     expect(recommended.map((id) => drawnAs(id).stroke)).toEqual(
-      recommended.map(() => ink(DOWN.beamDim)),
+      recommended.map(() => ink(downColours().beamDim)),
     );
   });
 });

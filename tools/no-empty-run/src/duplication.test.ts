@@ -38,9 +38,17 @@ describe("reading what a duplication run measured", () => {
 });
 
 describe("what the duplication guard says", () => {
-  it("names the report, why jscpd passed its own gate, and what was missing", () => {
-    expect(DUPLICATION.refusal("reports/duplication/jscpd-report.json")).toBe(
-      "reports/duplication/jscpd-report.json records a run that read no source.\n\n" +
+  it("says why jscpd passed its own gate, and what was missing, when no source was read", () => {
+    expect(
+      DUPLICATION.measure(
+        JSON.stringify({
+          statistics: {
+            total: { sources: 0, lines: 0, duplicatedLines: 0, percentage: 0 },
+          },
+        }),
+      ).refused,
+    ).toBe(
+      "records a run that read no source.\n\n" +
         "jscpd exits zero both for duplication inside the threshold and for a run whose paths\n" +
         "matched no file, so its status cannot say which of the two happened. A duplication\n" +
         "percentage is a verdict over the lines it read, and there were none: the paths handed\n" +

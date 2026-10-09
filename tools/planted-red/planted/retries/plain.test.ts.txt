@@ -1,0 +1,11 @@
+jest.useFakeTimers();
+
+const concurrent = { retryTimes: 2 };
+
+test("adds", () => {
+  expect(concurrent.retryTimes).toBe(2);
+});
+
+it.each([1, 2])("adds %i", (n) => {
+  expect(n + 1).toBeGreaterThan(n);
+});

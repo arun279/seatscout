@@ -15,6 +15,7 @@ import {
   rowBar,
   type Shown,
   shown,
+  tapAt,
   tapped,
 } from "./room.fixtures.js";
 
@@ -154,6 +155,36 @@ describe("the map under the fingers", () => {
     );
 
     expect(rowBar().queryByText(chosenOf(other))).toBeNull();
+  });
+
+  it("chooses nothing when a tap lands on no Seat", async () => {
+    const room = await shown({ room: HOOKY_SOUTHLAKE });
+    const frame = frameOf(room.auditorium);
+    const seats = room.auditorium.map.rows.flatMap((row) => row.seats);
+    const steps = Array.from({ length: 21 }, (_, step) => step / 20);
+    const empty = steps
+      .flatMap((across) =>
+        steps.map((down) => ({
+          x: frame.x + across * frame.width,
+          y: frame.y + down * frame.height,
+        })),
+      )
+      .find(({ x, y }) =>
+        seats.every(
+          (seat) =>
+            x < seat.x ||
+            x > seat.x + seat.width ||
+            y < seat.y ||
+            y > seat.y + seat.height,
+        ),
+      );
+    if (empty === undefined) throw new Error("the frame is all Seats");
+    const perUnit = perUnitIn(room);
+    const before = screen.toJSON();
+
+    await tapAt((empty.x - frame.x) * perUnit, (empty.y - frame.y) * perUnit);
+
+    expect(screen.toJSON()).toEqual(before);
   });
 
   it("follows the midpoint of two fingers in a drag on Android as on iOS", async () => {

@@ -15,7 +15,7 @@ import { announcedOn, placeAt } from "./seat-map.js";
 
 jest.mock("react-native/Libraries/Utilities/useColorScheme");
 
-const DOWN = themeFor("down").colours;
+const downColours = () => themeFor("down").colours;
 
 const ink = (tone: string) => ({
   type: 0,
@@ -80,10 +80,12 @@ describe("the Auditorium drawn to scale", () => {
       seatNamed(seat.id).props["fill"];
 
     expect(chosen.map((id) => fillOf({ id }))).toEqual([
-      ink(DOWN.beam),
-      ink(DOWN.beam),
+      ink(downColours().beam),
+      ink(downColours().beam),
     ]);
-    expect(free.map(fillOf)).toEqual(free.map(() => ink(DOWN.seatFree)));
+    expect(free.map(fillOf)).toEqual(
+      free.map(() => ink(downColours().seatFree)),
+    );
   });
 
   it("outlines a Seat that is not bookable rather than filling it", async () => {
@@ -93,8 +95,12 @@ describe("the Auditorium drawn to scale", () => {
       .find((seat) => !seat.bookable && seat.designation === "standard");
     if (gone === undefined) throw new Error("every Seat is bookable");
 
-    expect(seatNamed(gone.id).props["stroke"]).toEqual(ink(DOWN.seatGone));
-    expect(seatNamed(gone.id).props["fill"]).not.toEqual(ink(DOWN.seatFree));
+    expect(seatNamed(gone.id).props["stroke"]).toEqual(
+      ink(downColours().seatGone),
+    );
+    expect(seatNamed(gone.id).props["fill"]).not.toEqual(
+      ink(downColours().seatFree),
+    );
   });
 });
 
@@ -109,7 +115,7 @@ describe("the Seats that are wheelchair spaces and companion seats", () => {
     for (const space of spaces) {
       expect(seatNamed(space.id).props["strokeDasharray"]).toEqual([2.2, 1.6]);
       expect(seatNamed(space.id).props["stroke"]).toEqual(
-        ink(space.bookable ? DOWN.beamDim : DOWN.seatGone),
+        ink(space.bookable ? downColours().beamDim : downColours().seatGone),
       );
     }
   });
@@ -122,7 +128,7 @@ describe("the Seats that are wheelchair spaces and companion seats", () => {
     if (space === undefined)
       throw new Error("the recommendation holds no space");
 
-    expect(seatNamed(space.id).props["fill"]).toEqual(ink(DOWN.beam));
+    expect(seatNamed(space.id).props["fill"]).toEqual(ink(downColours().beam));
     expect(seatNamed(space.id).props["strokeDasharray"]).toEqual([2.2, 1.6]);
   });
 

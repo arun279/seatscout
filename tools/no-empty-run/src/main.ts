@@ -41,8 +41,8 @@ export const main = (
   }
 
   const measured = kind.measure(text);
-  if (measured.weighed === 0) {
-    err.write(kind.refusal(path));
+  if (measured.refused !== undefined) {
+    err.write(`${path} ${measured.refused}`);
     return 1;
   }
   out.write(`${path} ${measured.said}\n`);

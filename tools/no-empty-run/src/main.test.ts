@@ -24,6 +24,21 @@ const guard = (...argv: readonly string[]) => {
     "weighed-nothing.json": JSON.stringify({
       files: { "a.ts": { mutants: [{ status: "Ignored" }] } },
     }),
+    "errored.json": JSON.stringify({
+      files: {
+        "a.ts": {
+          mutants: [
+            { status: "Killed" },
+            {
+              status: "RuntimeError",
+              mutatorName: "BooleanLiteral",
+              location: { start: { line: 4, column: 2 } },
+              statusReason: "out of memory",
+            },
+          ],
+        },
+      },
+    }),
   };
   const status = main(
     ["node", "no-empty-run", ...argv],
@@ -107,5 +122,15 @@ describe("the guard", () => {
 
   it("fails when it is asked for nothing at all", () => {
     expect(guard().refused).toContain("nothing is not a run this guard reads");
+  });
+
+  it("refuses a run that judged some mutants but could not judge another, naming the report", () => {
+    const { status, refused, said } = guard("mutation", "errored.json");
+
+    expect(status).toBe(1);
+    expect(said).toBe("");
+    expect(refused).toContain(
+      "errored.json records 1 mutant(s) Stryker could not judge:\na.ts:4:2 BooleanLiteral RuntimeError: out of memory\n",
+    );
   });
 });

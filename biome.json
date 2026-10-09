@@ -71,6 +71,10 @@
       "plugins": ["./tools/lint/no-literal-ids.grit"]
     },
     {
+      "includes": ["apps/native/**", "reports/planted/retries-*/**"],
+      "plugins": ["./tools/lint/no-retried-or-concurrent-tests.grit"]
+    },
+    {
       "includes": ["packages/**"],
       "linter": {
         "rules": {
