@@ -73,7 +73,7 @@ describe("a mutant Stryker could not judge", () => {
     MUTATION.measure(JSON.stringify({ files: { "a.ts": { mutants } } }))
       .refused;
 
-  it("refuses a run in which any mutant ended as a runtime or compile error, naming each one and its error", () => {
+  it("refuses a run in which any mutant ended as a runtime or compile error, naming each one and its whole error, stack included", () => {
     expect(
       erroredIn(
         { status: "Killed" },
@@ -93,6 +93,7 @@ describe("a mutant Stryker could not judge", () => {
     ).toBe(
       "records 2 mutant(s) Stryker could not judge:\n" +
         "a.ts:279:3 ConditionalExpression RuntimeError: Test runner crashed.\n" +
+        "  Tried twice\n" +
         "a.ts:12:9 StringLiteral CompileError: TS2322\n\n" +
         "Stryker leaves a runtime or compile error out of the score, so a break of 100 passes it,\n" +
         "yet no test ever judged that mutant. Find why its run failed; the error is named above.\n",

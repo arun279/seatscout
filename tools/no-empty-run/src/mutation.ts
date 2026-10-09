@@ -35,7 +35,7 @@ const mutantsOf = (report: Report) =>
   );
 
 const named = ({ file, mutant }: { file: string; mutant: Mutant }) =>
-  `${file}:${mutant.location.start.line}:${mutant.location.start.column} ${mutant.mutatorName} ${mutant.status}: ${mutant.statusReason?.split("\n")[0]}`;
+  `${file}:${mutant.location.start.line}:${mutant.location.start.column} ${mutant.mutatorName} ${mutant.status}: ${mutant.statusReason?.replaceAll("\n", "\n  ")}`;
 
 const NONE_WEIGHED = `records a run that weighed no mutant.\n\nStryker scores such a run as NaN and breaks on score < threshold, so it passes its\nown gate. A mutation score is a verdict over the mutants it weighed, and there were\nnone: this shard's mutate glob in stryker.shards.json reaches no source, or every\nmutant was ignored.\n${WEIGHED.join(", ")} are the statuses that count.\n`;
 
