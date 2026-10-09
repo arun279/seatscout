@@ -5,8 +5,14 @@ const fromTheApp = createRequire(
   new URL("../../../apps/native/package.json", import.meta.url),
 );
 
-const environmentOf = (preset: string): unknown =>
-  fromTheApp(`jest-expo/${preset}/jest-preset`).testEnvironment;
+const environmentOf = (preset: string): unknown => {
+  const loaded: unknown = fromTheApp(`jest-expo/${preset}/jest-preset`);
+  return typeof loaded === "object" &&
+    loaded !== null &&
+    "testEnvironment" in loaded
+    ? loaded.testEnvironment
+    : undefined;
+};
 
 describe("the environment the app's tests run in", () => {
   it("is the one both platform presets name, so one marked environment serves both", () => {
@@ -20,8 +26,13 @@ interface Event {
   readonly test: { mode?: string; readonly errors: readonly unknown[] };
 }
 
-const stopAtFirstFailure: (event: Event, mutant: string | undefined) => void =
-  fromTheApp("./test/stop-at-first-failure.cjs");
+const stop: unknown = fromTheApp("./test/stop-at-first-failure.cjs");
+
+const stopAtFirstFailure = (event: Event, mutant: string | undefined): void => {
+  if (typeof stop !== "function")
+    throw new Error("stop-at-first-failure.cjs exports no function");
+  stop(event, mutant);
+};
 
 const started = (mutant: string | undefined): string | undefined => {
   const event: Event = { name: "test_start", test: { errors: [] } };
@@ -48,7 +59,11 @@ describe("a mutant's run, which Stryker cannot stop at its first failure", () =>
   it("starts afresh under the next mutant", () => {
     done("3", [new Error("killed")]);
 
-    expect(started("4")).toBeUndefined();
+    expect([started("3"), started("4"), started("4")]).toEqual([
+      "skip",
+      undefined,
+      undefined,
+    ]);
   });
 
   it("never skips outside a mutant's run, so the dry run and a plain run see every failure", () => {

@@ -1,0 +1,9 @@
+language js
+
+or {
+  `jest.retryTimes`,
+  `test.concurrent`,
+  `it.concurrent`
+} as $feature where {
+  register_diagnostic(span=$feature, message="A mutant's run skips every test after its first failure, so a retried test reruns as skipped and a concurrent test can be skipped after it started. Either can turn a killed mutant into a survivor. ADR 12 says why the run stops there.")
+}

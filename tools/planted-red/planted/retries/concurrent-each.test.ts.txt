@@ -1,0 +1,3 @@
+it.concurrent.each([1, 2])("adds %i", async (n) => {
+  expect(n + 1).toBeGreaterThan(n);
+});
