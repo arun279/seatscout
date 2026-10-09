@@ -19,6 +19,11 @@
     "plugins": ["@react-native-community/datetimepicker"],
     "ios": {
       "bundleIdentifier": "io.github.arun279.seatscout",
+      "icon": {
+        "light": "./assets/icon.png",
+        "dark": "./assets/icon-dark.png",
+        "tinted": "./assets/icon-tinted.png"
+      },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -27,6 +32,7 @@
       "package": "io.github.arun279.seatscout",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
+        "monochromeImage": "./assets/monochrome-icon.png",
         "backgroundColor": "#0d0f19"
       }
     },
