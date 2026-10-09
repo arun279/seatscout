@@ -65,7 +65,7 @@ export const HandOff = ({
     answer: null,
     phase: "idle",
   });
-  const gone = useRef(false);
+  const gone = useRef<boolean | null>(null);
   const [bound] = useState(() => (node: View | null) => {
     gone.current = node === null;
   });

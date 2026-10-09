@@ -45,6 +45,14 @@ describe("the searches this phone remembers", () => {
     expect(ruleUnder("Spider-Man")).toBe(0);
   });
 
+  it("points each row onward with a 16 point chevron", async () => {
+    await listed([ONE]);
+
+    expect(
+      StyleSheet.flatten(screen.getByText("›").props["style"]).fontSize,
+    ).toBe(16);
+  });
+
   it("is headed even before the store has answered", async () => {
     await listed(undefined);
 

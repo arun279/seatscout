@@ -202,6 +202,16 @@ describe("the words a card uses", () => {
     expect(said).toContain(seatSetOf(REFERENCE));
   });
 
+  it("asks only for the movie once the area is named, and names that area", () => {
+    expect(
+      ledeOf(
+        { date: "2026-08-29", partySize: 2, area: "75234" },
+        REFERENCE,
+        "2026-08-28",
+      ),
+    ).toBe("Pick a movie playing near 75234.");
+  });
+
   it("gives a control and an empty history words of their own, because an empty one names nothing", () => {
     expect(FIND_SEATS.trim()).not.toHaveLength(0);
     expect(NOTHING_REMEMBERED.trim()).not.toHaveLength(0);

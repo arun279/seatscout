@@ -1,7 +1,6 @@
 import {
   type ReactElement,
   type ReactNode,
-  useEffect,
   useState,
   useSyncExternalStore,
 } from "react";
@@ -13,6 +12,7 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  type Text,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -37,6 +37,15 @@ export const presentationFor = (
   os: typeof Platform.OS,
 ): "formSheet" | "fullScreenModal" =>
   os === "android" ? "fullScreenModal" : "formSheet";
+
+type Reach = (heading: Text, said: string) => void;
+
+export const headingReachFor = (os: typeof Platform.OS): Reach =>
+  os === "web"
+    ? (_, said) => AccessibilityInfo.announceForAccessibility(said)
+    : (heading) => AccessibilityInfo.sendAccessibilityEvent(heading, "focus");
+
+const REACH: Reach = headingReachFor(Platform.OS);
 
 export const SHEET_PRESENTATION: "formSheet" | "fullScreenModal" =
   presentationFor(Platform.OS);
@@ -106,9 +115,11 @@ const keyboardLift = () => {
   };
 };
 
-type HeadProps = Pick<SheetProps, "heading" | "keep" | "onKeep">;
+type HeadProps = Pick<SheetProps, "heading" | "keep" | "onKeep"> & {
+  readonly titled: (node: Text | null) => void;
+};
 
-const AppBar = ({ heading, keep, onKeep }: HeadProps) => (
+const AppBar = ({ heading, keep, onKeep, titled }: HeadProps) => (
   <View style={styles.bar}>
     <TouchableOpacity
       accessibilityLabel={keep}
@@ -120,13 +131,18 @@ const AppBar = ({ heading, keep, onKeep }: HeadProps) => (
         ✕
       </Type>
     </TouchableOpacity>
-    <Type accessibilityRole="header" set="marqueeRow" tone="silver">
+    <Type
+      accessibilityRole="header"
+      ref={titled}
+      set="marqueeRow"
+      tone="silver"
+    >
       {heading}
     </Type>
   </View>
 );
 
-const Head = ({ heading, keep, onKeep }: HeadProps) => (
+const Head = ({ heading, keep, onKeep, titled }: HeadProps) => (
   <View style={styles.head}>
     <TouchableOpacity
       accessibilityLabel={keep}
@@ -138,7 +154,12 @@ const Head = ({ heading, keep, onKeep }: HeadProps) => (
         {`‹ ${keep}`}
       </Type>
     </TouchableOpacity>
-    <Type accessibilityRole="header" set="marqueeTitle" tone="silver">
+    <Type
+      accessibilityRole="header"
+      ref={titled}
+      set="marqueeTitle"
+      tone="silver"
+    >
       {heading}
     </Type>
   </View>
@@ -155,13 +176,12 @@ export const Sheet = ({
   children,
 }: SheetProps): ReactElement => {
   const theme = useTheme();
-  const above: HeadProps = { heading, keep, onKeep };
+  const [titled] = useState(() => (node: Text | null) => {
+    if (node !== null && !claimed) REACH(node, heading);
+  });
+  const above: HeadProps = { heading, keep, onKeep, titled };
   const [keyboard] = useState(keyboardLift);
   const lift = useSyncExternalStore(keyboard.subscribe, keyboard.snapshot);
-
-  useEffect(() => {
-    if (!claimed) AccessibilityInfo.announceForAccessibility(heading);
-  }, [claimed, heading]);
 
   return (
     <View

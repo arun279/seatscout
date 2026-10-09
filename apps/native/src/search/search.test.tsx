@@ -112,6 +112,15 @@ describe("the Search screen's prompt face", () => {
     ).toBeOnTheScreen();
   });
 
+  it("asks only for the movie once the area is named", async () => {
+    await showing({ terms: { ...SHORT, area: "75234" } });
+
+    expect(
+      screen.getByText("Pick a movie playing near 75234."),
+    ).toBeOnTheScreen();
+    expect(screen.queryByText(/^Name an area/)).toBeNull();
+  });
+
   it("stands the query on the room's own ground", async () => {
     await showing();
 
