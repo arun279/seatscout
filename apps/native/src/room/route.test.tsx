@@ -23,6 +23,8 @@ jest.mock("expo-network", () => ({
   useNetworkState: () => ({ isInternetReachable: true }),
 }));
 const mockReads: string[] = [];
+const mockHeld: (() => void)[] = [];
+let mockHolding = false;
 
 function mockSource() {
   const upstream = fakeUpstream({
@@ -33,7 +35,13 @@ function mockSource() {
   return createSeatScout({
     fetch: (url, init) => {
       mockReads.push(url);
-      return upstream(url, init);
+      return mockHolding && url.includes("/napi/seatMap/")
+        ? new Promise((done) => {
+            mockHeld.push(() => {
+              done(upstream(url, init));
+            });
+          })
+        : upstream(url, init);
     },
     now: () => 1000,
     wait: () => Promise.resolve(),
@@ -65,6 +73,14 @@ const opened = (url: string) =>
 const settled = async (app: PromiseLike<unknown>) => {
   await app;
   await screen.findByText(THEATER);
+};
+
+const holdingSeatMaps = () => {
+  mockHolding = true;
+  return () => {
+    mockHolding = false;
+    for (const go of mockHeld.splice(0)) go();
+  };
 };
 
 const checkedCount = () =>
@@ -155,5 +171,37 @@ describe("the Room a deep link opens", () => {
 
     expect(app.getPathname()).toBe("/hand-off");
     expect(app.getSearchParams()).toMatchObject({ group: other.key });
+  });
+});
+
+describe("the Room a deep link opens before its search has settled", () => {
+  it("shows the line the list shows while the search reads, then the room", async () => {
+    const release = holdingSeatMaps();
+    await opened(roomLink(VILLAGE_1.showtime));
+
+    expect(
+      await screen.findByText(/^\d+ candidates · \d+ checked/),
+    ).toBeOnTheScreen();
+    expect(screen.getByTestId("progress")).toBeOnTheScreen();
+    expect(screen.queryByText(THEATER)).toBeNull();
+
+    release();
+
+    expect(await screen.findByText(THEATER)).toBeOnTheScreen();
+  });
+
+  it("opens the ledger from that line, as the list does", async () => {
+    const release = holdingSeatMaps();
+    const app = opened(roomLink(VILLAGE_1.showtime));
+    await app;
+
+    await fireEvent.press(
+      await screen.findByRole("button", { name: "ledger ›" }),
+    );
+
+    expect(app.getPathname()).toBe("/ledger");
+
+    release();
+    await screen.findByText(THEATER, { includeHiddenElements: true });
   });
 });

@@ -8,6 +8,7 @@ import { useOnline } from "../host/online.js";
 import { useProfile } from "../host/profile.js";
 import { seatProfile, seatscout } from "../host/source.js";
 import { useOpenedRoom } from "../room/opening.js";
+import { Reading } from "../room/reading.js";
 import { Room } from "../room/room.js";
 
 const clock = deviceClock();
@@ -18,15 +19,22 @@ const Opened = ({
 }: {
   readonly asked: SearchTerms;
   readonly date: string;
-}): ReactElement | null => {
+}): ReactElement => {
   const { showtime, group } = useLocalSearchParams<{
     readonly showtime?: string;
     readonly group?: string;
   }>();
   const online = useOnline();
-  const opened = useOpenedRoom(seatscout, asked, showtime, group);
+  const { session, opened } = useOpenedRoom(seatscout, asked, showtime, group);
 
-  if (opened === null) return null;
+  if (opened === null)
+    return (
+      <Reading
+        onLedger={() => router.push("/ledger")}
+        session={session}
+        today={date}
+      />
+    );
 
   return (
     <Room
