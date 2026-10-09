@@ -49,22 +49,28 @@ export const openRecentSearches = (
     const migrated = Array.isArray(earlier) ? earlier.map(onItsDate) : earlier;
     return isHistory(migrated) ? migrated : [];
   };
+  const kept = async (search: RecentSearch) => {
+    const asked: RecentSearch = {
+      movie: search.movie,
+      ...(search.title !== undefined && { title: search.title }),
+      dates: search.dates,
+      area: search.area,
+      partySize: search.partySize,
+    };
+    const history = [
+      asked,
+      ...(await remembered()).filter((earlier) => !same(earlier, asked)),
+    ].slice(0, KEPT);
+    await store.write(KEY, history);
+    return history;
+  };
+  let last: Promise<unknown> = Promise.resolve();
   return {
     remembered,
-    remember: async (search: RecentSearch) => {
-      const asked: RecentSearch = {
-        movie: search.movie,
-        ...(search.title !== undefined && { title: search.title }),
-        dates: search.dates,
-        area: search.area,
-        partySize: search.partySize,
-      };
-      const history = [
-        asked,
-        ...(await remembered()).filter((earlier) => !same(earlier, asked)),
-      ].slice(0, KEPT);
-      await store.write(KEY, history);
-      return history;
+    remember: (search: RecentSearch) => {
+      const keeping = last.then(() => kept(search));
+      last = keeping;
+      return keeping;
     },
   };
 };

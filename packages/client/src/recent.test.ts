@@ -76,6 +76,17 @@ describe("the searches a device remembers", () => {
     ]);
   });
 
+  it("keeps both of two searches remembered at the same time, in the order they were asked", async () => {
+    const store = inMemoryStore();
+    const recent = openRecentSearches(store);
+    const larger = { ...TONIGHT, partySize: 3 };
+
+    expect(
+      await Promise.all([recent.remember(TONIGHT), recent.remember(larger)]),
+    ).toEqual([[TONIGHT], [larger, TONIGHT]]);
+    expect(await store.read(KEY)).toEqual([larger, TONIGHT]);
+  });
+
   it("keeps the history under a key that names the shape it stores", async () => {
     const store = inMemoryStore();
     await openRecentSearches(store).remember(TONIGHT);
