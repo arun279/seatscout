@@ -1,6 +1,7 @@
 import { DEVICE_CLAIMS } from "./claims-in-prose.pairs.device.mjs";
 import { GATE_CLAIMS } from "./claims-in-prose.pairs.gates.mjs";
 import { MUTATION_CLAIMS } from "./claims-in-prose.pairs.mutation.mjs";
+import { PROSE_CLAIMS } from "./claims-in-prose.pairs.prose.mjs";
 import { SEARCH_CLAIMS } from "./claims-in-prose.pairs.search.mjs";
 
 const BIOME = "biome.json";
@@ -200,4 +201,5 @@ export const CLAIMS = [
   ...DEVICE_CLAIMS,
   ...MUTATION_CLAIMS,
   ...SEARCH_CLAIMS,
+  ...PROSE_CLAIMS,
 ];

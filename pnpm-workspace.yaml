@@ -12,9 +12,11 @@ overrides:
   '@types/jsdom': 30.0.0
   decode-uri-component: 0.5.0
   exit: npm:exit-x@0.2.2
+  katex@0.16.47: 0.18.11
   qs: 6.16.0
   source-map-js@1.2.1: 1.2.2
   react: 19.2.3
+  smol-toml@1.8.0: 1.9.0
   uuid: 11.1.1
 
 packageExtensions:

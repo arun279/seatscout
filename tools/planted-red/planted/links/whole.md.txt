@@ -1,0 +1,3 @@
+# A record
+
+It points to [its own heading](#a-record) and to [the other planted record](broken.md).

@@ -1,0 +1,11 @@
+# A record
+
+One paragraph, wrapped wherever its author chose, so this line runs on past eighty characters without being refused.
+
+| step | time |
+| --- | --- |
+| one | 1 ms |
+
+```text
+a fence that names its language
+```

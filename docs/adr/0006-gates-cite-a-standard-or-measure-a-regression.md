@@ -584,6 +584,21 @@ tests `tests/app` holds is a figure this decision would have to justify, it woul
 whatever the suite held on the day it was written, and a count does not protect a particular
 scan in any case.
 
+**The prose is linted for form and for links that resolve.** Every tracked markdown file goes
+through [markdownlint-cli2](https://github.com/DavidAnson/markdownlint-cli2) under markdownlint's
+own defaults, with one rule turned off: line length. Nothing here holds prose to a width, and a
+width would be a number this decision chose. The records already met every other default but
+three tables written without spaces around their pipes and one fence that named no language.
+[lychee](https://github.com/lycheeverse/lychee) then checks every link in the same files that
+points inside the repository, file and heading alike, with `--offline --include-fragments`.
+Links to the web are left out of the gate, because a site being down would turn a pull request
+red for something it did not change; checked once by hand on the day this landed, one of them
+was broken, a `#readme` anchor GitHub draws with script, and it was corrected.
+`tools/planted-red/src/markdown.test.ts` watches markdownlint refuse two headings at the top
+level and a bare fence and pass a tidy record with a long line, and the `quality` job watches
+lychee refuse a planted record with a missing file and a missing heading and pass one whose links
+resolve.
+
 **One question gets one gate.** The `dependencies` job scans the lockfile against the OSV
 database and fails on any advisory. It once also ran `pnpm audit`, which since 2021 has been
 a proxy in front of the same GitHub Advisory Database that OSV mirrors, so the two steps
@@ -595,10 +610,13 @@ that already asks the OSV database about advisories. The list is not a judgement
 are acceptable in the abstract, which would be a line this project drew. It is the set of SPDX
 identifiers the lockfile resolves to today, so the gate takes the regression form: a release that
 changes a licence, and a new dependency that brings a licence family the tree has not carried, both
-fail and get decided in a diff. Fifteen identifiers satisfy every expression 1,011 packages carry,
+fail and get decided in a diff. Sixteen identifiers satisfy every expression the lockfile's packages carry,
 `AND` needing both sides and `OR` needing one. A licence osv-scanner cannot determine is reported as
 `UNKNOWN`, and `UNKNOWN` is an identifier like any other here: it is not on the list, so it fails
 rather than passing, which is the whole reason the list is an allowlist and not a denylist.
+One was decided that way: argparse 3 declares `PSF-2.0`, the Python Software Foundation License
+Agreement on its own, where argparse 2 declared `Python-2.0`, whose SPDX text already contains that
+agreement. The terms the tree accepts did not change, so `PSF-2.0` joined the list.
 
 **Watched failing, watched silent.** The shipped list passes over the lockfile. Narrowed to the ten
 permissive identifiers alone, the same scan exits 1 and names all thirty-one violators by package and
@@ -622,7 +640,7 @@ moved to the versions it named. Expo documents `expo.install.exclude` as
 the way to hold a package back from that check, and `apps/native/package.json` carries no such
 list, because a package in it is a package the SDK is no longer asked about. The check this
 workspace expected to fight, the one that refuses an override breaking a critical dependency
-chain, passes over all eight overrides in `pnpm-workspace.yaml`.
+chain, passes over all ten overrides in `pnpm-workspace.yaml`.
 
 Neither is on a hook, and the reason is not only what they cost. Measured over this workspace,
 `expo install --check` answers in 1.7 seconds and `expo-doctor` takes 35, so the first is cheap
@@ -677,7 +695,13 @@ parser inside Expo Router; `compression` above
 [GHSA-vc2v-76pw-4v95](https://github.com/advisories/GHSA-vc2v-76pw-4v95), through Expo's CLI;
 and `source-map-js` above
 [GHSA-68fv-2mgg-jv7q](https://github.com/advisories/GHSA-68fv-2mgg-jv7q), through PostCSS and
-css-tree. The last two replace only the exact version that was asked for. `uuid` is held at
+css-tree. Two more come with markdownlint-cli2: `smol-toml` above
+[GHSA-r4xh-jqrq-34v2](https://github.com/advisories/GHSA-r4xh-jqrq-34v2), which it pins exactly,
+and `katex` above [GHSA-238p-pmpm-9mq7](https://github.com/advisories/GHSA-238p-pmpm-9mq7),
+which `micromark-extension-math` loads for rendering math to HTML, which the linter never does.
+The fix for `katex` is in 0.18, outside the range that extension asks for, so the lint's planted
+red is what shows the newer release still loads. The last four replace only the exact version
+that was asked for. `uuid` is held at
 11.1.1 rather than at the newest patched release, because that parser loads it with `require`
 and uuid dropped its CommonJS entry point after 11. `exit` is aliased to `exit-x`, because the
 package Jest's own runner pulls in states its licence in npm's pre-SPDX form, so the licence
@@ -844,7 +868,7 @@ of it spread 7.9, 19.6 and 12.1 per cent on three runs (36183944292, 36225719569
 the cold launches `am start -W` timed still spread 8.1 per cent over forty launches on run
 36245321569. So it is not measured. That run read both sides twice: when a measure spread 5 per
 cent or more, everything was read again with twice the launches and iterations, as
-[Reassure's README](https://github.com/callstack/reassure#readme) suggests for a noisy runner. The
+[Reassure's README](https://github.com/callstack/reassure) suggests for a noisy runner. The
 second pass cost about 59 of the `device` job's 91 minutes (the three APK installs in the log
 are at 13:47, 14:16 and 14:46, and the step ended at 15:15), and its final report still left the
 walk's time (6.3 per cent) and CPU (13.5) out as unsteady while holding frame rate (0.2) and memory
