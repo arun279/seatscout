@@ -606,10 +606,13 @@ that already asks the OSV database about advisories. The list is not a judgement
 are acceptable in the abstract, which would be a line this project drew. It is the set of SPDX
 identifiers the lockfile resolves to today, so the gate takes the regression form: a release that
 changes a licence, and a new dependency that brings a licence family the tree has not carried, both
-fail and get decided in a diff. Fifteen identifiers satisfy every expression 1,011 packages carry,
+fail and get decided in a diff. Sixteen identifiers satisfy every expression the lockfile's packages carry,
 `AND` needing both sides and `OR` needing one. A licence osv-scanner cannot determine is reported as
 `UNKNOWN`, and `UNKNOWN` is an identifier like any other here: it is not on the list, so it fails
 rather than passing, which is the whole reason the list is an allowlist and not a denylist.
+One was decided that way: argparse 3 declares `PSF-2.0`, the Python Software Foundation License
+Agreement on its own, where argparse 2 declared `Python-2.0`, whose SPDX text already contains that
+agreement. The terms the tree accepts did not change, so `PSF-2.0` joined the list.
 
 **Watched failing, watched silent.** The shipped list passes over the lockfile. Narrowed to the ten
 permissive identifiers alone, the same scan exits 1 and names all thirty-one violators by package and
