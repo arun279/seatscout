@@ -32,6 +32,7 @@ describe("measuring a change", () => {
     measuring(run)("origin/main", "HEAD", "main", true);
 
     const said = lines(commands);
+    expect(said.filter((line) => line === "mktemp -d")).toHaveLength(2);
     for (const [ref, at] of [
       ["base-sha", "/tmp/snapshot-1"],
       ["head-sha", "/tmp/snapshot-2"],
