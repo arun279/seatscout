@@ -1,9 +1,14 @@
-import { type ConfigPlugin, withAndroidManifest } from "expo/config-plugins";
+import {
+  AndroidConfig,
+  type ConfigPlugin,
+  withAndroidManifest,
+} from "expo/config-plugins";
 
 const withoutGwpAsan: ConfigPlugin = (config) =>
   withAndroidManifest(config, (android) => {
-    for (const application of android.modResults.manifest.application ?? [])
-      application.$["android:gwpAsanMode"] = "never";
+    AndroidConfig.Manifest.getMainApplicationOrThrow(android.modResults).$[
+      "android:gwpAsanMode"
+    ] = "never";
     return android;
   });
 

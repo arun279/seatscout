@@ -786,16 +786,20 @@ where a CMakeLists was named, the app still downloaded 3.22.1, and the step fail
 otherwise runs Recoverable GWP-ASan on a sample of its launches
 ([Android's guide](https://developer.android.com/ndk/guides/gwp-asan)), and bionic's default
 samples one process in 128. When a sampled allocation is freed inside Hermes, GWP-ASan records a
-backtrace by walking frame pointers, and the walk runs off the stack Hermes made with
+backtrace by walking frame pointers, and on x86_64 the walk runs off the stack Hermes made with
 `hoost_make_fcontext`, because that stack's first frame pointer holds a code address. The app dies
-of SIGSEGV within a second of starting, with no GWP-ASan report. An `android` walk failed this way
-in run 37948316937, its screen showing the launcher. The fault is
-[facebook/hermes#2225](https://github.com/facebook/hermes/issues/2225), for the very
-`libhermesvm.so` this app ships, build ID `8d927b4d4757e3548fed384ed5666d66ee44c365`. Hermes fixed
-it in commit 73f9af39b1, but only on the line React Native does not ship: 0.86 pins
-hermes-android 250829098.0.17, which lacks it. `apps/native/plugins/without-gwp-asan.ts` sets
-`android:gwpAsanMode` to `never` on the application, which spares a person's phone the same crash.
-It is removed once React Native pins a Hermes that carries 73f9af39b1.
+of SIGSEGV with no GWP-ASan report. An `android` walk failed this way in run 37948316937, 650 ms
+after the app started, its screen showing the launcher. The fault is
+[facebook/hermes#2225](https://github.com/facebook/hermes/issues/2225), for the very x86_64
+`libhermesvm.so` this app ships, build ID `8d927b4d4757e3548fed384ed5666d66ee44c365`. Hermes
+fixed it in commit 73f9af39b1, which also ends the arm64 stack's frame-pointer chain where it had
+been left unset, but only on a line React Native does not ship: `react-native/sdks/.hermesv1version`
+pins `hermes-v250829098.0.17`, which lacks it. `apps/native/plugins/without-gwp-asan.ts` sets
+`android:gwpAsanMode` to `never` on the application, in every build, since a phone runs the same
+sampling. It is removed once the release that file names carries the fix, which
+[facebook/hermes#2229](https://github.com/facebook/hermes/pull/2229) backports to that line.
+When a walk fails, `apps/native/e2e/device.sh` reads the emulator's crash log and names any crash
+in the failure, so an app that died is not read as a screen that was slow to draw.
 
 **What the emulator reads is measured on main, held to the run before, one measure at a time,
 while it is steady.** The Baseline workflow's `device` job builds main's app on every push to
