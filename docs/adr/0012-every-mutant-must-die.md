@@ -132,11 +132,8 @@ shard took two hours and failed on timeouts under load rather than on survivors.
 
 **Nothing is carved out, and it takes two runners to say so.** Vitest cannot render React
 Native, so every shard but one runs under Vitest, and the shard over `apps/native/src` takes
-that directory with Stryker's Jest runner over the `jest-expo` preset. That shard sets
-`coverageAnalysis` to `off`, because under `perTest` and `all` the runner re-resolves the test
-environment from a raw, un-normalised config and silently replaces a preset's with the Node
-default ([stryker-js#6108](https://github.com/stryker-mutator/stryker-js/issues/6108), which
-names `jest-expo`); `off` is unaffected. It breaks
+that directory with Stryker's Jest runner over the `jest-expo` preset, with `coverageAnalysis`
+`perTest`, so a mutant runs only the tests that reach it (below). It breaks
 below 100 like the rest, and its Jest configuration already collects `apps/native` and
 nothing else, so it needs no narrowing of its own. It must not be given `testFiles` either:
 naming the files turns off the related-test filter the Jest runner applies to every mutant, so
@@ -175,12 +172,44 @@ jobs took 917 s and 989 s against 621 s and 545 s for two. So a Jest shard runs 
 A shorter Testing Library wait, 250 ms instead of 1 s, changed no verdict at any setting, so a
 wrong render waiting out its queries was not the cost.
 
-A mutant that runs to the end costs more than one cut off by a timeout, so an app job now holds
-fewer. With two runners, one mutant took 0.83 and 0.93 of its dry run's time on the two canaries.
-So a job of N mutants takes about 30 s to start, plus its dry run D, plus D again for every two
-mutants. Each app shard's `mutantsPerJob` is the largest N that keeps the shard's slowest dry run
-seen on CI within the slowest app job before this change, 1,510 s: the design system (D 645 s)
-and the theme (632 s) take 2, the shell (414 s) 4, Ask (270 s) 8, and search (118 s) keeps 12.
+**A Jest mutant runs only the tests that reach it.** With `coverageAnalysis` `off`, every mutant
+ran every test Jest's related-tests search reached from its file: 104 for the recent-searches
+list, 196 for the film field, 244 for the banner. Under `perTest`, Stryker records which tests
+reach each mutant in the dry run and runs only those. Stryker's Jest runner has a bug there
+([stryker-js#6108](https://github.com/stryker-mutator/stryker-js/issues/6108), with a fix open
+in [#6219](https://github.com/stryker-mutator/stryker-js/pull/6219)). Under `perTest` it
+re-resolves the test environment from the raw configuration, which has none of a preset's
+settings, so it silently runs every test under Node instead of React Native. The workaround is
+the one the issue gives: name the environment by absolute path. `apps/native/test/environment.cjs`
+is React Native's own environment, wrapped in Stryker's documented `mixinJestEnvironment`, and
+`jest.shared.js` names it by absolute path for the run and for each platform. That environment
+marks itself, and `test/environment-held.ts` fails every test file that does not carry the mark.
+It did so on CI before the absolute path was added at the top level, which is how the bug was
+seen. Once the fix ships, the absolute path can go, and the guard stays.
+
+Each mutant still loads every test file the related-tests search reaches, though it runs only
+some of the tests. The allowance multiplies the tests' time by the factor, but adds the dry run's
+overhead only once, and with two runners loading takes longer than in the dry run. So a film-field
+mutant reached by few tests still timed out. `timeoutMS`, which Stryker's schema describes as the
+allowance for a busy machine, adds that loading once more: the dry runs' overhead on the canaries
+was 40 to 67 s, so it is 60 s. With two runners at factor 3:
+
+| Coverage | Extra allowance | Recent searches: killed, timed out, tests per mutant, job | Film field | Banner |
+| --- | ---: | --- | --- | --- |
+| off | 5 s | 12, 0, 104, 440 s | 3, 0, 196, 578 s | 8, 0, 195, 1,730 s |
+| perTest | 5 s | 12, 0, 40, 297 s | 1, 2, 57, 501 s | 8, 0, 16, 576 s |
+| perTest | 60 s | 12, 0, 40, 375 s | 3, 0, 109, 409 s | 8, 0, 16, 668 s |
+| perTest, one runner | 5 s | 12, 0, 40, 523 s | 2, 1, 93, 479 s | 8, 0, 16, 557 s |
+
+So the Jest shards run `perTest` with 60 s of extra allowance.
+
+A mutant that runs to the end costs more than one cut off by a timeout, so an app job holds fewer
+than it did under `off` with four runners. With two runners, one mutant took at most 0.76 of its
+dry run's time on the three canaries (0.42 for the searches list, 0.76 for the film field, 0.10 for
+the banner). So a job of N mutants takes about 30 s to start, plus its dry run D, plus 0.76 D for
+every two mutants. Each app shard's `mutantsPerJob` is the largest N that keeps the shard's slowest
+dry run seen on CI within the slowest app job before these changes, 1,510 s: the design system
+(D 645 s) and the theme (632 s) take 2, the shell (414 s) 6, Ask (270 s) 10, and search (118 s) 30.
 
 **One kind of value is ignored, by a plugin rather than by file.** `tools/stryker-style-tables.mjs`
 skips the argument of `StyleSheet.create`, and a table declared at the top of a file the plugin

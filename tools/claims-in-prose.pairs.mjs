@@ -158,10 +158,18 @@ export const CLAIMS = [
   },
   {
     adr: "0012-every-mutant-must-die.md",
-    says: /sets `coverageAnalysis` to `off`/,
+    says: /with `coverageAnalysis`\s+`perTest`, so a mutant runs only the tests that reach it/,
     holds: "the runner settings that take the Expo app",
-    pattern: 'coverageAnalysis: "off"',
+    pattern: 'coverageAnalysis: "perTest"',
     paths: [STRYKER],
+    files: 1,
+  },
+  {
+    adr: "0012-every-mutant-must-die.md",
+    says: /`jest\.shared\.js` names it by absolute path for the run and for each platform/,
+    holds: "the absolute environment path the per-test workaround needs",
+    pattern: "testEnvironment: environment",
+    paths: ["apps/native/jest.shared.js"],
     files: 1,
   },
   {
