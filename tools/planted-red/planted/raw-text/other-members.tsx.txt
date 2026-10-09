@@ -1,0 +1,8 @@
+import { Animated } from "react-native";
+import * as Native from "react-native";
+
+export const Ground = () => (
+  <Native.View>
+    <Animated.View />
+  </Native.View>
+);

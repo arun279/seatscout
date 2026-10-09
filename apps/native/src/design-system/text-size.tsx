@@ -8,7 +8,7 @@ import { useWindowDimensions } from "react-native";
 
 const TextSize = createContext(1);
 
-export const FollowingTheTextSize = ({
+export const TextSizeProvider = ({
   children,
 }: {
   readonly children: ReactNode;

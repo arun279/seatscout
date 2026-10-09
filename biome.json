@@ -76,7 +76,7 @@
         "!apps/native/src/**/*.test.ts",
         "!apps/native/src/**/*.test.tsx"
       ],
-      "plugins": ["./tools/lint/text-through-type.grit"]
+      "plugins": ["./tools/lint/no-raw-text.grit"]
     },
     {
       "includes": ["apps/native/**"],

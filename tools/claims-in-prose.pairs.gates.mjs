@@ -210,6 +210,14 @@ export const GATE_CLAIMS = [
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /A Grit plugin, `tools\/lint\/no-raw-text\.grit`/,
+    holds: "the rule that refuses words drawn outside Type and Field",
+    pattern: "no-raw-text.grit",
+    paths: [BIOME],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
     says: /also lists each id that two elements carry, and any such id fails the/,
     holds: "the scan's own check for a shared id",
     pattern: 'querySelectorAll("[id]")',

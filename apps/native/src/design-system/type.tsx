@@ -16,12 +16,11 @@ export const Type = ({
 }: TypeProps): ReactElement => {
   const theme = useTheme();
   const face = theme.type[set];
-  const scale = useTextSize();
 
   return (
     <Text
       {...rest}
-      key={scale}
+      key={useTextSize()}
       maxFontSizeMultiplier={face.cap}
       style={[
         {
