@@ -87,6 +87,22 @@ describe("the searches a device remembers", () => {
     expect(await store.read(KEY)).toEqual([larger, TONIGHT]);
   });
 
+  it("tells whoever is listening once a search it remembers has been written, and stops when they leave", async () => {
+    const store = inMemoryStore();
+    const recent = openRecentSearches(store);
+    const heard: unknown[] = [];
+    const leave = recent.subscribe(() => {
+      void store.read(KEY).then((held) => heard.push(held));
+    });
+
+    await recent.remember(TONIGHT);
+    leave();
+    await recent.remember({ ...TONIGHT, partySize: 3 });
+    await store.read(KEY);
+
+    expect(heard).toEqual([[TONIGHT]]);
+  });
+
   it("keeps the history under a key that names the shape it stores", async () => {
     const store = inMemoryStore();
     await openRecentSearches(store).remember(TONIGHT);

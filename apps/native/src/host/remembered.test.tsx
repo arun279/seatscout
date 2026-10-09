@@ -2,7 +2,7 @@ import { describe, expect, it, jest } from "@jest/globals";
 import type { KeyValueStore, RecentSearch, SeatScout } from "@seatscout/client";
 import { createSeatScout } from "@seatscout/client";
 import type { Terms } from "@seatscout/view-logic";
-import { renderHook, waitFor } from "@testing-library/react-native";
+import { act, renderHook, waitFor } from "@testing-library/react-native";
 import { useRemembered, useRememberWhenSettled } from "./remembered.js";
 
 const TODAY = "2026-09-19";
@@ -75,6 +75,20 @@ describe("what this phone remembers", () => {
 
     await waitFor(() => {
       expect(result.current).toEqual([]);
+    });
+  });
+
+  it("reads again once a search is remembered anywhere else in the app", async () => {
+    const seatscout = keeping();
+    const { result } = await renderHook(() => useRemembered(seatscout));
+    await waitFor(() => {
+      expect(result.current).toEqual([]);
+    });
+
+    await act(() => seatscout.recent.remember(KEPT));
+
+    await waitFor(() => {
+      expect(result.current).toEqual([KEPT]);
     });
   });
 });

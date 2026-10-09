@@ -8,7 +8,11 @@ export const useRemembered = (
   const [remembered, setRemembered] = useState<readonly RecentSearch[]>();
 
   useEffect(() => {
-    void seatscout.recent.remembered().then(setRemembered);
+    const read = () => {
+      void seatscout.recent.remembered().then(setRemembered);
+    };
+    read();
+    return seatscout.recent.subscribe(read);
   }, [seatscout]);
 
   return remembered;

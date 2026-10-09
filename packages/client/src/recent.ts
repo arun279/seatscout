@@ -41,7 +41,9 @@ export const openRecentSearches = (
 ): {
   readonly remembered: () => Promise<readonly RecentSearch[]>;
   readonly remember: (search: RecentSearch) => Promise<RecentSearch[]>;
+  readonly subscribe: (onChange: () => void) => () => void;
 } => {
+  const listeners = new Set<() => void>();
   const remembered = async (): Promise<readonly RecentSearch[]> => {
     const held = await store.read(KEY);
     if (held !== undefined) return isHistory(held) ? held : [];
@@ -62,6 +64,7 @@ export const openRecentSearches = (
       ...(await remembered()).filter((earlier) => !same(earlier, asked)),
     ].slice(0, KEPT);
     await store.write(KEY, history);
+    for (const listener of listeners) listener();
     return history;
   };
   let last: Promise<unknown> = Promise.resolve();
@@ -71,6 +74,12 @@ export const openRecentSearches = (
       const keeping = last.then(() => keep(search));
       last = keeping;
       return keeping;
+    },
+    subscribe: (onChange) => {
+      listeners.add(onChange);
+      return () => {
+        listeners.delete(onChange);
+      };
     },
   };
 };
