@@ -1,0 +1,7 @@
+import { phone } from "../../test/phone.js";
+
+const { seatscout } = phone([], { script: {} });
+
+it("holds a phone", () => {
+  expect(seatscout).toBeDefined();
+});

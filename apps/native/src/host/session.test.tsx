@@ -4,12 +4,14 @@ import { phone } from "../../test/phone.js";
 import { ASKED } from "../../test/rooms.js";
 import { useSession } from "./session.js";
 
-const { seatscout } = phone([], { script: {} });
-
-const held = (asked = ASKED) => renderHook(() => useSession(seatscout, asked));
+const holding = () => {
+  const { seatscout } = phone([], { script: {} });
+  return (asked = ASKED) => renderHook(() => useSession(seatscout, asked));
+};
 
 describe("the search a screen holds", () => {
   it("is the search another screen already holds for the same Query", async () => {
+    const held = holding();
     const list = await held();
     const room = await held({ ...ASKED });
 
@@ -17,6 +19,7 @@ describe("the search a screen holds", () => {
   });
 
   it("is a search of its own for a different Query", async () => {
+    const held = holding();
     const list = await held();
     const other = await held({ ...ASKED, partySize: 4 });
 
@@ -24,6 +27,7 @@ describe("the search a screen holds", () => {
   });
 
   it("is a new search once every screen that held the Query has let it go", async () => {
+    const held = holding();
     const list = await held();
     const room = await held();
     const before = list.result.current;
@@ -36,6 +40,7 @@ describe("the search a screen holds", () => {
   });
 
   it("is still held after the screen holding it draws again", async () => {
+    const held = holding();
     const list = await held();
 
     await list.rerender({});
@@ -45,6 +50,7 @@ describe("the search a screen holds", () => {
   });
 
   it("is still shared while one screen holds it after another lets go", async () => {
+    const held = holding();
     const list = await held();
     const room = await held();
 

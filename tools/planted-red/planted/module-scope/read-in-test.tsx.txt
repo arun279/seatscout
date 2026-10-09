@@ -1,0 +1,18 @@
+import { join } from "node:path";
+import { phone } from "../../test/phone.js";
+import { themeFor } from "../theme.js";
+
+jest.mock("react-native/Libraries/Utilities/useColorScheme");
+
+const TODAY = "2026-09-19";
+const HELD = new Date(2026, 8, 26, 19);
+const CORPUS = join("packages", "core");
+const downColours = () => themeFor("down").colours;
+
+describe("reads made inside each test", () => {
+  it("reads the dark palette", () => {
+    const { seatscout } = phone([], { script: {} });
+
+    expect([downColours(), seatscout, TODAY, HELD, CORPUS]).toHaveLength(5);
+  });
+});
