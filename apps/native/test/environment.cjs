@@ -13,8 +13,8 @@ class MarkedReactNativeEnvironment extends ReactNativeEnvironment {
     this.global[mark] = value;
   }
 
-  handleTestEvent(event, state) {
-    stopAtFirstFailure(event, state, process.env.__STRYKER_ACTIVE_MUTANT__);
+  handleTestEvent(event) {
+    stopAtFirstFailure(event, process.env.__STRYKER_ACTIVE_MUTANT__);
   }
 }
 
