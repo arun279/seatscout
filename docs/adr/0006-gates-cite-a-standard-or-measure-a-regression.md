@@ -227,7 +227,7 @@ as a package under `tools/<name>/src` keeps its fixtures beside its source; the 
 are somebody else's tool keep theirs under `tools/planted-red/planted`, with one test file
 each for the cognitive limit, the cyclomatic limit and its variant, the file length limit,
 the written declaration option, the duplication window, the import cycle
-rule and the bundle weighing. That whole set answers in about seven seconds on two workers,
+rule and the bundle weighing. That whole set answers in under half a minute on two workers,
 which is why it sits in `pnpm test:unit` beside everything else rather than in a job of its
 own. The fixtures live outside `src`, where they are neither product code nor mutated.
 
@@ -236,11 +236,19 @@ to be read as covering everything. The Grit plugin that refuses a collected resp
 React hook rules and the undeclared import rule were each watched failing by hand on the day
 they landed. Every one of them could carry a planted red instead, and none does yet.
 
+**Three React Native mistakes have no gate, and are read for by hand.** They are words outside
+a `<Text>`, a `StyleSheet` entry nothing uses, and a platform component in a file without a
+platform suffix. The only rules for them are in
+[eslint-plugin-react-native](https://github.com/Intellicode/eslint-plugin-react-native), whose
+maintainer says activity is low, and running ESLint over this TypeScript is closed for the
+reason given under the cyclomatic limit.
+
 **A planted red holds the gate. A pair holds this record's wording, and neither does the
 other's job.** A fixture proves a rule fires. It cannot prove that this document still says 300
 where the tool says 300, because a fixture has no opinion about prose, so each sentence here
 that carries a number or a rule name is also paired with a search of the tree in
-`tools/claims-in-prose.pairs.gates.mjs`. Some of those pairs sit beside a planted red as well,
+`tools/claims-in-prose.pairs.gates.mjs`, or in `tools/claims-in-prose.pairs.device.mjs` for the
+walk and its reading on main. Some of those pairs sit beside a planted red as well,
 and two sentences that carried neither a number nor a name were dropped along with the grep
 that was their only witness, since the red beside them says everything they said. Others are
 sentences no fixture can reach at all: the mutation gate's break threshold, which nothing can
@@ -535,9 +543,33 @@ bar this project invented. Any violation fails `quality`. The web build exists f
 for nothing else. Its first runs found two real violations: the film list in the Ask sheet was a
 list with no items in it (axe's `aria-required-children`), so each film is now a list item, and
 the Ask sheet's sliders gave a screen reader no range or position. Both were fixed in the app's
-own components, which is what makes a scan of the web build a signal about the app. The audit
-every screen test runs, which `CONTRIBUTING.md` describes, covers contrast, names and touch
-targets per platform; what is only axe's is computed roles and the relationships between them.
+own components, which is what makes a scan of the web build a signal about the app.
+
+**Every screen test is audited as well, on each phone's own terms.** After every screen test,
+before the screen is torn down, `apps/native/test/setup.tsx` runs `test/audit.ts` over
+everything the test rendered. No test opts in and none opts out. It refuses, naming the control
+and the criterion:
+
+- words under 4.5 to 1 against the ground drawn behind them, or 3 to 1 at 24 or at 18.66 in
+  bold, which are WCAG's 18 and 14 points in the units React Native lays out in (WCAG 2.2
+  1.4.3);
+- a chosen button, radio, tab or checkbox under 3 to 1 against its ground and its unchosen
+  neighbours (1.4.11);
+- something that can be pressed or answers touch directly with no role or no name, unless it
+  is hidden from screen readers because a control beside it does the same job, or it only
+  widens where a finger lands around a named control inside it (4.1.2);
+- a control short of the platform's own touch floor, 44 pt on iOS and 48 dp on Android,
+  counting its `hitSlop`, or reached through such a row around it (2.5.8, pressable words
+  inside a sentence excepted as that criterion excepts them);
+- a text field with no label (3.3.2);
+- words with `allowFontScaling` off (1.4.4);
+- a control that changes what is chosen, or the velvet commit, that plays no haptic feedback
+  when the audit presses it (Apple's Human Interface Guidelines on playing haptics).
+
+`test/audit.test.tsx` plants a violation of each rule and watches the audit refuse it. The two
+overlap on contrast and names. What only axe reads is computed roles and the relationships
+between them; what only the audit reads is each platform's touch floor and the haptics, which a
+web build cannot show.
 
 **That scan is named so that it cannot be deleted quietly.** `tests/app` is outside the unit
 runner's include and outside the mutation gate's scope, so nothing judges what is in it. So
@@ -626,6 +658,29 @@ carry, so moving to them is a change that would sit behind this gate rather than
 **Watched failing, watched silent.** `react` raised to 19.2.4 in `pnpm-workspace.yaml` alone is
 refused by name, with all three of its instances printed and the two that disagree marked; put
 back, the same command reports no issue.
+
+**Each override in `pnpm-workspace.yaml` has a reason, and goes when the reason does.**
+`react` is held at one version across the workspace, because a duplicate React shows up as a
+hook error at run time rather than as a build failure;
+[ADR 3](0003-separate-view-layers-shared-core.md) says why it moves with the Expo SDK. Five lift
+a transitive dependency past an advisory, because the package that brings it in asks for a
+version below the fix: `qs` above
+[GHSA-q8mj-m7cp-5q26](https://github.com/advisories/GHSA-q8mj-m7cp-5q26), through Stryker;
+`uuid` above [GHSA-w5hq-g745-h8pq](https://github.com/advisories/GHSA-w5hq-g745-h8pq), through
+the Xcode project parser inside Expo's config plugins; `decode-uri-component` above
+[GHSA-vcc3-ghjq-m6fr](https://github.com/advisories/GHSA-vcc3-ghjq-m6fr), through the query
+parser inside Expo Router; `compression` above
+[GHSA-vc2v-76pw-4v95](https://github.com/advisories/GHSA-vc2v-76pw-4v95), through Expo's CLI;
+and `source-map-js` above
+[GHSA-68fv-2mgg-jv7q](https://github.com/advisories/GHSA-68fv-2mgg-jv7q), through PostCSS and
+css-tree. The last two replace only the exact version that was asked for. `uuid` is held at
+11.1.1 rather than at the newest patched release, because that parser loads it with `require`
+and uuid dropped its CommonJS entry point after 11. `exit` is aliased to `exit-x`, because the
+package Jest's own runner pulls in states its licence in npm's pre-SPDX form, so the licence
+gate reads it as undetermined, and `exit-x` is the maintained fork Jest itself moved to.
+`@types/jsdom` is held at 30.0.0, because the version 20 types `jest-expo` brings with the Jest
+jsdom environment do not type-check, which `pnpm typecheck` shows the moment the entry is
+removed. An entry can go once the package that pins it releases a version that does not.
 
 **A rule reported at a severity the linter exits zero on is no gate at all.** Biome's
 recommended preset reports `useNodejsImportProtocol` as information, and `noOctalEscape` and

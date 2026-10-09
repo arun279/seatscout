@@ -42,7 +42,7 @@ jobs:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
           if [ -z "$EXPO_TOKEN" ]; then
-            echo "::error::This repository holds no EXPO_TOKEN, so the phones cannot be sent the app. CONTRIBUTING.md says where it comes from."
+            echo "::error::This repository holds no EXPO_TOKEN, so the phones cannot be sent the app. docs/adr/0021-a-merge-publishes-a-preview-not-a-release.md says what it has to be."
             exit 1
           fi
           if ! npx --yes "$EAS_CLI" whoami; then

@@ -5,7 +5,7 @@ const CYCLOMATIC = ".oxlintrc.json";
 const DUPLICATION = ".jscpd.json";
 const WORKFLOW = ".github/workflows/ci.yml";
 const COLOURS = "tools/lint/no-colour-literals.grit";
-const BASELINE = ".github/workflows/baseline.yml";
+const WORKSPACE = "pnpm-workspace.yaml";
 
 export const GATE_CLAIMS = [
   {
@@ -226,59 +226,50 @@ export const GATE_CLAIMS = [
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /\*\*What the emulator reads is measured on main, held to the run before/,
-    holds: "the Flashlight reading of the walk",
-    pattern: "flashlight test",
-    paths: [".github", "apps/native/e2e"],
+    says: /`apps\/native\/test\/setup\.tsx` runs `test\/audit\.ts` over\s+everything the test rendered/,
+    holds: "the audit every screen test ends with",
+    pattern: "await audit(house);",
+    paths: ["apps/native/test/setup.tsx"],
     files: 1,
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /it runs on main as a trend with an alarm/,
-    holds: "a pull request that runs the reading",
-    pattern: "e2e/measure.sh",
-    paths: [WORKFLOW],
-    files: 0,
-    witness: [BASELINE],
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /files an issue labelled `device-red`/,
-    holds: "the alarm the reading on main files",
-    pattern: "gh issue create --label device-red",
-    paths: [BASELINE],
+    says: /3 to 1 at 24 or at 18\.66 in\s+bold/,
+    holds: "the size bold words count as large at",
+    pattern: "const LARGE_BOLD = 18.66;",
+    paths: ["apps/native/test/audit.ts"],
     files: 1,
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /A push never\s+cancels a reading in progress/,
-    holds: "the Baseline concurrency that lets a reading finish",
-    pattern: "cancel-in-progress: false",
-    paths: [BASELINE],
+    says: /44 pt on iOS and 48 dp on Android/,
+    holds: "the touch floor of each platform",
+    pattern: 'os === "ios" ? 44 : 48',
+    paths: ["apps/native/src/design-system/touch.ts"],
     files: 1,
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /The judge rounds this commit's median and the previous run's worst to those same places/,
-    holds: "the precision each measure is compared at",
-    pattern: "roundedTo(value, axis.decimals)",
-    paths: ["tools/device/src"],
+    says: /`uuid` is held at\s+11\.1\.1/,
+    holds: "the uuid release the Xcode project parser can require",
+    pattern: "uuid: 11.1.1",
+    paths: [WORKSPACE],
     files: 1,
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /run Baseline on main from the Actions tab with `accept` set to the reason/,
-    holds: "the input that keeps a reading by hand",
-    pattern: "inputs.accept",
-    paths: [BASELINE],
+    says: /`exit` is aliased to `exit-x`/,
+    holds: "the maintained fork standing in for exit",
+    pattern: "exit: npm:exit-x@",
+    paths: [WORKSPACE],
     files: 1,
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /`android` job reads them with `cache-read-only`/,
-    holds: "the pull request's read-only Gradle caches",
-    pattern: "cache-read-only: true",
-    paths: [WORKFLOW],
+    says: /`@types\/jsdom` is held at 30\.0\.0/,
+    holds: "the jsdom types that type-check",
+    pattern: "'@types/jsdom': 30.0.0",
+    paths: [WORKSPACE],
     files: 1,
   },
 ];
