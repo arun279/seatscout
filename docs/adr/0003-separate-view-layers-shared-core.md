@@ -230,5 +230,5 @@ beside the `Referer` and the user agent that every read carries.
 
 Its versions are not chosen here either. Expo publishes the React and React Native version each
 SDK pins and this application matches its SDK exactly, which is what the `react` entry in
-`pnpm-workspace.yaml` moves with rather than with React's own releases. `CONTRIBUTING.md` says
-what that entry is for.
+`pnpm-workspace.yaml` moves with rather than with React's own releases.
+[ADR 6](0006-gates-cite-a-standard-or-measure-a-regression.md) says what that entry is for.

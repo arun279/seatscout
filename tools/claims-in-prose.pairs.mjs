@@ -1,3 +1,4 @@
+import { DEVICE_CLAIMS } from "./claims-in-prose.pairs.device.mjs";
 import { GATE_CLAIMS } from "./claims-in-prose.pairs.gates.mjs";
 import { SEARCH_CLAIMS } from "./claims-in-prose.pairs.search.mjs";
 
@@ -276,6 +277,23 @@ export const CLAIMS = [
     paths: ["apps/native/app.json"],
     files: 1,
   },
+  {
+    adr: "0021-a-merge-publishes-a-preview-not-a-release.md",
+    says: /publishes an EAS Update to the `preview` channel, and nothing more/,
+    holds: "the channel a merge publishes to",
+    pattern: "CHANNEL: preview",
+    paths: [".github/workflows/preview.yml"],
+    files: 1,
+  },
+  {
+    adr: "0021-a-merge-publishes-a-preview-not-a-release.md",
+    says: /`eas-cli` runs through `npx` at a version the workflow pins/,
+    holds: "the pinned publisher the workflow runs through npx",
+    pattern: 'npx --yes "$EAS_CLI"',
+    paths: [".github/workflows/preview.yml"],
+    files: 1,
+  },
   ...GATE_CLAIMS,
+  ...DEVICE_CLAIMS,
   ...SEARCH_CLAIMS,
 ];
