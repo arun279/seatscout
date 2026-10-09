@@ -1,0 +1,10 @@
+const ROOT = "tools/planted-red/src";
+const TESTS = `${ROOT}/*.test.ts`;
+const GLOBS = ["apps/**/*.ts", "packages/*/src/**"];
+const OPENER = "/*";
+const PATTERN = /\/\*/;
+const CLOSER = "*/";
+// the one line comment in this file
+export const PLANTED = [TESTS, GLOBS, OPENER, PATTERN, CLOSER];
+/* and one block
+   over two lines */

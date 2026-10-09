@@ -984,9 +984,20 @@ counter's JSON, aggregates it, and renders in an order of its own, and continuou
 integration renders the whole report twice and compares the two files byte for byte,
 whatever verdict the gates reached.
 
-Each side is read through cloc's `--git`, which counts the commit rather than the working
-tree. That matters during a pull request run, where the checkout holds a merge commit
-rather than either side of the comparison.
+Each side is counted from a copy of the commit that `git archive` writes, rather than from
+the working tree. That matters during a pull request run, where the checkout holds a merge
+commit rather than either side of the comparison.
+
+cloc finds comments with patterns rather than a parser, and its `--strip-str-comments` does not
+reach every string: a template literal such as `` `${root}/*.test.ts` `` opened a block comment that
+ran 76 lines to the next `*/`, and the comment ratchet refused a change that held no comment. So
+before cloc counts a copy, [oxc-parser](https://www.npmjs.com/package/oxc-parser), the parser
+oxlint is built on, blanks the inside of every string, template, regular expression and JSX text
+in it, keeping every line and every real comment where it was. cloc then counts and diffs code it
+can no longer misread. `tools/footprint/planted/strings-holding-comment-markers.ts.txt` holds each
+shape; cloc counts it as 6 comment lines and 4 of code, and its blanked copy, which a test holds
+byte for byte, as the true 3 and 7. A script the parser cannot read stops the report rather than
+being counted as it stands.
 
 ## Consequences
 

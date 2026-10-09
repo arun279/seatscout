@@ -8,7 +8,8 @@
     "cspell.json",
     "pnpm-lock.yaml",
     "packages/core/src/corpus/**/*.json",
-    "packages/core/src/corpus/captures.ts"
+    "packages/core/src/corpus/captures.ts",
+    "tools/footprint/planted/*.blanked.ts.txt"
   ],
   "flagWords": ["ts-nocheck"],
   "overrides": [
@@ -81,6 +82,7 @@
     "manypkg",
     "marocchino",
     "Metaspace",
+    "mktemp",
     "Morasca",
     "multiway",
     "napi",

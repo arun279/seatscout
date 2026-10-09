@@ -7,6 +7,9 @@
   "scripts": {
     "build": "tsc --build --pretty false"
   },
+  "dependencies": {
+    "oxc-parser": "0.150.0"
+  },
   "devDependencies": {
     "@types/node": "26.6.4",
     "fast-check": "4.10.2",

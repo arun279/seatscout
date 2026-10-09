@@ -61,17 +61,21 @@ export const GLOBS: string = JSON.stringify([
   { name: "app for iOS", path: "dist/ios/*.js" },
 ]);
 
-const CLOC_TREE = JSON.stringify({
-  header: { cloc_version: "2.10" },
-  "packages/core/src/seat.ts": { code: 40, comment: 1 },
-  SUM: { code: 40, comment: 1 },
-});
+const clocTree = (at: string) =>
+  JSON.stringify({
+    header: { cloc_version: "2.10" },
+    [`${at}/packages/core/src/seat.ts`]: { code: 40, comment: 1 },
+    SUM: { code: 40, comment: 1 },
+  });
 
-const CLOC_DIFF = JSON.stringify({
-  added: { "packages/core/src/seat.ts": { code: 5, comment: 0 } },
-  removed: {},
-  modified: {},
-});
+const clocDiff = (base: string, head: string) =>
+  JSON.stringify({
+    added: { [`${head}/packages/core/src/new.ts`]: { code: 5, comment: 0 } },
+    removed: { [`${base}/packages/core/src/old.ts`]: { code: 2, comment: 0 } },
+    modified: {
+      [`${base}/packages/core/src/seat.ts`]: { code: 3, comment: 1 },
+    },
+  });
 
 const FROM_PNPM: Record<string, string> = {
   "size-limit": SIZE_LIMIT_OUTPUT,
@@ -113,7 +117,10 @@ const ANSWERS: Record<string, (args: readonly string[]) => string> = {
   git: (args) =>
     ({ "merge-base": "base-sha\n", "-C": GLOBS })[args[0] ?? ""] ??
     "head-sha\n",
-  cloc: (args) => (args[1] === "--diff" ? CLOC_DIFF : CLOC_TREE),
+  cloc: (args) =>
+    args[0] === "--diff"
+      ? clocDiff(args[1] ?? "", args[2] ?? "")
+      : clocTree(args[0] ?? ""),
   pnpm: (args) =>
     args[1] === "jest" ? jestAnswer(args) : (FROM_PNPM[args[1] ?? ""] ?? ""),
 };
@@ -125,11 +132,17 @@ export const recorder = (
   over: (command: Command) => Completed | undefined = () => undefined,
 ): { readonly run: Run; readonly commands: readonly Command[] } => {
   const commands: Command[] = [];
+  let snapshots = 0;
+  const answer = (call: Command): string => {
+    if (call.command !== "mktemp") return canned(call);
+    snapshots += 1;
+    return `/tmp/snapshot-${snapshots}\n`;
+  };
 
   const run: Run = (command, args) => {
     const call = { command, args: [...args] };
     commands.push(call);
-    return over(call) ?? { ok: true, stdout: canned(call), stderr: "" };
+    return over(call) ?? { ok: true, stdout: answer(call), stderr: "" };
   };
 
   return { run, commands };
