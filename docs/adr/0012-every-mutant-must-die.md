@@ -256,7 +256,9 @@ A mutant that makes a test file throw while it loads, or makes an `afterAll` fai
 runtime error rather than a kill, because Jest reports the whole file as failing to run rather
 than any test failing. The job refuses it, naming the mutant. The remedy is in the test: move the
 work that broke out of module scope and out of `afterAll` into a test, so the mutant fails that
-test and is killed.
+test and is killed. The guard met one on its first CI run: the two seat map tests read the dark
+palette with `themeFor` at module scope, so the mutant that makes `themeFor` return nothing broke
+both files as they loaded. They now read the palette inside each test.
 
 How long a mutant costs depends on the shard, so each shard's `mutantsPerJob` comes from its own
 measurements. With two runners, a job of N mutants takes about 30 s to start, plus its dry run D,
