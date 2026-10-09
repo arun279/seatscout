@@ -105,7 +105,7 @@ export const drawnView = (): View => {
   return { scale, tx, ty };
 };
 
-const tapAt = (x: number, y: number): Promise<void> =>
+export const tapAt = (x: number, y: number): Promise<void> =>
   act(() =>
     fireGestureHandler(getByGestureTestId("tap"), [
       { state: State.BEGAN, x, y },
