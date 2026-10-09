@@ -776,9 +776,11 @@ plugin's default, 27.0.12077973, and every native module gets that plugin's defa
 3.22.1, so Gradle downloaded all three on every build. One download came back as a corrupt
 archive and failed Baseline run 37936707241. The Gradle init script
 `.github/gradle/preinstalled-android-tools.gradle` sets every Android project in the build to NDK
-27.3.13750724 and every native build to CMake 3.31.5, after the project's own configuration, and
-the build step fails if the NDK or CMake directory holds anything after the build that it did not
-hold before.
+27.3.13750724 and CMake 3.31.5, after the project's own configuration, and the build step fails if
+the NDK or CMake directory holds anything after the build that it did not hold before. The CMake
+version is set on every project rather than only on those that name a CMakeLists, because React
+Native's Gradle plugin points the app at its CMakeLists after the init script has run; set only
+where a CMakeLists was named, the app still downloaded 3.22.1, and the step failed on it.
 
 **What the emulator reads is measured on main, held to the run before, one measure at a time,
 while it is steady.** The Baseline workflow's `device` job builds main's app on every push to

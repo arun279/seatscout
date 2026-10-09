@@ -2,9 +2,7 @@ allprojects {
   afterEvaluate {
     if (extensions.findByName("android") != null) {
       android.ndkVersion = System.getenv("NDK_VERSION")
-      if (android.externalNativeBuild.cmake.path != null) {
-        android.externalNativeBuild.cmake.version = System.getenv("CMAKE_VERSION")
-      }
+      android.externalNativeBuild.cmake.version = System.getenv("CMAKE_VERSION")
     }
   }
 }
