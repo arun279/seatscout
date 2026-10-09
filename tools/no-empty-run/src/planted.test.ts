@@ -68,11 +68,20 @@ describe("the planted red under the duplication gate", () => {
 });
 
 describe("the planted red under the mutation gate", () => {
-  it("refuses a report whose every mutant was ignored or would not compile", () => {
+  it("refuses a report whose every mutant was ignored", () => {
     const run = guard("mutation", "weighed-nothing.json");
 
     expect(run.status).toBe(1);
     expect(run.stderr).toContain("records a run that weighed no mutant");
+  });
+
+  it("refuses a report that judged one mutant and could not judge another, naming it", () => {
+    const run = guard("mutation", "one-errored.json");
+
+    expect(run.status).toBe(1);
+    expect(run.stderr).toContain(
+      "records 1 mutant(s) Stryker could not judge:\napps/native/src/theme.ts:1:41 ConditionalExpression RuntimeError: Test runner crashed.",
+    );
   });
 
   it("refuses a report that judged no file", () => {

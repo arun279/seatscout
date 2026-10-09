@@ -44,6 +44,44 @@ describe("counting what a mutation run weighed", () => {
   });
 });
 
+describe("a mutant Stryker could not judge", () => {
+  const erroredIn = (...mutants: readonly object[]) =>
+    MUTATION.measure(JSON.stringify({ files: { "a.ts": { mutants } } }))
+      .refused;
+
+  it("refuses a run in which any mutant ended as a runtime or compile error, naming each one and its error", () => {
+    expect(
+      erroredIn(
+        { status: "Killed" },
+        {
+          status: "RuntimeError",
+          mutatorName: "ConditionalExpression",
+          location: { start: { line: 279, column: 3 } },
+          statusReason: "Test runner crashed.\nTried twice",
+        },
+        {
+          status: "CompileError",
+          mutatorName: "StringLiteral",
+          location: { start: { line: 12, column: 9 } },
+          statusReason: "TS2322",
+        },
+      ),
+    ).toBe(
+      "records 2 mutant(s) Stryker could not judge:\n" +
+        "a.ts:279:3 ConditionalExpression RuntimeError: Test runner crashed.\n" +
+        "a.ts:12:9 StringLiteral CompileError: TS2322\n\n" +
+        "Stryker leaves a runtime or compile error out of the score, so a break of 100 passes it,\n" +
+        "yet no test ever judged that mutant. Find why its run failed; the error is named above.\n",
+    );
+  });
+
+  it("refuses nothing in a run whose every mutant was judged or ignored", () => {
+    expect(
+      erroredIn({ status: "Killed" }, { status: "Ignored" }),
+    ).toBeUndefined();
+  });
+});
+
 describe("what the mutation guard says", () => {
   it("names the report, why the run passed its own gate, and what counts", () => {
     expect(MUTATION.refusal("reports/mutation/core.json")).toBe(

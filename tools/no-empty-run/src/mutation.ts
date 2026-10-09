@@ -2,11 +2,18 @@ import type { Kind, Measured } from "./kind.ts";
 
 interface Mutant {
   readonly status: string;
+  readonly mutatorName?: string;
+  readonly location?: {
+    readonly start: { readonly line: number; readonly column: number };
+  };
+  readonly statusReason?: string;
 }
 
 interface Judged {
   readonly mutants: readonly Mutant[];
 }
+
+const NOT_JUDGED: readonly string[] = ["RuntimeError", "CompileError"];
 
 interface Report {
   readonly files: Readonly<Record<string, Judged>>;
@@ -19,6 +26,23 @@ export const WEIGHED: readonly string[] = [
   "Timeout",
 ];
 
+const notJudged = (report: Report): readonly string[] =>
+  Object.entries(report.files).flatMap(([file, judged]) =>
+    judged.mutants
+      .filter((mutant) => NOT_JUDGED.includes(mutant.status))
+      .map(
+        (mutant) =>
+          `${file}:${mutant.location?.start.line}:${mutant.location?.start.column} ${mutant.mutatorName} ${mutant.status}: ${mutant.statusReason?.split("\n")[0]}`,
+      ),
+  );
+
+const refusalOf = (named: readonly string[]) =>
+  named.length === 0
+    ? {}
+    : {
+        refused: `records ${named.length} mutant(s) Stryker could not judge:\n${named.join("\n")}\n\nStryker leaves a runtime or compile error out of the score, so a break of 100 passes it,\nyet no test ever judged that mutant. Find why its run failed; the error is named above.\n`,
+      };
+
 const weighed = (report: Report): number =>
   Object.values(report.files)
     .flatMap((judged) => judged.mutants)
@@ -26,10 +50,12 @@ const weighed = (report: Report): number =>
 
 export const MUTATION: Kind = {
   measure: (text: string): Measured => {
-    const total = weighed(JSON.parse(text));
+    const report: Report = JSON.parse(text);
+    const total = weighed(report);
     return {
       weighed: total,
       said: `records a run that weighed ${total} mutants.`,
+      ...refusalOf(notJudged(report)),
     };
   },
   refusal: (path: string): string =>

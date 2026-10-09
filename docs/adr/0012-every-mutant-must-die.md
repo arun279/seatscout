@@ -106,9 +106,11 @@ pull request, with an 11-minute initial run), so it takes 8 as well.
 Each job runs Stryker with `--mutate` set to exactly its files or ranges, under its shard's
 runner and test configuration, and breaks below 100 like a whole run. The job also holds
 Stryker's own count of the files it found to the number it was handed, so a path that reaches
-nothing fails rather than passing over less than it was given, and refuses a job in which every
-mutant errored, since that scores NaN and NaN is never below a threshold; a file whose mutants
-are all ignored, or that has none, has nothing to judge. A pull request that touches no source
+nothing fails rather than passing over less than it was given. It refuses a job in which any
+mutant ended as a runtime or compile error, and names each one with its error. Stryker leaves
+such a mutant out of the score, so a break of 100 passes it, yet no test judged it. A job in which
+every mutant errored would score NaN, which is never below a threshold. A file whose mutants are
+all ignored, or that has none, has nothing to judge. A pull request that touches no source
 file runs no mutation job, except that a change to the mutation machinery itself (the shard
 list, the Stryker and Vitest configurations, the Jest configuration, the two ignorers,
 `tools/mutation.mjs`, `tools/mutation-plan.mjs` or the lockfile) judges the `canary` file each

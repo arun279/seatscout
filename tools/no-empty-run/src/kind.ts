@@ -1,6 +1,7 @@
 export interface Measured {
   readonly weighed: number;
   readonly said: string;
+  readonly refused?: string;
 }
 
 export interface Kind {

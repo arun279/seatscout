@@ -7,7 +7,7 @@
       "source": "export {};\n",
       "mutants": [
         { "id": "0", "mutatorName": "BlockStatement", "status": "Ignored" },
-        { "id": "1", "mutatorName": "StringLiteral", "status": "CompileError" }
+        { "id": "1", "mutatorName": "StringLiteral", "status": "Ignored" }
       ]
     }
   }

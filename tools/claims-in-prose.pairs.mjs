@@ -206,6 +206,14 @@ export const CLAIMS = [
   },
   {
     adr: "0012-every-mutant-must-die.md",
+    says: /It refuses a job in which any\s+mutant ended as a runtime or compile error/,
+    holds: "the statuses the mutation guard refuses",
+    pattern: 'NOT_JUDGED: readonly string[] = ["RuntimeError", "CompileError"]',
+    paths: ["tools/no-empty-run/src"],
+    files: 1,
+  },
+  {
+    adr: "0012-every-mutant-must-die.md",
     says: /skips the argument of `StyleSheet\.create`, and a table declared at the top of a file the plugin/,
     holds: "the plugin that skips a drawn value",
     pattern: "StyleSheet.create",

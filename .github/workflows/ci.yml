@@ -148,7 +148,7 @@ jobs:
           fi
           if [ -n "$MUTANTS" ]; then
             report="$(jq -r --arg shard "$SHARD" '.[] | select(.id == $shard) | .report' stryker.shards.json)"
-            judged="$(jq '[.files[].mutants[] | select(.status != "Ignored")] | length' "$report")"
+            judged="$(jq '[.files[].mutants[] | select(.status | IN("Killed", "Survived", "NoCoverage", "Timeout"))] | length' "$report")"
             if [ "$judged" != "$MUTANTS" ]; then
               echo "::error::The plan gave this job $MUTANTS mutant(s) and Stryker judged $judged, so the plan and the run disagree about what this job covers."
               exit 1
