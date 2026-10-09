@@ -186,7 +186,16 @@ jobs:
           cache-read-only: true
       - name: Build the release app for the emulator's processor, with the Source answered from the corpus
         working-directory: apps/native/android
-        run: ./gradlew assembleRelease -PreactNativeArchitectures=x86_64 "-Dorg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g"
+        env:
+          NDK_VERSION: 27.3.13750724
+          CMAKE_VERSION: 3.31.5
+        run: |
+          find "$ANDROID_HOME/ndk" "$ANDROID_HOME/cmake" -mindepth 1 -maxdepth 1 | sort > "$RUNNER_TEMP/shipped"
+          ./gradlew assembleRelease --init-script ../../../.github/gradle/preinstalled-android-tools.gradle -PreactNativeArchitectures=x86_64 "-Dorg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g"
+          if ! find "$ANDROID_HOME/ndk" "$ANDROID_HOME/cmake" -mindepth 1 -maxdepth 1 | sort | diff "$RUNNER_TEMP/shipped" -; then
+            echo "::error::Gradle downloaded an NDK or a CMake, so a build can fail on a corrupt download. Every Android project should build with NDK $NDK_VERSION and CMake $CMAKE_VERSION, which the runner image ships."
+            exit 1
+          fi
       - name: Install Maestro
         run: |
           curl -fsSL -o "$RUNNER_TEMP/maestro.zip" https://github.com/mobile-dev-inc/maestro/releases/download/cli-2.10.0/maestro.zip
