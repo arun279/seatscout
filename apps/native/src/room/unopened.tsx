@@ -10,13 +10,14 @@ import {
   readMoreOf,
   UNREADABLE,
 } from "@seatscout/view-logic";
-import { type ReactElement, useSyncExternalStore } from "react";
+import type { ReactElement } from "react";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Velvet } from "../design-system/button.js";
 import { Type } from "../design-system/type.js";
-import type { Session } from "../host/session.js";
+import { type Session, useShown } from "../host/session.js";
 import { Strip } from "../search/coverage.js";
+import { Retry } from "../search/verdicts.js";
 import { useTheme } from "../theme.js";
 import { Back } from "./back.js";
 
@@ -49,11 +50,13 @@ const Told = ({
 const Verdict = ({
   snapshot,
   today,
+  online,
   onRetry,
   onBack,
 }: {
   readonly snapshot: Snapshot;
   readonly today: string;
+  readonly online: boolean;
   readonly onRetry: () => void;
   readonly onBack: () => void;
 }) => {
@@ -61,7 +64,7 @@ const Verdict = ({
     return (
       <>
         <Heading said={UNREADABLE} />
-        <Velvet label={RETRY_THE_SEARCH} onPress={onRetry} />
+        <Retry online={online} onRetry={onRetry} retry={RETRY_THE_SEARCH} />
       </>
     );
   if (readMoreOf(snapshot, today) !== null)
@@ -79,19 +82,18 @@ const Verdict = ({
 export const Unopened = ({
   session,
   today,
+  online,
   onLedger,
   onBack,
 }: {
   readonly session: Session;
   readonly today: string;
+  readonly online: boolean;
   readonly onLedger: () => void;
   readonly onBack: () => void;
 }): ReactElement => {
   const { colours } = useTheme();
-  const snapshot = useSyncExternalStore(
-    session.held.subscribe,
-    session.held.snapshot,
-  );
+  const snapshot = useShown(session);
 
   return (
     <SafeAreaView
@@ -107,6 +109,7 @@ export const Unopened = ({
       />
       <View style={styles.verdict}>
         <Verdict
+          online={online}
           onBack={onBack}
           onRetry={session.search.retry}
           snapshot={snapshot}

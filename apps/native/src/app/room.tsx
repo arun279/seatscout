@@ -1,8 +1,8 @@
 import type { SearchTerms } from "@seatscout/client";
-import { askedFrom } from "@seatscout/view-logic";
+import { askedFrom, type Terms } from "@seatscout/view-logic";
 import { router, useLocalSearchParams } from "expo-router";
 import type { ReactElement } from "react";
-import { handOff, useTerms } from "../host/address.js";
+import { handOff, openLedger, useTerms } from "../host/address.js";
 import { deviceClock, today } from "../host/clock.js";
 import { useOnline } from "../host/online.js";
 import { useProfile } from "../host/profile.js";
@@ -14,9 +14,11 @@ import { Unopened } from "../room/unopened.js";
 const clock = deviceClock();
 
 const Opened = ({
+  terms,
   asked,
   date,
 }: {
+  readonly terms: Terms;
   readonly asked: SearchTerms;
   readonly date: string;
 }): ReactElement => {
@@ -31,7 +33,8 @@ const Opened = ({
     return (
       <Unopened
         onBack={router.back}
-        onLedger={() => router.push("/ledger")}
+        online={online}
+        onLedger={() => openLedger(terms)}
         session={session}
         today={date}
       />
@@ -57,5 +60,7 @@ export default function RoomRoute(): ReactElement | null {
   const profile = useProfile(seatProfile);
   const asked = profile === undefined ? null : askedFrom(terms, profile, date);
 
-  return asked === null ? null : <Opened asked={asked} date={date} />;
+  return asked === null ? null : (
+    <Opened asked={asked} date={date} terms={terms} />
+  );
 }
