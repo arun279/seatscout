@@ -49,7 +49,7 @@
     "jest": "apps/native/jest.config.js",
     "coverageAnalysis": "perTest",
     "mutate": ["apps/native/src/design-system/**/*.{ts,tsx}"],
-    "mutantsPerJob": 8,
+    "mutantsPerJob": 24,
     "canary": "apps/native/src/design-system/banner.tsx",
     "report": "reports/mutation/native-design-system.json"
   },
@@ -60,7 +60,7 @@
     "jest": "apps/native/jest.config.js",
     "coverageAnalysis": "perTest",
     "mutate": ["apps/native/src/search/**/*.{ts,tsx}"],
-    "mutantsPerJob": 32,
+    "mutantsPerJob": 82,
     "canary": "apps/native/src/search/recent.tsx",
     "report": "reports/mutation/native-search.json"
   },
@@ -71,7 +71,7 @@
     "jest": "apps/native/jest.config.js",
     "coverageAnalysis": "perTest",
     "mutate": ["apps/native/src/ask/**/*.{ts,tsx}"],
-    "mutantsPerJob": 6,
+    "mutantsPerJob": 22,
     "canary": "apps/native/src/ask/film.tsx",
     "report": "reports/mutation/native-ask.json"
   },

@@ -214,6 +214,14 @@ export const CLAIMS = [
   },
   {
     adr: "0012-every-mutant-must-die.md",
+    says: /it acts only while `__STRYKER_ACTIVE_MUTANT__` is\s+set/,
+    holds: "the mutant run the stop at the first failure is limited to",
+    pattern: "stopAtFirstFailure(event, process.env.__STRYKER_ACTIVE_MUTANT__)",
+    paths: ["apps/native/test/environment.cjs"],
+    files: 1,
+  },
+  {
+    adr: "0012-every-mutant-must-die.md",
     says: /skips the argument of `StyleSheet\.create`, and a table declared at the top of a file the plugin/,
     holds: "the plugin that skips a drawn value",
     pattern: "StyleSheet.create",

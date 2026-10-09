@@ -225,27 +225,51 @@ the design system's fell from 873-1,177 s to 377-489 s. Each Jest shard names it
 theme can move to `perTest` once Stryker's coverage counting stops growing on a function every
 render calls.
 
-A mutant that runs to the end costs more than one cut off by a timeout, and how much more depends on
-the shard, so each shard's `mutantsPerJob` comes from its own measurements. With two runners, a
-job of N mutants takes about 30 s to start, plus its dry run D, plus r·D for every two mutants,
-where r is the time of one mutant's run over its dry run. The r values are the largest measured on
-CI under the shard's own coverage setting: 0.21 for the design system, 0.55 for search, 0.51 for
-the shell, 0.99 for Ask, and 1.88 for the theme. D is the shard's slowest dry run across 84 recent
-jobs under `off`, times 1.24 for the `perTest` shards, the largest gap measured between the two
-on the same runner. Each `mutantsPerJob` is the largest N that keeps the estimate within the
-slowest app job before these changes, 1,510 s:
+**A mutant's run stops at its first failing test.** Stryker's other runners stop a mutant's run at
+the first failing test, unless
+[`disableBail`](https://stryker-mutator.io/docs/stryker-js/configuration/#disablebail-boolean)
+is set. Its Jest runner cannot: it sets Jest's `bail` to false, because Jest bails by exiting the
+process ([jest#11766](https://github.com/jestjs/jest/issues/11766)), which would end Stryker's
+runner. So a killed app mutant ran every test that reached it, failing one after another. Under
+`theme.ts`'s `appearanceOf`, whose mutants fail most of the 908 tests the theme reaches, that run
+grew until it ran out of memory, and Stryker scored two of its three mutants as runtime errors
+rather than kills. `apps/native/test/stop-at-first-failure.cjs` does what `bail` would. The marked
+environment calls it on every test event, and it acts only while `__STRYKER_ACTIVE_MUTANT__` is
+set, which is during a mutant's run. Once a test fails under that mutant, it marks each later test
+to be skipped, which jest-circus honours. A mutant is still killed by the test that failed, and a
+survivor still runs every test, since nothing failed. `tools/planted-red/src/native-environment.test.ts`
+holds the rule, including that a dry run or a plain run, with no active mutant, never skips. On CI,
+with two runners and the shard's own coverage:
+
+| Canary | Before: killed, errors, tests per mutant, job | After |
+| --- | --- | --- |
+| theme, `appearanceOf` (`off`) | 1, 2, 225, 3,097 s | 3, 0, 4, 690 s |
+| theme, tokens (`off`) | 2, 0, 899, 1,353 s | 2, 0, 430, 551 s |
+| recent searches (`perTest`) | 12, 0, 40, 375 s | 12, 0, 8, 197 s |
+| film field (`perTest`) | 3, 0, 109, 409 s | 3, 0, 25, 440 s |
+| banner (`perTest`) | 8, 0, 16, 668 s | 8, 0, 6, 547 s |
+
+How long a mutant costs depends on the shard, so each shard's `mutantsPerJob` comes from its own
+measurements. With two runners, a job of N mutants takes about 30 s to start, plus its dry run D,
+plus r·D for every two mutants, where r is the time of one mutant's run over its dry run. With
+each run stopped at its first failure, r measured on CI is 0.067 for the design system's banner,
+0.22 for the recent-searches list, 0.30 for the film field and 0.61 for the theme's tokens. The
+shell has no measurement with the stop yet, so it keeps its earlier 0.51, an upper bound, since
+stopping early only shortens a run. D is the shard's slowest dry run across 84 recent jobs under
+`off`, times 1.24 for the `perTest` shards, the largest gap measured between the two on the same
+runner. Each `mutantsPerJob` is the largest N that keeps the estimate within the slowest app job
+before these changes, 1,510 s:
 
 | Shard | D | r | `mutantsPerJob` | Estimate |
 | --- | ---: | ---: | ---: | ---: |
-| design system | 800 s | 0.21 | 8 | 1,502 s |
+| design system | 800 s | 0.067 | 24 | 1,473 s |
 | shell | 513 s | 0.51 | 6 | 1,328 s |
-| Ask | 335 s | 0.99 | 6 | 1,359 s |
-| search | 146 s | 0.55 | 32 | 1,464 s |
-| theme | 692 s | 1.88 | 2 | 2,023 s |
+| Ask | 335 s | 0.30 | 22 | 1,471 s |
+| search | 146 s | 0.22 | 82 | 1,496 s |
+| theme | 692 s | 0.61 | 2 | 1,144 s |
 
-The theme does not fit. Even a job of one mutant, which costs as much as two because two run at
-once, comes to about 2,020 s, and one range of four mutants in `appearanceOf` took 3,097 s. That is
-the cost of mutants every test reaches: under `off` each runs all 908 tests the theme reaches.
+These are the costs of killed mutants, since a job whose every mutant dies is the only kind that
+passes. A survivor runs every test that reaches it, so a job holding one takes longer, and fails.
 
 **One kind of value is ignored, by a plugin rather than by file.** `tools/stryker-style-tables.mjs`
 skips the argument of `StyleSheet.create`, and a table declared at the top of a file the plugin
