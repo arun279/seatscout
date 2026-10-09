@@ -289,9 +289,11 @@ jobs:
           header: performance
           path: performance.md
       - name: Let the reading decide whether a regression fails this
+        env:
+          SLOWDOWN_FLOOR: "0.063"
         run: |
           steady="$(grep -oE '[0-9]+(\.[0-9]+)?%' "$RUNNER_TEMP/stability.md" | tr -d '%' | sort -rn | head -n 1)"
-          regressed="$(jq '[.significant // [] | .[] | select(.current.meanDuration > .baseline.meanDuration or .current.meanCount > .baseline.meanCount)] | length' apps/native/.reassure/output.json 2>/dev/null || echo unknown)"
+          regressed="$(jq --argjson floor "$SLOWDOWN_FLOOR" '[.significant // [] | .[] | select(.relativeDurationDiff >= $floor or .current.meanCount > .baseline.meanCount)] | length' apps/native/.reassure/output.json 2>/dev/null || echo unknown)"
           echo "Widest random change on this runner: ${steady:-none read} per cent. Significant changes: $regressed."
           if [ -z "$steady" ]; then
             echo "::error::The stability run left no reading, so nothing decides whether this gates."
@@ -307,7 +309,7 @@ jobs:
           fi
           if awk -v reading="$steady" 'BEGIN { exit !(reading < 5) }'; then
             if [ "$regressed" -gt 0 ]; then
-              echo "::error::The runner is steady at $steady per cent, under the 5 per cent Reassure calls steady, and $regressed scenario(s) changed significantly. The comment on the pull request names them."
+              echo "::error::The runner is steady at $steady per cent, under the 5 per cent Reassure calls steady, and $regressed scenario(s) rendered significantly slower, by more than unchanged code drifts ($SLOWDOWN_FLOOR), or more often. The comment on the pull request names them."
               exit 1
             fi
             echo "The runner is steady at $steady per cent and nothing changed significantly."

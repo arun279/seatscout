@@ -717,6 +717,27 @@ gate. `reassure check-stability` is that run's own name upstream, but its comman
 own name to the test runner as a path pattern, so the job spells out what the handler does, a
 baseline measurement and a comparison over the same commit.
 
+**A regression gates only when it is larger than unchanged code drifts.** Reassure calls a change
+significant when its probability is under 0.02 and it is at least 5 per cent. The probability uses
+the baseline's spread over the square root of the runs, which is the spread within one process;
+the base and the head are measured in two processes, with a checkout and an install between them,
+and that drift does not shrink with more runs. Measured on unchanged code (runs 37937855304 and
+37941070304: 18 jobs, each comparing a commit with itself twice), a scenario's change had a
+standard deviation of 2.5 per cent at 10 runs and 2.09 per cent at 20, and reached 7.4 and 6.4
+per cent. So at 10 runs, 2 of 10 comparisons of unchanged code came out significantly slower, and
+a pull request that touched only tools went red on a 5.4 per cent change to the hand-off sheet.
+Each scenario now runs 20 times, the knob Reassure's
+[methodology](https://callstack.github.io/reassure/docs/methodology) names for an unsteady
+runner, and a slower scenario gates only at or above 6.3 per cent: three standard deviations of
+the measured drift at 20 runs, the control limit a Shewhart chart draws, so a change past it is
+not drift that unchanged code shows. The cost is stated plainly: a real slowdown under about 6
+per cent now passes unseen, because it is inside the noise. A render that adds a render still
+gates at any size, since a count does not drift. Twenty runs add about 45 seconds to the job
+(220 against 174 seconds, median of the experiment's jobs), which keeps it well inside the
+mutation and `android` jobs that a pull request waits on. Across the 13 jobs at 20 runs, no
+comparison of unchanged code was both significant and at or above the floor. On 5 of those 13 the
+stability reading was 5 per cent or more, so the job would have reported without gating.
+
 **Watched failing, watched silent.** The first run on the pull request that added the job left no
 reading at all, because the failure was piped into `tee` and lost, and the step that reads the
 figure then took its own no-reading branch and passed. Both were corrected together: the reading is

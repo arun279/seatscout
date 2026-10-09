@@ -272,4 +272,20 @@ export const GATE_CLAIMS = [
     paths: [WORKSPACE],
     files: 1,
   },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /a slower scenario gates only at or above 6\.3 per cent/,
+    holds: "the slowdown below which the render gate reads drift",
+    pattern: 'SLOWDOWN_FLOOR: "0.063"',
+    paths: [WORKFLOW],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /Each scenario now runs 20 times/,
+    holds: "the runs each render scenario takes",
+    pattern: "configure({ runs: 20 });",
+    paths: ["apps/native/test/reassure.cjs"],
+    files: 1,
+  },
 ];
