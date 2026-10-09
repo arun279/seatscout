@@ -41,14 +41,14 @@ jobs:
       - name: Split the source files this change touches into mutation jobs
         id: plan
         run: |
-          jobs="$(node tools/mutation.mjs --plan "$BASE")"
+          jobs="$(node tools/mutation.mjs --plan HEAD^1)"
           echo "$jobs" | jq .
           echo "jobs=$jobs" >> "$GITHUB_OUTPUT"
       - name: Say whether this change touches the app
         id: app
         run: |
           # shellcheck disable=SC2086
-          if git diff --quiet "$BASE...HEAD" -- $APP; then
+          if git diff --quiet HEAD^1 HEAD -- $APP; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -246,17 +246,18 @@ jobs:
           pnpm install --frozen-lockfile
           { pnpm reassure --baseline && pnpm reassure; } | tee "$RUNNER_TEMP/stability.md"
           rm -rf apps/native/.reassure
-      - name: Measure the screens at the merge base
+      - name: Measure the screens on main as this change merges into it
         run: |
-          git switch --detach "$BASE"
+          merged="$(git rev-parse HEAD)"
+          git switch --detach HEAD^1
           pnpm install --frozen-lockfile
           if [ -f apps/native/jest.perf.config.js ]; then
             pnpm reassure --baseline
           else
-            echo "The merge base has no screen to measure."
+            echo "Main has no screen to measure."
             touch "$RUNNER_TEMP/no-base-measurement"
           fi
-          git switch --detach "$HEAD"
+          git switch --detach "$merged"
           pnpm install --frozen-lockfile
       - name: Measure them on this branch and compare
         run: pnpm reassure

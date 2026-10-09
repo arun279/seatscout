@@ -64,7 +64,10 @@ the tree.
 
 **A pull request judges the files it changes.** The `changes` job lists the source files the
 pull request adds or modifies, plus the sources any changed test or fixture file imports, and
-`tools/mutation.mjs --plan` splits them by shard into jobs. Under Vitest a job holds up to
+`tools/mutation.mjs --plan` splits them by shard into jobs. The change is read against the merge
+commit's first parent, which is main as the change merges into it. The base the event records
+can be older: on PR #198 it predated a merge to main a minute before the run, so that merge's
+edits to two screens were planned as the change's own, 81 ranges in one of them. Under Vitest a job holds up to
 eight files. Under Jest a job mutates only the lines the change adds or edits; a source reached
 only through a changed test, and a shard's canary, are mutated whole. This is the scope Google's
 code-review mutation testing reports on ([State of Mutation Testing at Google](https://research.google/pubs/state-of-mutation-testing-at-google/), 2018),
