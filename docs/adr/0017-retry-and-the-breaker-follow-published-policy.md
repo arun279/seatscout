@@ -42,7 +42,7 @@ ratio over a sampling window does not fit at this volume, which is why the publi
 libraries were not taken.
 
 | default | value | what it rests on |
-|---|---|---|
+| --- | --- | --- |
 | attempts | 3 | at the 7% error rate measured under fan-out a third attempt leaves about one in 2,800 |
 | first delay | 500 ms | one measured round trip, bracketed by a 335 ms mean at concurrency 24 and a 510 ms median over five sequential reads |
 | failures before opening | 3 | a failed reading is already three attempts, so a trip is nine consecutive upstream failures, which at the measured rate is not the independent error rate under any reading |

@@ -1,0 +1,4 @@
+# A record
+
+It points to [a decision that was never written](no-such-record.md), and to
+[a heading this file does not have](#a-section-that-is-not-here).

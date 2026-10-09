@@ -44,7 +44,7 @@ exist.
 
 Split by layer rather than by platform.
 
-```
+```text
 packages/core        domain model, source adapters, seat normalisation, scoring,
                      filter engine. Plain TypeScript. No DOM, no React, no React Native.
 packages/client      query orchestration, on device cache, streaming fan out.

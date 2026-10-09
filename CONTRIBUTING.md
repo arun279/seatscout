@@ -9,8 +9,9 @@
 - [actionlint](https://github.com/rhysd/actionlint) and
   [shellcheck](https://www.shellcheck.net), for the workflow and shell checks in the
   `quality` job
+- [lychee](https://github.com/lycheeverse/lychee), for the link check in the `quality` job
 
-Neither cloc nor gitleaks is an npm package, so neither arrives with `pnpm install`.
+None of cloc, gitleaks or lychee is an npm package, so none arrives with `pnpm install`.
 
 Run `pnpm install` after cloning. The install registers the lefthook Git hooks and prunes
 any worktree registration whose directory has gone.
@@ -50,6 +51,8 @@ pnpm duplication
 actionlint
 shellcheck apps/native/e2e/*.sh
 pnpm spell
+pnpm markdown
+pnpm links
 pnpm typecheck
 pnpm dead-code
 pnpm versions
@@ -98,6 +101,9 @@ as it is. Where another record explains a gate, the item links it.
 - **File length.** Split the file.
 - **Duplicated code.** Take the duplication out. jscpd names both files.
 - **A workflow or a shell script.** Fix what actionlint or shellcheck names.
+- **A markdown rule.** Fix what markdownlint names. Line length is the one rule turned off.
+- **A broken link in the prose.** Point it at a file or heading that exists. The check reads
+  links inside the repository, not on the web.
 - **An unknown word.** Add it to `words` in `cspell.json`. Some words are banned outright in
   `flagWords`, such as the comment that turns off type checking for a whole file. Write
   `@ts-expect-error` on the one line instead.

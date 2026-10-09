@@ -107,7 +107,7 @@ This is the latency recorded against the live Source on 2026-08-23, before any o
 existed. Every figure the live timing test uses comes from it and none is invented here.
 
 | step | time |
-|---|---|
+| --- | --- |
 | Every bookable Showtime for one Movie, one date, 31 Theaters | 375 ms |
 | 48 seat maps at concurrency 24 | 0.67 s |
 | the same 48 at concurrency 12 | 0.96 s |

@@ -580,6 +580,21 @@ tests `tests/app` holds is a figure this decision would have to justify, it woul
 whatever the suite held on the day it was written, and a count does not protect a particular
 scan in any case.
 
+**The prose is linted for form and for links that resolve.** Every tracked markdown file goes
+through [markdownlint-cli2](https://github.com/DavidAnson/markdownlint-cli2) under markdownlint's
+own defaults, with one rule turned off: line length. Nothing here holds prose to a width, and a
+width would be a number this decision chose. The records already met every other default but
+three tables written without spaces around their pipes and one fence that named no language.
+[lychee](https://github.com/lycheeverse/lychee) then checks every link in the same files that
+points inside the repository, file and heading alike, with `--offline --include-fragments`.
+Links to the web are left out of the gate, because a site being down would turn a pull request
+red for something it did not change; checked once by hand on the day this landed, one of them
+was broken, a `#readme` anchor GitHub draws with script, and it was corrected.
+`tools/planted-red/src/markdown.test.ts` watches markdownlint refuse two headings at the top
+level and a bare fence and pass a tidy record with a long line, and the `quality` job watches
+lychee refuse a planted record with a missing file and a missing heading and pass one whose links
+resolve.
+
 **One question gets one gate.** The `dependencies` job scans the lockfile against the OSV
 database and fails on any advisory. It once also ran `pnpm audit`, which since 2021 has been
 a proxy in front of the same GitHub Advisory Database that OSV mirrors, so the two steps
@@ -840,7 +855,7 @@ of it spread 7.9, 19.6 and 12.1 per cent on three runs (36183944292, 36225719569
 the cold launches `am start -W` timed still spread 8.1 per cent over forty launches on run
 36245321569. So it is not measured. That run read both sides twice: when a measure spread 5 per
 cent or more, everything was read again with twice the launches and iterations, as
-[Reassure's README](https://github.com/callstack/reassure#readme) suggests for a noisy runner. The
+[Reassure's README](https://github.com/callstack/reassure) suggests for a noisy runner. The
 second pass cost about 59 of the `device` job's 91 minutes (the three APK installs in the log
 are at 13:47, 14:16 and 14:46, and the step ended at 15:15), and its final report still left the
 walk's time (6.3 per cent) and CPU (13.5) out as unsteady while holding frame rate (0.2) and memory

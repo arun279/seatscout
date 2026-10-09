@@ -106,7 +106,7 @@ The budget, the fan-out width, the retry and breaker policies and the cooldown a
 The code carries no comment, so what each field rests on is kept here.
 
 | field | value | what it rests on |
-|---|---|---|
+| --- | --- | --- |
 | `seatMapsPerStep` | 48 | one burst of 48 seat maps met no refusal and 200 met 46, above |
 | `width` | 24 | the measured optimum of the timing table in [ADR 16](0016-a-search-reports-its-coverage.md) |
 | `retry.attempts` | 3 | [ADR 17](0017-retry-and-the-breaker-follow-published-policy.md): at the 7% error rate measured under fan-out, a third attempt leaves about one in 2,800 |

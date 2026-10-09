@@ -1,0 +1,5 @@
+# A record
+
+# Another record
+
+Two top-level headings in one document.
