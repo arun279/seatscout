@@ -52,7 +52,7 @@ export const MUTATION: Kind = {
   measure: (text: string): Measured => {
     const parsed: unknown = JSON.parse(text);
     if (!isReport(parsed))
-      return { weighed: 0, said: "", refused: "holds no Stryker report.\n" };
+      return { weighed: 0, refused: "holds no Stryker report.\n" };
     const all = mutantsOf(parsed);
     const weighed = all.filter(({ mutant }) =>
       WEIGHED.includes(mutant.status),
@@ -61,11 +61,9 @@ export const MUTATION: Kind = {
       weighed,
       all.filter(({ mutant }) => NOT_JUDGED.includes(mutant.status)).map(named),
     );
-    return {
-      weighed,
-      said: `records a run that weighed ${weighed} mutants.`,
-      refused,
-    };
+    return refused === undefined
+      ? { weighed, said: `records a run that weighed ${weighed} mutants.` }
+      : { weighed, refused };
   },
   missing: (path: string): string =>
     `${path} does not exist, so the shard that writes it judged nothing.\n\nEach shard is judged from its report rather than from its exit code, and a shard that\nleft no report is a red verdict rather than a silent omission. Either the shard did\nnot run, or its report never reached the job reading it. stryker.shards.json names\nthe report every shard writes.\n`,

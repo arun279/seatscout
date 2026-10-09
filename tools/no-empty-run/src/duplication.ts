@@ -15,11 +15,12 @@ export const DUPLICATION: Kind = {
   measure: (text: string): Measured => {
     const { sources, lines, duplicatedLines, percentage }: Total =
       JSON.parse(text).statistics.total;
-    return {
-      weighed: sources,
-      said: `records ${duplicatedLines} duplicated line(s) of ${lines} across ${sources} source(s), ${percentage.toFixed(2)}%.`,
-      refused: sources === 0 ? NONE_READ : undefined,
-    };
+    return sources === 0
+      ? { weighed: sources, refused: NONE_READ }
+      : {
+          weighed: sources,
+          said: `records ${duplicatedLines} duplicated line(s) of ${lines} across ${sources} source(s), ${percentage.toFixed(2)}%.`,
+        };
   },
   missing: (path: string): string =>
     `${path} does not exist, so the duplication run wrote no report.\n\nThe run is judged from its report rather than from its exit code. Check that the json\nreporter and the output directory are still named in .jscpd.json.\n`,

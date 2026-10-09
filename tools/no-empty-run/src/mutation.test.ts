@@ -125,13 +125,17 @@ describe("what the mutation guard says", () => {
   });
 
   it("refuses a report that is not Stryker's, rather than counting nothing in it", () => {
-    expect(MUTATION.measure(JSON.stringify({ lcp: 1 })).refused).toBe(
-      "holds no Stryker report.\n",
-    );
-    expect(MUTATION.measure("null").refused).toBe("holds no Stryker report.\n");
-    expect(MUTATION.measure(JSON.stringify({ files: null })).refused).toBe(
-      "holds no Stryker report.\n",
-    );
+    for (const text of [
+      JSON.stringify({ lcp: 1 }),
+      "null",
+      "5",
+      JSON.stringify({ files: null }),
+      JSON.stringify({ files: 5 }),
+    ])
+      expect(MUTATION.measure(text)).toEqual({
+        weighed: 0,
+        refused: "holds no Stryker report.\n",
+      });
   });
 
   it("refuses nothing in a run that weighed a mutant and judged them all", () => {

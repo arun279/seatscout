@@ -1,8 +1,14 @@
-export interface Measured {
-  readonly weighed: number;
-  readonly said: string;
-  readonly refused: string | undefined;
-}
+export type Measured =
+  | {
+      readonly weighed: number;
+      readonly said: string;
+      readonly refused?: undefined;
+    }
+  | {
+      readonly weighed: number;
+      readonly said?: undefined;
+      readonly refused: string;
+    };
 
 export interface Kind {
   readonly report?: string;
