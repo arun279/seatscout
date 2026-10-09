@@ -14,6 +14,7 @@ import {
   render,
   screen,
 } from "@testing-library/react-native";
+import { AccessibilityInfo } from "react-native";
 import { houseLights } from "../../test/lights.js";
 import { type Fetch, phone, type Upstream } from "../../test/phone.js";
 import { ASKED, WARM_UP } from "../../test/rooms.js";
@@ -96,6 +97,17 @@ afterEach(() => {
   jest.useRealTimers();
 });
 
+describe("the ledger as it opens", () => {
+  it("says its heading to a screen reader, since no field in it takes the keyboard", async () => {
+    const said = jest.spyOn(AccessibilityInfo, "announceForAccessibility");
+    said.mockClear();
+
+    await opened();
+
+    expect(said).toHaveBeenCalledWith("Every showtime, accounted for");
+  });
+});
+
 describe("the ledger of a search that has stopped reading", () => {
   it.each(APPEARANCES)(
     "puts every showtime under one verdict and adds them up to the candidates, with the house lights %s",
@@ -107,6 +119,7 @@ describe("the ledger of a search that has stopped reading", () => {
         await screen.findByText("13 + 1 + 1 = 15 candidates"),
       ).toBeOnTheScreen();
       expect(headers()).toEqual(VERDICTS);
+      expect(screen.getAllByTestId("ledger-row")).toHaveLength(3);
       expect(screen.getByText("AMC Stonebriar 24 · 7:15p")).toBeOnTheScreen();
       expect(screen.queryByText(/placeholder/)).toBeNull();
     },

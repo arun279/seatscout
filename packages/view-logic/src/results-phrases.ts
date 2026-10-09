@@ -166,14 +166,19 @@ export interface Verdict {
   readonly ledes: readonly string[];
 }
 
+export const SLOWED = "The ticket site asked us to slow down.";
+
+export const searchAgainAfter = (until: string): string =>
+  `Search again after ${timeOf(until)}.`;
+
 export const refusedOf = ({ coverage }: Snapshot, until: string): Verdict => ({
-  said: "The ticket site asked us to slow down.",
+  said: SLOWED,
   ledes: [
     `${
       coverage.checked === 0
         ? "Nothing was read, so this says nothing about seats yet."
         : `Only ${coverage.checked} of ${coverage.candidates} rooms were read, so this says nothing about the rest yet.`
-    } Search again after ${timeOf(until)}.`,
+    } ${searchAgainAfter(until)}`,
   ],
 });
 

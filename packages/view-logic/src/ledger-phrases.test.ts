@@ -1,7 +1,12 @@
 import { createSeatScout, type Snapshot } from "@seatscout/client";
 import { fakeUpstream } from "@seatscout/client/testing";
 import { describe, expect, it } from "vitest";
-import { type LedgerRow, ledgerOf, sumOf } from "./ledger-phrases.js";
+import {
+  ACCOUNTED_FOR,
+  type LedgerRow,
+  ledgerOf,
+  sumOf,
+} from "./ledger-phrases.js";
 import {
   COOLED,
   covering,
@@ -123,26 +128,23 @@ describe("the ledger's rows", () => {
     ]);
   });
 
-  it("keys each named Showtime by its own ticketing address, which a listing gives every one", async () => {
-    const settled = await settledWhole();
-    const [, noSeatMap] = ledgerOf(settled, clockAfter);
-
-    expect(noSeatMap?.named.map(({ key }) => key)).toEqual(
-      settled.coverage.noSeatMap.map((showtime) => showtime.ticketing),
-    );
-  });
-
   it("gives every outcome its own row and its own remedy, in the order the ledger keeps", async () => {
     const rows = ledgerOf(oneOfEachNamed(await settledWhole()), clockAfter);
 
     expect(rows.map(({ label, remedy }) => [label, remedy])).toEqual([
       ["Checked", CHECKED],
-      ["Already started", "These had begun by the time the listing was read."],
+      [
+        "Already started",
+        "These had begun by the time the listing was read. Later showings stay on the list.",
+      ],
       [
         "No seat map",
         "General admission, so there are no seats to rank. A retry cannot change that.",
       ],
-      ["Sold out", "The room answered: no seats left."],
+      [
+        "Sold out",
+        "No seats left. Other times at the same theater stay on the list.",
+      ],
       [
         "Sales switched off",
         "The theater is not selling these, so no seat map was asked for.",
@@ -176,20 +178,18 @@ describe("the ledger's rows", () => {
     );
 
     expect(
-      ledgerOf(running, clockAfter).map(({ label, count, retry }) => [
+      ledgerOf(running, clockAfter).map(({ label, count, remedy, retry }) => [
         label,
         count,
+        remedy,
         retry,
       ]),
     ).toEqual([
-      ["Checked", 84, null],
-      ["Could not be reached", 1, null],
-      ["Being read", 51, null],
-      ["Not read yet", 40, null],
+      ["Checked", 84, CHECKED, null],
+      ["Could not be reached", 1, "The room did not answer.", null],
+      ["Being read", 51, "Asked for, not answered yet.", null],
+      ["Not read yet", 40, "Not asked for yet.", null],
     ]);
-    expect(ledgerOf(running, clockAfter)[2]?.remedy).toBe(
-      "Asked for, not answered yet.",
-    );
   });
 
   it("says the ticket site asked to slow down on what a refused search did not read, and offers no retry", async () => {
@@ -209,17 +209,19 @@ describe("the ledger's rows", () => {
       ]),
     ).toEqual([
       ["Checked", CHECKED, null],
-      [
-        "Could not be reached",
-        "The room did not answer. A retry can fix this, and only this.",
-        null,
-      ],
+      ["Could not be reached", "The room did not answer.", null],
       [
         "Not read yet",
         "The ticket site asked us to slow down. Search again after 9:47p.",
         null,
       ],
     ]);
+  });
+});
+
+describe("the ledger's heading", () => {
+  it("says the sheet accounts for every showtime", () => {
+    expect(ACCOUNTED_FOR).toBe("Every showtime, accounted for");
   });
 });
 

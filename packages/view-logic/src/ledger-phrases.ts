@@ -1,11 +1,19 @@
 import type { Coverage, Snapshot } from "@seatscout/client";
 import { accountOf, toGoIn, unreadIn } from "./derived.js";
-import { timeOf } from "./phrases.js";
-import { coverageOf, nameOf, retryOf, UNREACHED } from "./results-phrases.js";
+import {
+  coverageOf,
+  nameOf,
+  retryOf,
+  SLOWED,
+  searchAgainAfter,
+  UNREACHED,
+} from "./results-phrases.js";
 
 export const ACCOUNTED_FOR = "Every showtime, accounted for";
 
-interface Named {
+type Showtimes = Coverage["soldOut"];
+
+interface NamedShowtime {
   readonly key: string;
   readonly said: string;
 }
@@ -14,7 +22,7 @@ export interface LedgerRow {
   readonly count: number;
   readonly label: string;
   readonly remedy: string;
-  readonly named: readonly Named[];
+  readonly named: readonly NamedShowtime[];
   readonly retry: string | null;
 }
 
@@ -27,7 +35,7 @@ const counted = (count: number, label: string, remedy: string): LedgerRow => ({
 });
 
 const named = (
-  showtimes: Coverage["soldOut"],
+  showtimes: Showtimes,
   label: string,
   remedy: string,
 ): LedgerRow => ({
@@ -38,18 +46,33 @@ const named = (
   })),
 });
 
-const retryIn = (snapshot: Snapshot): string | null =>
-  snapshot.phase === "settled" && snapshot.refusedUntil === null
-    ? retryOf(snapshot.coverage.failed.length)
-    : null;
+const retryable = ({ phase, refusedUntil }: Snapshot): boolean =>
+  phase === "settled" && refusedUntil === null;
+
+const unreached = (snapshot: Snapshot): LedgerRow => {
+  const { failed } = snapshot.coverage;
+  return retryable(snapshot)
+    ? {
+        ...named(
+          failed,
+          UNREACHED,
+          "The room did not answer. A retry can fix this, and only this.",
+        ),
+        retry: retryOf(failed.length),
+      }
+    : named(failed, UNREACHED, "The room did not answer.");
+};
 
 const notReadYet = (
-  refusedUntil: number | null,
+  snapshot: Snapshot,
   clockAfter: (at: number) => string,
-): string =>
-  refusedUntil === null
+): string => {
+  if (snapshot.refusedUntil !== null)
+    return `${SLOWED} ${searchAgainAfter(clockAfter(snapshot.refusedUntil))}`;
+  return retryable(snapshot)
     ? "Not asked for yet. Read more from the list."
-    : `The ticket site asked us to slow down. Search again after ${timeOf(clockAfter(refusedUntil))}.`;
+    : "Not asked for yet.";
+};
 
 export const ledgerOf = (
   snapshot: Snapshot,
@@ -65,14 +88,18 @@ export const ledgerOf = (
     named(
       coverage.started,
       "Already started",
-      "These had begun by the time the listing was read.",
+      "These had begun by the time the listing was read. Later showings stay on the list.",
     ),
     named(
       coverage.noSeatMap,
       "No seat map",
       "General admission, so there are no seats to rank. A retry cannot change that.",
     ),
-    named(coverage.soldOut, "Sold out", "The room answered: no seats left."),
+    named(
+      coverage.soldOut,
+      "Sold out",
+      "No seats left. Other times at the same theater stay on the list.",
+    ),
     named(
       coverage.salesOff,
       "Sales switched off",
@@ -83,19 +110,12 @@ export const ledgerOf = (
       "Never identified",
       "The listing gave nothing to ask for a seat map with, so none can be read.",
     ),
-    {
-      ...named(
-        coverage.failed,
-        UNREACHED,
-        "The room did not answer. A retry can fix this, and only this.",
-      ),
-      retry: retryIn(snapshot),
-    },
+    unreached(snapshot),
     counted(toGoIn(snapshot), "Being read", "Asked for, not answered yet."),
     counted(
       unreadIn(snapshot),
       "Not read yet",
-      notReadYet(snapshot.refusedUntil, clockAfter),
+      notReadYet(snapshot, clockAfter),
     ),
   ].filter((row) => row.count > 0);
 };

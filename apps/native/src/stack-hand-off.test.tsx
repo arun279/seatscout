@@ -10,7 +10,6 @@ import { act, fireEvent, screen, within } from "@testing-library/react-native";
 import { router } from "expo-router";
 import { renderRouter } from "expo-router/testing-library";
 import { WARM_UP, warmTheCorpus } from "../test/rooms.js";
-import { routesIn } from "../test/routed.js";
 import { source as mockSource, reads } from "../test/stack-phone.js";
 import Layout, { unstable_settings } from "./app/_layout.js";
 import Ask from "./app/ask.js";
@@ -35,6 +34,18 @@ jest.mock("./host/source.js", () => mockSource);
 
 const LISTED =
   "/?movie=246473&date=2026-09-20&area=75006&partySize=2&from=19:00&until=19:20";
+
+interface Routed {
+  readonly routes: readonly {
+    readonly name: string;
+    readonly state?: Routed | undefined;
+  }[];
+}
+
+const routesIn = (state: Routed | undefined): readonly string[] =>
+  (state?.routes ?? []).flatMap((route) =>
+    route.state === undefined ? [route.name] : routesIn(route.state),
+  );
 
 const opened = (initialUrl: string) =>
   renderRouter(

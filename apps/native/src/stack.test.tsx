@@ -264,6 +264,15 @@ describe("a deep link that carries a whole query", () => {
 
     expect(listed.at()).toBe("/hand-off");
   });
+
+  it("presents the ledger from the coverage strip above the list", async () => {
+    const listed = await ranked();
+
+    await fireEvent.press(screen.getByRole("button", { name: "ledger ›" }));
+    await screen.findByText("Every showtime, accounted for");
+
+    expect(listed.at()).toBe("/ledger");
+  });
 });
 
 describe("the faces the app is set in", () => {

@@ -13,7 +13,6 @@ import { Type } from "../design-system/type.js";
 import { clockAfter } from "../host/clock.js";
 import { useSession, useShown } from "../host/session.js";
 import { Retry } from "../search/verdicts.js";
-import { useTheme } from "../theme.js";
 
 export interface LedgerProps {
   readonly seatscout: SeatScout;
@@ -24,7 +23,6 @@ export interface LedgerProps {
 
 const styles = StyleSheet.create({
   row: {
-    borderBottomWidth: 1,
     flexDirection: "row",
     gap: 14,
     marginHorizontal: 18,
@@ -43,38 +41,31 @@ const Row = ({
   readonly row: LedgerRow;
   readonly online: boolean;
   readonly onRetry: () => void;
-}) => {
-  const { colours } = useTheme();
-
-  return (
-    <View
-      style={[styles.row, { borderBottomColor: colours.hairline }]}
-      testID="ledger-row"
-    >
-      <Type set="ledgerCount" style={styles.count} tone="silver">
-        {row.count}
+}) => (
+  <View style={styles.row} testID="ledger-row">
+    <Type set="ledgerCount" style={styles.count} tone="silver">
+      {row.count}
+    </Type>
+    <View style={styles.said}>
+      <Type accessibilityRole="header" set="sentenceLead" tone="silver">
+        {row.label}
       </Type>
-      <View style={styles.said}>
-        <Type accessibilityRole="header" set="sentenceLead" tone="silver">
-          {row.label}
+      <Type set="sentenceSmall" tone="silverDim">
+        {row.remedy}
+      </Type>
+      {row.named.map(({ key, said }) => (
+        <Type key={key} set="ledgerRow" tone="silverDim">
+          {said}
         </Type>
-        <Type set="sentenceSmall" tone="silverDim">
-          {row.remedy}
-        </Type>
-        {row.named.map(({ key, said }) => (
-          <Type key={key} set="ledgerRow" tone="silverDim">
-            {said}
-          </Type>
-        ))}
-        {row.retry !== null && (
-          <View style={styles.retry}>
-            <Retry online={online} onRetry={onRetry} retry={row.retry} />
-          </View>
-        )}
-      </View>
+      ))}
+      {row.retry !== null && (
+        <View style={styles.retry}>
+          <Retry online={online} onRetry={onRetry} retry={row.retry} />
+        </View>
+      )}
     </View>
-  );
-};
+  </View>
+);
 
 export const Ledger = ({
   seatscout,
