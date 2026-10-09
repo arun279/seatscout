@@ -21,6 +21,14 @@ export interface GhostProps {
 }
 
 const styles = StyleSheet.create({
+  curtain: {
+    bottom: 0,
+    left: 0,
+    pointerEvents: "none",
+    position: "absolute",
+    right: 0,
+    top: 0,
+  },
   control: {
     alignItems: "center",
     borderWidth: 1,
@@ -49,21 +57,17 @@ const Curtain = ({
   const velvet = useId();
 
   return (
-    <Svg
-      height="100%"
-      pointerEvents="none"
-      style={StyleSheet.absoluteFill}
-      testID="curtain"
-      width="100%"
-    >
-      <Defs>
-        <LinearGradient id={velvet} x1="0" x2="0" y1="0" y2="1">
-          <Stop offset={0} stopColor={colours.velvet} />
-          <Stop offset={1} stopColor={colours.velvetDeep} />
-        </LinearGradient>
-      </Defs>
-      <Rect fill={`url(#${velvet})`} height="100%" rx={radius} width="100%" />
-    </Svg>
+    <View style={styles.curtain} testID="curtain">
+      <Svg height="100%" testID="curtain-drawing" width="100%">
+        <Defs>
+          <LinearGradient id={velvet} x1="0" x2="0" y1="0" y2="1">
+            <Stop offset={0} stopColor={colours.velvet} />
+            <Stop offset={1} stopColor={colours.velvetDeep} />
+          </LinearGradient>
+        </Defs>
+        <Rect fill={`url(#${velvet})`} height="100%" rx={radius} width="100%" />
+      </Svg>
+    </View>
   );
 };
 
