@@ -135,6 +135,9 @@ as it is. Where another record explains a gate, the item links it.
   same diff. `UNKNOWN` may never be added, so replace that dependency.
 - **A surviving mutant.** Add the assertion that kills it.
   ([ADR 12](docs/adr/0012-every-mutant-must-die.md))
+- **A mutant Stryker could not judge.** The job names the mutant and its whole error. Most
+  often a test file computed a value at load, so move that work into each test.
+  ([ADR 12](docs/adr/0012-every-mutant-must-die.md))
 - **The walk on the emulator.** The job log names the step that found nothing, and the
   `device` artifact holds what Maestro wrote of the walk. Fix the screen, or change
   `apps/native/e2e/journey.yaml` in the same diff if the journey changed on purpose.
@@ -195,6 +198,9 @@ the lines: `node tools/mutation.mjs --shard <id> --files <file>:<start>-<end>`.
 `stryker.shards.json` names the shards, and [ADR 12](docs/adr/0012-every-mutant-must-die.md)
 says how they are divided and run. Run Vitest on one worker under Stryker
 (`VITEST_MAX_WORKERS=1`), or the run reports survivors that are not there.
+
+A mutant's run in the app stops at its first failing test and skips the rest, so a killed
+mutant's log shows one failure. ([ADR 12](docs/adr/0012-every-mutant-must-die.md))
 
 ## The footprint report
 
