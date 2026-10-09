@@ -768,6 +768,16 @@ puts one run at 15 to 25 minutes (the workflow comment in
 [Lanterna](https://github.com/rogerfuentes/lanterna) was read and not taken: it is at 0.0.x,
 and its iOS frame rate needs a native module Expo Go does not bundle.
 
+**Both Android builds use the NDK the runner already has.** The ubuntu-24.04 runner image ships
+NDK 27.3.13750724, 28.2.13676358 and 29.0.14206865
+([its readme](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md)).
+React Native asks for 27.1.12297006, and `expo-updates`, which names none, gets the Android
+plugin's default, 27.0.12077973, so Gradle downloaded both on every build. One download came back
+as a corrupt archive and failed Baseline run 37936707241. The Gradle init script
+`.github/gradle/preinstalled-ndk.gradle` sets every Android project in the build to 27.3.13750724
+after the project's own configuration, and the build step fails if the NDK directory holds
+anything after the build that it did not hold before.
+
 **What the emulator reads is measured on main, held to the run before, one measure at a time,
 while it is steady.** The Baseline workflow's `device` job builds main's app on every push to
 main, and not on the nightly schedule, which would read the same commit again. A push never

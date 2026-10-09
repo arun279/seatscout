@@ -59,4 +59,12 @@ export const DEVICE_CLAIMS = [
     paths: [WORKFLOW],
     files: 1,
   },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /The Gradle init script\s+`\.github\/gradle\/preinstalled-ndk\.gradle` sets every Android project/,
+    holds: "the two Android builds that pin the runner's NDK",
+    pattern: "--init-script ../../../.github/gradle/preinstalled-ndk.gradle",
+    paths: [".github/workflows"],
+    files: 2,
+  },
 ];

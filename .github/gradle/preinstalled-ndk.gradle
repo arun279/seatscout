@@ -1,0 +1,7 @@
+allprojects {
+  afterEvaluate {
+    if (extensions.findByName("android") != null) {
+      android.ndkVersion = System.getenv("NDK_VERSION")
+    }
+  }
+}
