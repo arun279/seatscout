@@ -177,7 +177,7 @@ describe("the three ways a search can end without a whole list", () => {
     );
   });
 
-  it("counts what answered and what did not, and offers a retry that names its own number", () => {
+  it("counts what answered and what did not", () => {
     const partial = reading(covering(176, 170), "settled");
 
     expect(partialOf(partial)).toBe(
@@ -188,7 +188,15 @@ describe("the three ways a search can end without a whole list", () => {
       { figure: 170, word: "answered", unreached: false },
       { figure: 6, word: "unreached", unreached: true },
     ]);
-    expect(retryOf(6)).toBe("Retry the six unreached");
+  });
+
+  it("names the theater it would try again when one showing was unreached, and counts them when several were", async () => {
+    const { failed } = (await dallasFailed()).coverage;
+
+    expect(retryOf(failed)).toBe("Try Cinemark Dallas XD and IMAX again");
+    expect(retryOf([...failed, ...failed, ...failed])).toBe(
+      "Try the 3 unreached again",
+    );
   });
 
   it("heads a partial search that still found something with the shorter line", async () => {

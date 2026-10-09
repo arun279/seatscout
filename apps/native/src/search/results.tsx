@@ -23,7 +23,7 @@ import { ScreenBand } from "../design-system/screen-band.js";
 import { Type } from "../design-system/type.js";
 import type { Clock } from "../host/clock.js";
 import { useRememberWhenSettled } from "../host/remembered.js";
-import { type Session, useSession } from "../host/session.js";
+import { type Session, useSession, useShown } from "../host/session.js";
 import { useTheme } from "../theme.js";
 import { Card } from "./card.js";
 import { Strip } from "./coverage.js";
@@ -119,9 +119,6 @@ interface VerdictProps {
   readonly online: boolean;
   readonly onEdit: (term: Term) => void;
 }
-
-const useShown = ({ held }: Session) =>
-  useSyncExternalStore(held.subscribe, held.snapshot);
 
 const LiveStrip = ({
   session,

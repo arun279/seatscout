@@ -71,6 +71,10 @@ export const openRoom = (
   });
 };
 
+export const openLedger = (terms: Terms): void => {
+  router.push({ pathname: "/ledger", params: askedIn(terms) });
+};
+
 let handed: SeatGroupResult | undefined;
 
 export const handOff = (chosen: SeatGroupResult): void => {

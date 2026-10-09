@@ -1,9 +1,9 @@
-import { router } from "expo-router";
 import type { ReactElement } from "react";
 import {
   askAbout,
   goTo,
   handOff,
+  openLedger,
   openRoom,
   useTerms,
 } from "../host/address.js";
@@ -26,7 +26,7 @@ export default function Index(): ReactElement | null {
       clock={clock}
       onAsk={(term) => askAbout(terms, term)}
       onHandOff={handOff}
-      onLedger={() => router.push("/ledger")}
+      onLedger={() => openLedger(terms)}
       online={online}
       onRoom={(result) => openRoom(terms, result.showtime.id, result.key)}
       onRun={goTo}

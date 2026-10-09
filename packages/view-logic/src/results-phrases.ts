@@ -12,7 +12,7 @@ import {
   unreachedIn,
   unreadIn,
 } from "./derived.js";
-import { clockOf, noneOf, spokenOf, timeOf, wordOf } from "./phrases.js";
+import { clockOf, noneOf, spokenOf, timeOf } from "./phrases.js";
 import { dayOf, whenOf } from "./when-phrases.js";
 import type { Terms } from "./terms.js";
 
@@ -130,8 +130,12 @@ export const notAnAnswerAbout = (when: string): string =>
 
 export const RETRY_THE_SEARCH = "Retry the search";
 
-export const retryOf = (unreached: number): string =>
-  `Retry the ${wordOf(unreached)} unreached`;
+export const retryOf = (failed: Coverage["failed"]): string => {
+  const [only, ...more] = failed;
+  return only === undefined || more.length > 0
+    ? `Try the ${failed.length} unreached again`
+    : `Try ${only.presentation.theater.name} again`;
+};
 
 export const WAITING_TO_RETRY = "Waiting for a connection to retry";
 
@@ -166,14 +170,19 @@ export interface Verdict {
   readonly ledes: readonly string[];
 }
 
+export const SLOWED = "The ticket site asked us to slow down.";
+
+export const searchAgainAfter = (until: string): string =>
+  `Search again after ${timeOf(until)}.`;
+
 export const refusedOf = ({ coverage }: Snapshot, until: string): Verdict => ({
-  said: "The ticket site asked us to slow down.",
+  said: SLOWED,
   ledes: [
     `${
       coverage.checked === 0
         ? "Nothing was read, so this says nothing about seats yet."
         : `Only ${coverage.checked} of ${coverage.candidates} rooms were read, so this says nothing about the rest yet.`
-    } Search again after ${timeOf(until)}.`,
+    } ${searchAgainAfter(until)}`,
   ],
 });
 

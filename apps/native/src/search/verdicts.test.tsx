@@ -113,7 +113,7 @@ describe("the search that did not reach everywhere", () => {
     );
   });
 
-  it("offers a retry that names its own number, and re-reads only what failed", async () => {
+  it("offers a retry that names the one theater it would try again, and re-reads only what failed", async () => {
     const again = jest.fn<() => void>();
     const snapshot = await partial();
     await render(
@@ -121,7 +121,9 @@ describe("the search that did not reach everywhere", () => {
     );
 
     await fireEvent.press(
-      screen.getByRole("button", { name: "Retry the one unreached" }),
+      screen.getByRole("button", {
+        name: "Try Studio Movie Grill-Dallas again",
+      }),
     );
 
     expect(snapshot.coverage.failed).toHaveLength(1);

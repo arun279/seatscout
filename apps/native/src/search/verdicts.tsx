@@ -56,18 +56,25 @@ const styles = StyleSheet.create({
   named: { gap: 5 },
 });
 
+export interface RetryProps {
+  readonly online: boolean;
+  readonly retry: string;
+  readonly onRetry: () => void;
+}
+
+export const Retry = ({ online, retry, onRetry }: RetryProps): ReactElement =>
+  online ? (
+    <Velvet label={retry} onPress={onRetry} />
+  ) : (
+    <Ghost label={WAITING_TO_RETRY} />
+  );
+
 const Remedy = ({
-  online,
-  retry,
-  onRetry,
   onEdit,
+  ...retrying
 }: RemedyProps & { readonly retry: string }) => (
   <>
-    {online ? (
-      <Velvet label={retry} onPress={onRetry} />
-    ) : (
-      <Ghost label={WAITING_TO_RETRY} />
-    )}
+    <Retry {...retrying} />
     <Ghost label={WIDEN} onPress={() => onEdit("movie")} />
   </>
 );
@@ -117,7 +124,7 @@ export const Partial = ({
         </Type>
       ))}
     </View>
-    <Remedy {...remedy} retry={retryOf(snapshot.coverage.failed.length)} />
+    <Remedy {...remedy} retry={retryOf(snapshot.coverage.failed)} />
   </View>
 );
 

@@ -105,7 +105,9 @@ describe("when a search is remembered", () => {
     await opened(carried);
 
     await fireEvent.press(
-      await screen.findByRole("button", { name: /^Retry the .+ unreached$/ }),
+      await screen.findByRole("button", {
+        name: "Try AMC Stonebriar 24 again",
+      }),
     );
     await waitFor(() => {
       expect(screen.queryByText("Could not be reached")).toBeNull();
