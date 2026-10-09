@@ -230,17 +230,6 @@ const TYPE: Readonly<Record<Role, TypeRole>> = {
   },
 };
 
-interface Spacing {
-  readonly xs: number;
-  readonly sm: number;
-  readonly md: number;
-  readonly lg: number;
-  readonly xl: number;
-  readonly xxl: number;
-}
-
-const SPACE: Spacing = { xs: 2, sm: 6, md: 9, lg: 14, xl: 18, xxl: 26 };
-
 interface Radii {
   readonly control: number;
   readonly pill: number;
@@ -254,7 +243,6 @@ export interface Theme {
   readonly appearance: Appearance;
   readonly colours: Palette;
   readonly type: Readonly<Record<Role, TypeRole>>;
-  readonly space: Spacing;
   readonly radius: Radii;
 }
 
@@ -263,14 +251,12 @@ const THEMES: Readonly<Record<Appearance, Theme>> = {
     appearance: "down",
     colours: DOWN,
     type: TYPE,
-    space: SPACE,
     radius: RADIUS,
   },
   up: {
     appearance: "up",
     colours: UP,
     type: TYPE,
-    space: SPACE,
     radius: RADIUS,
   },
 };
