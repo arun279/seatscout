@@ -18,7 +18,7 @@ const MUTATION_TOOLS = [
   "stryker-style-tables.mjs",
 ];
 export const IGNORED = "reports/planted";
-export const APP_SOURCE = "apps/native/src";
+const APP_SOURCE = "apps/native/src";
 
 export const copyMutationTools = (at: string): string => {
   mkdirSync(join(at, "tools"));
@@ -27,23 +27,22 @@ export const copyMutationTools = (at: string): string => {
   return join(at, "tools/mutation.mjs");
 };
 
+const ranIn = (cwd: string, command: string[]): SpawnSyncReturns<string> =>
+  spawnSync("pnpm", ["exec", ...command], { cwd, encoding: "utf8" });
+
 export const ran = (...command: string[]): SpawnSyncReturns<string> =>
-  spawnSync("pnpm", ["exec", ...command], { encoding: "utf8" });
+  ranIn(".", command);
 
 export const said = (run: SpawnSyncReturns<string>): string =>
   `${run.stdout}${run.stderr}`;
 
-export const biomeIn = (
+const biomeIn = (
   root: string,
   ...command: string[]
 ): SpawnSyncReturns<string> => {
   for (const path of LINT_SETUP)
     cpSync(path, join(root, path), { recursive: true });
-  return spawnSync(
-    "pnpm",
-    ["exec", "biome", "lint", "--vcs-enabled=false", ...command],
-    { cwd: root, encoding: "utf8" },
-  );
+  return ranIn(root, ["biome", "lint", "--vcs-enabled=false", ...command]);
 };
 
 export const biomeOver = (
@@ -74,3 +73,11 @@ export const overPlanted = <Verdict>(
     rmSync(at, { recursive: true, force: true });
   }
 };
+
+export const lintedInApp = (
+  fixture: string,
+  named: string,
+): SpawnSyncReturns<string> =>
+  overPlanted(fixture, (at) => biomeIn(at, join(APP_SOURCE, named)), {
+    beneath: APP_SOURCE,
+  });

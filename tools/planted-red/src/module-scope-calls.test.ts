@@ -1,13 +1,9 @@
-import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { APP_SOURCE, biomeIn, overPlanted, said } from "./planted.fixtures.ts";
+import { lintedInApp, said } from "./planted.fixtures.ts";
 
 const REFUSAL = "This call runs while the test file loads";
 
-const linted = (named: string) =>
-  overPlanted("module-scope", (at) => biomeIn(at, join(APP_SOURCE, named)), {
-    beneath: APP_SOURCE,
-  });
+const linted = (named: string) => lintedInApp("module-scope", named);
 
 describe("the planted red under the module-scope call gate", () => {
   for (const [written, named] of [

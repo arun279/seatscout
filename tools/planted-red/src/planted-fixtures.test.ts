@@ -1,13 +1,7 @@
 import { chmodSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it, onTestFinished } from "vitest";
-import {
-  APP_SOURCE,
-  biomeIn,
-  IGNORED,
-  overPlanted,
-  said,
-} from "./planted.fixtures.ts";
+import { IGNORED, lintedInApp, overPlanted, said } from "./planted.fixtures.ts";
 
 const nothingPlantedIn = (fixture: string) => {
   mkdirSync(IGNORED, { recursive: true });
@@ -57,11 +51,7 @@ describe("the fixtures the planted reds are run over", () => {
       rmSync(beside, { recursive: true, force: true });
     });
 
-    const run = overPlanted(
-      "ids",
-      (at) => biomeIn(at, join(APP_SOURCE, "written.tsx")),
-      { beneath: APP_SOURCE },
-    );
+    const run = lintedInApp("ids", "written.tsx");
 
     expect(run.status).toBe(1);
     expect(said(run)).toContain("This id is a literal");

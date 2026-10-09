@@ -1,13 +1,9 @@
-import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { APP_SOURCE, biomeIn, overPlanted, said } from "./planted.fixtures.ts";
+import { lintedInApp, said } from "./planted.fixtures.ts";
 
 const REFUSAL = "This id is a literal";
 
-const drawn = (named: string) =>
-  overPlanted("ids", (at) => biomeIn(at, join(APP_SOURCE, named)), {
-    beneath: APP_SOURCE,
-  });
+const drawn = (named: string) => lintedInApp("ids", named);
 
 describe("the planted red under the literal id gate", () => {
   for (const [written, named] of [

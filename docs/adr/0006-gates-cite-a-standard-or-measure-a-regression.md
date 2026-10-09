@@ -229,7 +229,11 @@ each for the cognitive limit, the cyclomatic limit and its variant, the file len
 the written declaration option, the duplication window, the import cycle
 rule and the bundle weighing. That whole set answers in under half a minute on two workers,
 which is why it sits in `pnpm test:unit` beside everything else rather than in a job of its
-own. The fixtures live outside `src`, where they are neither product code nor mutated.
+own. The fixtures live outside `src`, where they are neither product code nor mutated. A
+planted Biome run copies its plant, `biome.json` and `tools/lint` into a git-ignored directory
+of its own, with the plant at the path real code takes, and runs Biome there. Biome scans its
+whole root before it lints, so a run rooted at the repository read the copies other tests
+were making and deleting at the same moment, and failed on a directory gone mid-scan.
 
 Not every gate here has one, and naming what does not is better than leaving the sentence above
 to be read as covering everything. The Grit plugin that refuses a collected response, the two
@@ -416,10 +420,8 @@ costs was measured rather than assumed before it joined the hook: over this tree
 broken to turn it on. A planted pair of modules importing each other is committed under
 `tools/planted-red/planted`, and a test copies it into a git-ignored directory of its own, with
 `biome.json` and `tools/lint` copied beside it, and runs Biome there, because the rule reads the module
-graph and only resolves an import inside the root it scanned. Every planted Biome run works this way:
-Biome scans its whole root before it lints, so a run rooted at the repository read the copies other
-tests were making and deleting at the same moment, and failed on a directory gone mid-scan. The pair is refused twice over, each import named with the path that closes the loop,
-and a planted pair that imports one way passes. `ignoreTypes` stays at the default the rule documents
+graph and only resolves an import inside the root it scanned. The pair is refused twice over, each
+import named with the path that closes the loop, and a planted pair that imports one way passes. `ignoreTypes` stays at the default the rule documents
 as enabled, which cuts a cycle only where the import is written `import type`; `verbatimModuleSyntax`
 is on here, so an inline
 `import { type X }` is not cut and is not ignored.
