@@ -1,8 +1,9 @@
-import type { ReactElement } from "react";
-import { Text, type TextProps } from "react-native";
+import type { ReactElement, Ref } from "react";
+import { Text, type TextProps, useWindowDimensions } from "react-native";
 import { type Palette, type Role, useTheme } from "../theme.js";
 
 interface TypeProps extends TextProps {
+  readonly ref?: Ref<Text>;
   readonly set: Role;
   readonly tone: keyof Palette;
 }
@@ -34,3 +35,8 @@ export const Type = ({
     />
   );
 };
+
+const CROWDED_ABOVE = 2;
+
+export const useCrowded = (): boolean =>
+  useWindowDimensions().fontScale > CROWDED_ABOVE;

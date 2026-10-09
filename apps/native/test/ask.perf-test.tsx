@@ -39,7 +39,7 @@ test("the Ask sheet with every term and the calendar", async () => {
     {
       scenario: async () => {
         await screen.findByRole("button", { name: "Coyote vs. Acme" });
-        await screen.findByRole("button", { name: "Find seats" });
+        await screen.findByRole("button", { name: "Done" });
       },
     },
   );

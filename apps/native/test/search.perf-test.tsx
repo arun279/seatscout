@@ -38,6 +38,7 @@ test("the Search screen's prompt face, drawn and read", async () => {
       onLedger={nothing}
       online
       onRoom={nothing}
+      onAdjust={nothing}
       onRun={nothing}
       profile={REFERENCE}
       seatscout={phone().seatscout}
@@ -46,7 +47,7 @@ test("the Search screen's prompt face, drawn and read", async () => {
     />,
     {
       scenario: async () => {
-        await screen.findByRole("button", { name: "Find seats" });
+        await screen.findByRole("button", { name: "Name an area" });
         await screen.findByRole("button", { name: "Which movie?" });
       },
     },
@@ -63,6 +64,7 @@ test("the Search screen's ranked Seat Groups, over the whole corpus", async () =
       onLedger={nothing}
       online
       onRoom={nothing}
+      onRun={nothing}
       profile={REFERENCE}
       programme={NOTHING_READ}
       seatscout={phone([], { script: {} }).seatscout}

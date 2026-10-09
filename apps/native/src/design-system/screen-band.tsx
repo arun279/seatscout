@@ -10,7 +10,7 @@ import Svg, {
   Stop,
 } from "react-native-svg";
 import { type Palette, useTheme } from "../theme.js";
-import { Type } from "./type.js";
+import { Type, useCrowded } from "./type.js";
 
 const DRAWN = {
   edge: { across: 0.62, top: 12, height: 3, radius: 2 },
@@ -130,10 +130,18 @@ const Lit = ({
   );
 };
 
-export const ScreenBand = (): ReactElement => {
+export interface ScreenBandProps {
+  readonly span?: number | undefined;
+}
+
+export const ScreenBand = ({ span }: ScreenBandProps): ReactElement | null => {
   const { appearance, colours } = useTheme();
-  const band = useWindowDimensions().width;
+  const { width } = useWindowDimensions();
+  const crowded = useCrowded();
+  const band = span ?? width;
   const edge = edgeOn(band);
+
+  if (crowded) return null;
 
   return (
     <View

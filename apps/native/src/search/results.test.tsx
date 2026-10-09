@@ -1,4 +1,3 @@
-import { REFERENCE, type SearchTerms } from "@seatscout/client";
 import {
   afterEach,
   beforeAll,
@@ -8,6 +7,7 @@ import {
   it,
   jest,
 } from "@jest/globals";
+import { REFERENCE, type SearchTerms } from "@seatscout/client";
 import type { Terms } from "@seatscout/view-logic";
 import {
   cleanup,
@@ -15,6 +15,8 @@ import {
   render,
   screen,
 } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
+import { houseLights } from "../../test/lights.js";
 import { type Fetch, phone, type Upstream } from "../../test/phone.js";
 import {
   ASKED,
@@ -25,8 +27,6 @@ import {
   WARM_UP,
 } from "../../test/rooms.js";
 import type { Clock } from "../host/clock.js";
-import { StyleSheet } from "react-native";
-import { houseLights } from "../../test/lights.js";
 import { themeFor } from "../theme.js";
 import { Results } from "./results.js";
 
@@ -76,6 +76,7 @@ const shown = async (over: Shown = {}) => {
       onLedger={over.onLedger ?? nothing}
       online={over.online ?? true}
       onRoom={nothing}
+      onRun={() => undefined}
       profile={REFERENCE}
       programme={NOTHING_READ}
       seatscout={carried.seatscout}
@@ -112,9 +113,9 @@ describe("the list once the ranking has stopped moving", () => {
     expect(
       await screen.findByText("The top of the list is a tie"),
     ).toBeOnTheScreen();
-    expect(screen.getByRole("header")).toHaveTextContent(
-      "The top of the list is a tie",
-    );
+    expect(
+      screen.getByRole("header", { name: "The top of the list is a tie" }),
+    ).toHaveTextContent("The top of the list is a tie");
     expect(screen.getByText(/^\d+ showtimes$/)).toBeOnTheScreen();
     expect(screen.getAllByTestId("card").length).toBeGreaterThan(0);
   });

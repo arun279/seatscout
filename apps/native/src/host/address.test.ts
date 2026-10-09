@@ -6,6 +6,7 @@ import { first, settled, WARM_UP } from "../../test/rooms.js";
 const mockPush = jest.fn<(to: unknown) => void>();
 const mockReplace = jest.fn<(to: unknown) => void>();
 const mockBack = jest.fn<() => void>();
+const mockSetParams = jest.fn<(to: unknown) => void>();
 const mockParams = jest.fn<() => Readonly<Record<string, unknown>>>(() => ({}));
 
 jest.mock("expo-router", () => ({
@@ -13,11 +14,13 @@ jest.mock("expo-router", () => ({
     push: (to: unknown) => mockPush(to),
     replace: (to: unknown) => mockReplace(to),
     back: () => mockBack(),
+    setParams: (to: unknown) => mockSetParams(to),
   },
   useLocalSearchParams: () => mockParams(),
 }));
 
 import {
+  adjustTo,
   askAbout,
   askedIn,
   goTo,
@@ -155,6 +158,24 @@ describe("running a search the phone remembers", () => {
         partySize: "4",
       },
     });
+  });
+});
+
+describe("a term changed where it sits", () => {
+  it("rewrites the route's parameters in place, clearing what the Query no longer holds", () => {
+    mockPush.mockClear();
+    adjustTo(
+      { date: "2026-09-20", partySize: 4, area: "75234" },
+      { date: "any", partySize: "2", area: "75234", showtime: "77" },
+    );
+
+    expect(mockSetParams).toHaveBeenCalledWith({
+      date: "2026-09-20",
+      partySize: "4",
+      area: "75234",
+      showtime: undefined,
+    });
+    expect(mockPush).not.toHaveBeenCalled();
   });
 });
 

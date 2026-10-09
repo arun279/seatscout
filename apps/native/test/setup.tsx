@@ -30,6 +30,21 @@ jest.mock("@react-native-community/datetimepicker", () => ({
   default: mockPicker,
 }));
 
+jest.mock("@expo/ui/community/menu", () => {
+  const { View: Host } =
+    jest.requireActual<typeof import("react-native")>("react-native");
+  const { createElement: drawn } =
+    jest.requireActual<typeof import("react")>("react");
+  return {
+    MenuView: ({
+      children,
+      ...given
+    }: {
+      readonly children: import("react").ReactNode;
+    }) => drawn(Host, given, children),
+  };
+});
+
 const INITIALISATION = 30_000;
 const AUDIT = 30_000;
 

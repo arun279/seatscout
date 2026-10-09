@@ -56,6 +56,13 @@ export const goTo = (terms: Terms): void => {
   router.push({ pathname: "/", params: askedIn(terms) });
 };
 
+export const adjustTo = (terms: Terms, held: Given): void => {
+  router.setParams({
+    ...Object.fromEntries(Object.keys(held).map((name) => [name, undefined])),
+    ...askedIn(terms),
+  });
+};
+
 export const askAbout = (terms: Terms, term: Term): void => {
   router.push({ pathname: "/ask", params: { ...askedIn(terms), term } });
 };

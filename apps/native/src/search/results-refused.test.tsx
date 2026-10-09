@@ -1,4 +1,3 @@
-import { REFERENCE } from "@seatscout/client";
 import {
   afterEach,
   beforeAll,
@@ -8,6 +7,7 @@ import {
   it,
   jest,
 } from "@jest/globals";
+import { REFERENCE } from "@seatscout/client";
 import type { Terms } from "@seatscout/view-logic";
 import { cleanup, render, screen } from "@testing-library/react-native";
 import { houseLights } from "../../test/lights.js";
@@ -67,6 +67,7 @@ const shown = async ({
       onLedger={nothing}
       online
       onRoom={nothing}
+      onRun={() => undefined}
       profile={REFERENCE}
       programme={NOTHING_READ}
       seatscout={carried.seatscout}

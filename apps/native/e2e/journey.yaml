@@ -3,10 +3,10 @@ name: Ask, the ranked Seat Groups, the hand-off, the ledger and the Room, each l
 ---
 - openLink: ${LINK}
 - extendedWaitUntil:
-    visible: Find seats
+    visible: Pick a movie
     timeout: 120000
 
-- tapOn: Find seats
+- tapOn: Pick a movie
 - extendedWaitUntil:
     visible: What are we seeing\?
     timeout: 15000
@@ -18,9 +18,9 @@ name: Ask, the ranked Seat Groups, the hand-off, the ledger and the Room, each l
 - extendedWaitUntil:
     notVisible: What are we seeing\?
     timeout: 10000
-- assertVisible: Find seats
+- assertVisible: Pick a movie
 
-- tapOn: Find seats
+- tapOn: Pick a movie
 - extendedWaitUntil:
     visible: What are we seeing\?
     timeout: 15000
@@ -29,7 +29,7 @@ name: Ask, the ranked Seat Groups, the hand-off, the ledger and the Room, each l
     notVisible: What are we seeing\?
     timeout: 10000
 
-- tapOn: Find seats
+- tapOn: Pick a movie
 - extendedWaitUntil:
     visible: What are we seeing\?
     timeout: 15000

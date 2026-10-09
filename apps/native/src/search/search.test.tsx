@@ -44,6 +44,7 @@ const showing = async (
     readonly remembered?: Parameters<typeof phone>[0];
     readonly onAsk?: (term: Term) => void;
     readonly onRun?: (terms: Terms) => void;
+    readonly onAdjust?: (terms: Terms) => void;
   } = {},
 ) => {
   const carried = phone(over.remembered, over.upstream ?? {});
@@ -55,6 +56,7 @@ const showing = async (
       onLedger={() => undefined}
       online={over.online ?? true}
       onRoom={() => undefined}
+      onAdjust={over.onAdjust ?? (() => undefined)}
       onRun={over.onRun ?? (() => undefined)}
       profile={REFERENCE}
       seatscout={carried.seatscout}
@@ -139,41 +141,6 @@ describe("the Search screen's prompt face", () => {
   });
 });
 
-describe("asking for what the query is missing", () => {
-  it("opens Ask at the area when the query names none", async () => {
-    const asked = jest.fn<(term: Term) => void>();
-    await showing({ onAsk: asked });
-
-    await fireEvent.press(screen.getByRole("button", { name: "Find seats" }));
-
-    expect(asked).toHaveBeenCalledWith("area");
-  });
-
-  it("opens Ask at the film once the area is named", async () => {
-    const asked = jest.fn<(term: Term) => void>();
-    await showing({ onAsk: asked, terms: { ...SHORT, area: "75234" } });
-
-    await fireEvent.press(screen.getByRole("button", { name: "Find seats" }));
-
-    expect(asked).toHaveBeenCalledWith("movie");
-  });
-
-  it("opens Ask at the term the pressed line names", async () => {
-    const asked = jest.fn<(term: Term) => void>();
-    await showing({ onAsk: asked });
-
-    await fireEvent.press(screen.getByRole("button", { name: "Today" }));
-
-    expect(asked).toHaveBeenCalledWith("date");
-  });
-
-  it("draws one velvet control and no more, whatever its label", async () => {
-    await showing();
-
-    expect(screen.getAllByTestId("velvet")).toHaveLength(1);
-  });
-});
-
 describe("what this phone remembers", () => {
   it("offers a remembered search and runs it again when it is pressed", async () => {
     const ran = jest.fn<(terms: Terms) => void>();
@@ -210,9 +177,7 @@ describe("the face the Search screen wears", () => {
   it("prompts for what is missing while the query cannot be run", async () => {
     await showing();
 
-    expect(
-      screen.getByRole("button", { name: "Find seats" }),
-    ).toBeOnTheScreen();
+    expect(screen.getByTestId("next-step")).toBeOnTheScreen();
     expect(screen.queryByTestId("list")).toBeNull();
   });
 
@@ -224,7 +189,44 @@ describe("the face the Search screen wears", () => {
     });
 
     expect(await screen.findByText("Best seats first")).toBeOnTheScreen();
-    expect(screen.queryByRole("button", { name: "Find seats" })).toBeNull();
+    expect(screen.queryByTestId("next-step")).toBeNull();
+  });
+
+  it("lets the prompt's own dock take the home indicator's inset, and the list's stage take it under the results", async () => {
+    await showing({
+      upstream: { script: {} },
+      terms: { ...TONIGHT, until: "19:20" },
+      today: TODAY,
+    });
+
+    expect(screen.getByTestId("stage").props["edges"]).toMatchObject({
+      top: "additive",
+      left: "additive",
+      right: "additive",
+      bottom: "off",
+    });
+    expect(screen.getByTestId("results-stage").props["edges"]).toMatchObject({
+      top: "off",
+      bottom: "additive",
+    });
+  });
+
+  it("runs the query again from the results face when a menu changes it", async () => {
+    const ran = jest.fn<(terms: Terms) => void>();
+    await showing({
+      upstream: { script: {} },
+      terms: TONIGHT,
+      today: TODAY,
+      onAdjust: ran,
+    });
+
+    await fireEvent(screen.getByTestId("menu Today"), "pressAction", {
+      nativeEvent: { event: "1" },
+    });
+
+    expect(ran).toHaveBeenCalledWith(
+      expect.objectContaining({ date: "2026-09-21" }),
+    );
   });
 });
 

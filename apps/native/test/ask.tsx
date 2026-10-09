@@ -58,3 +58,7 @@ export const asking = async (
 export const submit = async (): Promise<void> => {
   await fireEvent.press(screen.getByRole("button", { name: "Find seats" }));
 };
+
+export const done = async (): Promise<void> => {
+  await fireEvent.press(screen.getByRole("button", { name: "Done" }));
+};

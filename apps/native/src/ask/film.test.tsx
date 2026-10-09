@@ -39,6 +39,7 @@ const showing = async (
     readonly programme?: ProgrammeState;
     readonly typed?: string;
     readonly onTyped?: (typed: string) => void;
+    readonly onPicked?: (movie: Movie) => void;
   } = {},
 ) => {
   houseLights(over.appearance ?? "down");
@@ -47,6 +48,7 @@ const showing = async (
       area={over.area ?? "75234"}
       span={{ date: TODAY }}
       focused={false}
+      onPicked={over.onPicked ?? (() => undefined)}
       onTyped={over.onTyped ?? (() => undefined)}
       programme={over.programme ?? read()}
       today={TODAY}
@@ -107,13 +109,13 @@ describe("naming the film in the Ask sheet", () => {
     expect(marked.color).not.toBe(title.color);
   });
 
-  it("takes the title a person presses as what they typed", async () => {
-    const typed = jest.fn<(typed: string) => void>();
-    await showing({ onTyped: typed });
+  it("hands out the film a person presses, by its identity and its title", async () => {
+    const picked = jest.fn<(movie: Movie) => void>();
+    await showing({ onPicked: picked });
 
     await fireEvent.press(screen.getByRole("button", { name: "Akira" }));
 
-    expect(typed).toHaveBeenCalledWith("Akira");
+    expect(picked).toHaveBeenCalledWith({ id: "23184", title: "Akira" });
   });
 
   it("offers nothing more once the title is whole", async () => {

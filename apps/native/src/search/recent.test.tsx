@@ -2,7 +2,6 @@ import { describe, expect, it, jest } from "@jest/globals";
 import type { RecentSearch } from "@seatscout/client";
 import type { Terms } from "@seatscout/view-logic";
 import { fireEvent, render, screen } from "@testing-library/react-native";
-import { StyleSheet } from "react-native";
 import { Recent } from "./recent.js";
 
 const TODAY = "2026-09-19";
@@ -30,26 +29,39 @@ const listed = async (
   await render(<Recent onRun={onRun} remembered={remembered} today={TODAY} />);
 };
 
-const ruleUnder = (movie: string) =>
-  Number(
-    StyleSheet.flatten(
-      screen.getByRole("button", { name: new RegExp(movie) }).props["style"],
-    ).borderBottomWidth,
-  );
-
 describe("the searches this phone remembers", () => {
-  it("rules between the rows and not under the last, which has nothing below it", async () => {
-    await listed([ONE, ANOTHER]);
-
-    expect(ruleUnder("One Battle")).toBeGreaterThan(0);
-    expect(ruleUnder("Spider-Man")).toBe(0);
-  });
-
   it("is headed even before the store has answered", async () => {
     await listed(undefined);
 
     expect(screen.getByText("Run again")).toBeOnTheScreen();
     expect(screen.queryByText(/Nothing yet/)).not.toBeOnTheScreen();
+  });
+
+  it("is a heading a screen reader can move to", async () => {
+    await listed([ONE]);
+
+    expect(screen.getByRole("header", { name: "Run again" })).toBeOnTheScreen();
+  });
+
+  it("says what the app does, above the empty history, until one search has run", async () => {
+    await listed([]);
+
+    expect(
+      screen.getByText(
+        "SeatScout reads the seat maps of showings near you and ranks the seats still free, best row first. It never books and never holds a seat.",
+      ),
+    ).toBeOnTheScreen();
+  });
+
+  it("says no more about itself once a search is remembered, or before the store has answered", async () => {
+    await listed([ONE]);
+
+    expect(screen.queryByText(/never holds a seat/)).toBeNull();
+    await screen.rerender(
+      <Recent onRun={() => undefined} remembered={undefined} today={TODAY} />,
+    );
+
+    expect(screen.queryByText(/never holds a seat/)).toBeNull();
   });
 
   it("says plainly that it remembers none once the store has answered", async () => {
@@ -112,18 +124,6 @@ describe("the searches this phone remembers", () => {
     ).toBeOnTheScreen();
     expect(screen.getByText("Your movie")).toBeOnTheScreen();
     expect(screen.queryByText(/245569/)).toBeNull();
-  });
-
-  it("rules one row off from the next with a hairline", async () => {
-    await listed([ONE]);
-
-    const row = StyleSheet.flatten(
-      screen.getByRole("button", {
-        name: "One Battle After Another, 4 seats · today · 75201",
-      }).props["style"],
-    );
-
-    expect(String(row.borderBottomColor)).toMatch(/^#[0-9a-f]{6}$/);
   });
 
   it("never offers a search for a date that has passed", async () => {

@@ -14,13 +14,14 @@ import { WARM_UP, warmTheCorpus } from "../../test/rooms.js";
 beforeAll(warmTheCorpus, WARM_UP);
 
 describe("the hand-off sheet as it opens", () => {
-  it("says its heading to a screen reader, since no field in it takes the keyboard", async () => {
-    const said = jest.spyOn(AccessibilityInfo, "announceForAccessibility");
-    said.mockClear();
+  it("moves a screen reader to its heading, since no field in it takes the keyboard", async () => {
+    const moved = jest.spyOn(AccessibilityInfo, "sendAccessibilityEvent");
+    moved.mockClear();
 
     await opened();
 
-    expect(said).toHaveBeenCalledWith(HOOKY_ADDISON);
+    expect(moved.mock.calls.map(([, event]) => event)).toEqual(["focus"]);
+    expect(screen.getByRole("header")).toHaveTextContent(HOOKY_ADDISON);
   });
 
   it("names the Theater, the showing and the Seat Group, and offers one control that names the seats it takes", async () => {

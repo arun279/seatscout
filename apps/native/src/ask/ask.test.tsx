@@ -1,8 +1,8 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { REFERENCE } from "@seatscout/client";
-import { fireEvent, screen } from "@testing-library/react-native";
+import { fireEvent, screen, within } from "@testing-library/react-native";
 import { AccessibilityInfo } from "react-native";
-import { asking, NEAR, PLAYING, submit, TODAY } from "../../test/ask.js";
+import { asking, done, NEAR, PLAYING, submit, TODAY } from "../../test/ask.js";
 
 describe("the Ask sheet", () => {
   it("asks what a person is seeing, under the terms it already holds", async () => {
@@ -50,7 +50,7 @@ describe("the Ask sheet", () => {
       screen.getByLabelText("Near, by postal code"),
       "75006",
     );
-    await submit();
+    await done();
 
     expect(found).toHaveBeenCalledWith(
       {
@@ -80,6 +80,28 @@ describe("the Ask sheet", () => {
     );
   });
 
+  it("keeps the film a person picked when another day is chosen whose listing cannot be read", async () => {
+    const { found } = await asking({ terms: NEAR, playing: PLAYING });
+
+    await fireEvent.press(await screen.findByRole("button", { name: "Akira" }));
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Saturday 26 September" }),
+    );
+    await screen.findByText("What is playing near 75234 could not be read.");
+    await submit();
+
+    expect(found).toHaveBeenCalledWith(
+      {
+        movie: "23184",
+        title: "Akira",
+        area: "75234",
+        date: "2026-09-26",
+        partySize: 2,
+      },
+      REFERENCE,
+    );
+  });
+
   it("keeps the film the query carries, by its title, when what is playing cannot be read", async () => {
     const carried = { ...NEAR, movie: "245569", title: "The Dog Stars (2026)" };
     const { found } = await asking({ terms: carried });
@@ -97,7 +119,7 @@ describe("the Ask sheet", () => {
     const { found } = await asking({ terms: NEAR });
 
     await fireEvent.press(screen.getByRole("button", { name: "More seats" }));
-    await submit();
+    await done();
 
     expect(found).toHaveBeenCalledWith({ ...NEAR, partySize: 3 }, REFERENCE);
   });
@@ -108,7 +130,7 @@ describe("the Ask sheet", () => {
     await fireEvent.press(
       screen.getByRole("button", { name: "Saturday 26 September" }),
     );
-    await submit();
+    await done();
 
     expect(found).toHaveBeenCalledWith(
       { ...NEAR, date: "2026-09-26" },
@@ -159,22 +181,22 @@ describe("the Ask sheet", () => {
   });
 
   for (const focus of ["movie", "area"] as const)
-    it(`leaves the heading unsaid when the ${focus} field takes the keyboard`, async () => {
-      const said = jest.spyOn(AccessibilityInfo, "announceForAccessibility");
-      said.mockClear();
+    it(`leaves the screen reader on the ${focus} field when that field takes the keyboard`, async () => {
+      const moved = jest.spyOn(AccessibilityInfo, "sendAccessibilityEvent");
+      moved.mockClear();
 
       await asking({ focus, terms: NEAR });
 
-      expect(said).not.toHaveBeenCalled();
+      expect(moved).not.toHaveBeenCalled();
     });
 
-  it("says its heading when the term it was opened at has no field to take the keyboard", async () => {
-    const said = jest.spyOn(AccessibilityInfo, "announceForAccessibility");
-    said.mockClear();
+  it("moves the screen reader to its heading when the term it was opened at has no field", async () => {
+    const moved = jest.spyOn(AccessibilityInfo, "sendAccessibilityEvent");
+    moved.mockClear();
 
     await asking({ focus: "partySize" });
 
-    expect(said).toHaveBeenCalledWith("What are we seeing?");
+    expect(moved.mock.calls.map(([, event]) => event)).toEqual(["focus"]);
   });
 
   it("does not read the listing again when the area is left as it was", async () => {
@@ -224,7 +246,7 @@ describe("the Ask sheet", () => {
   });
 
   it("says what stays on the phone beside the one control that commits", async () => {
-    await asking();
+    await asking({ terms: { ...NEAR, movie: "245569", title: "Akira" } });
 
     expect(screen.getAllByTestId("velvet")).toHaveLength(1);
     expect(
@@ -232,5 +254,38 @@ describe("the Ask sheet", () => {
         "Preferences and history stay on this phone. No account exists.",
       ),
     ).toBeOnTheScreen();
+  });
+
+  it("offers Find seats only once the draft names an area and a film", async () => {
+    await asking({ terms: NEAR, playing: PLAYING });
+
+    expect(screen.queryByRole("button", { name: "Find seats" })).toBeNull();
+    await fireEvent.press(await screen.findByRole("button", { name: "Akira" }));
+
+    expect(
+      screen.getByRole("button", { name: "Find seats" }),
+    ).toBeOnTheScreen();
+  });
+
+  it("says what is missing where Find seats would be, and closes with what was set", async () => {
+    const { found } = await asking({ terms: NEAR });
+
+    expect(
+      within(screen.getByTestId("dock")).getByText(
+        "Pick a movie playing near 75234.",
+      ),
+    ).toBeOnTheScreen();
+    await done();
+
+    expect(found).toHaveBeenCalledWith(NEAR, REFERENCE);
+  });
+
+  it("asks for the area first when the draft names neither", async () => {
+    await asking();
+
+    expect(
+      within(screen.getByTestId("dock")).getByText(/^Name an area, then/),
+    ).toBeOnTheScreen();
+    expect(screen.queryByTestId("velvet")).toBeNull();
   });
 });

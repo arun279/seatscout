@@ -127,7 +127,7 @@ export interface RoomProps {
   readonly today: string;
   readonly clock: Clock;
   readonly online: boolean;
-  readonly onBack: () => void;
+  readonly onBack?: (() => void) | undefined;
   readonly onHandOff: (chosen: SeatGroupResult) => void;
 }
 
@@ -226,16 +226,18 @@ export const Room = ({
         onLayout={(event) => setStage(event.nativeEvent.layout)}
         testID="scroll"
       >
-        <TouchableOpacity
-          accessibilityRole="button"
-          hitSlop={SLOP}
-          onPress={onBack}
-          style={styles.back}
-        >
-          <Type set="sentence" tone="beamDim">
-            ‹ {BACK_TO_THE_LIST}
-          </Type>
-        </TouchableOpacity>
+        {onBack !== undefined && (
+          <TouchableOpacity
+            accessibilityRole="button"
+            hitSlop={SLOP}
+            onPress={onBack}
+            style={styles.back}
+          >
+            <Type set="sentence" tone="beamDim">
+              ‹ {BACK_TO_THE_LIST}
+            </Type>
+          </TouchableOpacity>
+        )}
         <View style={styles.head}>
           <Type set="ledgerLabel" tone="silverFaint">
             {`${partyOf(partySize)} · ${showingOf(result, today)}`}

@@ -29,6 +29,7 @@ const styles = StyleSheet.create({
     minWidth: TOUCH_FLOOR,
     paddingHorizontal: 16,
   },
+  next: { borderWidth: 1.5 },
   ghost: {
     alignItems: "center",
     borderWidth: 1,
@@ -127,6 +128,30 @@ export const Ghost = ({ label, onPress }: GhostProps): ReactElement => {
       testID="ghost"
     >
       {said}
+    </TouchableOpacity>
+  );
+};
+
+export const NextStep = ({ label, onPress }: VelvetProps): ReactElement => {
+  const theme = useTheme();
+
+  return (
+    <TouchableOpacity
+      accessibilityRole="button"
+      onPress={onPress}
+      style={[
+        styles.control,
+        styles.next,
+        {
+          borderColor: theme.colours.beam,
+          borderRadius: radiusOf(theme.radius),
+        },
+      ]}
+      testID="next-step"
+    >
+      <Type set="sentenceStrong" tone="beam">
+        {label}
+      </Type>
     </TouchableOpacity>
   );
 };

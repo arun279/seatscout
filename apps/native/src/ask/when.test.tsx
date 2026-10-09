@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 import { fireEvent, screen } from "@testing-library/react-native";
-import { asking, NEAR, PLAYING, submit, TODAY } from "../../test/ask.js";
+import { asking, done, NEAR, PLAYING, TODAY } from "../../test/ask.js";
 
 const press = async (name: string) => {
   await fireEvent.press(screen.getByRole("button", { name }));
@@ -42,7 +42,7 @@ describe("the when term in the Ask sheet", () => {
     });
 
     await press("Any day");
-    await submit();
+    await done();
 
     expect(screen.getByText("Any day in the next 7 days")).toBeOnTheScreen();
     expect(
@@ -60,7 +60,7 @@ describe("the when term in the Ask sheet", () => {
     const { found } = await asking({ terms: NEAR });
 
     await press("A range");
-    await submit();
+    await done();
 
     expect(handedOut(found)).toEqual({
       ...NEAR,
@@ -74,7 +74,7 @@ describe("the when term in the Ask sheet", () => {
     await press("A range");
     await press("Monday 21 September");
     await press("Thursday 24 September");
-    await submit();
+    await done();
 
     expect(handedOut(found)).toMatchObject({
       date: "2026-09-21",
@@ -89,7 +89,7 @@ describe("the when term in the Ask sheet", () => {
     await press("Some days");
     await press("Tuesday 22 September");
     await press("Monday 21 September");
-    await submit();
+    await done();
 
     expect(
       screen.getByText(
@@ -115,7 +115,7 @@ describe("the when term in the Ask sheet", () => {
     });
 
     await press("Wednesday 23 September");
-    await submit();
+    await done();
 
     expect(handedOut(found)).toEqual(NEAR);
   });
@@ -124,7 +124,7 @@ describe("the when term in the Ask sheet", () => {
     const { found } = await asking({ terms: NEAR });
 
     await press("Thursday 24 September");
-    await submit();
+    await done();
 
     expect(handedOut(found)).toEqual({ ...NEAR, date: "2026-09-24" });
   });
@@ -165,7 +165,7 @@ describe("the when term in the Ask sheet", () => {
 
     await press("Some days");
     await press("Today, Saturday 19 September");
-    await submit();
+    await done();
 
     expect(handedOut(found)).toEqual(NEAR);
     expect(
@@ -183,7 +183,7 @@ describe("the when term in the Ask sheet", () => {
     });
 
     await press("One day");
-    await submit();
+    await done();
 
     expect(handedOut(found)).toEqual({ ...NEAR, date: "2026-09-21" });
   });
@@ -192,7 +192,7 @@ describe("the when term in the Ask sheet", () => {
     const { found } = await asking({ terms: { ...NEAR, date: "2026-09-21" } });
 
     await press("Some days");
-    await submit();
+    await done();
 
     expect(handedOut(found)).toEqual({ ...NEAR, date: "2026-09-21" });
     expect(

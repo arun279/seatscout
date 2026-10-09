@@ -1,4 +1,4 @@
-import { describe, expect, it } from "@jest/globals";
+import { describe, expect, it, jest } from "@jest/globals";
 import { render, screen } from "@testing-library/react-native";
 import { Dimensions, StyleSheet } from "react-native";
 import { houseLights } from "../../test/lights.js";
@@ -118,4 +118,31 @@ describe("the screen band", () => {
       farRight.y,
     );
   });
+});
+
+describe("the screen band in a pane or at the largest text", () => {
+  it("hangs the screen across the span it is given rather than the window", async () => {
+    houseLights("up");
+    await render(<ScreenBand span={400} />);
+    const bar = StyleSheet.flatten(drawnAt("screen")["style"]);
+
+    expect([bar.left, bar.width]).toEqual([76, 248]);
+  });
+
+  it.each<[number, boolean]>([
+    [2, true],
+    [2.01, false],
+  ])(
+    "is drawn at a text size of %s times only while that is no more than twice, first in the cut order",
+    async (fontScale, drawn) => {
+      const sized = jest
+        .spyOn(Dimensions, "get")
+        .mockReturnValue({ fontScale, height: 874, scale: 3, width: 402 });
+      houseLights("up");
+      await render(<ScreenBand />);
+      sized.mockRestore();
+
+      expect(screen.queryByText("Seatscout", hidden) !== null).toBe(drawn);
+    },
+  );
 });

@@ -8,17 +8,20 @@ import {
 import type { RawTerms, Span, Term, Terms } from "@seatscout/view-logic";
 import {
   ASKING,
-  costOf,
-  FIND_SEATS,
+  askedFrom,
   chosenFrom,
+  costOf,
+  DONE,
+  FIND_SEATS,
   knownFilms,
+  ledeOf,
   programmeNear,
   termsOf,
   titleOf,
 } from "@seatscout/view-logic";
 import { type ReactElement, useState, useSyncExternalStore } from "react";
 import { StyleSheet } from "react-native";
-import { Velvet } from "../design-system/button.js";
+import { Ghost, Velvet } from "../design-system/button.js";
 import { type Chip, Chips } from "../design-system/chips.js";
 import { Field, Section } from "../design-system/field.js";
 import { Sheet } from "../design-system/sheet.js";
@@ -72,9 +75,11 @@ export const Ask = ({
   const playing = useSyncExternalStore(held.subscribe, held.snapshot);
   const [typed, setTyped] = useState<string>();
   const [holding, setHolding] = useState(false);
-  const films = knownFilms(playing.movies, terms);
+  const [picked, setPicked] = useState<Pick<Terms, "movie" | "title">>(terms);
+  const films = knownFilms(playing.movies, picked);
   const film = typed ?? titleOf(films, terms.movie) ?? terms.movie ?? "";
   const cost = costOf(draft, today);
+  const ready = termsOf({ ...draft, ...chosenFrom(film, films) }, today);
 
   const patch = (change: Partial<Terms>) => {
     const next = { ...draft, ...change };
@@ -98,15 +103,16 @@ export const Ask = ({
     <Sheet
       dock={
         <>
-          <Velvet
-            label={FIND_SEATS}
-            onPress={() =>
-              onFind(
-                termsOf({ ...draft, ...chosenFrom(film, films) }, today),
-                profile,
-              )
-            }
-          />
+          {askedFrom(ready, profile, today) === null ? (
+            <>
+              <Type set="sentenceSmall" style={styles.said} tone="silverDim">
+                {ledeOf(ready, profile, today)}
+              </Type>
+              <Ghost label={DONE} onPress={() => onFind(ready, profile)} />
+            </>
+          ) : (
+            <Velvet label={FIND_SEATS} onPress={() => onFind(ready, profile)} />
+          )}
           {cost !== undefined && (
             <Type
               set="sentenceSmall"
@@ -142,6 +148,10 @@ export const Ask = ({
       <Film
         area={held.area}
         focused={focus === "movie"}
+        onPicked={(movie) => {
+          setTyped(movie.title);
+          setPicked({ movie: movie.id, title: movie.title });
+        }}
         onTyped={setTyped}
         programme={playing}
         span={draft}

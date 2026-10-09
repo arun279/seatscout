@@ -6,7 +6,7 @@ import { contrastOf } from "../../test/contrast.js";
 import { houseLights } from "../../test/lights.js";
 import { definedUnder, drawnUnder, paintedWith } from "../../test/svg.js";
 import { type Appearance, themeFor } from "../theme.js";
-import { Ghost, Velvet } from "./button.js";
+import { Ghost, NextStep, Velvet } from "./button.js";
 
 const APPEARANCES: readonly Appearance[] = ["down", "up"];
 
@@ -134,4 +134,31 @@ describe("the ghost control", () => {
     expect(screen.queryByRole("button")).toBeNull();
     expect(screen.getByTestId("waiting")).toHaveTextContent("Waiting");
   });
+});
+
+describe("the next step, drawn where velvet will be", () => {
+  it.each(APPEARANCES)(
+    "takes velvet's place and shape, edged and lettered in the screen's light, lights %s",
+    async (appearance) => {
+      houseLights(appearance);
+      const pressed = jest.fn<() => void>();
+      await render(<NextStep label="Name an area" onPress={pressed} />);
+      const step = StyleSheet.flatten(
+        screen.getByRole("button", { name: "Name an area" }).props["style"],
+      );
+      const words = StyleSheet.flatten(
+        screen.getByText("Name an area").props["style"],
+      );
+      const { beam } = themeFor(appearance).colours;
+      await fireEvent.press(
+        screen.getByRole("button", { name: "Name an area" }),
+      );
+
+      expect(step).toMatchObject({ borderColor: beam, borderWidth: 1.5 });
+      expect(step.borderRadius).toBe(Platform.OS === "android" ? 100 : 14);
+      expect(step.minHeight).toBe(52);
+      expect(words.color).toBe(beam);
+      expect(pressed).toHaveBeenCalledTimes(1);
+    },
+  );
 });

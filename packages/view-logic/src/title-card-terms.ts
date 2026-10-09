@@ -24,9 +24,9 @@ export interface TitleCardEntry {
 }
 
 type TitleCardLines = readonly [
-  readonly TitleCardEntry[],
-  readonly TitleCardEntry[],
-  readonly TitleCardEntry[],
+  readonly [TitleCardEntry],
+  readonly [TitleCardEntry],
+  readonly [TitleCardEntry, ...TitleCardEntry[]],
 ];
 
 const windowOf = (
@@ -46,7 +46,7 @@ const eachValue = (
   values?.map((words, at) => ({
     term,
     words,
-    ...(at > 0 && { joinedBy: " or " }),
+    ...(at > 0 && { joinedBy: "or" }),
   })) ?? [];
 
 const narrowedBy = (

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 import { REFERENCE } from "@seatscout/client";
 import { cleanup, fireEvent, screen } from "@testing-library/react-native";
-import { asking, NEAR, PLAYING, submit } from "../../test/ask.js";
+import { asking, done, NEAR, PLAYING } from "../../test/ask.js";
 
 const press = async (name: string) => {
   await fireEvent.press(screen.getByRole("button", { name }));
@@ -18,7 +18,7 @@ describe("the narrowing terms the Ask sheet carries", () => {
     await press("Dolby Cinema");
     await press("Recliners");
     await press("AMC");
-    await submit();
+    await done();
 
     expect(handedOut(found)).toMatchObject({
       formats: ["Dolby Cinema", "IMAX"],
@@ -34,7 +34,7 @@ describe("the narrowing terms the Ask sheet carries", () => {
 
     expect(screen.getByRole("button", { name: "IMAX" })).toBeSelected();
     await press("AMC");
-    await submit();
+    await done();
 
     expect(handedOut(found)).toMatchObject({
       formats: ["IMAX"],
@@ -50,7 +50,7 @@ describe("the narrowing terms the Ask sheet carries", () => {
         name: "Cinemark Dallas XD and IMAX",
       }),
     );
-    await submit();
+    await done();
 
     expect(handedOut(found)?.theaters).toEqual(["aacbt"]);
   });
@@ -80,7 +80,7 @@ describe("the narrowing terms the Ask sheet carries", () => {
     await fireEvent.press(
       screen.getByRole("switch", { name: "Accessible seating" }),
     );
-    await submit();
+    await done();
 
     expect(handedOut(found)?.accessibleSeating).toBe(true);
   });
@@ -96,7 +96,7 @@ describe("the narrowing terms the Ask sheet carries", () => {
       new Date(2026, 8, 19, 18, 30),
     );
     await press("Clear, Until");
-    await submit();
+    await done();
 
     expect(handedOut(found)).toEqual({ ...NEAR, from: "18:30" });
   });
@@ -104,7 +104,7 @@ describe("the narrowing terms the Ask sheet carries", () => {
   it("hands out the Seat Profile it was opened with when nothing in it moved", async () => {
     const { found } = await asking({ terms: NEAR });
 
-    await submit();
+    await done();
 
     expect(found.mock.calls.at(-1)?.[1]).toBe(REFERENCE);
   });

@@ -3,12 +3,12 @@ import { describe, expect, it } from "vitest";
 import {
   ageOf,
   clockOf,
+  FIND_SEATS,
   labelOf,
   lateralOf,
-  noneOf,
-  FIND_SEATS,
   ledeOf,
   NOTHING_REMEMBERED,
+  noneOf,
   partyOf,
   saidOf,
   seatOf,
@@ -200,6 +200,16 @@ describe("the words a card uses", () => {
     expect(said).toContain(partyOf(2));
     expect(said).toContain(whenOf("2026-08-29", "2026-08-28"));
     expect(said).toContain(seatSetOf(REFERENCE));
+  });
+
+  it("asks only for the movie once the area is named, and names that area", () => {
+    expect(
+      ledeOf(
+        { date: "2026-08-29", partySize: 2, area: "75234" },
+        REFERENCE,
+        "2026-08-28",
+      ),
+    ).toBe("Pick a movie playing near 75234.");
   });
 
   it("gives a control and an empty history words of their own, because an empty one names nothing", () => {

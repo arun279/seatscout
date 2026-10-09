@@ -40,9 +40,11 @@ export interface ResultsProps {
   readonly clock: Clock;
   readonly online: boolean;
   readonly onEdit: (term: Term) => void;
+  readonly onRun: (terms: Terms) => void;
   readonly onRoom: (result: SeatGroupResult) => void;
   readonly onHandOff: (result: SeatGroupResult) => void;
   readonly onLedger: () => void;
+  readonly span?: number | undefined;
 }
 
 const styles = StyleSheet.create({
@@ -200,9 +202,11 @@ export const Results = ({
   clock,
   online,
   onEdit,
+  onRun,
   onRoom,
   onHandOff,
   onLedger,
+  span,
 }: ResultsProps): ReactElement => {
   const session = useSession(seatscout, asked);
   const painted = useSyncExternalStore(
@@ -218,9 +222,10 @@ export const Results = ({
     <FlatList
       ListHeaderComponent={
         <>
-          <ScreenBand />
+          <ScreenBand span={span} />
           <TitleCard
             onEdit={onEdit}
+            onRun={onRun}
             profile={profile}
             programme={programme}
             terms={terms}

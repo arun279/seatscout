@@ -2,7 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 import { REFERENCE } from "@seatscout/client";
 import { act, fireEvent, screen } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
-import { asking, NEAR, submit } from "../../test/ask.js";
+import { asking, done, NEAR } from "../../test/ask.js";
 import { houseLights } from "../../test/lights.js";
 import { TOUCH_FLOOR } from "../design-system/touch.js";
 
@@ -48,7 +48,7 @@ describe("where you sit, in the Ask sheet", () => {
 
     await slide("How far back", 0.2);
     await slide("Left or right", -0.5);
-    await submit();
+    await done();
 
     expect(profileHandedOut(found)).toEqual({
       ...REFERENCE,
@@ -64,7 +64,7 @@ describe("where you sit, in the Ask sheet", () => {
 
     await slide("The front rows", 1.5);
     await slide("A console between seats", 0);
-    await submit();
+    await done();
 
     expect(profileHandedOut(found)).toEqual({
       ...REFERENCE,
@@ -80,7 +80,7 @@ describe("where you sit, in the Ask sheet", () => {
 
     await respond("onResponderGrant", touched(160, 45));
     await respond("onResponderMove", touched(85, 125));
-    await submit();
+    await done();
 
     expect(profileHandedOut(found)).toEqual({
       ...REFERENCE,
@@ -94,7 +94,7 @@ describe("where you sit, in the Ask sheet", () => {
     await laidOut(640);
 
     await respond("onResponderGrant", touched(170, 250));
-    await submit();
+    await done();
 
     expect(profileHandedOut(found)).toEqual({
       ...REFERENCE,
@@ -170,7 +170,7 @@ describe("where you sit, in the Ask sheet", () => {
     await fireEvent.press(
       screen.getByRole("button", { name: "Back to Reference" }),
     );
-    await submit();
+    await done();
 
     expect(profileHandedOut(found)).toEqual(REFERENCE);
     expect(

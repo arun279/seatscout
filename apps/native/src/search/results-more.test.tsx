@@ -1,4 +1,3 @@
-import { REFERENCE, type SearchTerms } from "@seatscout/client";
 import {
   afterEach,
   beforeAll,
@@ -8,6 +7,7 @@ import {
   it,
   jest,
 } from "@jest/globals";
+import { REFERENCE, type SearchTerms } from "@seatscout/client";
 import {
   cleanup,
   fireEvent,
@@ -52,6 +52,7 @@ const shown = async (asked: SearchTerms) => {
       onLedger={nothing}
       online
       onRoom={nothing}
+      onRun={() => undefined}
       profile={REFERENCE}
       programme={NOTHING_READ}
       seatscout={carried.seatscout}

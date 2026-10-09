@@ -5,6 +5,7 @@ import {
   type SeatProfile,
 } from "@seatscout/client";
 import { seatsOf } from "./derived.js";
+import type { Missing } from "./prompt.js";
 import type { Terms } from "./terms.js";
 import { RELATIVE_DAYS, whenSaidOf, whenWordsOf } from "./when-phrases.js";
 import { spanOf } from "./when.js";
@@ -112,7 +113,29 @@ export const ledeOf = (
   profile: SeatProfile,
   today: string,
 ): string =>
-  `Name an area, then a movie playing near it. ${partyOf(terms.partySize)}, ${whenSaidOf(terms, today)} and ${seatSetOf(profile)} are already set.`;
+  terms.area === undefined
+    ? `Name an area, then a movie playing near it. ${partyOf(terms.partySize)}, ${whenSaidOf(terms, today)} and ${seatSetOf(profile)} are already set.`
+    : `Pick a movie playing near ${terms.area}.`;
+
+export const YOUR_QUERY = "Your query";
+
+export const NEXT_STEP: Readonly<Record<Missing, string>> = {
+  area: "Name an area",
+  movie: "Pick a movie",
+};
+
+export const WHAT_IT_DOES =
+  "SeatScout reads the seat maps of showings near you and ranks the seats still free, best row first. It never books and never holds a seat.";
+
+export const ANOTHER_NUMBER = "Another number";
+
+export const DONE = "Done";
+
+export const PICK_DAYS = "Pick days or a range";
+
+export const ROOM_DRAWS_HERE = "Open a showtime and its room draws here.";
+
+export const RUN_AGAIN = "Run again";
 
 export const noneOf = (party: number): string =>
   party === 1 ? "No seat" : `No ${wordOf(party)} seats together`;

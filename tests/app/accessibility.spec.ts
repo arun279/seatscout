@@ -6,11 +6,11 @@ test("every screen of the app's web build, from Ask to the Room, carries no WCAG
 }, async ({ page }) => {
   await answeredByTheCorpus(page);
   await page.goto(ASKING);
-  const find = page.getByRole("button", { name: "Find seats" });
-  await expect(find).toBeVisible();
+  const next = page.getByRole("button", { name: "Pick a movie" });
+  await expect(next).toBeVisible();
   expect(await violationsOn(page)).toEqual([]);
 
-  await find.click();
+  await next.click();
   const film = page.getByRole("textbox", { name: "Film" });
   await expect(film).toBeVisible();
   expect(await violationsOn(page)).toEqual([]);

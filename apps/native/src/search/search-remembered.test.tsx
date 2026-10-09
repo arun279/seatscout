@@ -40,6 +40,7 @@ const opened = async (carried: Phone) => {
       onLedger={nothing}
       online
       onRoom={nothing}
+      onAdjust={nothing}
       onRun={nothing}
       profile={REFERENCE}
       seatscout={carried.seatscout}

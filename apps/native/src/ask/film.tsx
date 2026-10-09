@@ -20,6 +20,7 @@ export interface FilmProps {
   readonly typed: string;
   readonly focused: boolean;
   readonly onTyped: (typed: string) => void;
+  readonly onPicked: (movie: Movie) => void;
 }
 
 const styles = StyleSheet.create({
@@ -39,11 +40,11 @@ const styles = StyleSheet.create({
 const Suggestion = ({
   movie,
   typed,
-  onTyped,
+  onPicked,
 }: {
   readonly movie: Movie;
   readonly typed: string;
-  readonly onTyped: (typed: string) => void;
+  readonly onPicked: (movie: Movie) => void;
 }) => {
   const theme = useTheme();
   const [before, marked, after] = markedIn(movie.title, typed);
@@ -52,7 +53,7 @@ const Suggestion = ({
     <TouchableOpacity
       accessibilityLabel={movie.title}
       accessibilityRole="button"
-      onPress={() => onTyped(movie.title)}
+      onPress={() => onPicked(movie)}
       style={[
         styles.suggestion,
         {
@@ -80,6 +81,7 @@ export const Film = ({
   typed,
   focused,
   onTyped,
+  onPicked,
 }: FilmProps): ReactElement => {
   const status = playingStatusOf(programme, area, span, today);
   const offered = offeredFor(typed, programme.movies);
@@ -103,7 +105,7 @@ export const Film = ({
         >
           {offered.map((movie) => (
             <View key={movie.id} role="listitem">
-              <Suggestion movie={movie} onTyped={onTyped} typed={typed} />
+              <Suggestion movie={movie} onPicked={onPicked} typed={typed} />
             </View>
           ))}
         </ScrollView>

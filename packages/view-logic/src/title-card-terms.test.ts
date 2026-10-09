@@ -158,15 +158,15 @@ describe("the lines a title card states a Query in", () => {
         { term: "window", words: "7:00p to 9:00p" },
         { term: "area", words: "Near 75006" },
         { term: "formats", words: "Dolby Cinema" },
-        { term: "formats", words: "IMAX", joinedBy: " or " },
+        { term: "formats", words: "IMAX", joinedBy: "or" },
         { term: "amenities", words: "Recliners" },
         { term: "chains", words: "AMC" },
-        { term: "chains", words: "Landmark", joinedBy: " or " },
+        { term: "chains", words: "Landmark", joinedBy: "or" },
         { term: "theaters", words: "Cinemark Dallas XD and IMAX" },
         {
           term: "theaters",
           words: "AMC Village on the Parkway 9",
-          joinedBy: " or ",
+          joinedBy: "or",
         },
         { term: "accessibleSeating", words: "Accessible seating" },
         { term: "profile", words: "Reference seat" },
@@ -218,12 +218,12 @@ describe("the lines a title card states a Query in", () => {
       {
         term: "theaters",
         words: "Cinemark Dallas XD and IMAX",
-        joinedBy: " or ",
+        joinedBy: "or",
       },
       {
         term: "theaters",
         words: "AMC Village on the Parkway 9",
-        joinedBy: " or ",
+        joinedBy: "or",
       },
       { term: "profile", words: "Reference seat" },
     ]);

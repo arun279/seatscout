@@ -67,7 +67,7 @@ const opened = (initialUrl = "/") =>
 const asked = async () => {
   const app = opened();
   await app;
-  await fireEvent.press(screen.getByRole("button", { name: "Find seats" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Name an area" }));
   await screen.findByText("What are we seeing?");
   return { app };
 };
@@ -77,6 +77,12 @@ const commit = async () => {
     within(screen.getByTestId("dock")).getByRole("button", {
       name: "Find seats",
     }),
+  );
+};
+
+const close = async () => {
+  await fireEvent.press(
+    within(screen.getByTestId("dock")).getByRole("button", { name: "Done" }),
   );
 };
 
@@ -94,38 +100,25 @@ describe("the stack the app opens on", () => {
 
     expect(app.getPathname()).toBe("/");
     expect(
-      screen.getByRole("button", { name: "Find seats" }),
+      screen.getByRole("button", { name: "Name an area" }),
     ).toBeOnTheScreen();
   });
 
-  it("presents the Ask sheet over it when the velvet control is pressed", async () => {
+  it("presents the Ask sheet over it when the next step is pressed", async () => {
     const app = opened();
     await app;
 
-    await fireEvent.press(screen.getByRole("button", { name: "Find seats" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Name an area" }));
     await screen.findByText("What are we seeing?");
 
     expect(app.getPathname()).toBe("/ask");
-  });
-
-  it("presents it when a title-card line is pressed too, at the term that line names", async () => {
-    const app = opened();
-    await app;
-
-    await fireEvent.press(
-      screen.getByRole("button", { name: "Two seats together" }),
-    );
-    await screen.findByText("What are we seeing?");
-
-    expect(app.getPathname()).toBe("/ask");
-    expect(app.getSearchParams()).toMatchObject({ term: "partySize" });
   });
 
   it("opens the sheet holding the query the screen beneath it was showing", async () => {
     const app = opened("/?area=75234&partySize=3");
     await app;
 
-    await fireEvent.press(screen.getByRole("button", { name: "Find seats" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Pick a movie" }));
     await screen.findByText("What are we seeing?");
 
     expect(app.getSearchParams()).toMatchObject({
@@ -146,14 +139,14 @@ describe("the stack the app opens on", () => {
 
     expect(app.getPathname()).toBe("/");
     expect(
-      screen.getByRole("button", { name: "Find seats" }),
+      screen.getByRole("button", { name: "Name an area" }),
     ).toBeOnTheScreen();
   });
 
   it("stands the sheet on the same ground the screen beneath it uses", async () => {
     const app = opened();
     await app;
-    await fireEvent.press(screen.getByRole("button", { name: "Find seats" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Name an area" }));
     await screen.findByText("What are we seeing?");
 
     const sheet = StyleSheet.flatten(
@@ -173,7 +166,7 @@ describe("the Query a search is", () => {
       "75234",
     );
     await fireEvent.press(screen.getByRole("button", { name: "Any day" }));
-    await commit();
+    await close();
 
     expect(app.getPathname()).toBe("/");
     expect(app.getSearchParams()).toMatchObject({
@@ -186,7 +179,7 @@ describe("the Query a search is", () => {
   it("leaves the sheet closed behind it, so the query before it is what back returns to", async () => {
     await asked();
 
-    await commit();
+    await close();
 
     expect(screen.queryByText("What are we seeing?")).toBeNull();
   });
@@ -214,7 +207,7 @@ describe("what the sheet changes beyond the address", () => {
   it("draws neither screen until the phone's Seat Profile has been read, so no search runs twice", async () => {
     jest.spyOn(seatProfile, "snapshot").mockReturnValue(undefined);
     await opened();
-    expect(screen.queryByRole("button", { name: "Find seats" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Name an area" })).toBeNull();
     await opened("/ask?term=movie&area=75234");
     expect(screen.queryByText("What are we seeing?")).toBeNull();
   });
@@ -285,7 +278,7 @@ describe("the faces the app is set in", () => {
 
     await opened();
 
-    expect(screen.queryByRole("button", { name: "Find seats" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Name an area" })).toBeNull();
   });
 
   it("draws it anyway when a face cannot be read, so the platform's own still reads", async () => {
@@ -294,7 +287,7 @@ describe("the faces the app is set in", () => {
     await opened();
 
     expect(
-      screen.getByRole("button", { name: "Find seats" }),
+      screen.getByRole("button", { name: "Name an area" }),
     ).toBeOnTheScreen();
   });
 });

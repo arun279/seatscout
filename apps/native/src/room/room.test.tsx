@@ -45,6 +45,17 @@ describe("the Room a Seat Group opens", () => {
     ).toBeOnTheScreen();
   });
 
+  it("offers no way back when it stands beside the list it was opened from", async () => {
+    await shown({ inAPane: true });
+
+    expect(
+      screen.queryByRole("button", { name: "‹ Back to the list" }),
+    ).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Take D18 and D17" }),
+    ).toBeOnTheScreen();
+  });
+
   it("offers one way back to the list and one control to commit with", async () => {
     const room = await shown();
 

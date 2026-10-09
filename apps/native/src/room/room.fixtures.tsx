@@ -54,6 +54,9 @@ const measured = async (stage: LayoutRectangle | null = STAGE) => {
     });
 };
 
+const backFrom = (inAPane: boolean | undefined, left: string[]) =>
+  inAPane === true ? undefined : () => left.push("back");
+
 export const shown = async (
   over: {
     readonly room?: CapturedRoom;
@@ -62,6 +65,7 @@ export const shown = async (
     readonly opening?: (opened: OpenedRoom) => PlacedGroup;
     readonly stage?: LayoutRectangle | null;
     readonly reshaped?: (auditorium: Auditorium) => Auditorium;
+    readonly inAPane?: boolean;
   } = {},
 ): Promise<Shown> => {
   const [opened] = await openedRooms(
@@ -77,7 +81,7 @@ export const shown = async (
     <Room
       auditorium={auditorium}
       clock={still(NOW)}
-      onBack={() => left.push("back")}
+      onBack={backFrom(over.inAPane, left)}
       onHandOff={(chosen) => handedOff.push(chosen)}
       online={over.online ?? true}
       opening={over.opening?.(opened) ?? auditorium.recommended}
