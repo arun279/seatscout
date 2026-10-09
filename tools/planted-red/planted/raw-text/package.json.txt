@@ -1,0 +1,9 @@
+{
+  "name": "planted",
+  "private": true,
+  "dependencies": {
+    "react-native": "*",
+    "react-native-gesture-handler": "*",
+    "react-native-reanimated": "*"
+  }
+}

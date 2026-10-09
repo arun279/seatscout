@@ -2,7 +2,6 @@ import type { ReactElement, ReactNode } from "react";
 import { StyleSheet, TextInput, View, type ViewStyle } from "react-native";
 import { type Theme, useTheme } from "../theme.js";
 import { ON_ANDROID } from "./platform.js";
-import { useTextSize } from "./text-size.js";
 import { TOUCH_FLOOR } from "./touch.js";
 import { Type } from "./type.js";
 
@@ -72,13 +71,11 @@ export const Field = ({
 }: FieldProps): ReactElement => {
   const theme = useTheme();
   const face = theme.type.ledgerField;
-  const scale = useTextSize();
 
   return (
     <Section label={label}>
       <TextInput
         accessibilityLabel={label}
-        key={scale}
         autoFocus={focused}
         onBlur={onSettled}
         onChangeText={onTyped}
