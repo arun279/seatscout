@@ -86,6 +86,8 @@ so it runs between `bundle` and `weigh`, which overwrites that directory.
   reads the walk with Flashlight and holds it to the previous run. When the app changed, the
   publish described under Publishing.
 - **Nightly.** The live checks below.
+- **Weekly.** `links.yml` reads every link in the prose, the web included, and keeps one issue
+  labelled `links` open while any is broken.
 
 A branch need not be up to date with `main`: every pull request run already tests it merged
 onto `main`.

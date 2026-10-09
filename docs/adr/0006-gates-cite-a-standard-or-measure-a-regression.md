@@ -594,6 +594,12 @@ points inside the repository, file and heading alike, with `--offline --include-
 Links to the web are left out of the gate, because a site being down would turn a pull request
 red for something it did not change; checked once by hand on the day this landed, one of them
 was broken, a `#readme` anchor GitHub draws with script, and it was corrected.
+`.github/workflows/links.yml` reads them instead, weekly and on dispatch: the same lychee
+without `--offline`, with three retries ten seconds apart, two requests at a time to any one
+host a second apart, and the workflow's token for github.com. On `main`, a run that finds a
+broken link opens one issue labelled `links`, or comments on the open one, and a clean run
+closes it. A run that fails for any other reason, such as lychee failing to start, fails without
+touching the issue. It never gates a pull request.
 `tools/planted-red/src/markdown.test.ts` watches markdownlint refuse two headings at the top
 level and a bare fence and pass a tidy record with a long line, and the `quality` job watches
 lychee refuse a planted record with a missing file and a missing heading and pass one whose links
@@ -1019,7 +1025,7 @@ commit rather than either side of the comparison.
 cloc finds comments with patterns rather than a parser, and its `--strip-str-comments` does not
 reach every string: a template literal such as `` `${root}/*.test.ts` `` opened a block comment that
 ran 76 lines to the next `*/`, and the comment ratchet refused a change that held no comment. So
-before cloc counts a copy, [oxc-parser](https://www.npmjs.com/package/oxc-parser), the parser
+before cloc counts a copy, [oxc-parser](https://oxc.rs/docs/guide/usage/parser), the parser
 oxlint is built on, blanks the inside of every string, template, regular expression and JSX text
 in it, keeping every line and every real comment where it was. cloc then counts and diffs code it
 can no longer misread. `tools/footprint/planted/strings-holding-comment-markers.ts.txt` holds each
