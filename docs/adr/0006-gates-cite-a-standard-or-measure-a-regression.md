@@ -704,26 +704,44 @@ the area it does not list, is refused by name with the dependency it missed and 
 it. The same hook moved inside an `if` is refused as called conditionally. Taken out again, the
 file passes in silence, which is what the whole tree does today.
 
-**A screen's render cost is held to main as the change merges into it, and the runner says
-whether it may hold it.**
-[Reassure](https://github.com/callstack/reassure) renders each screen's Testing Library scenario
-repeatedly, on the base and on the head, and reports a statistically significant change rather than
-a threshold anyone here chose. Callstack publish the two figures the `performance` job reads: a
-runner whose repeated measurement of the same code varies by less than 5 per cent is steady enough
-to gate on, and one at 10 per cent or more is not usable for comparison at all. So the job measures
-the same code twice first, takes the widest change that run reports, and gates on a significant
-regression only below 5 per cent; at or above it the job reports the comparison and says it did not
-gate. `reassure check-stability` is that run's own name upstream, but its command handler hands its
-own name to the test runner as a path pattern, so the job spells out what the handler does, a
-baseline measurement and a comparison over the same commit.
+**A screen's render cost is held to main as the change merges into it, past the drift
+unchanged code shows.** [Reassure](https://github.com/callstack/reassure) renders each screen's
+Testing Library scenario 20 times on the base and on the head, and reports a change as
+significant when its probability is under 0.02 and it is at least 5 per cent. The probability
+uses the baseline's spread over the square root of the runs, which is the spread within one
+process; the base and the head are measured in two processes, with a checkout and an install
+between them, and that drift does not shrink with more runs. Measured on unchanged code (runs
+37937855304 and 37941070304: 18 jobs, each comparing a commit with itself twice), a scenario's
+change had a standard deviation of 2.5 per cent at 10 runs and 2.09 per cent at 20, and reached
+7.4 and 6.4 per cent. At 10 runs, 2 of 10 comparisons of unchanged code came out significantly
+slower, and a pull request that touched only tools went red on a 5.4 per cent change to the
+hand-off sheet.
+
+So the job runs each scenario 20 times, the knob Reassure's
+[methodology](https://callstack.github.io/reassure/docs/methodology) names for an unsteady
+runner, and fails on a slower scenario only when it is significant and at or above 6.3 per cent:
+three standard deviations of the measured drift at 20 runs, the control limit a Shewhart chart
+draws. A scenario that renders more often fails at any size, since a count does not drift. Of
+all 216 comparisons of unchanged code, at 10 runs and at 20, none reached that floor, including
+those from runners whose own repeated measurement varied by 5 per cent or more. The floor
+replaces Callstack's guidance as the condition for gating. Their methodology calls a runner
+whose repeated measurement varies by less than 5 per cent steady, and the job used to gate only
+on such a runner; at 20 runs, 5 of 13 jobs read 5 per cent or more, so the gate was off on more
+than a third of runs. The job still measures the same code twice and prints that reading in its
+comment, as information. `reassure check-stability` is that run's own name upstream, but its
+command handler hands its own name to the test runner as a path pattern, so the job spells out
+what the handler does, a baseline measurement and a comparison over the same commit.
+
+The cost is stated plainly: a real slowdown under about 6 per cent now passes unseen, because it
+is inside the noise. Twenty runs add about 45 seconds to the job (220 against 174 seconds, median
+of the experiment's jobs), which keeps it well inside the mutation and `android` jobs that a pull
+request waits on.
 
 **Watched failing, watched silent.** The first run on the pull request that added the job left no
-reading at all, because the failure was piped into `tee` and lost, and the step that reads the
-figure then took its own no-reading branch and passed. Both were corrected together: the reading is
-taken under `pipefail`, and a missing reading now fails the job. The one absence that reports rather
-than fails is when main has no screen to measure, which the step that measures the
-base records for the step that judges. With the reading taken, the same runner reads 3.9 per cent
-and the job gates.
+reading at all, because the failure was piped into `tee` and lost. The reading is taken under
+`pipefail`, so a measurement that fails fails the job. The one absence that reports rather than
+fails is when main has no screen to measure, which the step that measures the base records for
+the step that judges.
 
 **The app is walked end to end on an emulator, and the walk gates every push that touches it.**
 The `android` job builds a release of the app for Android, with the Source answered in the

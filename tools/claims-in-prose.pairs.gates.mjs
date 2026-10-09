@@ -194,14 +194,6 @@ export const GATE_CLAIMS = [
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /gates on a significant regression only below 5 per cent/,
-    holds: "the reading below which the render gate may gate",
-    pattern: "reading < 5",
-    paths: [WORKFLOW],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
     says: /one of the CSS Color Module Level 4 named colours/,
     holds: "the named colours the screen rule refuses",
     pattern: "rebeccapurple",
@@ -270,6 +262,22 @@ export const GATE_CLAIMS = [
     holds: "the jsdom types that type-check",
     pattern: "'@types/jsdom': 30.0.0",
     paths: [WORKSPACE],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /significant and at or above 6\.3 per cent/,
+    holds: "the slowdown below which the render gate reads drift",
+    pattern: 'SLOWDOWN_FLOOR: "0.063"',
+    paths: [WORKFLOW],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /So the job runs each scenario 20 times/,
+    holds: "the runs each render scenario takes",
+    pattern: "configure({ runs: 20 });",
+    paths: ["apps/native/test/reassure.cjs"],
     files: 1,
   },
 ];

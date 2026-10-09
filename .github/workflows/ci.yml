@@ -240,7 +240,7 @@ jobs:
           runtime: node@24.20.0
           cache: true
           install: false
-      - name: Read how steady this runner is before it judges anything
+      - name: Measure the same code twice, for the comment
         run: |
           set -o pipefail
           pnpm install --frozen-lockfile
@@ -269,9 +269,8 @@ jobs:
             echo
             echo "### How steady the runner is"
             echo
-            echo "Reassure's own reading: below 5 per cent is steady, 10 per cent or more is too"
-            echo "high to gate on. The step after it takes that reading and either gates on a"
-            echo "significant regression or reports one."
+            echo "The same code measured twice, for information. The gate does not depend on it:"
+            echo "every run holds a slower scenario to the drift unchanged code shows."
             echo
             echo '```'
             cat "$RUNNER_TEMP/stability.md"
@@ -288,15 +287,11 @@ jobs:
         with:
           header: performance
           path: performance.md
-      - name: Let the reading decide whether a regression fails this
+      - name: Fail on a scenario that renders slower than unchanged code drifts, or more often
+        env:
+          SLOWDOWN_FLOOR: "0.063"
         run: |
-          steady="$(grep -oE '[0-9]+(\.[0-9]+)?%' "$RUNNER_TEMP/stability.md" | tr -d '%' | sort -rn | head -n 1)"
-          regressed="$(jq '[.significant // [] | .[] | select(.current.meanDuration > .baseline.meanDuration or .current.meanCount > .baseline.meanCount)] | length' apps/native/.reassure/output.json 2>/dev/null || echo unknown)"
-          echo "Widest random change on this runner: ${steady:-none read} per cent. Significant changes: $regressed."
-          if [ -z "$steady" ]; then
-            echo "::error::The stability run left no reading, so nothing decides whether this gates."
-            exit 1
-          fi
+          regressed="$(jq --argjson floor "$SLOWDOWN_FLOOR" '[.significant // [] | .[] | select(.relativeDurationDiff >= $floor or .current.meanCount > .baseline.meanCount)] | length' apps/native/.reassure/output.json 2>/dev/null || echo unknown)"
           if [ "$regressed" = unknown ]; then
             if [ -f "$RUNNER_TEMP/no-base-measurement" ]; then
               echo "::notice::Main has no screen to measure, so this job reported only."
@@ -305,15 +300,11 @@ jobs:
             echo "::error::The comparison left no answer although main could be measured."
             exit 1
           fi
-          if awk -v reading="$steady" 'BEGIN { exit !(reading < 5) }'; then
-            if [ "$regressed" -gt 0 ]; then
-              echo "::error::The runner is steady at $steady per cent, under the 5 per cent Reassure calls steady, and $regressed scenario(s) changed significantly. The comment on the pull request names them."
-              exit 1
-            fi
-            echo "The runner is steady at $steady per cent and nothing changed significantly."
-          else
-            echo "::warning::The runner read $steady per cent, at or above the 5 per cent Reassure calls steady, so this job reported rather than gated."
+          if [ "$regressed" -gt 0 ]; then
+            echo "::error::$regressed scenario(s) rendered significantly slower, by $SLOWDOWN_FLOOR or more, which unchanged code does not drift to, or rendered more often. The comment on the pull request names them."
+            exit 1
           fi
+          echo "No scenario rendered slower by $SLOWDOWN_FLOOR or more, or more often."
 
   measure:
     if: github.event_name == 'pull_request' && !github.event.pull_request.draft
