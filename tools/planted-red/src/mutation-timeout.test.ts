@@ -2,7 +2,7 @@ import { spawnSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
 
 const READ_RUNNERS =
-  'import("./stryker.config.mjs").then(({ default: config }) => console.log(JSON.stringify({ timeoutFactor: config.timeoutFactor ?? null, concurrency: config.concurrency ?? null })))';
+  'import("./stryker.config.mjs").then(({ default: config }) => console.log(JSON.stringify({ coverageAnalysis: config.coverageAnalysis ?? null, timeoutFactor: config.timeoutFactor ?? null, timeoutMS: config.timeoutMS ?? null, concurrency: config.concurrency ?? null })))';
 
 const runnersOf = (shard: string) => {
   const run = spawnSync("node", ["--eval", READ_RUNNERS], {
@@ -13,15 +13,30 @@ const runnersOf = (shard: string) => {
 };
 
 describe("how Stryker runs a shard's mutants", () => {
-  it("runs two Jest mutants at a time, each allowed Stryker's 1.5 for every platform its tests run under", () => {
+  it("gives a Jest shard per-test coverage, two runners, factor 3 and 100 s more allowance", () => {
     const shell = runnersOf("native-shell");
 
     expect(shell.refused).toBe("");
     expect(shell.status).toBe(0);
     expect(JSON.parse(shell.said)).toStrictEqual({
+      coverageAnalysis: "perTest",
       timeoutFactor: 3,
+      timeoutMS: 100_000,
       concurrency: 2,
     });
+  });
+
+  it.each([
+    ["native-theme", "off"],
+    ["native-design-system", "perTest"],
+    ["native-search", "perTest"],
+    ["native-ask", "perTest"],
+    ["native-shell", "perTest"],
+  ])("gives %s %s coverage", (shard, coverage) => {
+    const run = runnersOf(shard);
+
+    expect(run.status).toBe(0);
+    expect(JSON.parse(run.said)).toMatchObject({ coverageAnalysis: coverage });
   });
 
   it("leaves a Vitest shard, which runs each test once, at Stryker's own defaults", () => {
@@ -29,7 +44,9 @@ describe("how Stryker runs a shard's mutants", () => {
 
     expect(core.status).toBe(0);
     expect(JSON.parse(core.said)).toStrictEqual({
+      coverageAnalysis: null,
       timeoutFactor: null,
+      timeoutMS: null,
       concurrency: null,
     });
   });

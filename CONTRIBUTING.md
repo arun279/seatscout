@@ -264,7 +264,7 @@ status. Loosening a rule in `biome.json`, `.oxlintrc.json`, `.jscpd.json` or
 fixture moves in the same diff as the rule, where a reviewer sees both. The size-limit
 fixtures are the exception: they carry globs of their own rather than the shipped ones, so
 what they watch is that size-limit still weighs a glob from its configuration's directory and
-still reports a glob that reached nothing. The thirteen test files in `tools/planted-red/src`
+still reports a glob that reached nothing. The fourteen test files in `tools/planted-red/src`
 answer in under half a minute on two workers, inside `pnpm test:unit`.
 
 Substitute at `fetch`, never at the Source port. `fakeUpstream` in
@@ -292,7 +292,7 @@ mutant is killed by the tests that own it or by nothing. Every run breaks below 
 a workspace, except for `apps/native`, which Vitest cannot render and Stryker's Jest runner takes
 instead in five shards by file group, each running both platforms' Jest projects.
 [ADR 12](docs/adr/0012-every-mutant-must-die.md) says why the division is by workspace, why
-the app is divided further, why its shards set `coverageAnalysis` to `off`, and what their
+the app is divided further, why its shards run `perTest` coverage, and what their
 ignore-plugin skips.
 
 `pnpm test:mutation` judges every shard over the whole tree in turn and names every shard it

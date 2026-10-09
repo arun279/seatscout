@@ -1,7 +1,17 @@
+import { fileURLToPath } from "node:url";
+
+const environment = fileURLToPath(
+  new URL("test/environment.cjs", import.meta.url),
+);
+
 const shared = {
   resolver: "<rootDir>/test/resolver.cjs",
+  testEnvironment: environment,
   setupFiles: ["@testing-library/react-native/dont-cleanup-after-each"],
-  setupFilesAfterEnv: ["<rootDir>/test/setup.tsx"],
+  setupFilesAfterEnv: [
+    "<rootDir>/test/environment-held.cjs",
+    "<rootDir>/test/setup.tsx",
+  ],
   transformIgnorePatterns: [
     "/node_modules/(?!(.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|standard-navigation|decode-uri-component))",
     "/node_modules/react-native-reanimated/plugin/",
@@ -17,5 +27,6 @@ export const platform = (name) => ({
 
 export const on = (...platforms) => ({
   rootDir: ".",
+  testEnvironment: shared.testEnvironment,
   projects: platforms.map(platform),
 });

@@ -4,6 +4,8 @@ const STRYKER_DEFAULT_TIMEOUT_FACTOR = 1.5;
 
 const JEST_RUNNERS_AT_ONCE = 2;
 
+const LOADING_TEST_FILES_AGAIN_MS = 100_000;
+
 const projectCountIn = async (config) =>
   (await import(new URL(config, import.meta.url))).default.projects.length;
 
@@ -15,11 +17,12 @@ const RUNNERS = {
   jest: async (shard) => ({
     testRunner: "jest",
     ignorers: ["drawn-values", "exact-ranges"],
-    coverageAnalysis: "off",
+    coverageAnalysis: shard.coverageAnalysis,
     dryRunTimeoutMinutes: 15,
     concurrency: JEST_RUNNERS_AT_ONCE,
     timeoutFactor:
       STRYKER_DEFAULT_TIMEOUT_FACTOR * (await projectCountIn(shard.jest)),
+    timeoutMS: LOADING_TEST_FILES_AGAIN_MS,
     jest: {
       projectType: "custom",
       configFile: shard.jest,
