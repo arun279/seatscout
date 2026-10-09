@@ -8,7 +8,7 @@ import type {
 import { useMemo, useSyncExternalStore } from "react";
 import { type Session, useSession } from "../host/session.js";
 
-export interface Opened {
+interface Opened {
   readonly auditorium: Auditorium;
   readonly result: SeatGroupResult;
   readonly opening: PlacedGroup;
