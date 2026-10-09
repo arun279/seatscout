@@ -11,7 +11,6 @@ import {
 import { cleanup, render, screen, within } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import { houseLights } from "../../test/lights.js";
-import { definedUnder, paintedWith } from "../../test/svg.js";
 import { type Appearance, themeFor } from "../theme.js";
 import { otherThan, refusedIn, shown, tapped } from "./room.fixtures.js";
 import { RowBar } from "./row-bar.js";
@@ -59,7 +58,7 @@ describe("the room drawn to the screen it is on", () => {
     await shown({ room: WEST_PLANO_10 });
 
     const edge = StyleSheet.flatten(
-      screen.getByTestId("screen-edge", { includeHiddenElements: true }).props[
+      screen.getByTestId("screen-band", { includeHiddenElements: true }).props[
         "style"
       ],
     );
@@ -106,43 +105,6 @@ describe("the room drawn to the screen it is on", () => {
         dockRule: colours.hairline,
       });
     }
-  });
-});
-
-describe("the screen edge over the map", () => {
-  const hidden = (id: string) =>
-    screen.getByTestId(id, { includeHiddenElements: true });
-
-  it("glows with the house lights down, drawn centred and short of both ends of the map", async () => {
-    houseLights("down");
-    await shown({ room: WEST_PLANO_10 });
-    const span = drawnMap().width;
-    const { x, width } = hidden("edge").props;
-
-    expect(width).toBeLessThan(span);
-    expect(2 * Number(x) + Number(width)).toBeCloseTo(span);
-  });
-
-  it("lights the edge by the gradient and the glow it draws itself", async () => {
-    houseLights("down");
-    await shown({ room: WEST_PLANO_10 });
-    const [edge] = definedUnder("lamp", "RNSVGLinearGradient");
-    const [glow] = definedUnder("lamp", "RNSVGFilter");
-
-    expect(hidden("edge").props["fill"]).toEqual(paintedWith(edge));
-    expect(hidden("edge").props["filter"]).toBe(glow);
-    expect(edge).not.toBe(glow);
-  });
-
-  it("lies flat in the beam with the house lights up, centred and short of both ends of the map", async () => {
-    houseLights("up");
-    await shown({ room: WEST_PLANO_10 });
-    const span = drawnMap().width;
-    const lamp = StyleSheet.flatten(hidden("lamp").props["style"]);
-
-    expect(lamp.backgroundColor).toBe(themeFor("up").colours.beam);
-    expect(lamp.width).toBeLessThan(span);
-    expect(2 * Number(lamp.left) + Number(lamp.width)).toBeCloseTo(span);
   });
 });
 

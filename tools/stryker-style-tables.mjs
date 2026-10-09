@@ -11,7 +11,6 @@ const DECLARED_IN = [
   "apps/native/src/room/legend.tsx",
   "apps/native/src/room/alternates.tsx",
   "apps/native/src/room/dock.tsx",
-  "apps/native/src/room/screen-edge.tsx",
 ];
 
 const DRAWN =

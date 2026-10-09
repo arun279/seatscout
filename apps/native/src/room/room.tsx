@@ -34,6 +34,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Banner } from "../design-system/banner.js";
 import { felt } from "../design-system/feedback.js";
 import { useSpoken } from "../design-system/live.js";
+import { OVER_THE_MAP, ScreenBand } from "../design-system/screen-band.js";
 import { SLOP, TOUCH_FLOOR } from "../design-system/touch.js";
 import { Type } from "../design-system/type.js";
 import type { Clock } from "../host/clock.js";
@@ -43,7 +44,6 @@ import { Dock } from "./dock.js";
 import { Legend } from "./legend.js";
 import type { Drawn } from "./pan-zoom.js";
 import { RowBar } from "./row-bar.js";
-import { ScreenEdge } from "./screen-edge.js";
 import { SeatMap } from "./seat-map.js";
 
 const DRAWN = {
@@ -257,7 +257,7 @@ export const Room = ({
           ]}
           testID="map-frame"
         >
-          <ScreenEdge span={drawn.width} />
+          <ScreenBand drawing={OVER_THE_MAP} span={drawn.width} />
           <SeatMap
             accessibleSeating={accessibleSeating}
             auditorium={auditorium}
