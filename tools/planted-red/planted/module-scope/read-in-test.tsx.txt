@@ -1,0 +1,34 @@
+import { join } from "node:path";
+import { phone } from "../../test/phone.js";
+import { themeFor } from "../theme.js";
+
+jest.mock("react-native/Libraries/Utilities/useColorScheme");
+
+const TODAY = "2026-09-19";
+const HELD = new Date(2026, 8, 26, 19);
+const CORPUS = join("packages", "core");
+const downColours = () => themeFor("down").colours;
+const palettes = {
+  up() {
+    return themeFor("up").colours;
+  },
+};
+class Phones {
+  quiet() {
+    return phone([], { script: {} });
+  }
+}
+
+describe("reads made inside each test", () => {
+  const upColours = () => palettes.up();
+
+  beforeEach(() => {
+    themeFor("down");
+  });
+
+  it("reads the dark palette", () => {
+    const { seatscout } = new Phones().quiet();
+
+    expect([downColours(), upColours(), seatscout, TODAY, HELD, CORPUS]).toHaveLength(6);
+  });
+});

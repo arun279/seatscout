@@ -258,7 +258,14 @@ than any test failing. The job refuses it, naming the mutant. The remedy is in t
 work that broke out of module scope and out of `afterAll` into a test, so the mutant fails that
 test and is killed. The guard met one on its first CI run: the two seat map tests read the dark
 palette with `themeFor` at module scope, so the mutant that makes `themeFor` return nothing broke
-both files as they loaded. They now read the palette inside each test.
+both files as they loaded. They now read the palette inside each test, and a Grit plugin,
+`tools/lint/no-module-scope-app-calls.grit`, refuses the shape in the app's test files: a call
+to something imported by a relative path, which is this repository's own code, made at the top
+of the file or directly in a `describe` body, since Jest runs those bodies as it loads the file.
+A call inside a test, a hook, any other function or a method stays allowed, and so do plain data
+and calls into packages, which no app mutant changes.
+`tools/planted-red/src/module-scope-calls.test.ts` watches it refuse three shapes and pass a file
+that makes its calls inside tests, hooks, functions and methods.
 
 How long a mutant costs depends on the shard, so each shard's `mutantsPerJob` comes from its own
 measurements. With two runners, a job of N mutants takes about 30 s to start, plus its dry run D,

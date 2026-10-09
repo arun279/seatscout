@@ -1,5 +1,5 @@
 import { describe, expect, it, jest } from "@jest/globals";
-import type { Movie } from "@seatscout/client";
+import type { Movie, Theater } from "@seatscout/client";
 import type { ProgrammeState } from "@seatscout/view-logic";
 import {
   cleanup,
@@ -25,12 +25,12 @@ const PLAYING: readonly Movie[] = [
   { id: "246329", title: "Coyote vs. Acme" },
 ];
 
-const READ: ProgrammeState = {
+const read = (unreached: readonly Theater[] = []): ProgrammeState => ({
   phase: "read",
   theaters: nearby("aacbt", "Cinemark Dallas XD and IMAX"),
   movies: PLAYING,
-  unreached: [],
-};
+  unreached,
+});
 
 const showing = async (
   over: {
@@ -48,7 +48,7 @@ const showing = async (
       span={{ date: TODAY }}
       focused={false}
       onTyped={over.onTyped ?? (() => undefined)}
-      programme={over.programme ?? READ}
+      programme={over.programme ?? read()}
       today={TODAY}
       typed={over.typed ?? ""}
     />,
@@ -202,10 +202,7 @@ describe("naming the film in the Ask sheet", () => {
 
   it("names the Theaters it could not read, and still offers the films that answered", async () => {
     await showing({
-      programme: {
-        ...READ,
-        unreached: nearby("aacbt", "Cinemark Dallas XD and IMAX"),
-      },
+      programme: read(nearby("aacbt", "Cinemark Dallas XD and IMAX")),
     });
 
     expect(screen.getByRole("status")).toHaveTextContent(
@@ -216,7 +213,7 @@ describe("naming the film in the Ask sheet", () => {
 
   for (const appearance of APPEARANCES)
     it(`sets a listing it could not read apart from one it could, legibly, lights ${appearance}`, async () => {
-      const calm = await toneOf(appearance, READ);
+      const calm = await toneOf(appearance, read());
       const amiss = await toneOf(appearance, {
         phase: "unreachable",
         theaters: [],

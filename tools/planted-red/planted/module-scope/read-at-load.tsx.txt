@@ -1,0 +1,7 @@
+import { themeFor } from "../theme.js";
+
+const DOWN = themeFor("down").colours;
+
+it("reads the dark palette", () => {
+  expect(DOWN.house).toBeDefined();
+});

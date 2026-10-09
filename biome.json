@@ -75,6 +75,14 @@
       "plugins": ["./tools/lint/no-retried-or-concurrent-tests.grit"]
     },
     {
+      "includes": [
+        "apps/native/**/*.test.ts",
+        "apps/native/**/*.test.tsx",
+        "reports/planted/module-scope-*/**"
+      ],
+      "plugins": ["./tools/lint/no-module-scope-app-calls.grit"]
+    },
+    {
       "includes": ["packages/**"],
       "linter": {
         "rules": {

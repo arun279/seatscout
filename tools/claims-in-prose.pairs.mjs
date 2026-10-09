@@ -1,11 +1,10 @@
 import { DEVICE_CLAIMS } from "./claims-in-prose.pairs.device.mjs";
 import { GATE_CLAIMS } from "./claims-in-prose.pairs.gates.mjs";
+import { MUTATION_CLAIMS } from "./claims-in-prose.pairs.mutation.mjs";
 import { SEARCH_CLAIMS } from "./claims-in-prose.pairs.search.mjs";
 
 const BIOME = "biome.json";
 const PRODUCT = ["packages", ":!*.test.ts", ":!*.fixtures.ts"];
-const STRYKER = "stryker.config.mjs";
-const SHARDS = "stryker.shards.json";
 const SOURCES = ["*.ts", "*.tsx"];
 const CORPUS = "packages/core/src/corpus";
 
@@ -150,102 +149,6 @@ export const CLAIMS = [
     files: 1,
   },
   {
-    adr: "0012-every-mutant-must-die.md",
-    says: /\*\*Nothing is carved out, and it takes two runners to say so\.\*\*/,
-    holds: "the shard that takes the directory Vitest cannot render",
-    pattern: '"runner": "jest"',
-    paths: [SHARDS],
-    files: 1,
-  },
-  {
-    adr: "0012-every-mutant-must-die.md",
-    says: /with `coverageAnalysis`\s+`perTest` for every shard but the theme's/,
-    holds: "the Jest shards' own coverage settings",
-    pattern: '"coverageAnalysis": "perTest"',
-    paths: [SHARDS],
-    files: 1,
-  },
-  {
-    adr: "0012-every-mutant-must-die.md",
-    says: /\*\*The theme shard stays on `off`\.\*\*/,
-    holds: "the theme shard's coverage setting",
-    pattern: '"coverageAnalysis": "off"',
-    paths: [SHARDS],
-    files: 1,
-  },
-  {
-    adr: "0012-every-mutant-must-die.md",
-    says: /`jest\.shared\.js` names it by absolute path for the run and for each platform/,
-    holds: "the top-level environment path the per-test workaround needs",
-    pattern: "testEnvironment: shared.testEnvironment",
-    paths: ["apps/native/jest.shared.js"],
-    files: 1,
-  },
-  {
-    adr: "0012-every-mutant-must-die.md",
-    says: /is React Native's own environment, wrapped in Stryker's documented `mixinJestEnvironment`/,
-    holds: "the marked environment Stryker can see into",
-    pattern: "mixinJestEnvironment(MarkedReactNativeEnvironment)",
-    paths: ["apps/native/test/environment.cjs"],
-    files: 1,
-  },
-  {
-    adr: "0012-every-mutant-must-die.md",
-    says: /fails every test file that does not carry the mark/,
-    holds: "the guard every app test file runs",
-    pattern: "<rootDir>/test/environment-held.cjs",
-    paths: ["apps/native/jest.shared.js"],
-    files: 1,
-  },
-  {
-    adr: "0012-every-mutant-must-die.md",
-    says: /So `timeoutMS` is 100 s: the largest overhead/,
-    holds: "the extra allowance for loading test files",
-    pattern: "LOADING_TEST_FILES_AGAIN_MS = 100_000",
-    paths: ["stryker.config.mjs"],
-    files: 1,
-  },
-  {
-    adr: "0012-every-mutant-must-die.md",
-    says: /It refuses a job in which any\s+mutant ended as a runtime or compile error/,
-    holds: "the statuses the mutation guard refuses",
-    pattern: 'NOT_JUDGED: readonly string[] = ["RuntimeError", "CompileError"]',
-    paths: ["tools/no-empty-run/src"],
-    files: 1,
-  },
-  {
-    adr: "0012-every-mutant-must-die.md",
-    says: /it acts only while `__STRYKER_ACTIVE_MUTANT__` is\s+set/,
-    holds: "the mutant run the stop at the first failure is limited to",
-    pattern: "stopAtFirstFailure(event, process.env.__STRYKER_ACTIVE_MUTANT__)",
-    paths: ["apps/native/test/environment.cjs"],
-    files: 1,
-  },
-  {
-    adr: "0012-every-mutant-must-die.md",
-    says: /a Grit plugin,\s+`tools\/lint\/no-retried-or-concurrent-tests\.grit`, refuses both in the app/,
-    holds: "the rule that refuses a retried or concurrent test in the app",
-    pattern: "no-retried-or-concurrent-tests.grit",
-    paths: ["biome.json"],
-    files: 1,
-  },
-  {
-    adr: "0012-every-mutant-must-die.md",
-    says: /skips the argument of `StyleSheet\.create`, and a table declared at the top of a file the plugin/,
-    holds: "the plugin that skips a drawn value",
-    pattern: "StyleSheet.create",
-    paths: ["tools/stryker-style-tables.mjs"],
-    files: 1,
-  },
-  {
-    adr: "0012-every-mutant-must-die.md",
-    says: /The `exact-ranges` ignorer \(`tools\/stryker-exact-ranges\.mjs`\) stops that/,
-    holds: "the Jest shards' ignorer that keeps a job to the mutants it names",
-    pattern: '"exact-ranges"',
-    paths: [STRYKER],
-    files: 1,
-  },
-  {
     adr: "0013-only-the-catalogue-is-cached.md",
     says: /\*\*Every request the adapter makes asks for `no-store`\.\*\*/,
     holds: "modules naming the cache mode a read asks for",
@@ -295,5 +198,6 @@ export const CLAIMS = [
   },
   ...GATE_CLAIMS,
   ...DEVICE_CLAIMS,
+  ...MUTATION_CLAIMS,
   ...SEARCH_CLAIMS,
 ];

@@ -1,0 +1,9 @@
+import { themeFor } from "../theme.js";
+
+describe("the dark palette", () => {
+  const DOWN = themeFor("down").colours;
+
+  it("reads the house colour", () => {
+    expect(DOWN.house).toBeDefined();
+  });
+});
