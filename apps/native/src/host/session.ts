@@ -1,10 +1,15 @@
-import type { Search, SearchTerms, SeatScout } from "@seatscout/client";
+import type {
+  Search,
+  SearchTerms,
+  SeatScout,
+  Snapshot,
+} from "@seatscout/client";
 import {
   type HeldSnapshots,
   heldSnapshots,
   keyOf,
 } from "@seatscout/view-logic";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 export interface Session {
   readonly search: Search;
@@ -46,3 +51,6 @@ export const useSession = (
 
   return holding.session;
 };
+
+export const useShown = ({ held }: Session): Snapshot =>
+  useSyncExternalStore(held.subscribe, held.snapshot);

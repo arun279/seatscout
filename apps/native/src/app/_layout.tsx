@@ -41,7 +41,7 @@ export default function Layout(): ReactElement | null {
         <Stack.Screen name="room" />
         <Stack.Screen name="ask" options={ASK} />
         <Stack.Screen dangerouslySingular name="hand-off" options={FITTED} />
-        <Stack.Screen name="ledger" options={RESTING} />
+        <Stack.Screen dangerouslySingular name="ledger" options={RESTING} />
       </Stack>
     </GestureHandlerRootView>
   );
