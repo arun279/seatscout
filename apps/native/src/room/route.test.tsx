@@ -2,10 +2,12 @@ import { afterEach, describe, expect, it, jest } from "@jest/globals";
 import { createSeatScout, REFERENCE } from "@seatscout/client";
 import { fakeUpstream } from "@seatscout/client/testing";
 import {
+  AMONG_THE_UNREAD,
   BACK_TO_THE_LIST,
   GONE_FROM_THE_LISTING,
   labelOf,
   NOT_IN_THE_LISTING,
+  NOT_READ_SO_FAR,
   OPENING_THIS_SHOWTIME,
   RETRY_THE_SEARCH,
   takeOf,
@@ -244,8 +246,8 @@ describe("the Room a deep link opens before its search has settled", () => {
     expect(await screen.findByText(THEATER)).toBeOnTheScreen();
   });
 
-  it("says the showtime is not in the listing, why it may not be, and goes back to the list", async () => {
-    const app = opened(roomLink(1));
+  it("says the showtime is not in the listing once every room is read, why it may not be, and goes back to the list", async () => {
+    const app = opened(`${roomLink(1)}&from=19:00&until=19:20`);
     await app;
 
     expect(
@@ -259,6 +261,19 @@ describe("the Room a deep link opens before its search has settled", () => {
     );
 
     expect(app.getPathname()).toBe("/");
+  });
+
+  it("says the showtime is not in the rooms read so far while more are left to read", async () => {
+    await opened(roomLink(1));
+
+    expect(
+      await screen.findByRole("header", { name: NOT_READ_SO_FAR }),
+    ).toBeOnTheScreen();
+    expect(screen.getByText(AMONG_THE_UNREAD)).toBeOnTheScreen();
+    expect(
+      screen.getByRole("button", { name: /^Read \d+ more rooms/ }),
+    ).toBeOnTheScreen();
+    expect(screen.queryByText(NOT_IN_THE_LISTING)).toBeNull();
   });
 
   it("opens the ledger from that line, as the list does", async () => {

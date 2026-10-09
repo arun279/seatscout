@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import {
   ALSO_IN_THE_LIST,
+  AMONG_THE_UNREAD,
   CLEAR_OF_THE_FRONT,
   centreOnOf,
   creditsOf,
@@ -8,6 +9,7 @@ import {
   heldWhileOfflineOf,
   legendOf,
   NOT_IN_THE_LISTING,
+  NOT_READ_SO_FAR,
   notBookableIn,
   OPENING_THIS_SHOWTIME,
   RE_CHECKED_ON_THE_TAP,
@@ -161,6 +163,13 @@ describe("what a link to a room says before the room opens", () => {
     expect([NOT_IN_THE_LISTING, GONE_FROM_THE_LISTING]).toEqual([
       "This showtime is not in the listing",
       "It may have started, or the theater may have removed it.",
+    ]);
+  });
+
+  it("says the showtime is not among the rooms read so far while more are left to read", () => {
+    expect([NOT_READ_SO_FAR, AMONG_THE_UNREAD]).toEqual([
+      "Not in the rooms read so far",
+      "It may be among the rooms not read yet.",
     ]);
   });
 });

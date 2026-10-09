@@ -159,6 +159,10 @@ export const NOT_IN_THE_LISTING = "This showtime is not in the listing";
 export const GONE_FROM_THE_LISTING =
   "It may have started, or the theater may have removed it.";
 
+export const NOT_READ_SO_FAR = "Not in the rooms read so far";
+
+export const AMONG_THE_UNREAD = "It may be among the rooms not read yet.";
+
 export const RE_CHECKED_ON_THE_TAP =
   "Availability is re-checked the instant you tap. SeatScout never holds seats.";
 

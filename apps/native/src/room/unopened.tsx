@@ -1,10 +1,13 @@
 import type { Snapshot } from "@seatscout/client";
 import {
+  AMONG_THE_UNREAD,
   BACK_TO_THE_LIST,
   GONE_FROM_THE_LISTING,
   NOT_IN_THE_LISTING,
+  NOT_READ_SO_FAR,
   OPENING_THIS_SHOWTIME,
   RETRY_THE_SEARCH,
+  readMoreOf,
   UNREADABLE,
 } from "@seatscout/view-logic";
 import { type ReactElement, useSyncExternalStore } from "react";
@@ -28,12 +31,29 @@ const Heading = ({ said }: { readonly said: string }) => (
   </Type>
 );
 
+const Told = ({
+  said,
+  why,
+}: {
+  readonly said: string;
+  readonly why: string;
+}) => (
+  <>
+    <Heading said={said} />
+    <Type set="sentence" tone="silverDim">
+      {why}
+    </Type>
+  </>
+);
+
 const Verdict = ({
   snapshot,
+  today,
   onRetry,
   onBack,
 }: {
   readonly snapshot: Snapshot;
+  readonly today: string;
   readonly onRetry: () => void;
   readonly onBack: () => void;
 }) => {
@@ -44,13 +64,12 @@ const Verdict = ({
         <Velvet label={RETRY_THE_SEARCH} onPress={onRetry} />
       </>
     );
+  if (readMoreOf(snapshot, today) !== null)
+    return <Told said={NOT_READ_SO_FAR} why={AMONG_THE_UNREAD} />;
   if (snapshot.phase === "settled")
     return (
       <>
-        <Heading said={NOT_IN_THE_LISTING} />
-        <Type set="sentence" tone="silverDim">
-          {GONE_FROM_THE_LISTING}
-        </Type>
+        <Told said={NOT_IN_THE_LISTING} why={GONE_FROM_THE_LISTING} />
         <Velvet label={BACK_TO_THE_LIST} onPress={onBack} />
       </>
     );
@@ -91,6 +110,7 @@ export const Unopened = ({
           onBack={onBack}
           onRetry={session.search.retry}
           snapshot={snapshot}
+          today={today}
         />
       </View>
     </SafeAreaView>
