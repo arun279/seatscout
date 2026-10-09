@@ -252,11 +252,19 @@ and the shard's own coverage:
 | film field | `perTest` | 3 | 0 | 109 | 409 s | 3 | 0 | 25 | 440 s |
 | banner | `perTest` | 8 | 0 | 16 | 668 s | 8 | 0 | 6 | 547 s |
 
-A mutant that makes a test file throw while it loads, or makes an `afterAll` fail, ends as a
-runtime error rather than a kill, because Jest reports the whole file as failing to run rather
-than any test failing. The job refuses it, naming the mutant. The remedy is in the test: move the
-work that broke out of module scope and out of `afterAll` into a test, so the mutant fails that
-test and is killed.
+Skipping has a cost of its own. A failed test can leave work running, such as a render that
+settles after the test ends. With every later test skipped, that work throws while no test is
+running, in its own file or the next, and Jest records the error against the file instead of a
+test. Stryker scores a file error as a runtime error, not a kill. CI met this on `useTheme` in
+`theme.ts`. So once a test has failed under the mutant, the stop also clears each file's errors
+outside a test as the file finishes. They cannot change the verdict, because the failed test has
+already killed the mutant.
+
+Before the first failure, those errors are kept. So a mutant that makes an `afterAll` fail
+before any test has failed under it ends as a runtime error rather than a kill. So does one that
+makes a test file throw while it loads, at any point, because Jest then reports the file as
+failing to run before any test exists. The job refuses either, naming the mutant. The remedy is in the test: move the work that broke out of module
+scope and out of `afterAll` into a test, so the mutant fails that test and is killed.
 
 How long a mutant costs depends on the shard, so each shard's `mutantsPerJob` comes from its own
 measurements. With two runners, a job of N mutants takes about 30 s to start, plus its dry run D,

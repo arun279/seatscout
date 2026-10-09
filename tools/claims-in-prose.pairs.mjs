@@ -216,7 +216,8 @@ export const CLAIMS = [
     adr: "0012-every-mutant-must-die.md",
     says: /it acts only while `__STRYKER_ACTIVE_MUTANT__` is\s+set/,
     holds: "the mutant run the stop at the first failure is limited to",
-    pattern: "stopAtFirstFailure(event, process.env.__STRYKER_ACTIVE_MUTANT__)",
+    pattern:
+      "stopAtFirstFailure(event, state, process.env.__STRYKER_ACTIVE_MUTANT__)",
     paths: ["apps/native/test/environment.cjs"],
     files: 1,
   },
