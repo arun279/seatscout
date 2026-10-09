@@ -46,16 +46,18 @@ const styles = StyleSheet.create({
 });
 
 const Prompt = ({
+  seatscout,
   terms,
   programme,
-  remembered,
   profile,
   today,
   onAsk,
   onRun,
-}: Pick<SearchProps, "terms" | "profile" | "today" | "onAsk" | "onRun"> & {
+}: Pick<
+  SearchProps,
+  "seatscout" | "terms" | "profile" | "today" | "onAsk" | "onRun"
+> & {
   readonly programme: ProgrammeState;
-  readonly remembered: ReturnType<typeof useRemembered>;
 }) => (
   <ScrollView>
     <ScreenBand />
@@ -77,7 +79,7 @@ const Prompt = ({
         onPress={() => onAsk(terms.area === undefined ? "area" : "movie")}
       />
     </View>
-    <Recent onRun={onRun} remembered={remembered} today={today} />
+    <Recent onRun={onRun} remembered={useRemembered(seatscout)} today={today} />
   </ScrollView>
 );
 
@@ -99,7 +101,6 @@ export const Search = ({
     programmeNear(seatscout, terms.area, terms.date),
   );
   const programme = useSyncExternalStore(playing.subscribe, playing.snapshot);
-  const remembered = useRemembered(seatscout, terms);
   const asked = askedFrom(terms, profile, today);
 
   return (
@@ -113,7 +114,7 @@ export const Search = ({
           onRun={onRun}
           profile={profile}
           programme={programme}
-          remembered={remembered}
+          seatscout={seatscout}
           terms={terms}
           today={today}
         />
