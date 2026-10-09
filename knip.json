@@ -14,6 +14,9 @@
     },
     "apps/native": {
       "entry": ["src/app/**/*.tsx", "test/**/*.perf-test.tsx"],
+      "expo": {
+        "entry": ["plugins/*.ts"]
+      },
       "jest": {
         "config": ["jest.config.js", "jest.perf.config.js"]
       }

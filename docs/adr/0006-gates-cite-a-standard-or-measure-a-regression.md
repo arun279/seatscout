@@ -782,6 +782,21 @@ version is set on every project rather than only on those that name a CMakeLists
 Native's Gradle plugin points the app at its CMakeLists after the init script has run; set only
 where a CMakeLists was named, the app still downloaded 3.22.1, and the step failed on it.
 
+**The Android app turns GWP-ASan off.** From Android 14, every app whose manifest does not say
+otherwise runs Recoverable GWP-ASan on a sample of its launches
+([Android's guide](https://developer.android.com/ndk/guides/gwp-asan)), and bionic's default
+samples one process in 128. When a sampled allocation is freed inside Hermes, GWP-ASan records a
+backtrace by walking frame pointers, and the walk runs off the stack Hermes made with
+`hoost_make_fcontext`, because that stack's first frame pointer holds a code address. The app dies
+of SIGSEGV within a second of starting, with no GWP-ASan report. An `android` walk failed this way
+in run 37948316937, its screen showing the launcher. The fault is
+[facebook/hermes#2225](https://github.com/facebook/hermes/issues/2225), for the very
+`libhermesvm.so` this app ships, build ID `8d927b4d4757e3548fed384ed5666d66ee44c365`. Hermes fixed
+it in commit 73f9af39b1, but only on the line React Native does not ship: 0.86 pins
+hermes-android 250829098.0.17, which lacks it. `apps/native/plugins/without-gwp-asan.ts` sets
+`android:gwpAsanMode` to `never` on the application, which spares a person's phone the same crash.
+It is removed once React Native pins a Hermes that carries 73f9af39b1.
+
 **What the emulator reads is measured on main, held to the run before, one measure at a time,
 while it is steady.** The Baseline workflow's `device` job builds main's app on every push to
 main, and not on the nightly schedule, which would read the same commit again. A push never

@@ -68,4 +68,12 @@ export const DEVICE_CLAIMS = [
     paths: [".github/workflows"],
     files: 2,
   },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /sets\s+`android:gwpAsanMode` to `never` on the application/,
+    holds: "the Android app's GWP-ASan setting",
+    pattern: 'application.$["android:gwpAsanMode"] = "never"',
+    paths: ["apps/native/plugins"],
+    files: 1,
+  },
 ];
