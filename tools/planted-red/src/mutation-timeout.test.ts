@@ -13,7 +13,7 @@ const runnersOf = (shard: string) => {
 };
 
 describe("how Stryker runs a shard's mutants", () => {
-  it("runs two Jest mutants at a time, each running only the tests that reach it, allowed Stryker's 1.5 for every platform and a minute more for loading its test files", () => {
+  it("gives a Jest shard per-test coverage, two runners, factor 3 and 100 s more allowance", () => {
     const shell = runnersOf("native-shell");
 
     expect(shell.refused).toBe("");
@@ -21,7 +21,7 @@ describe("how Stryker runs a shard's mutants", () => {
     expect(JSON.parse(shell.said)).toStrictEqual({
       coverageAnalysis: "perTest",
       timeoutFactor: 3,
-      timeoutMS: 60_000,
+      timeoutMS: 100_000,
       concurrency: 2,
     });
   });

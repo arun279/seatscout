@@ -9,7 +9,7 @@ const shared = {
   testEnvironment: environment,
   setupFiles: ["@testing-library/react-native/dont-cleanup-after-each"],
   setupFilesAfterEnv: [
-    "<rootDir>/test/environment-held.ts",
+    "<rootDir>/test/environment-held.cjs",
     "<rootDir>/test/setup.tsx",
   ],
   transformIgnorePatterns: [
@@ -27,6 +27,6 @@ export const platform = (name) => ({
 
 export const on = (...platforms) => ({
   rootDir: ".",
-  testEnvironment: environment,
+  testEnvironment: shared.testEnvironment,
   projects: platforms.map(platform),
 });

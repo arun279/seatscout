@@ -141,7 +141,8 @@ every mutant would run every test.
 
 **A Jest shard runs two mutants at a time, and allows each one Stryker's 1.5 per platform.**
 Stryker allows a mutant `timeoutFactor` times the summed time of the dry run's tests, plus
-`timeoutMS` (5 s) and the dry run's overhead, and `timeoutFactor` defaults to 1.5. Two things
+`timeoutMS` and the dry run's overhead. Stryker's defaults are 1.5 for `timeoutFactor` and 5 s
+for `timeoutMS`; this configuration sets 3 and 100 s, for the reasons below. Two things
 made that allowance too short for the app. Most app mutants ended as timeouts, and Stryker counts
 a timeout as detected, even when no test would have killed the mutant.
 
@@ -174,7 +175,7 @@ wrong render waiting out its queries was not the cost.
 
 **A Jest mutant runs only the tests that reach it.** With `coverageAnalysis` `off`, every mutant
 ran every test Jest's related-tests search reached from its file: 104 for the recent-searches
-list, 196 for the film field, 244 for the banner. Under `perTest`, Stryker records which tests
+list, 196 for the film field, 195 for the banner. Under `perTest`, Stryker records which tests
 reach each mutant in the dry run and runs only those. Stryker's Jest runner has a bug there
 ([stryker-js#6108](https://github.com/stryker-mutator/stryker-js/issues/6108), with a fix open
 in [#6219](https://github.com/stryker-mutator/stryker-js/pull/6219)). Under `perTest` it
@@ -183,25 +184,31 @@ settings, so it silently runs every test under Node instead of React Native. The
 the one the issue gives: name the environment by absolute path. `apps/native/test/environment.cjs`
 is React Native's own environment, wrapped in Stryker's documented `mixinJestEnvironment`, and
 `jest.shared.js` names it by absolute path for the run and for each platform. That environment
-marks itself, and `test/environment-held.ts` fails every test file that does not carry the mark.
+marks itself, and `test/environment-held.cjs` fails every test file that does not carry the mark.
 It did so on CI before the absolute path was added at the top level, which is how the bug was
 seen. Once the fix ships, the absolute path can go, and the guard stays.
 
-Each mutant still loads every test file the related-tests search reaches, though it runs only
-some of the tests. The allowance multiplies the tests' time by the factor, but adds the dry run's
-overhead only once, and with two runners loading takes longer than in the dry run. So a film-field
-mutant reached by few tests still timed out. `timeoutMS`, which Stryker's schema describes as the
-allowance for a busy machine, adds that loading once more: the dry runs' overhead on the canaries
-was 40 to 67 s, so it is 60 s. With two runners at factor 3:
+A mutant still loads every test file the related-tests search reaches, even when it runs only a
+few of their tests. Stryker counts that loading in the dry run's overhead, and adds the overhead
+to the allowance once, unscaled. With two runners, loading takes longer than in the dry run, which
+ran alone. So a film-field mutant reached by few tests still timed out, at Stryker's default 5 s
+of `timeoutMS`. Stryker's schema describes `timeoutMS` as the allowance for a busy machine. The
+dry runs' overhead on the canaries was 40 to 67 s. So `timeoutMS` is 100 s: the largest overhead
+measured, times Stryker's own 1.5. A real infinite loop does not wait for it, because under
+`perTest` Stryker also stops a mutant once its code runs 100 times as often as in the dry run.
 
-| Coverage | Extra allowance | Recent searches: killed, timed out, tests per mutant, job | Film field | Banner |
+In the table, each cell gives killed, timed out, tests run per mutant, and the job's wall time.
+"Extra allowance" is `timeoutMS`. The runs had two runners at factor 3; the 60 s row was measured
+before the allowance was raised to 100 s.
+
+| Coverage | Extra allowance | Recent searches | Film field | Banner |
 | --- | ---: | --- | --- | --- |
 | off | 5 s | 12, 0, 104, 440 s | 3, 0, 196, 578 s | 8, 0, 195, 1,730 s |
 | perTest | 5 s | 12, 0, 40, 297 s | 1, 2, 57, 501 s | 8, 0, 16, 576 s |
 | perTest | 60 s | 12, 0, 40, 375 s | 3, 0, 109, 409 s | 8, 0, 16, 668 s |
 | perTest, one runner | 5 s | 12, 0, 40, 523 s | 2, 1, 93, 479 s | 8, 0, 16, 557 s |
 
-So the Jest shards run `perTest` with 60 s of extra allowance.
+So the Jest shards run `perTest`, with 100 s of extra allowance.
 
 A mutant that runs to the end costs more than one cut off by a timeout, so an app job holds fewer
 than it did under `off` with four runners. With two runners, one mutant took at most 0.76 of its
