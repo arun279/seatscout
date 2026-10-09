@@ -158,10 +158,18 @@ export const CLAIMS = [
   },
   {
     adr: "0012-every-mutant-must-die.md",
-    says: /with `coverageAnalysis`\s+`perTest`, so a mutant runs only the tests that reach it/,
-    holds: "the runner settings that take the Expo app",
-    pattern: 'coverageAnalysis: "perTest"',
-    paths: [STRYKER],
+    says: /with `coverageAnalysis`\s+`perTest` for every shard but the theme's/,
+    holds: "the Jest shards' own coverage settings",
+    pattern: '"coverageAnalysis": "perTest"',
+    paths: [SHARDS],
+    files: 1,
+  },
+  {
+    adr: "0012-every-mutant-must-die.md",
+    says: /\*\*The theme shard stays on `off`\.\*\*/,
+    holds: "the theme shard's coverage setting",
+    pattern: '"coverageAnalysis": "off"',
+    paths: [SHARDS],
     files: 1,
   },
   {

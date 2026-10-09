@@ -17,7 +17,7 @@ const RUNNERS = {
   jest: async (shard) => ({
     testRunner: "jest",
     ignorers: ["drawn-values", "exact-ranges"],
-    coverageAnalysis: "perTest",
+    coverageAnalysis: shard.coverageAnalysis,
     dryRunTimeoutMinutes: 15,
     concurrency: JEST_RUNNERS_AT_ONCE,
     timeoutFactor:

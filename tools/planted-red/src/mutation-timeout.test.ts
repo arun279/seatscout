@@ -26,6 +26,19 @@ describe("how Stryker runs a shard's mutants", () => {
     });
   });
 
+  it.each([
+    ["native-theme", "off"],
+    ["native-design-system", "perTest"],
+    ["native-search", "perTest"],
+    ["native-ask", "perTest"],
+    ["native-shell", "perTest"],
+  ])("gives %s %s coverage", (shard, coverage) => {
+    const run = runnersOf(shard);
+
+    expect(run.status).toBe(0);
+    expect(JSON.parse(run.said)).toMatchObject({ coverageAnalysis: coverage });
+  });
+
   it("leaves a Vitest shard, which runs each test once, at Stryker's own defaults", () => {
     const core = runnersOf("core");
 

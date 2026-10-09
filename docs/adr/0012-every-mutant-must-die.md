@@ -133,7 +133,8 @@ shard took two hours and failed on timeouts under load rather than on survivors.
 **Nothing is carved out, and it takes two runners to say so.** Vitest cannot render React
 Native, so every shard but one runs under Vitest, and the shard over `apps/native/src` takes
 that directory with Stryker's Jest runner over the `jest-expo` preset, with `coverageAnalysis`
-`perTest`, so a mutant runs only the tests that reach it (below). It breaks
+`perTest` for every shard but the theme's, so a mutant runs only the tests that reach it (below).
+It breaks
 below 100 like the rest, and its Jest configuration already collects `apps/native` and
 nothing else, so it needs no narrowing of its own. It must not be given `testFiles` either:
 naming the files turns off the related-test filter the Jest runner applies to every mutant, so
@@ -208,15 +209,41 @@ before the allowance was raised to 100 s.
 | perTest | 60 s | 12, 0, 40, 375 s | 3, 0, 109, 409 s | 8, 0, 16, 668 s |
 | perTest, one runner | 5 s | 12, 0, 40, 523 s | 2, 1, 93, 479 s | 8, 0, 16, 557 s |
 
-So the Jest shards run `perTest`, with 100 s of extra allowance.
+So the Jest shards run `perTest`, with 100 s of extra allowance, except the theme's.
 
-A mutant that runs to the end costs more than one cut off by a timeout, so an app job holds fewer
-than it did under `off` with four runners. With two runners, one mutant took at most 0.76 of its
-dry run's time on the three canaries (0.42 for the searches list, 0.76 for the film field, 0.10 for
-the banner). So a job of N mutants takes about 30 s to start, plus its dry run D, plus 0.76 D for
-every two mutants. Each app shard's `mutantsPerJob` is the largest N that keeps the shard's slowest
-dry run seen on CI within the slowest app job before these changes, 1,510 s: the design system
-(D 645 s) and the theme (632 s) take 2, the shell (414 s) 6, Ask (270 s) 10, and search (118 s) 30.
+**The theme shard stays on `off`.** Under `perTest`, the dry run over `theme.ts`'s `appearanceOf`,
+which `useTheme` calls on every render, grew without bound and ran out of memory: twice with
+Node's default heap, and twice again with a 6 GB heap, while the runner still had 8 to 10 GB
+free ([run 37866088016](https://github.com/arun279/seatscout/actions/runs/37866088016)). So a
+larger heap only moves the failure. The theme also gains least from `perTest`: most of its
+mutants are static tokens, and Stryker runs every test for a static mutant either way, 901 of
+910 on CI. Its jobs took 794 to 945 s under `perTest`, against 891 to 1,353 s under `off`, while
+the design system's fell from 873-1,177 s to 377-489 s. Each Jest shard names its coverage in
+`stryker.shards.json`, and `tools/planted-red/src/mutation-timeout.test.ts` holds each one. The
+theme can move to `perTest` once Stryker's coverage counting stops growing on a function every
+render calls.
+
+A mutant that runs to the end costs more than one cut off by a timeout, and how much more depends on
+the shard, so each shard's `mutantsPerJob` comes from its own measurements. With two runners, a
+job of N mutants takes about 30 s to start, plus its dry run D, plus r·D for every two mutants,
+where r is the time of one mutant's run over its dry run. The r values are the largest measured on
+CI under the shard's own coverage setting: 0.21 for the design system, 0.55 for search, 0.51 for
+the shell, 0.99 for Ask, and 1.88 for the theme. D is the shard's slowest dry run across 84 recent
+jobs under `off`, times 1.24 for the `perTest` shards, the largest gap measured between the two
+on the same runner. Each `mutantsPerJob` is the largest N that keeps the estimate within the
+slowest app job before these changes, 1,510 s:
+
+| Shard | D | r | `mutantsPerJob` | Estimate |
+| --- | ---: | ---: | ---: | ---: |
+| design system | 800 s | 0.21 | 8 | 1,502 s |
+| shell | 513 s | 0.51 | 6 | 1,328 s |
+| Ask | 335 s | 0.99 | 6 | 1,359 s |
+| search | 146 s | 0.55 | 32 | 1,464 s |
+| theme | 692 s | 1.88 | 2 | 2,023 s |
+
+The theme does not fit. Even a job of one mutant, which costs as much as two because two run at
+once, comes to about 2,020 s, and one range of four mutants in `appearanceOf` took 3,097 s. That is
+the cost of mutants every test reaches: under `off` each runs all 908 tests the theme reaches.
 
 **One kind of value is ignored, by a plugin rather than by file.** `tools/stryker-style-tables.mjs`
 skips the argument of `StyleSheet.create`, and a table declared at the top of a file the plugin
