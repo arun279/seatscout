@@ -1,0 +1,5 @@
+import { type TextInput, View } from "react-native";
+
+export type Held = TextInput;
+
+export const Ground = () => <View />;

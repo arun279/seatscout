@@ -1,0 +1,12 @@
+language js
+
+or {
+  JsShorthandNamedImportSpecifier(),
+  JsNamedImportSpecifier()
+} as $specifier where {
+  $specifier <: r"(?:Text|TextInput)(?:\s+as\s+\w+)?",
+  $specifier <: within JsImport() as $import,
+  $import <: contains `"react-native"`,
+  $import <: not r"import\s+type\b[\s\S]*",
+  register_diagnostic(span=$specifier, message="Draw words through Type and fields through Field. A Text or TextInput drawn anywhere else keeps the height of the old text size when the reader changes it while the app is open.")
+}

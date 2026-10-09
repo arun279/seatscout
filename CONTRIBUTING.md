@@ -117,6 +117,9 @@ as it is. Where another record explains a gate, the item links it.
   ([ADR 2](docs/adr/0002-computation-on-the-client.md))
 - **A colour written into a screen.** Name it in `apps/native/src/theme.ts` and read it through
   the theme.
+- **Words or a field drawn with React Native's `Text` or `TextInput`.** Draw them through `Type`
+  or `Field` in `apps/native/src/design-system`, which draw them again when the reader changes the
+  text size while the app is open.
 - **An id written as a literal, or one two elements share.** Build the id from React's `useId`.
 - **An import cycle.** Move what both modules need into a third, or make the import
   `import type`.
