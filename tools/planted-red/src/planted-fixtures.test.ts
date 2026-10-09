@@ -1,7 +1,7 @@
-import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
+import { chmodSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
-import { IGNORED, overPlanted } from "./planted.fixtures.ts";
+import { describe, expect, it, onTestFinished } from "vitest";
+import { IGNORED, lintedInApp, overPlanted, said } from "./planted.fixtures.ts";
 
 const nothingPlantedIn = (fixture: string) => {
   mkdirSync(IGNORED, { recursive: true });
@@ -34,11 +34,26 @@ describe("the fixtures the planted reds are run over", () => {
           reached = true;
           return 0;
         },
-        from,
+        { from },
       ),
     ).toThrow("plants no file to run a gate over");
     expect(reached).toBe(false);
 
     rmSync(from, { recursive: true, force: true });
+  });
+
+  it("lints a planted copy without reading the copies beside it, which other tests make and delete while it runs", () => {
+    mkdirSync(IGNORED, { recursive: true });
+    const beside = mkdtempSync(join(IGNORED, "unreadable-"));
+    chmodSync(beside, 0o000);
+    onTestFinished(() => {
+      chmodSync(beside, 0o700);
+      rmSync(beside, { recursive: true, force: true });
+    });
+
+    const run = lintedInApp("ids", "written.tsx");
+
+    expect(run.status).toBe(1);
+    expect(said(run)).toContain("This id is a literal");
   });
 });

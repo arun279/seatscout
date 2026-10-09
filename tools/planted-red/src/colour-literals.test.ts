@@ -1,13 +1,9 @@
-import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { overPlanted, ran, said } from "./planted.fixtures.ts";
+import { lintedInApp, said } from "./planted.fixtures.ts";
 
 const REFUSAL = "This is a colour, so it is a token.";
 
-const drawn = (named: string) =>
-  overPlanted("colours", (at) =>
-    ran("biome", "lint", "--vcs-enabled=false", join(at, named)),
-  );
+const drawn = (named: string) => lintedInApp("colours", named);
 
 describe("the planted red under the colour literal gate", () => {
   for (const [notation, named] of [
