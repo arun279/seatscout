@@ -73,11 +73,12 @@ jobs:
         working-directory: apps/native/android
         env:
           NDK_VERSION: 27.3.13750724
+          CMAKE_VERSION: 3.31.5
         run: |
-          find "$ANDROID_HOME/ndk" -mindepth 1 -maxdepth 1 | sort > "$RUNNER_TEMP/ndk-shipped"
-          ./gradlew assembleRelease --init-script ../../../.github/gradle/preinstalled-ndk.gradle -PreactNativeArchitectures=x86_64 "-Dorg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g"
-          if ! find "$ANDROID_HOME/ndk" -mindepth 1 -maxdepth 1 | sort | diff "$RUNNER_TEMP/ndk-shipped" -; then
-            echo "::error::Gradle downloaded an NDK, so a build can fail on a corrupt download. Every Android project should build with $NDK_VERSION, which the runner image ships."
+          find "$ANDROID_HOME/ndk" "$ANDROID_HOME/cmake" -mindepth 1 -maxdepth 1 | sort > "$RUNNER_TEMP/shipped"
+          ./gradlew assembleRelease --init-script ../../../.github/gradle/preinstalled-android-tools.gradle -PreactNativeArchitectures=x86_64 "-Dorg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g"
+          if ! find "$ANDROID_HOME/ndk" "$ANDROID_HOME/cmake" -mindepth 1 -maxdepth 1 | sort | diff "$RUNNER_TEMP/shipped" -; then
+            echo "::error::Gradle downloaded an NDK or a CMake, so a build can fail on a corrupt download. Every Android project should build with NDK $NDK_VERSION and CMake $CMAKE_VERSION, which the runner image ships."
             exit 1
           fi
       - name: Install Maestro

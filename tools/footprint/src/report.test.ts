@@ -164,13 +164,14 @@ describe("the footprint report", () => {
           "tools/x/planted/a.ts.txt": counts(2, 0),
           "lefthook.yml": counts(6, 0),
           "pnpm-workspace.yaml": counts(5, 0),
+          "ci/android.gradle": counts(7, 0),
         },
         removed: {},
         modified: {},
       },
     });
 
-    expect(markdown).toContain("| Data code | 100 | 0 | 0 |");
+    expect(markdown).toContain("| Data code | 107 | 0 | 0 |");
     expect(markdown).toContain("| Authored total | 0 | 0 | 0 |");
   });
 

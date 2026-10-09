@@ -20,7 +20,7 @@ export interface Side {
 
 const SOURCE = /\.([cm]?[jt]sx?|css)$/;
 const PROSE = /\.mdx?$/;
-const DATA = /\.(html|jsonc?|sh|svg|toml|txt|webmanifest|ya?ml)$/;
+const DATA = /\.(gradle|html|jsonc?|sh|svg|toml|txt|webmanifest|ya?ml)$/;
 const TEST = /(^|\/)tests?\/|\.(test|spec|fixtures)\./;
 const APPLICATION = /^(apps|packages)\//;
 const NOT_A_FILE = new Set(["header", "SUM"]);

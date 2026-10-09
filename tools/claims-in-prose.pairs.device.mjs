@@ -61,9 +61,10 @@ export const DEVICE_CLAIMS = [
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /The Gradle init script\s+`\.github\/gradle\/preinstalled-ndk\.gradle` sets every Android project/,
-    holds: "the two Android builds that pin the runner's NDK",
-    pattern: "--init-script ../../../.github/gradle/preinstalled-ndk.gradle",
+    says: /The Gradle init script\s+`\.github\/gradle\/preinstalled-android-tools\.gradle` sets every Android project/,
+    holds: "the two Android builds that pin the runner's NDK and CMake",
+    pattern:
+      "--init-script ../../../.github/gradle/preinstalled-android-tools.gradle",
     paths: [".github/workflows"],
     files: 2,
   },
