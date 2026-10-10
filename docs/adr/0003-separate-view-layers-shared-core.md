@@ -146,6 +146,13 @@ pins, that package resolves its own native module on a phone and a `window.local
 implementation everywhere else, so the Expo web build the accessibility scan runs over is served
 by the same import. A pair here would be two files saying one thing.
 
+Only the design system and the host adapters read which platform the app is on. A screen that
+draws differently on one platform asks `apps/native/src/design-system/platform.ts`, or uses a
+design-system module that already draws the difference. `tools/lint/no-platform-reads.grit`
+refuses `Platform.OS` and `Platform.select` everywhere else in `apps/native`, and
+`tools/planted-red/src/platform-reads.test.ts` watches it refuse both in a screen and pass both in
+`src/design-system` and in `src/host`.
+
 `packages/view-logic/src/terms.ts` holds the term names and the normalisation, reading the terms
 out of an address's name and value pairs and writing them back. The application flattens Expo
 Router's parameters into those pairs, so it states no term name of its own.

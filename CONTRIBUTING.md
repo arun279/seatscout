@@ -32,11 +32,12 @@ pnpm build
 pnpm --filter @seatscout/native start
 ```
 
-Expo prints a URL; open it in Expo Go. `/ios` and `/android` are ignored because
-`expo prebuild` generates them. A phone that cannot reach this machine opens the
-published update instead; `README.md` says how. `pnpm test:unit` is Vitest over everything
-that runs in Node. `pnpm test:native` is Jest over the Expo app, once as iOS and once as
-Android.
+Expo serves the app's web build; press `w` to open it. On a phone the app runs as an EAS
+internal build from the `preview` profile in `apps/native/eas.json`, not in Expo Go, and it runs
+the update published to that channel rather than this server; `README.md` says how to make one.
+`/ios` and `/android` are ignored because `expo prebuild` generates them. `pnpm test:unit` is
+Vitest over everything that runs in Node. `pnpm test:native` is Jest over the Expo app, once as
+iOS and once as Android.
 
 ## Before you push
 
