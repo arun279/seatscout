@@ -1,0 +1,76 @@
+name: Links
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: links-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  GH_REPO: ${{ github.repository }}
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+jobs:
+  links:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install lychee
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/lychee.tar.gz" https://github.com/lycheeverse/lychee/releases/download/lychee-v0.24.2/lychee-x86_64-unknown-linux-gnu.tar.gz
+          echo "1f4e0ef7f6554a6ed33dd7ac144fb2e1bbed98598e7af973042fc5cd43951c9a  $RUNNER_TEMP/lychee.tar.gz" | sha256sum --check
+          tar -x -f "$RUNNER_TEMP/lychee.tar.gz" -C "$RUNNER_TEMP" lychee-x86_64-unknown-linux-gnu/lychee
+          sudo install -m 0755 "$RUNNER_TEMP/lychee-x86_64-unknown-linux-gnu/lychee" /usr/local/bin/lychee
+      - name: Read every link in the prose, the web included
+        id: reading
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mapfile -t prose < <(git ls-files '*.md')
+          set +e
+          lychee --include-fragments --no-progress \
+            --max-retries 3 --retry-wait-time 10 \
+            --host-concurrency 2 --host-request-interval 1s \
+            --format markdown --output links.md "${prose[@]}"
+          status=$?
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit "$status"
+      - name: Say what is broken, in the run summary
+        if: ${{ !cancelled() && steps.reading.outputs.status == '2' && hashFiles('links.md') != '' }}
+        run: cat links.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Say it again where the maintainer will see it
+        if: ${{ !cancelled() && steps.reading.outputs.status == '2' && hashFiles('links.md') != '' && github.ref_name == github.event.repository.default_branch }}
+        run: |
+          gh label create links --color D93F0B --force \
+            --description "The weekly link check found a link in the prose that does not resolve"
+          { cat links.md; echo; echo "$RUN"; } > issue.md
+          open=$(gh issue list --label links --state open --limit 1 \
+            --json number --jq '.[0].number // empty')
+          if [ -n "$open" ]; then
+            gh issue comment "$open" --body-file issue.md
+          else
+            gh issue create --label links --body-file issue.md \
+              --title "The weekly link check found a broken link"
+          fi
+      - name: Close what a green run answers
+        if: ${{ steps.reading.outcome == 'success' && github.ref_name == github.event.repository.default_branch }}
+        run: |
+          open=$(gh issue list --label links --state open --limit 1 \
+            --json number --jq '.[0].number // empty')
+          if [ -n "$open" ]; then
+            gh issue comment "$open" --body \
+              "The weekly link check read every link in the prose and found them all resolving. $RUN"
+            gh issue close "$open" --reason completed
+          fi

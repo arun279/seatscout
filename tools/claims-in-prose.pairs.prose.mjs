@@ -15,4 +15,20 @@ export const PROSE_CLAIMS = [
     paths: ["package.json"],
     files: 1,
   },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /with three retries ten seconds apart/,
+    holds: "the weekly web link check's retries",
+    pattern: "--max-retries 3 --retry-wait-time 10",
+    paths: [".github/workflows/links.yml"],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /two requests at a time to any one\s+host a second apart/,
+    holds: "the weekly web link check's pace per host",
+    pattern: "--host-concurrency 2 --host-request-interval 1s",
+    paths: [".github/workflows/links.yml"],
+    files: 1,
+  },
 ];
