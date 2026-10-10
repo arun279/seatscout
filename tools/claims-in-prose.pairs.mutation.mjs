@@ -28,6 +28,15 @@ export const MUTATION_CLAIMS = [
   },
   {
     adr: "0012-every-mutant-must-die.md",
+    says: /\*\*A test file's coverage is counted into objects made outside it\.\*\*/,
+    holds:
+      "the environment that makes coverage objects before a test file runs",
+    pattern: "holdCoverage(stryker)",
+    paths: ["apps/native/test/environment.cjs"],
+    files: 1,
+  },
+  {
+    adr: "0012-every-mutant-must-die.md",
     says: /`jest\.shared\.js` names it by absolute path for the run and for each platform/,
     holds: "the top-level environment path the per-test workaround needs",
     pattern: "testEnvironment: shared.testEnvironment",

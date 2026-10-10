@@ -1,5 +1,6 @@
 const { mixinJestEnvironment } = require("@stryker-mutator/jest-runner");
 const { mark, value } = require("./environment-mark.cjs");
+const holdCoverage = require("./hold-coverage.cjs");
 const stopAtFirstFailure = require("./stop-at-first-failure.cjs");
 
 const {
@@ -18,4 +19,19 @@ class MarkedReactNativeEnvironment extends ReactNativeEnvironment {
   }
 }
 
-module.exports = mixinJestEnvironment(MarkedReactNativeEnvironment);
+const StrykerEnvironment = mixinJestEnvironment(MarkedReactNativeEnvironment);
+
+class CoverageHeldOutsideEnvironment extends StrykerEnvironment {
+  constructor(config, context) {
+    super(config, context);
+    const stryker = this.global.__stryker__;
+    const handleAsStryker = this.handleTestEvent;
+    holdCoverage(stryker);
+    this.handleTestEvent = async (event, state) => {
+      await handleAsStryker(event, state);
+      holdCoverage(stryker);
+    };
+  }
+}
+
+module.exports = CoverageHeldOutsideEnvironment;

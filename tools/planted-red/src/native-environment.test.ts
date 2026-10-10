@@ -1,8 +1,13 @@
 import { createRequire } from "node:module";
+import { runInNewContext } from "node:vm";
 import { describe, expect, it } from "vitest";
 
 const fromTheApp = createRequire(
   new URL("../../../apps/native/package.json", import.meta.url),
+);
+
+const fromTheRoot = createRequire(
+  new URL("../../../package.json", import.meta.url),
 );
 
 const environmentOf = (preset: string): unknown => {
@@ -70,5 +75,77 @@ describe("a mutant's run, which Stryker cannot stop at its first failure", () =>
     done(undefined, [new Error("failed")]);
 
     expect(started(undefined)).toBeUndefined();
+  });
+});
+
+interface Instrumenter {
+  instrument(
+    files: readonly { name: string; content: string; mutate: boolean }[],
+    options: {
+      plugins: null;
+      excludedMutations: readonly string[];
+      ignorers: readonly string[];
+    },
+  ): Promise<{ readonly files: readonly { readonly content: string }[] }>;
+}
+
+const {
+  Instrumenter,
+}: { readonly Instrumenter: new (logger: object) => Instrumenter } =
+  fromTheRoot("@stryker-mutator/instrumenter");
+
+const QUIET = {
+  debug: () => undefined,
+  info: () => undefined,
+  isDebugEnabled: () => false,
+  warn: () => undefined,
+};
+
+const hold: unknown = fromTheApp("./test/hold-coverage.cjs");
+
+const held = (stryker: object): void => {
+  if (typeof hold !== "function")
+    throw new Error("hold-coverage.cjs exports no function");
+  hold(stryker);
+};
+
+const countedInATestFile = async (stryker: object): Promise<void> => {
+  const [mutated] = (
+    await new Instrumenter(QUIET).instrument(
+      [{ name: "hit.js", content: "globalThis.hit = 1 + 1;", mutate: true }],
+      { plugins: null, excludedMutations: [], ignorers: [] },
+    )
+  ).files;
+  runInNewContext(mutated?.content ?? "", { __stryker__: stryker });
+};
+
+interface Stryker {
+  readonly currentTestId: string;
+  readonly mutantCoverage?: { readonly perTest: Record<string, object> };
+}
+
+const perTest = (stryker: Stryker) =>
+  stryker.mutantCoverage?.perTest[stryker.currentTestId];
+
+describe("the coverage Stryker counts while a test file runs", () => {
+  it("is kept in objects made outside the test file, so a finished file's realm can be freed", async () => {
+    const stryker: Stryker = { currentTestId: "a test" };
+    held(stryker);
+
+    await countedInATestFile(stryker);
+
+    expect(perTest(stryker)).toEqual({ "0": 1 });
+    expect(Object.getPrototypeOf(perTest(stryker))).toBe(Object.prototype);
+  });
+
+  it("is otherwise made inside the test file, which then stays in memory until the dry run ends", async () => {
+    const stryker: Stryker = { currentTestId: "a test" };
+
+    await countedInATestFile(stryker);
+
+    expect(
+      Object.getPrototypeOf(perTest(stryker)),
+      "Stryker now makes its coverage objects outside the test file: remove hold-coverage.cjs",
+    ).not.toBe(Object.prototype);
   });
 });
