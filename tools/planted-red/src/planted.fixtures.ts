@@ -77,7 +77,10 @@ export const overPlanted = <Verdict>(
 export const lintedInApp = (
   fixture: string,
   named: string,
-): SpawnSyncReturns<string> =>
-  overPlanted(fixture, (at) => biomeIn(at, join(APP_SOURCE, named)), {
-    beneath: APP_SOURCE,
+  within = ".",
+): SpawnSyncReturns<string> => {
+  const beneath = join(APP_SOURCE, within);
+  return overPlanted(fixture, (at) => biomeIn(at, join(beneath, named)), {
+    beneath,
   });
+};
