@@ -1,0 +1,53 @@
+name: Bundle label
+
+on:
+  pull_request:
+    types: [labeled, unlabeled]
+
+permissions: {}
+
+concurrency:
+  group: bundle-label-${{ github.workflow }}-${{ github.event.pull_request.number }}-${{ github.event.label.name }}
+  cancel-in-progress: true
+
+jobs:
+  measure-again:
+    if: >-
+      github.event.label.name == 'bundle-grows'
+      && github.event.pull_request.state == 'open'
+      && !github.event.pull_request.draft
+      && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions:
+      actions: write
+      pull-requests: read
+    env:
+      GH_REPO: ${{ github.repository }}
+      GH_TOKEN: ${{ github.token }}
+      PR: ${{ github.event.pull_request.number }}
+      HEAD: ${{ github.event.pull_request.head.sha }}
+      ACTION: ${{ github.event.action }}
+    steps:
+      - name: Wait for CI on this head, then re-run its measure job and the footprint that needs it
+        run: |
+          run="$(gh run list --workflow ci.yml --event pull_request --commit "$HEAD" --limit 1 \
+            --json databaseId --jq '.[0].databaseId // empty')"
+          if [ -z "$run" ]; then
+            echo "CI has not started on $HEAD, so its measure job will read the labels itself."
+            exit 0
+          fi
+          gh run watch "$run" --interval 30 > /dev/null
+          if [ "$(gh pr view "$PR" --json headRefOid --jq .headRefOid)" != "$HEAD" ]; then
+            echo "The pull request moved past $HEAD while CI ran, and CI on the new head reads the labels itself."
+            exit 0
+          fi
+          verdict="$(gh run view "$run" --json jobs \
+            --jq '.jobs[] | select(.name == "measure") | "\(.databaseId) \(.conclusion)"')"
+          read -r job conclusion <<< "$verdict"
+          if [ "$ACTION/$conclusion" = labeled/failure ] || [ "$ACTION/$conclusion" = unlabeled/success ]; then
+            gh run rerun --job "$job"
+            echo "Re-ran measure and footprint in CI run $run, which read the labels before this change."
+          else
+            echo "CI run $run's measure job ended $conclusion, which this label change cannot alter."
+          fi

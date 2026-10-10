@@ -82,6 +82,8 @@ so it runs between `bundle` and `weigh`, which overwrites that directory.
   source files the change touches, and `measure`, which weighs the change for the footprint
   comment. When the change touches the app, also `android`, which walks the journey on an
   emulator, and `performance`, which runs Reassure against main as the change merges into it.
+- **When the `bundle-grows` label is added or removed.** `measure` and `footprint` again, on
+  the same head, once its CI has finished, when the label can change `measure`'s verdict.
 - **On main, after a merge.** The fast jobs again, over the merged result. Baseline, which
   reads the walk with Flashlight and holds it to the previous run. When the app changed, the
   publish described under Publishing.
@@ -159,9 +161,9 @@ as it is. Where another record explains a gate, the item links it.
   diff. Take the new floor from the `footprint` comment, not from a local run: the job counts
   the tests in your branch merged with `main`.
 - **A bundle bigger than on main, or a change to what `.size-limit.json` weighs.** Make the
-  bundle smaller, or add the `bundle-grows` label where a reviewer sees it and run the failed
-  jobs again. If the job could not weigh at all, the `footprint` comment says why, and the
-  label does not help.
+  bundle smaller, or add the `bundle-grows` label where a reviewer sees it. `bundle-label.yml`
+  then re-runs `measure` and `footprint` once CI on the head has finished. If the job could not
+  weigh at all, the `footprint` comment says why, and the label does not help.
 - **A worse Baseline reading on main.** If the change was meant to cost it, such as a new
   screen in the walk, run Baseline on main from the Actions tab with `accept` set to the
   reason.

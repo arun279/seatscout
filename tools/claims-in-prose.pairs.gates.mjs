@@ -1,5 +1,4 @@
 const BIOME = "biome.json";
-const BUNDLES = ".size-limit.json";
 const STRYKER = "stryker.config.mjs";
 const CYCLOMATIC = ".oxlintrc.json";
 const DUPLICATION = ".jscpd.json";
@@ -94,30 +93,6 @@ export const GATE_CLAIMS = [
     holds: "the setting that keeps related mode off a shard's static mutants",
     pattern: "related: false",
     paths: [STRYKER],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /\*\*Bundle size is held to main, weighed in the same job\.\*\*/,
-    holds: "the main side the measure job exports",
-    pattern: '--main-tree "$RUNNER_TEMP/main"',
-    paths: [WORKFLOW],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /unless\s+the pull request carries the `bundle-grows` label/,
-    holds: "the label that accepts a bigger bundle",
-    pattern: "grep -qx bundle-grows",
-    paths: [WORKFLOW],
-    files: 1,
-  },
-  {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /The glob covers every emitted script rather than an entry point/,
-    holds: "the glob each bundle is weighed by",
-    pattern: "dist/_expo/static/js/",
-    paths: [BUNDLES],
     files: 1,
   },
   {

@@ -13,6 +13,7 @@ const PAIRED_IN_DEVICE = "tools/claims-in-prose.pairs.device.mjs";
 const PAIRED_IN_MUTATION = "tools/claims-in-prose.pairs.mutation.mjs";
 const PAIRED_IN_SEARCH = "tools/claims-in-prose.pairs.search.mjs";
 const PAIRED_IN_PROSE = "tools/claims-in-prose.pairs.prose.mjs";
+const PAIRED_IN_BUNDLE = "tools/claims-in-prose.pairs.bundle.mjs";
 const DECLARING = [
   "tools/claims-in-prose.mjs",
   PAIRED_IN,
@@ -20,6 +21,7 @@ const DECLARING = [
   PAIRED_IN_DEVICE,
   PAIRED_IN_MUTATION,
   PAIRED_IN_PROSE,
+  PAIRED_IN_BUNDLE,
   PAIRED_IN_SEARCH,
   UNPAIRED_IN,
 ];
