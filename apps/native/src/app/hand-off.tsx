@@ -5,7 +5,7 @@ import { useHanded } from "../host/address.js";
 import { inAppBrowser } from "../host/checkout.js";
 import { deviceClock, today } from "../host/clock.js";
 import { useOnline } from "../host/online.js";
-import { seatscout } from "../host/source.js";
+import { seatScout } from "../host/source.js";
 
 const clock = deviceClock();
 
@@ -24,7 +24,7 @@ export default function HandOffRoute(): ReactElement {
       onClose={router.back}
       online={online}
       today={today()}
-      verify={seatscout.verify}
+      verify={seatScout().verify}
     />
   );
 }

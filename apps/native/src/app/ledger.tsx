@@ -5,14 +5,14 @@ import { useTerms } from "../host/address.js";
 import { today } from "../host/clock.js";
 import { useOnline } from "../host/online.js";
 import { useProfile } from "../host/profile.js";
-import { seatProfile, seatscout } from "../host/source.js";
+import { seatProfile, seatScout } from "../host/source.js";
 import { Ledger } from "../ledger/ledger.js";
 
 export default function LedgerRoute(): ReactElement | null {
   const date = today();
   const terms = useTerms(date);
   const online = useOnline();
-  const profile = useProfile(seatProfile);
+  const profile = useProfile(seatProfile());
 
   if (profile === undefined) return null;
   const asked = askedFrom(terms, profile, date);
@@ -24,7 +24,7 @@ export default function LedgerRoute(): ReactElement | null {
       asked={asked}
       onClose={router.back}
       online={online}
-      seatscout={seatscout}
+      seatscout={seatScout()}
     />
   );
 }

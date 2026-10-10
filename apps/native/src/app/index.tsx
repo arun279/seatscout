@@ -10,7 +10,7 @@ import {
 import { deviceClock, today } from "../host/clock.js";
 import { useOnline } from "../host/online.js";
 import { useProfile } from "../host/profile.js";
-import { seatProfile, seatscout } from "../host/source.js";
+import { seatProfile, seatScout } from "../host/source.js";
 import { Search } from "../search/search.js";
 
 const clock = deviceClock();
@@ -19,7 +19,7 @@ export default function Index(): ReactElement | null {
   const now = today();
   const terms = useTerms(now);
   const online = useOnline();
-  const profile = useProfile(seatProfile);
+  const profile = useProfile(seatProfile());
 
   return profile === undefined ? null : (
     <Search
@@ -31,7 +31,7 @@ export default function Index(): ReactElement | null {
       onRoom={(result) => openRoom(terms, result.showtime.id, result.key)}
       onRun={goTo}
       profile={profile}
-      seatscout={seatscout}
+      seatscout={seatScout()}
       terms={terms}
       today={now}
     />

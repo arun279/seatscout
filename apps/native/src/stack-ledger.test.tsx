@@ -20,20 +20,21 @@ jest.mock("expo-network", () => ({
 jest.mock("./host/source.js", () => {
   const { heldProfile } = require("./host/profile.js");
   const { source } = require("../test/stack-phone.js");
-  const { seatscout } = source;
+  const seatscout = source.seatScout();
   let mockRead = (): void => undefined;
   const read = new Promise<void>((done) => {
     mockRead = done;
   });
+  const profile = heldProfile({
+    ...seatscout,
+    profile: {
+      ...seatscout.profile,
+      remembered: () => read.then(() => seatscout.profile.remembered()),
+    },
+  });
   return {
-    seatscout,
-    seatProfile: heldProfile({
-      ...seatscout,
-      profile: {
-        ...seatscout.profile,
-        remembered: () => read.then(() => seatscout.profile.remembered()),
-      },
-    }),
+    seatScout: () => seatscout,
+    seatProfile: () => profile,
     readTheProfile: () => mockRead(),
   };
 });

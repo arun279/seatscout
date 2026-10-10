@@ -6,12 +6,17 @@ import type {
   SeatScout,
 } from "@seatscout/client";
 import { useMemo, useSyncExternalStore } from "react";
-import { useSession } from "../host/session.js";
+import { type Session, useSession } from "../host/session.js";
 
-export interface Opened {
+interface Opened {
   readonly auditorium: Auditorium;
   readonly result: SeatGroupResult;
   readonly opening: PlacedGroup;
+}
+
+export interface Opening {
+  readonly session: Session;
+  readonly opened: Opened | null;
 }
 
 export const useOpenedRoom = (
@@ -19,7 +24,7 @@ export const useOpenedRoom = (
   asked: SearchTerms,
   showtime: string | undefined,
   group: string | undefined,
-): Opened | null => {
+): Opening => {
   const session = useSession(seatscout, asked);
   const results = useSyncExternalStore(
     session.held.subscribe,
@@ -27,7 +32,7 @@ export const useOpenedRoom = (
   );
   const result = results.find((found) => `${found.showtime.id}` === showtime);
 
-  return useMemo(() => {
+  const opened = useMemo(() => {
     if (result === undefined) return null;
     const auditorium = session.search.auditorium(result);
     return {
@@ -38,4 +43,6 @@ export const useOpenedRoom = (
         auditorium.recommended,
     };
   }, [group, result, session]);
+
+  return { session, opened };
 };

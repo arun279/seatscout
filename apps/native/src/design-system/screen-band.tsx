@@ -1,5 +1,10 @@
 import { type ReactElement, useId } from "react";
-import { StyleSheet, useWindowDimensions, View } from "react-native";
+import {
+  StyleSheet,
+  useWindowDimensions,
+  View,
+  type ViewStyle,
+} from "react-native";
 import Svg, {
   Defs,
   FeDropShadow,
@@ -12,13 +17,45 @@ import Svg, {
 import { type Palette, useTheme } from "../theme.js";
 import { Type } from "./type.js";
 
-const DRAWN = {
+type Tone = Extract<keyof Palette, "beamDim" | "silver">;
+
+interface Fall {
+  readonly inset: number;
+  readonly taper: number;
+  readonly top: number;
+  readonly lit: number;
+}
+
+export interface ScreenDrawing {
+  readonly word: string;
+  readonly band: ViewStyle;
+  readonly reach: number;
+  readonly edge: {
+    readonly across: number;
+    readonly top: number;
+    readonly height: number;
+    readonly radius: number;
+  };
+  readonly unlit: { readonly height: number; readonly radius: number };
+  readonly across: readonly {
+    readonly at: number;
+    readonly tone: Tone;
+    readonly lit: number;
+  }[];
+  readonly glows: readonly {
+    readonly dy: number;
+    readonly spread: number;
+    readonly lit: number;
+  }[];
+  readonly fall?: Fall;
+}
+
+const OVER_THE_LIST: ScreenDrawing = {
+  word: "Seatscout",
+  band: { paddingBottom: 13, paddingTop: 24 },
+  reach: 135,
   edge: { across: 0.62, top: 12, height: 3, radius: 2 },
-  fall: { inset: 0.08, taper: 0.084, top: 15, reach: 135, lit: 0.1 },
-  glow: {
-    near: { dy: 2, spread: 9, lit: 0.5 },
-    far: { dy: 8, spread: 22, lit: 0.25 },
-  },
+  unlit: { height: 4, radius: 1 },
   across: [
     { at: 0, tone: "beamDim", lit: 0 },
     { at: 0.12, tone: "beamDim", lit: 1 },
@@ -26,55 +63,105 @@ const DRAWN = {
     { at: 0.88, tone: "beamDim", lit: 1 },
     { at: 1, tone: "beamDim", lit: 0 },
   ],
-} as const;
+  glows: [
+    { dy: 2, spread: 9, lit: 0.5 },
+    { dy: 8, spread: 22, lit: 0.25 },
+  ],
+  fall: { inset: 0.08, taper: 0.084, top: 15, lit: 0.1 },
+};
+
+export const OVER_THE_MAP: ScreenDrawing = {
+  word: "Screen",
+  band: { height: 22, paddingTop: 10 },
+  reach: 22,
+  edge: { across: 0.84, top: 4, height: 2.5, radius: 2 },
+  unlit: { height: 3, radius: 2 },
+  across: [
+    { at: 0, tone: "beamDim", lit: 0 },
+    { at: 0.1, tone: "beamDim", lit: 1 },
+    { at: 0.5, tone: "silver", lit: 1 },
+    { at: 0.9, tone: "beamDim", lit: 1 },
+    { at: 1, tone: "beamDim", lit: 0 },
+  ],
+  glows: [{ dy: 2, spread: 7, lit: 0.55 }],
+};
 
 const styles = StyleSheet.create({
-  band: { alignItems: "center", paddingBottom: 13, paddingTop: 12 },
+  band: { alignItems: "center" },
   drawing: { left: 0, position: "absolute", top: 0 },
-  unlit: { borderRadius: 1, height: 4, opacity: 0.9, position: "absolute" },
-  word: { paddingTop: 12 },
+  unlit: { opacity: 0.9, position: "absolute" },
 });
 
-const edgeOn = (band: number) => ({
-  width: band * DRAWN.edge.across,
-  left: (band * (1 - DRAWN.edge.across)) / 2,
+const edgeOn = (drawing: ScreenDrawing, span: number) => ({
+  width: span * drawing.edge.across,
+  left: (span * (1 - drawing.edge.across)) / 2,
 });
 
-const coneOn = (band: number) => {
-  const left = band * DRAWN.fall.inset;
-  const right = band - left;
-  const taper = band * DRAWN.fall.taper;
+const coneOn = (fall: Fall, span: number, reach: number) => {
+  const left = span * fall.inset;
+  const right = span - left;
+  const taper = span * fall.taper;
   return [
-    [left + taper, DRAWN.fall.top],
-    [right - taper, DRAWN.fall.top],
-    [right, DRAWN.fall.reach],
-    [left, DRAWN.fall.reach],
+    [left + taper, fall.top],
+    [right - taper, fall.top],
+    [right, reach],
+    [left, reach],
   ]
     .map((corner) => corner.join(","))
     .join(" ");
 };
 
-const Lit = ({
-  band,
+interface Lighting {
+  readonly drawing: ScreenDrawing;
+  readonly span: number;
+  readonly colours: Palette;
+}
+
+const Beam = ({
+  fall,
+  span,
+  reach,
   colours,
 }: {
-  readonly band: number;
+  readonly fall: Fall;
+  readonly span: number;
+  readonly reach: number;
   readonly colours: Palette;
 }) => {
-  const edge = edgeOn(band);
+  const id = useId();
+
+  return (
+    <>
+      <Defs>
+        <LinearGradient id={`${id}-fall`} x1="0" x2="0" y1="0" y2="1">
+          <Stop offset={0} stopColor={colours.beam} stopOpacity={fall.lit} />
+          <Stop offset={1} stopColor={colours.beam} stopOpacity={0} />
+        </LinearGradient>
+      </Defs>
+      <Polygon
+        fill={`url(#${id}-fall)`}
+        points={coneOn(fall, span, reach)}
+        testID="beam"
+      />
+    </>
+  );
+};
+
+const Lit = ({ drawing, span, colours }: Lighting) => {
+  const edge = edgeOn(drawing, span);
   const id = useId();
 
   return (
     <Svg
-      height={DRAWN.fall.reach}
+      height={drawing.reach}
       pointerEvents="none"
       style={styles.drawing}
       testID="lights"
-      width={band}
+      width={span}
     >
       <Defs>
         <LinearGradient id={`${id}-edge`} x1="0" x2="1" y1="0" y2="0">
-          {DRAWN.across.map((stop) => (
+          {drawing.across.map((stop) => (
             <Stop
               key={stop.at}
               offset={stop.at}
@@ -83,78 +170,85 @@ const Lit = ({
             />
           ))}
         </LinearGradient>
-        <LinearGradient id={`${id}-fall`} x1="0" x2="0" y1="0" y2="1">
-          <Stop
-            offset={0}
-            stopColor={colours.beam}
-            stopOpacity={DRAWN.fall.lit}
-          />
-          <Stop offset={1} stopColor={colours.beam} stopOpacity={0} />
-        </LinearGradient>
         <Filter
           filterUnits="userSpaceOnUse"
-          height={DRAWN.fall.reach}
+          height={drawing.reach}
           id={`${id}-glow`}
-          width={band}
+          width={span}
           x={0}
           y={0}
         >
-          <FeDropShadow
-            dx={0}
-            dy={DRAWN.glow.near.dy}
-            floodColor={colours.beam}
-            floodOpacity={DRAWN.glow.near.lit}
-            stdDeviation={DRAWN.glow.near.spread}
-          />
-          <FeDropShadow
-            dx={0}
-            dy={DRAWN.glow.far.dy}
-            floodColor={colours.beam}
-            floodOpacity={DRAWN.glow.far.lit}
-            stdDeviation={DRAWN.glow.far.spread}
-          />
+          {drawing.glows.map((glow) => (
+            <FeDropShadow
+              dx={0}
+              dy={glow.dy}
+              floodColor={colours.beam}
+              floodOpacity={glow.lit}
+              key={glow.spread}
+              stdDeviation={glow.spread}
+            />
+          ))}
         </Filter>
       </Defs>
-      <Polygon fill={`url(#${id}-fall)`} points={coneOn(band)} testID="beam" />
+      {drawing.fall !== undefined && (
+        <Beam
+          colours={colours}
+          fall={drawing.fall}
+          reach={drawing.reach}
+          span={span}
+        />
+      )}
       <Rect
         fill={`url(#${id}-edge)`}
         filter={`url(#${id}-glow)`}
-        height={DRAWN.edge.height}
-        rx={DRAWN.edge.radius}
+        height={drawing.edge.height}
+        rx={drawing.edge.radius}
         testID="screen"
         width={edge.width}
         x={edge.left}
-        y={DRAWN.edge.top}
+        y={drawing.edge.top}
       />
     </Svg>
   );
 };
 
-export const ScreenBand = (): ReactElement => {
+export const ScreenBand = ({
+  drawing = OVER_THE_LIST,
+  span,
+}: {
+  readonly drawing?: ScreenDrawing;
+  readonly span?: number;
+}): ReactElement => {
   const { appearance, colours } = useTheme();
-  const band = useWindowDimensions().width;
-  const edge = edgeOn(band);
+  const { width } = useWindowDimensions();
+  const band = span ?? width;
 
   return (
     <View
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      style={styles.band}
+      style={[styles.band, drawing.band, { width: span }]}
+      testID="screen-band"
     >
       {appearance === "down" ? (
-        <Lit band={band} colours={colours} />
+        <Lit colours={colours} drawing={drawing} span={band} />
       ) : (
         <View
           style={[
             styles.unlit,
-            edge,
-            { backgroundColor: colours.beam, top: DRAWN.edge.top },
+            edgeOn(drawing, band),
+            {
+              backgroundColor: colours.beam,
+              borderRadius: drawing.unlit.radius,
+              height: drawing.unlit.height,
+              top: drawing.edge.top,
+            },
           ]}
           testID="screen"
         />
       )}
-      <Type set="ledgerBand" style={styles.word} tone="silverFaint">
-        Seatscout
+      <Type set="ledgerBand" tone="silverFaint">
+        {drawing.word}
       </Type>
     </View>
   );

@@ -1,7 +1,18 @@
-import { describe, expect, it, jest } from "@jest/globals";
+import { afterEach, describe, expect, it, jest } from "@jest/globals";
 import { createSeatScout, REFERENCE } from "@seatscout/client";
 import { fakeUpstream } from "@seatscout/client/testing";
-import { BACK_TO_THE_LIST, labelOf, takeOf } from "@seatscout/view-logic";
+import {
+  AMONG_THE_UNREAD,
+  BACK_TO_THE_LIST,
+  GONE_FROM_THE_LISTING,
+  labelOf,
+  NOT_IN_THE_LISTING,
+  NOT_READ_SO_FAR,
+  OPENING_THIS_SHOWTIME,
+  RETRY_THE_SEARCH,
+  takeOf,
+  UNREADABLE,
+} from "@seatscout/view-logic";
 import {
   openedRooms,
   roomRoutes,
@@ -9,6 +20,8 @@ import {
 } from "@seatscout/view-logic/testing";
 import { act, fireEvent, screen } from "@testing-library/react-native";
 import { renderRouter } from "expo-router/testing-library";
+import { StyleSheet } from "react-native";
+import { houseLights } from "../../test/lights.js";
 import Layout, { unstable_settings } from "../app/_layout.js";
 import Ask from "../app/ask.js";
 import HandOffRoute from "../app/hand-off.js";
@@ -16,13 +29,18 @@ import Index from "../app/index.js";
 import LedgerRoute from "../app/ledger.js";
 import RoomRoute from "../app/room.js";
 import { seatProfile } from "../host/source.js";
+import { themeFor } from "../theme.js";
 import { listLink, roomLink } from "./room.fixtures.js";
 
+jest.mock("react-native/Libraries/Utilities/useColorScheme");
 jest.mock("expo-font", () => ({ useFonts: () => [true, null] }));
 jest.mock("expo-network", () => ({
   useNetworkState: () => ({ isInternetReachable: true }),
 }));
 const mockReads: string[] = [];
+const mockHeld: (() => void)[] = [];
+let mockHolding = false;
+let mockFailing = false;
 
 function mockSource() {
   const upstream = fakeUpstream({
@@ -33,7 +51,18 @@ function mockSource() {
   return createSeatScout({
     fetch: (url, init) => {
       mockReads.push(url);
-      return upstream(url, init);
+      if (mockFailing)
+        return Promise.resolve({
+          status: 500,
+          text: () => Promise.resolve(""),
+        });
+      return mockHolding && url.includes("/napi/seatMap/")
+        ? new Promise((done) => {
+            mockHeld.push(() => {
+              done(upstream(url, init));
+            });
+          })
+        : upstream(url, init);
     },
     now: () => 1000,
     wait: () => Promise.resolve(),
@@ -44,7 +73,8 @@ function mockSource() {
 jest.mock("../host/source.js", () => {
   const { heldProfile } = require("../host/profile.js");
   const seatscout = mockSource();
-  return { seatscout, seatProfile: heldProfile(seatscout) };
+  const profile = heldProfile(seatscout);
+  return { seatScout: () => seatscout, seatProfile: () => profile };
 });
 
 const THEATER = "AMC Village on the Parkway 9";
@@ -67,6 +97,14 @@ const settled = async (app: PromiseLike<unknown>) => {
   await screen.findByText(THEATER);
 };
 
+const release = () => {
+  mockFailing = false;
+  mockHolding = false;
+  for (const go of mockHeld.splice(0)) go();
+};
+
+afterEach(release);
+
 const checkedCount = () =>
   screen
     .getAllByRole("radio")
@@ -79,7 +117,7 @@ const isChecked = (label: string) =>
 
 describe("the Room a card on the list opens", () => {
   it("draws the room the list already read, without reading a source again", async () => {
-    seatProfile.choose({ ...REFERENCE, rowPitch: 0 });
+    seatProfile().choose({ ...REFERENCE, rowPitch: 0 });
     const app = opened(listLink);
     await app;
     const [card] = await screen.findAllByRole("button", { name: /^See / });
@@ -94,7 +132,7 @@ describe("the Room a card on the list opens", () => {
       expect.arrayContaining(["showtime", "group"]),
     );
     expect(mockReads).toHaveLength(read);
-    await act(() => seatProfile.choose(REFERENCE));
+    await act(() => seatProfile().choose(REFERENCE));
   });
 });
 
@@ -155,5 +193,102 @@ describe("the Room a deep link opens", () => {
 
     expect(app.getPathname()).toBe("/hand-off");
     expect(app.getSearchParams()).toMatchObject({ group: other.key });
+  });
+});
+
+describe("the Room a deep link opens before its search has settled", () => {
+  it("shows the line the list shows while the search reads, then the room", async () => {
+    mockHolding = true;
+    houseLights("up");
+    await opened(roomLink(VILLAGE_1.showtime));
+
+    expect(
+      await screen.findByText(/^\d+ candidates · \d+ checked/),
+    ).toBeOnTheScreen();
+    expect(screen.getByTestId("progress")).toBeOnTheScreen();
+    expect(
+      StyleSheet.flatten(screen.getByTestId("stage").props["style"])
+        .backgroundColor,
+    ).toBe(themeFor("up").colours.house);
+    expect(screen.queryByText(THEATER)).toBeNull();
+    expect(
+      screen.getByRole("header", { name: OPENING_THIS_SHOWTIME }),
+    ).toBeOnTheScreen();
+
+    release();
+
+    expect(await screen.findByText(THEATER)).toBeOnTheScreen();
+  });
+
+  it("goes back to the list from the top while it reads, as the Room does", async () => {
+    mockHolding = true;
+    const app = opened(roomLink(VILLAGE_1.showtime));
+    await app;
+
+    await fireEvent.press(
+      await screen.findByRole("button", { name: `‹ ${BACK_TO_THE_LIST}` }),
+    );
+
+    expect(app.getPathname()).toBe("/");
+  });
+
+  it("says the listing could not be read, and opens the room once a retry reads it", async () => {
+    mockFailing = true;
+    await opened(roomLink(VILLAGE_1.showtime).replace("75006", "99999"));
+    expect(
+      await screen.findByRole("header", { name: UNREADABLE }),
+    ).toBeOnTheScreen();
+
+    mockFailing = false;
+    await fireEvent.press(
+      screen.getByRole("button", { name: RETRY_THE_SEARCH }),
+    );
+
+    expect(await screen.findByText(THEATER)).toBeOnTheScreen();
+  });
+
+  it("says the showtime is not in the listing once every room is read, why it may not be, and goes back to the list", async () => {
+    const app = opened(`${roomLink(1)}&from=19:00&until=19:20`);
+    await app;
+
+    expect(
+      await screen.findByRole("header", { name: NOT_IN_THE_LISTING }),
+    ).toBeOnTheScreen();
+    expect(screen.getByText(GONE_FROM_THE_LISTING)).toBeOnTheScreen();
+    expect(screen.getByText(/^\d+ candidates · \d+ checked/)).toBeOnTheScreen();
+
+    await fireEvent.press(
+      screen.getByRole("button", { name: BACK_TO_THE_LIST }),
+    );
+
+    expect(app.getPathname()).toBe("/");
+  });
+
+  it("says the showtime is not in the rooms read so far while more are left to read", async () => {
+    await opened(roomLink(1));
+
+    expect(
+      await screen.findByRole("header", { name: NOT_READ_SO_FAR }),
+    ).toBeOnTheScreen();
+    expect(screen.getByText(AMONG_THE_UNREAD)).toBeOnTheScreen();
+    expect(
+      screen.getByRole("button", { name: /^Read \d+ more rooms/ }),
+    ).toBeOnTheScreen();
+    expect(screen.queryByText(NOT_IN_THE_LISTING)).toBeNull();
+  });
+
+  it("opens the ledger from that line, as the list does", async () => {
+    mockHolding = true;
+    const app = opened(roomLink(VILLAGE_1.showtime));
+    await app;
+
+    await fireEvent.press(
+      await screen.findByRole("button", { name: "ledger ›" }),
+    );
+
+    expect(app.getPathname()).toBe("/ledger");
+
+    release();
+    await screen.findByText(THEATER, { includeHiddenElements: true });
   });
 });
