@@ -28,6 +28,16 @@ export const deviceSeatScout = (): SeatScout =>
     store: deviceStore,
   });
 
-export const seatscout: SeatScout = deviceSeatScout();
+let device: SeatScout | undefined;
 
-export const seatProfile: HeldProfile = heldProfile(seatscout);
+export const seatScout = (): SeatScout => {
+  device ??= deviceSeatScout();
+  return device;
+};
+
+let held: HeldProfile | undefined;
+
+export const seatProfile = (): HeldProfile => {
+  held ??= heldProfile(seatScout());
+  return held;
+};

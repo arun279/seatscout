@@ -11,8 +11,8 @@ import { BACK_TO_THE_LIST } from "@seatscout/view-logic";
 import { act, fireEvent, screen, within } from "@testing-library/react-native";
 import { renderRouter } from "expo-router/testing-library";
 import { StyleSheet } from "react-native";
-import { nearby as mockNearby, phone as mockPhone } from "../test/phone.js";
 import { WARM_UP, warmTheCorpus } from "../test/rooms.js";
+import { source as mockSource } from "../test/stack-phone.js";
 import Layout, { unstable_settings } from "./app/_layout.js";
 import Ask from "./app/ask.js";
 import HandOffRoute from "./app/hand-off.js";
@@ -29,22 +29,7 @@ jest.mock("expo-network", () => ({
   useNetworkState: () => ({ isConnected: true, isInternetReachable: true }),
 }));
 
-jest.mock("./host/source.js", () => {
-  const { heldProfile } = require("./host/profile.js");
-  const { seatscout } = mockPhone([], {
-    script: {},
-    playing: {
-      area: "75234",
-      date: "2026-09-19",
-      programme: {
-        theaters: mockNearby("aacbt", "Cinemark Dallas XD and IMAX"),
-        movies: [{ id: "23184", title: "Akira" }],
-        unreached: [],
-      },
-    },
-  });
-  return { seatscout, seatProfile: heldProfile(seatscout) };
-});
+jest.mock("./host/source.js", () => mockSource);
 
 const LISTED =
   "/?movie=246473&date=2026-09-20&area=75006&partySize=2&from=19:00&until=19:20";
@@ -208,11 +193,11 @@ describe("the Query a search is", () => {
 describe("what the sheet changes beyond the address", () => {
   afterEach(async () => {
     jest.restoreAllMocks();
-    await act(() => seatProfile.choose(REFERENCE));
+    await act(() => seatProfile().choose(REFERENCE));
   });
 
   it("draws neither screen until the phone's Seat Profile has been read, so no search runs twice", async () => {
-    jest.spyOn(seatProfile, "snapshot").mockReturnValue(undefined);
+    jest.spyOn(seatProfile(), "snapshot").mockReturnValue(undefined);
     await opened();
     expect(screen.queryByRole("button", { name: "Find seats" })).toBeNull();
     await opened("/ask?term=movie&area=75234");
@@ -231,7 +216,7 @@ describe("what the sheet changes beyond the address", () => {
     expect(
       await screen.findByRole("button", { name: "Custom seat" }),
     ).toBeOnTheScreen();
-    expect(seatProfile.snapshot()?.targetDepth).toBe(0.1);
+    expect(seatProfile().snapshot()?.targetDepth).toBe(0.1);
   });
 });
 

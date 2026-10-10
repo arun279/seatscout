@@ -6,7 +6,7 @@ import { handOff, openLedger, useTerms } from "../host/address.js";
 import { deviceClock, today } from "../host/clock.js";
 import { useOnline } from "../host/online.js";
 import { useProfile } from "../host/profile.js";
-import { seatProfile, seatscout } from "../host/source.js";
+import { seatProfile, seatScout } from "../host/source.js";
 import { useOpenedRoom } from "../room/opening.js";
 import { Room } from "../room/room.js";
 import { Unopened } from "../room/unopened.js";
@@ -27,7 +27,12 @@ const Opened = ({
     readonly group?: string;
   }>();
   const online = useOnline();
-  const { session, opened } = useOpenedRoom(seatscout, asked, showtime, group);
+  const { session, opened } = useOpenedRoom(
+    seatScout(),
+    asked,
+    showtime,
+    group,
+  );
 
   if (opened === null)
     return (
@@ -57,7 +62,7 @@ const Opened = ({
 export default function RoomRoute(): ReactElement | null {
   const date = today();
   const terms = useTerms(date);
-  const profile = useProfile(seatProfile);
+  const profile = useProfile(seatProfile());
   const asked = profile === undefined ? null : askedFrom(terms, profile, date);
 
   return asked === null ? null : (

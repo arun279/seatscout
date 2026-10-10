@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, jest } from "@jest/globals";
-import { deviceSeatScout, reaching } from "./source.js";
+import { REFERENCE } from "@seatscout/client";
+import { deviceSeatScout, reaching, seatProfile, seatScout } from "./source.js";
 
 const answered = { status: 200, text: () => Promise.resolve("{}") };
 
@@ -102,5 +103,20 @@ describe("what the device gives the application", () => {
     expect(reading).toMatchObject({ ok: false, reason: "unreachable" });
     expect(reading.fetchedAt).toBeGreaterThanOrEqual(STARTED_AT);
     expect(reading.fetchedAt).toBeLessThanOrEqual(STARTED_AT + 60_000);
+  });
+});
+
+describe("the one SeatScout and Seat Profile an app run holds", () => {
+  it("hands every caller the same SeatScout and the same held profile", () => {
+    expect(seatScout()).toBe(seatScout());
+    expect(seatProfile()).toBe(seatProfile());
+  });
+
+  it("keeps the profile chosen through the held profile in that SeatScout's store", async () => {
+    const chosen = { ...REFERENCE, targetDepth: 0.4 };
+
+    seatProfile().choose(chosen);
+
+    expect(await seatScout().profile.remembered()).toEqual(chosen);
   });
 });

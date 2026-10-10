@@ -17,10 +17,12 @@ const carried = phone([], {
 
 export const reads: readonly string[] = carried.reads;
 
+const held = heldProfile(carried.seatscout);
+
 export const source: {
-  readonly seatscout: SeatScout;
-  readonly seatProfile: HeldProfile;
+  readonly seatScout: () => SeatScout;
+  readonly seatProfile: () => HeldProfile;
 } = {
-  seatscout: carried.seatscout,
-  seatProfile: heldProfile(carried.seatscout),
+  seatScout: () => carried.seatscout,
+  seatProfile: () => held,
 };

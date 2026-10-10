@@ -73,7 +73,8 @@ function mockSource() {
 jest.mock("../host/source.js", () => {
   const { heldProfile } = require("../host/profile.js");
   const seatscout = mockSource();
-  return { seatscout, seatProfile: heldProfile(seatscout) };
+  const profile = heldProfile(seatscout);
+  return { seatScout: () => seatscout, seatProfile: () => profile };
 });
 
 const THEATER = "AMC Village on the Parkway 9";
@@ -116,7 +117,7 @@ const isChecked = (label: string) =>
 
 describe("the Room a card on the list opens", () => {
   it("draws the room the list already read, without reading a source again", async () => {
-    seatProfile.choose({ ...REFERENCE, rowPitch: 0 });
+    seatProfile().choose({ ...REFERENCE, rowPitch: 0 });
     const app = opened(listLink);
     await app;
     const [card] = await screen.findAllByRole("button", { name: /^See / });
@@ -131,7 +132,7 @@ describe("the Room a card on the list opens", () => {
       expect.arrayContaining(["showtime", "group"]),
     );
     expect(mockReads).toHaveLength(read);
-    await act(() => seatProfile.choose(REFERENCE));
+    await act(() => seatProfile().choose(REFERENCE));
   });
 });
 
