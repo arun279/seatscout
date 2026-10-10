@@ -493,7 +493,15 @@ pass. Applying a label takes GitHub's triage role or higher,
 and the pull request's timeline records who applied it and when. Nothing requires a second
 person: the label makes growth a deliberate, visible decision, not a reviewed one. The job reads
 the labels from GitHub's API when it runs rather than from the event that started
-it, so adding the label and running the failed jobs again is enough. The footprint comment
+it. Adding or removing the label starts `.github/workflows/bundle-label.yml`, which waits for CI
+on the pull request's head to finish and re-runs its `measure` job. GitHub re-runs a job with the
+jobs that need it ([re-run a job](https://docs.github.com/en/rest/actions/workflow-runs#re-run-a-job-from-a-workflow-run)),
+so `footprint` follows, and every other job keeps its result from the same run. It re-runs only
+when the label can change the verdict: added after `measure` failed, or removed after it passed.
+The label does not start CI itself, for two reasons. A job a condition skips reports success to a
+required check ([status checks](https://docs.github.com/en/pull-requests/reference/status-checks)),
+so a label event that skipped `quality` would stand over a failed one. And CI cancels a run in
+progress when the same pull request starts another. The footprint comment
 prints both figures and their difference for every bundle, label or not. A bundle that shrinks
 makes main smaller for the next change, so the bar moves down by itself and rises only through
 the label. The glob covers every emitted script rather than an entry point, so deferring bytes

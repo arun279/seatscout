@@ -114,6 +114,14 @@ export const GATE_CLAIMS = [
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /waits for CI\s+on the pull request's head to finish and re-runs its `measure` job/,
+    holds: "the label workflow that re-runs measure",
+    pattern: 'gh run rerun --job "$job"',
+    paths: [".github/workflows/bundle-label.yml"],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
     says: /The glob covers every emitted script rather than an entry point/,
     holds: "the glob each bundle is weighed by",
     pattern: "dist/_expo/static/js/",
