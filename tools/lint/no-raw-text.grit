@@ -1,0 +1,68 @@
+language js
+
+pattern drawn_by_name() {
+  or {
+    `Text`,
+    `TextInput`,
+    `Button`
+  }
+}
+
+pattern exported_as_drawn() { r"Text|TextInput|Button" }
+
+pattern drawing_source() {
+  or {
+    `"react-native"`,
+    `"react-native-gesture-handler"`
+  }
+}
+
+pattern holder_of_text($holder) {
+  or {
+    `import * as $holder from "react-native"`,
+    `import * as $holder from "react-native-gesture-handler"`,
+    `import { Animated } from "react-native"` where { $holder <: `Animated` },
+    `import Animated from "react-native-reanimated"` where {
+      $holder <: `Animated`
+    }
+  }
+}
+
+pattern from_a_drawing_source() {
+  $one where {
+    $one <: not within `import type { $_ } from $_`,
+    $one <: within or {
+      JsImport(),
+      JsExport()
+    } as $statement,
+    $statement <: contains drawing_source()
+  }
+}
+
+$drawn where {
+  $drawn <: or {
+    JsShorthandNamedImportSpecifier(local_name=$name) as $one where {
+      $name <: drawn_by_name(),
+      $one <: $name,
+      $one <: from_a_drawing_source()
+    },
+    JsNamedImportSpecifier(name=$name) as $one where {
+      $name <: exported_as_drawn(),
+      $one <: from_a_drawing_source()
+    },
+    JsExportNamedFromSpecifier(source_name=$name) as $one where {
+      $name <: exported_as_drawn(),
+      $one <: from_a_drawing_source()
+    },
+    or {
+      JsxMemberName(object=$holder, member=$name),
+      JsStaticMemberExpression(object=$holder, member=$name)
+    } as $one where {
+      $name <: drawn_by_name(),
+      $one <: not within JsxClosingElement(),
+      $one <: within JsModule() as $module,
+      $module <: contains holder_of_text($holder)
+    }
+  },
+  register_diagnostic(span=$drawn, message="Draw words through Type and fields through Field. Text drawn any other way keeps the height of the old text size when the reader changes it while the app is open.")
+}

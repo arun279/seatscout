@@ -1,0 +1,3 @@
+import { Button } from "react-native";
+
+export const Pressed = () => <Button onPress={() => undefined} title="Go" />;

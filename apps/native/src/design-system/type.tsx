@@ -1,6 +1,7 @@
 import type { ReactElement, Ref } from "react";
 import { Text, type TextProps } from "react-native";
 import { type Palette, type Role, useTheme } from "../theme.js";
+import { useTextSize } from "./text-size.js";
 
 interface TypeProps extends TextProps {
   readonly ref?: Ref<Text>;
@@ -20,6 +21,7 @@ export const Type = ({
   return (
     <Text
       {...rest}
+      key={useTextSize()}
       maxFontSizeMultiplier={face.cap}
       style={[
         {

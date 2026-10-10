@@ -3,6 +3,7 @@ import { type NativeStackNavigationOptions, Stack } from "expo-router";
 import type { ReactElement } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SHEET_PRESENTATION } from "../design-system/sheet.js";
+import { TextSizeProvider } from "../design-system/text-size.js";
 import { FACES } from "../theme.js";
 
 export const unstable_settings: { readonly anchor: string } = {
@@ -36,13 +37,15 @@ export default function Layout(): ReactElement | null {
 
   return (
     <GestureHandlerRootView>
-      <Stack screenOptions={STAGE}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="room" />
-        <Stack.Screen name="ask" options={ASK} />
-        <Stack.Screen dangerouslySingular name="hand-off" options={FITTED} />
-        <Stack.Screen dangerouslySingular name="ledger" options={RESTING} />
-      </Stack>
+      <TextSizeProvider>
+        <Stack screenOptions={STAGE}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="room" />
+          <Stack.Screen name="ask" options={ASK} />
+          <Stack.Screen dangerouslySingular name="hand-off" options={FITTED} />
+          <Stack.Screen dangerouslySingular name="ledger" options={RESTING} />
+        </Stack>
+      </TextSizeProvider>
     </GestureHandlerRootView>
   );
 }

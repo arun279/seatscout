@@ -956,6 +956,24 @@ template, or joined to a string. It cannot see a literal that reaches `id` throu
 object, which is what the scan is for. `tools/planted-red/planted/ids` holds a file for each form,
 and `tools/planted-red/src/literal-ids.test.ts` runs the rule over them.
 
+**Words drawn any way but through `Type` or `Field` are refused, until React Native 0.87.** On
+React Native's New Architecture a text keeps the height it measured at the old text size when the
+reader changes the size while the app is open, so words grow inside a box that does not
+([react-native#57512](https://github.com/facebook/react-native/issues/57512)). The fix,
+[react-native#57246](https://github.com/facebook/react-native/pull/57246), ships in 0.87. Until
+then `Type` keys its `Text` on the font scale, so each change draws the words again and they
+measure fresh. A `TextInput` measures again by itself, so `Field` keeps its input and the reader
+keeps the keyboard, the cursor and what they typed.
+
+The key only helps words that pass through `Type`. A Grit plugin, `tools/lint/no-raw-text.grit`,
+over `apps/native/src` except the tests, `type.tsx` and `field.tsx`, refuses every other way to
+draw words: `Text`, `TextInput` and `Button` imported from React Native or the gesture handler,
+under their own name or another, passed on by an export, or read as a member of the whole module
+or of `Animated` from React Native or Reanimated. A name imported only as a type passes.
+`tools/planted-red/planted/raw-text` holds a file for each form, and
+`tools/planted-red/src/raw-text.test.ts` runs the rule over them. The same test fails once React
+Native 0.87 is installed and asks for the key and the rule to be removed.
+
 **An import of a package the nearest manifest does not declare is refused** by Biome's
 [`noUndeclaredDependencies`](https://biomejs.dev/linter/rules/no-undeclared-dependencies/). In a
 pnpm workspace such an import resolves from the root's `node_modules` in development and fails

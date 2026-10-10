@@ -4,6 +4,7 @@ import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 import type { Appearance, Palette, Theme } from "../theme.js";
 import { useTheme } from "../theme.js";
 import { committed } from "./feedback.js";
+import { useTextSize } from "./text-size.js";
 import { TOUCH_FLOOR } from "./touch.js";
 import { Type } from "./type.js";
 
@@ -78,6 +79,7 @@ export const Velvet = ({ label, onPress }: VelvetProps): ReactElement => {
   const theme = useTheme();
   const lit = theme.appearance === "down";
   const radius = radiusOf(theme.radius);
+  const scale = useTextSize();
 
   return (
     <TouchableOpacity
@@ -96,7 +98,7 @@ export const Velvet = ({ label, onPress }: VelvetProps): ReactElement => {
       ]}
       testID="velvet"
     >
-      {lit && <Curtain colours={theme.colours} radius={radius} />}
+      {lit && <Curtain colours={theme.colours} key={scale} radius={radius} />}
       <Type set="sentenceStrong" tone={labelTone(theme.appearance)}>
         {label}
       </Type>

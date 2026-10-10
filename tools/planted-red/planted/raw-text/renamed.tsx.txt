@@ -1,0 +1,3 @@
+import { Text as Said } from "react-native";
+
+export const Words = () => <Said>words</Said>;
