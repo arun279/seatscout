@@ -1,3 +1,4 @@
+import { BUNDLE_CLAIMS } from "./claims-in-prose.pairs.bundle.mjs";
 import { DEVICE_CLAIMS } from "./claims-in-prose.pairs.device.mjs";
 import { GATE_CLAIMS } from "./claims-in-prose.pairs.gates.mjs";
 import { MUTATION_CLAIMS } from "./claims-in-prose.pairs.mutation.mjs";
@@ -202,4 +203,5 @@ export const CLAIMS = [
   ...MUTATION_CLAIMS,
   ...SEARCH_CLAIMS,
   ...PROSE_CLAIMS,
+  ...BUNDLE_CLAIMS,
 ];

@@ -7,19 +7,25 @@ on:
 permissions: {}
 
 concurrency:
-  group: bundle-label-${{ github.workflow }}-${{ github.event.pull_request.number }}
+  group: bundle-label-${{ github.workflow }}-${{ github.event.pull_request.number }}-${{ github.event.label.name }}
   cancel-in-progress: true
 
 jobs:
   measure-again:
-    if: github.event.label.name == 'bundle-grows' && !github.event.pull_request.draft
+    if: >-
+      github.event.label.name == 'bundle-grows'
+      && github.event.pull_request.state == 'open'
+      && !github.event.pull_request.draft
+      && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     permissions:
       actions: write
+      pull-requests: read
     env:
       GH_REPO: ${{ github.repository }}
       GH_TOKEN: ${{ github.token }}
+      PR: ${{ github.event.pull_request.number }}
       HEAD: ${{ github.event.pull_request.head.sha }}
       ACTION: ${{ github.event.action }}
     steps:
@@ -32,6 +38,10 @@ jobs:
             exit 0
           fi
           gh run watch "$run" --interval 30 > /dev/null
+          if [ "$(gh pr view "$PR" --json headRefOid --jq .headRefOid)" != "$HEAD" ]; then
+            echo "The pull request moved past $HEAD while CI ran, and CI on the new head reads the labels itself."
+            exit 0
+          fi
           verdict="$(gh run view "$run" --json jobs \
             --jq '.jobs[] | select(.name == "measure") | "\(.databaseId) \(.conclusion)"')"
           read -r job conclusion <<< "$verdict"

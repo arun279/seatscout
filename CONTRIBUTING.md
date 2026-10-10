@@ -83,7 +83,7 @@ so it runs between `bundle` and `weigh`, which overwrites that directory.
   comment. When the change touches the app, also `android`, which walks the journey on an
   emulator, and `performance`, which runs Reassure against main as the change merges into it.
 - **When the `bundle-grows` label is added or removed.** `measure` and `footprint` again, on
-  the same head, once its CI has finished.
+  the same head, once its CI has finished, when the label can change `measure`'s verdict.
 - **On main, after a merge.** The fast jobs again, over the merged result. Baseline, which
   reads the walk with Flashlight and holds it to the previous run. When the app changed, the
   publish described under Publishing.
