@@ -1,5 +1,10 @@
 import { describe, expect, it, jest } from "@jest/globals";
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import {
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react-native";
 import { impactAsync, notificationAsync, selectionAsync } from "expo-haptics";
 import { Platform, StyleSheet } from "react-native";
 import { contrastOf } from "../../test/contrast.js";
@@ -68,13 +73,32 @@ describe("the velvet control", () => {
     expect(String(control.boxShadow)).toContain("px");
   });
 
-  it("sizes the curtain to the control itself, so a renderer that defaults an unsized drawing cannot spill it past the edge", async () => {
+  it("hangs the curtain on a layer that covers the whole control, its padding included", async () => {
+    await drawn("down");
+    const layer = StyleSheet.flatten(
+      screen.getByTestId("curtain", { includeHiddenElements: true }).props[
+        "style"
+      ],
+    );
+
+    expect(layer).toMatchObject({
+      position: "absolute",
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
+    });
+    expect(layer.padding ?? layer.paddingHorizontal).toBeUndefined();
+  });
+
+  it("sizes the drawing to that layer, so neither the control's padding nor an unsized default can cut it short or spill it", async () => {
     await drawn("down");
 
-    expect(screen.getByTestId("curtain").props).toMatchObject({
-      width: "100%",
-      height: "100%",
-    });
+    expect(
+      within(
+        screen.getByTestId("curtain", { includeHiddenElements: true }),
+      ).getByTestId("curtain-drawing", { includeHiddenElements: true }).props,
+    ).toMatchObject({ width: "100%", height: "100%" });
   });
 
   it("paints the curtain with the gradient it draws itself", async () => {
