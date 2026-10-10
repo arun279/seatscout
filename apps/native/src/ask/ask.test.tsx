@@ -159,22 +159,25 @@ describe("the Ask sheet", () => {
   });
 
   for (const focus of ["movie", "area"] as const)
-    it(`leaves the heading unsaid when the ${focus} field takes the keyboard`, async () => {
-      const said = jest.spyOn(AccessibilityInfo, "announceForAccessibility");
-      said.mockClear();
+    it(`leaves the screen reader on the ${focus} field when that field takes the keyboard`, async () => {
+      const moved = jest.spyOn(AccessibilityInfo, "sendAccessibilityEvent");
+      moved.mockClear();
 
       await asking({ focus, terms: NEAR });
 
-      expect(said).not.toHaveBeenCalled();
+      expect(moved).not.toHaveBeenCalled();
     });
 
-  it("says its heading when the term it was opened at has no field to take the keyboard", async () => {
-    const said = jest.spyOn(AccessibilityInfo, "announceForAccessibility");
-    said.mockClear();
+  it("moves the screen reader to its heading when the term it was opened at has no field", async () => {
+    const moved = jest.spyOn(AccessibilityInfo, "sendAccessibilityEvent");
+    moved.mockClear();
 
     await asking({ focus: "partySize" });
 
-    expect(said).toHaveBeenCalledWith("What are we seeing?");
+    expect(moved.mock.calls.map(([, event]) => event)).toEqual(["focus"]);
+    expect(
+      screen.getByRole("header", { name: "What are we seeing?" }),
+    ).toBeOnTheScreen();
   });
 
   it("does not read the listing again when the area is left as it was", async () => {

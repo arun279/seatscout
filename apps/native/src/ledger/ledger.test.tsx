@@ -98,13 +98,16 @@ afterEach(() => {
 });
 
 describe("the ledger as it opens", () => {
-  it("says its heading to a screen reader, since no field in it takes the keyboard", async () => {
-    const said = jest.spyOn(AccessibilityInfo, "announceForAccessibility");
-    said.mockClear();
+  it("moves a screen reader to its heading, since no field in it takes the keyboard", async () => {
+    const moved = jest.spyOn(AccessibilityInfo, "sendAccessibilityEvent");
+    moved.mockClear();
 
     await opened();
 
-    expect(said).toHaveBeenCalledWith("Every showtime, accounted for");
+    expect(moved.mock.calls.map(([, event]) => event)).toEqual(["focus"]);
+    expect(
+      screen.getByRole("header", { name: "Every showtime, accounted for" }),
+    ).toBeOnTheScreen();
   });
 });
 

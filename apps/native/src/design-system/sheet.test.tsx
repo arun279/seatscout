@@ -117,42 +117,43 @@ describe("a sheet the platform presents", () => {
     );
   });
 
-  it("says its heading to a screen reader when no field inside it has taken the keyboard", async () => {
-    const said = jest.spyOn(AccessibilityInfo, "announceForAccessibility");
-    said.mockClear();
+  it("moves a screen reader to its heading when no field inside it has taken the keyboard", async () => {
+    const moved = jest.spyOn(AccessibilityInfo, "sendAccessibilityEvent");
+    moved.mockClear();
 
     await presented();
 
-    expect(said).toHaveBeenCalledWith("What are we seeing?");
+    expect(moved.mock.calls.map(([, event]) => event)).toEqual(["focus"]);
   });
 
-  it("says its heading again when it comes to say another one", async () => {
-    const said = jest.spyOn(AccessibilityInfo, "announceForAccessibility");
+  it("moves the reader once, not again each time the sheet draws or closes", async () => {
+    const moved = jest.spyOn(AccessibilityInfo, "sendAccessibilityEvent");
     await presented();
-    said.mockClear();
+    moved.mockClear();
 
     await screen.rerender(
       <Sheet
         claimed={false}
         dock={null}
-        heading="Where are we sitting?"
+        heading="What are we seeing?"
         keep="Keep as it was"
         onKeep={() => undefined}
       >
         {null}
       </Sheet>,
     );
+    await screen.unmount();
 
-    expect(said).toHaveBeenCalledWith("Where are we sitting?");
+    expect(moved).not.toHaveBeenCalled();
   });
 
-  it("says nothing over the field a person was sent to, when one claimed the keyboard", async () => {
-    const said = jest.spyOn(AccessibilityInfo, "announceForAccessibility");
-    said.mockClear();
+  it("leaves the reader on the field a person was sent to, when one claimed the keyboard", async () => {
+    const moved = jest.spyOn(AccessibilityInfo, "sendAccessibilityEvent");
+    moved.mockClear();
 
     await presented("down", () => undefined, true);
 
-    expect(said).not.toHaveBeenCalled();
+    expect(moved).not.toHaveBeenCalled();
   });
 
   it("names its heading a heading, so a screen reader can move by them", async () => {

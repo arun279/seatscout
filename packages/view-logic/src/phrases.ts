@@ -112,7 +112,9 @@ export const ledeOf = (
   profile: SeatProfile,
   today: string,
 ): string =>
-  `Name an area, then a movie playing near it. ${partyOf(terms.partySize)}, ${whenSaidOf(terms, today)} and ${seatSetOf(profile)} are already set.`;
+  terms.area === undefined
+    ? `Name an area, then a movie playing near it. ${partyOf(terms.partySize)}, ${whenSaidOf(terms, today)} and ${seatSetOf(profile)} are already set.`
+    : `Pick a movie playing near ${terms.area}.`;
 
 export const noneOf = (party: number): string =>
   party === 1 ? "No seat" : `No ${wordOf(party)} seats together`;
