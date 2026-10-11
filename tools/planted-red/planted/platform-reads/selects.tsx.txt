@@ -1,0 +1,1 @@
+export const gap = Platform.select({ android: 8, default: 12 });

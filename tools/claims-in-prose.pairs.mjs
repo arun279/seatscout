@@ -28,6 +28,23 @@ export const CLAIMS = [
     files: 1,
   },
   {
+    adr: "0004-booking-ends-at-a-deep-link.md",
+    says: /Showtime's ticketing URL in the in-app browser exactly as the Source gave it/,
+    holds: "the checkout that opens the carried URL in the in-app browser",
+    pattern: 'import { openBrowserAsync } from "expo-web-browser"',
+    paths: ["apps/native/src/host"],
+    files: 1,
+  },
+  {
+    adr: "0003-separate-view-layers-shared-core.md",
+    says: /`tools\/lint\/no-platform-reads\.grit`\s+refuses `Platform\.OS` and `Platform\.select`/,
+    holds:
+      "the rule that keeps platform reads in the design system and the host",
+    pattern: "no-platform-reads.grit",
+    paths: [BIOME],
+    files: 1,
+  },
+  {
     adr: "0001-single-aggregating-source.md",
     says: /Ship a single implementation of it: the aggregator\./,
     holds: "modules that build a Source, tests aside",

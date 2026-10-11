@@ -1,0 +1,3 @@
+import { ON_ANDROID } from "./design-system/platform.js";
+
+export const rounded = ON_ANDROID;

@@ -125,8 +125,12 @@ which is the price of having two ways to answer no; a fresh search restores it.
 
 ### The hand-off on screen
 
-The app's hand-off sheet is a placeholder. It re-verifies nothing yet and opens no ticketing
-page, so the decision above is what it has to meet when it is built.
+The app's hand-off sheet, `apps/native/src/hand-off/hand-off.tsx`, meets the decision above. It
+asks the Source again for the Chosen Seat Group before anything opens. Confirmed, it opens the
+Showtime's ticketing URL in the in-app browser exactly as the Source gave it, and closes when the
+browser does on iOS, or once it has opened on Android. Taken, it names the seats that went and
+offers the room's other Seat Groups in ranked order, the best already chosen. Unreachable, it
+opens nothing and offers to check again.
 
 ## Consequences
 

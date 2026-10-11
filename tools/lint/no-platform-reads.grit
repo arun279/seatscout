@@ -1,0 +1,9 @@
+language js
+
+`Platform.$member` as $read where {
+  $member <: or {
+    `OS`,
+    `select`
+  },
+  register_diagnostic(span=$read, message="This reads the platform outside the design system and the host adapters. Ask apps/native/src/design-system/platform.ts, or draw the difference in a design-system module, or put it in a .native.ts and .web.ts pair under apps/native/src/host.")
+}

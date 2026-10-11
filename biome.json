@@ -77,6 +77,14 @@
       "plugins": ["./tools/lint/no-module-scope-app-calls.grit"]
     },
     {
+      "includes": [
+        "apps/native/**",
+        "!apps/native/src/design-system/**",
+        "!apps/native/src/host/**"
+      ],
+      "plugins": ["./tools/lint/no-platform-reads.grit"]
+    },
+    {
       "includes": ["packages/**"],
       "linter": {
         "rules": {

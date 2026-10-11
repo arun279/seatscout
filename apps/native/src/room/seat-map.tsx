@@ -17,7 +17,7 @@ import {
   seatNameOf,
 } from "@seatscout/view-logic";
 import { type ReactElement, type ReactNode, useId } from "react";
-import { Platform, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import Animated from "react-native-reanimated";
 import Svg, {
@@ -31,12 +31,12 @@ import Svg, {
   type RectProps,
   Text as SvgText,
 } from "react-native-svg";
+import { ON_WEB } from "../design-system/platform.js";
 import { type Palette, type Theme, useTheme } from "../theme.js";
 import { type Drawn, usePanZoom } from "./pan-zoom.js";
 
-export const announcedOn = (
-  os: typeof Platform.OS,
-): { readonly accessible?: true } => (os === "web" ? {} : { accessible: true });
+export const announcedOn = (web: boolean): { readonly accessible?: true } =>
+  web ? {} : { accessible: true };
 
 const DRAWN = {
   seat: { radius: 0.25, glow: 5, lit: 0.95 },
@@ -111,7 +111,7 @@ const Seat = ({
 }) => (
   <Rect
     accessibilityLabel={name}
-    {...announcedOn(Platform.OS)}
+    {...announcedOn(ON_WEB)}
     height={seat.height}
     role="img"
     rx={seat.width * DRAWN.seat.radius}

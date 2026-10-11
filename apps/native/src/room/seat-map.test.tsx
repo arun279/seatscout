@@ -227,11 +227,10 @@ describe("each Seat as a screen reader meets it", () => {
     await shown();
 
     expect(seatNamed("D18").props["accessible"]).toBe(true);
-    expect(announcedOn("ios")).toEqual({ accessible: true });
-    expect(announcedOn("android")).toEqual({ accessible: true });
+    expect(announcedOn(false)).toEqual({ accessible: true });
   });
 
   it("leaves the attribute off the web's DOM, which takes its label and role instead", () => {
-    expect(announcedOn("web")).toEqual({});
+    expect(announcedOn(true)).toEqual({});
   });
 });
