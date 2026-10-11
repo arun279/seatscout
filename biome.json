@@ -69,6 +69,16 @@
       "plugins": ["./tools/lint/no-literal-ids.grit"]
     },
     {
+      "includes": [
+        "apps/native/src/**",
+        "!apps/native/src/design-system/type.tsx",
+        "!apps/native/src/design-system/field.tsx",
+        "!apps/native/src/**/*.test.ts",
+        "!apps/native/src/**/*.test.tsx"
+      ],
+      "plugins": ["./tools/lint/no-raw-text.grit"]
+    },
+    {
       "includes": ["apps/native/**"],
       "plugins": ["./tools/lint/no-retried-or-concurrent-tests.grit"]
     },

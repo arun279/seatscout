@@ -222,8 +222,21 @@ mutants are static tokens, and Stryker runs every test for a static mutant eithe
 910 on CI. Its jobs took 794 to 945 s under `perTest`, against 891 to 1,353 s under `off`, while
 the design system's fell from 873-1,177 s to 377-489 s. Each Jest shard names its coverage in
 `stryker.shards.json`, and `tools/planted-red/src/mutation-timeout.test.ts` holds each one. The
-theme can move to `perTest` once Stryker's coverage counting stops growing on a function every
-render calls.
+next paragraph names the likely cause, and the theme can move to `perTest` once a run shows its
+dry run fits.
+
+**A test file's coverage is counted into objects made outside it.** Under `perTest`, Stryker's
+instrumented code makes the object that counts a test's hits the first time the test reaches a
+mutant, and it makes that object inside the test file's own realm. Stryker keeps every such object
+until the dry run ends, and each one keeps its realm alive with it: the test file's globals and
+every module it loaded. So a mutant on a line that most test files render kept every finished test
+file in memory, and the dry run ran out. The Velvet button's `lit` line did that on main, under a
+4 GB heap, twice in a row. `apps/native/test/hold-coverage.cjs` makes the objects first, from the
+test environment, which lives outside every test file, and Stryker's code then counts into them.
+With it, the same dry run finished in 5 minutes. `tools/planted-red/src/native-environment.test.ts`
+runs Stryker's own instrumented code in a separate realm and checks that its counts land in an
+object made outside it. The same test fails once Stryker makes those objects outside the test file
+itself, and asks for `hold-coverage.cjs` to be removed.
 
 **A mutant's run stops at its first failing test.** Stryker's other runners stop a mutant's run at
 the first failing test, unless
