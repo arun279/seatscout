@@ -6,7 +6,8 @@ import {
   offeredFor,
   playingStatusOf,
 } from "@seatscout/view-logic";
-import type { ReactElement } from "react";
+import type { ReactElement, Ref } from "react";
+import type { TextInput } from "react-native";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Field } from "../design-system/field.js";
 import { Type } from "../design-system/type.js";
@@ -18,7 +19,7 @@ export interface FilmProps {
   readonly span: Span;
   readonly today: string;
   readonly typed: string;
-  readonly focused: boolean;
+  readonly ref?: Ref<TextInput>;
   readonly onTyped: (typed: string) => void;
 }
 
@@ -78,7 +79,7 @@ export const Film = ({
   span,
   today,
   typed,
-  focused,
+  ref,
   onTyped,
 }: FilmProps): ReactElement => {
   const status = playingStatusOf(programme, area, span, today);
@@ -86,9 +87,10 @@ export const Film = ({
 
   return (
     <Field
-      focused={focused}
+      focused
       label={ASKING.film}
       onTyped={onTyped}
+      ref={ref}
       value={typed}
     >
       {offered.length > 0 && (

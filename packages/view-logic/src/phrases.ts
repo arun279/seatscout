@@ -5,9 +5,10 @@ import {
   type SeatProfile,
 } from "@seatscout/client";
 import { seatsOf } from "./derived.js";
+import { nextOf, type Step } from "./step.js";
 import type { Terms } from "./terms.js";
-import { RELATIVE_DAYS, whenSaidOf, whenWordsOf } from "./when-phrases.js";
 import { spanOf } from "./when.js";
+import { RELATIVE_DAYS, whenWordsOf } from "./when-phrases.js";
 
 type RankReasons = SeatGroupResult["reasons"];
 
@@ -87,9 +88,6 @@ export const partyOf = (party: number): string =>
 export const seatOf = (profile: SeatProfile): string =>
   isReference(profile) ? "Reference seat" : "Custom seat";
 
-export const seatSetOf = (profile: SeatProfile): string =>
-  isReference(profile) ? "the Reference seat" : "your custom seat";
-
 export const saidOf = (search: RecentSearch, today: string): string => {
   const day = whenWordsOf(spanOf(search.dates, today), today);
   return [
@@ -107,14 +105,23 @@ export const OFFLINE =
 export const NOTHING_REMEMBERED =
   "Nothing yet. Searches are kept on this phone once you have run one, and never anywhere else.";
 
-export const ledeOf = (
-  terms: Terms,
-  profile: SeatProfile,
-  today: string,
-): string =>
-  terms.area === undefined
-    ? `Name an area, then a movie playing near it. ${partyOf(terms.partySize)}, ${whenSaidOf(terms, today)} and ${seatSetOf(profile)} are already set.`
-    : `Pick a movie playing near ${terms.area}.`;
+const STEPS: Readonly<Record<Step, string>> = {
+  area: "Name an area",
+  movie: "Pick a movie",
+};
+
+export const nextStepOf = (terms: Pick<Terms, "area" | "movie">): string => {
+  const next = nextOf(terms);
+  return next === undefined ? FIND_SEATS : STEPS[next];
+};
+
+export const ledeOf = ({
+  area,
+  movie,
+}: Pick<Terms, "area" | "movie">): string | undefined => {
+  if (area === undefined) return "Name an area, then a movie playing near it.";
+  return movie === undefined ? `Pick a movie playing near ${area}.` : undefined;
+};
 
 export const noneOf = (party: number): string =>
   party === 1 ? "No seat" : `No ${wordOf(party)} seats together`;

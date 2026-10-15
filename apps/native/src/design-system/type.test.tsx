@@ -66,6 +66,17 @@ describe("the size a person chose", () => {
     ).toBe(2);
   });
 
+  it("holds the line in a dock at twice its size too, so the button under it stays in reach", async () => {
+    expect(
+      await setIn("sentenceDock", "Pick a movie playing near 75234."),
+    ).toMatchObject({ fontFamily: "SchibstedGrotesk-Regular", fontSize: 15 });
+    expect(
+      screen.getByText("Pick a movie playing near 75234.").props[
+        "maxFontSizeMultiplier"
+      ],
+    ).toBe(2);
+  });
+
   it("leaves the marquee outside the title card uncapped, and every other role with it", async () => {
     for (const role of ["marqueeRow", "sentence", "ledgerRow"] as const) {
       await render(

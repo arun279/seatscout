@@ -14,10 +14,11 @@ const TODAY = "2026-09-19";
 
 const NAMED: readonly (readonly [string, Term])[] = [
   ["Two seats together", "partySize"],
+  ["Near where?", "area"],
   ["Which movie?", "movie"],
   ["Today", "date"],
-  ["Near where?", "area"],
-  ["Any showtime", "formats"],
+  ["Any time", "window"],
+  ["Any showtime", "showtimes"],
   ["Reference seat", "profile"],
 ];
 
@@ -26,6 +27,10 @@ const NOTHING_READ: ProgrammeState = {
   movies: [],
   theaters: [],
 };
+
+const SHORT: Terms = { date: TODAY, partySize: 2 };
+
+const NEAR: Terms = { ...SHORT, area: "75234" };
 
 const card = async (terms: Terms, onEdit: (term: Term) => void = () => {}) => {
   await render(
@@ -39,37 +44,18 @@ const card = async (terms: Terms, onEdit: (term: Term) => void = () => {}) => {
   );
 };
 
-const SHORT: Terms = { date: TODAY, partySize: 2 };
+const colourOf = (words: string) =>
+  String(StyleSheet.flatten(screen.getByText(words).props["style"]).color);
 
-const styleOf = (name: string) =>
-  StyleSheet.flatten(screen.getByText(name).props["style"]);
-
-describe("the title card's third line", () => {
-  it("puts a separator between values and none before the first", async () => {
-    await card(SHORT);
-
-    expect(screen.getAllByText(" · ")).toHaveLength(3);
-  });
-
-  it("joins two values of one term with the word the term itself carries", async () => {
-    await card({ ...SHORT, formats: ["IMAX", "Dolby Cinema"] });
-
-    expect(screen.getByText(" or ")).toBeOnTheScreen();
-    expect(screen.getAllByText(" · ")).toHaveLength(3);
-  });
-});
+const colourIn = async (terms: Terms, words: string) => {
+  await card(terms);
+  const colour = colourOf(words);
+  await cleanup();
+  return colour;
+};
 
 describe("a term a person can press", () => {
-  it("is underlined, so what can be pressed is not told by colour alone", async () => {
-    await card(SHORT);
-
-    expect(styleOf("Today")).toMatchObject({
-      textDecorationLine: "underline",
-      textDecorationStyle: "dotted",
-    });
-  });
-
-  it("reports the term it stands for, and no neighbour's, wherever the lines sit", async () => {
+  it("opens the editor it stands for, and no neighbour's, wherever it sits", async () => {
     const asked = jest.fn<(term: Term) => void>();
     await card(SHORT, asked);
 
@@ -78,44 +64,87 @@ describe("a term a person can press", () => {
 
     expect(asked.mock.calls.flat()).toEqual(NAMED.map(([, term]) => term));
   });
+
+  it("is named by its words alone, not by the chevron beside them", async () => {
+    await card(NEAR);
+
+    expect(
+      screen.getByRole("button", { name: "Near 75234" }),
+    ).toBeOnTheScreen();
+    expect(screen.getAllByText("›")).toHaveLength(3);
+  });
 });
 
-describe("the rule under a term", () => {
-  it("is drawn in a tone of its own on each line, so the marquee does not shout it", async () => {
+describe("the light on the term to name next", () => {
+  it("falls on the area while there is none, and leaves it once it is named", async () => {
+    const asking = await colourIn(SHORT, "Near where?");
+    const named = await colourIn(NEAR, "Near 75234");
+
+    expect(asking).toMatch(/^#[0-9a-f]{6}$/);
+    expect(named).not.toBe(asking);
+    expect(named).toBe(await colourIn(SHORT, "Two seats together"));
+  });
+
+  it("moves to the film once the area is named", async () => {
+    expect(await colourIn(NEAR, "Which movie?")).toBe(
+      await colourIn(SHORT, "Near where?"),
+    );
+  });
+});
+
+describe("the film before an area is named", () => {
+  it("is drawn faint, apart from both the lit term and a plain one", async () => {
+    const faint = await colourIn(SHORT, "Which movie?");
+
+    expect(faint).not.toBe(await colourIn(SHORT, "Near where?"));
+    expect(faint).not.toBe(await colourIn(SHORT, "Two seats together"));
+  });
+
+  it("tells a screen reader it needs an area first, and stops saying so once there is one", async () => {
     await card(SHORT);
+    expect(screen.getByRole("button", { name: "Which movie?" })).toHaveProp(
+      "accessibilityHint",
+      "Name an area first.",
+    );
+    await cleanup();
 
-    const announced = styleOf("Two seats together").textDecorationColor;
-    const attested = styleOf("Today").textDecorationColor;
+    await card(NEAR);
+    expect(screen.getByRole("button", { name: "Which movie?" })).not.toHaveProp(
+      "accessibilityHint",
+    );
+  });
 
-    expect(String(announced)).toMatch(/^#[0-9a-f]{6}$/);
-    expect(String(attested)).toMatch(/^#[0-9a-f]{6}$/);
-    expect(announced).not.toBe(attested);
+  it("still opens the film's editor, which says what to do", async () => {
+    const asked = jest.fn<(term: Term) => void>();
+    await card(SHORT, asked);
+
+    await fireEvent.press(screen.getByRole("button", { name: "Which movie?" }));
+
+    expect(asked).toHaveBeenCalledWith("movie");
   });
 });
 
 describe("the film the card announces", () => {
-  it("asks for a film it has not been given in the tone the card's own eyebrow takes", async () => {
-    await card(SHORT);
-
-    expect(styleOf("Which movie?").color).toBe(
-      styleOf("Your query · tap any line to change it").color,
+  it("draws the film it was given in a tone of its own, apart from the lit term", async () => {
+    const named = await colourIn(
+      { ...NEAR, movie: "246329", title: "Spider-Man: Brand New Day" },
+      "Spider-Man: Brand New Day",
     );
+
+    expect(named).toMatch(/^#[0-9a-f]{6}$/);
+    expect(named).not.toBe(await colourIn(NEAR, "Which movie?"));
+    expect(named).not.toBe(await colourIn(NEAR, "Near 75234"));
   });
+});
 
-  it("draws the film it was given in a tone of its own, not the one that asks for it", async () => {
-    await card(SHORT);
-    const asking = styleOf("Which movie?").color;
-    await cleanup();
+describe("the chips under the rows", () => {
+  it("draws one chip for each value that narrows the showtimes", async () => {
+    await card({ ...NEAR, formats: ["IMAX", "Dolby Cinema"] });
 
-    await card({
-      ...SHORT,
-      movie: "246329",
-      title: "Spider-Man: Brand New Day",
-    });
-    const named = styleOf("Spider-Man: Brand New Day").color;
-
-    expect(String(asking)).toMatch(/^#[0-9a-f]{6}$/);
-    expect(String(named)).toMatch(/^#[0-9a-f]{6}$/);
-    expect(named).not.toBe(asking);
+    expect(screen.getByRole("button", { name: "IMAX" })).toBeOnTheScreen();
+    expect(
+      screen.getByRole("button", { name: "Dolby Cinema" }),
+    ).toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: "Any showtime" })).toBeNull();
   });
 });

@@ -15,7 +15,7 @@ import {
 import { type ReactElement, useState } from "react";
 import { type GestureResponderEvent, StyleSheet, View } from "react-native";
 import { Ghost } from "../design-system/button.js";
-import { Section } from "../design-system/field.js";
+import { SECTION, Section } from "../design-system/field.js";
 import { Range } from "../design-system/range.js";
 import { PLAN_ACROSS, PlanDrawing } from "../design-system/room-plan.js";
 import { TOUCH_FLOOR } from "../design-system/touch.js";
@@ -102,7 +102,7 @@ export const Profile = ({
   onHolding,
 }: ProfileProps): ReactElement => (
   <>
-    <Section label={SITTING.heading}>
+    <View style={SECTION}>
       <SeatPicker onChange={onChange} onHolding={onHolding} profile={profile} />
       <Type set="sentenceSmall" tone="silverFaint">
         {SITTING.drag}
@@ -130,7 +130,7 @@ export const Profile = ({
       <Type set="sentenceSmall" tone="silverFaint">
         {SITTING.referenceNote}
       </Type>
-    </Section>
+    </View>
     <Section label={SITTING.minding}>
       {WEIGHTS.map(({ field, label }) => (
         <Range

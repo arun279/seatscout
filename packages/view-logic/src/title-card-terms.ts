@@ -6,99 +6,63 @@ import { whenWordsOf } from "./when-phrases.js";
 
 export type Term =
   | "partySize"
+  | "area"
   | "movie"
   | "date"
   | "window"
-  | "area"
-  | "formats"
-  | "amenities"
-  | "chains"
-  | "theaters"
-  | "accessibleSeating"
+  | "showtimes"
   | "profile";
 
 export interface TitleCardEntry {
   readonly term: Term;
   readonly words: string;
-  readonly joinedBy?: string;
 }
 
-type TitleCardLines = readonly [
-  readonly TitleCardEntry[],
-  readonly TitleCardEntry[],
-  readonly TitleCardEntry[],
-];
+export interface TitleCard {
+  readonly party: string;
+  readonly area: string;
+  readonly movie: string;
+  readonly chips: readonly TitleCardEntry[];
+}
 
-const windowOf = (
-  from: string | undefined,
-  until: string | undefined,
-): string | undefined => {
+const windowOf = (from: string | undefined, until: string | undefined) => {
   if (from !== undefined && until !== undefined)
     return `${timeOf(from)} to ${timeOf(until)}`;
-  if (from !== undefined) return `from ${timeOf(from)}`;
-  return until === undefined ? undefined : `until ${timeOf(until)}`;
+  if (from !== undefined) return `From ${timeOf(from)}`;
+  return until === undefined ? "Any time" : `Until ${timeOf(until)}`;
 };
 
-const eachValue = (
-  term: Term,
-  values: readonly string[] | undefined,
-): readonly TitleCardEntry[] =>
-  values?.map((words, at) => ({
-    term,
-    words,
-    ...(at > 0 && { joinedBy: " or " }),
-  })) ?? [];
-
-const narrowedBy = (
-  terms: Terms,
-  programme: ProgrammeState,
-): readonly TitleCardEntry[] => {
-  const entries = [
-    ...eachValue("formats", terms.formats),
-    ...eachValue("amenities", terms.amenities),
-    ...eachValue("chains", terms.chains),
-    ...eachValue(
-      "theaters",
-      terms.theaters?.map((id) => theaterNamed(programme.theaters, id)),
-    ),
+const showtimesOf = (terms: Terms, programme: ProgrammeState) => {
+  const narrowed = [
+    ...(terms.formats ?? []),
+    ...(terms.amenities ?? []),
+    ...(terms.chains ?? []),
+    ...(terms.theaters ?? []).map((id) => theaterNamed(programme.theaters, id)),
   ];
-  return entries.length > 0
-    ? entries
-    : [{ term: "formats", words: "Any showtime" }];
+  return (narrowed.length > 0 ? narrowed : ["Any showtime"]).map(
+    (words): TitleCardEntry => ({ term: "showtimes", words }),
+  );
 };
 
-export const termLinesOf = (
+export const titleCardOf = (
   terms: Terms,
   programme: ProgrammeState,
   today: string,
   profile: SeatProfile,
-): TitleCardLines => {
-  const window = windowOf(terms.from, terms.until);
-  return [
-    [{ term: "partySize", words: partyOf(terms.partySize) }],
-    [
-      {
-        term: "movie",
-        words:
-          terms.movie === undefined
-            ? "Which movie?"
-            : filmOf(programme.movies, terms),
-      },
-    ],
-    [
-      { term: "date", words: whenWordsOf(terms, today) },
-      ...(window === undefined
-        ? []
-        : [{ term: "window" as const, words: window }]),
-      {
-        term: "area",
-        words: terms.area === undefined ? "Near where?" : `Near ${terms.area}`,
-      },
-      ...narrowedBy(terms, programme),
-      ...(terms.accessibleSeating === true
-        ? [{ term: "accessibleSeating" as const, words: "Accessible seating" }]
-        : []),
-      { term: "profile", words: seatOf(profile) },
-    ],
-  ];
-};
+): TitleCard => ({
+  party: partyOf(terms.partySize),
+  area: terms.area === undefined ? "Near where?" : `Near ${terms.area}`,
+  movie:
+    terms.movie === undefined
+      ? "Which movie?"
+      : filmOf(programme.movies, terms),
+  chips: [
+    { term: "date", words: whenWordsOf(terms, today) },
+    { term: "window", words: windowOf(terms.from, terms.until) },
+    ...showtimesOf(terms, programme),
+    ...(terms.accessibleSeating === true
+      ? [{ term: "partySize" as const, words: "Accessible seating" }]
+      : []),
+    { term: "profile", words: seatOf(profile) },
+  ],
+});

@@ -51,7 +51,6 @@ describe("the words a Seat Profile is set in", () => {
 
   it("says something for every line of the section", () => {
     for (const line of [
-      SITTING.heading,
       SITTING.drag,
       SITTING.depth,
       SITTING.lateral,

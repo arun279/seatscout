@@ -6,16 +6,17 @@ import type {
 import type { ProgrammeState, Term, Terms } from "@seatscout/view-logic";
 import {
   askedFrom,
-  FIND_SEATS,
   keyOf,
   ledeOf,
+  nextStepOf,
   programmeNear,
 } from "@seatscout/view-logic";
 import { type ReactElement, useState, useSyncExternalStore } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Banner } from "../design-system/banner.js";
 import { Velvet } from "../design-system/button.js";
+import { Dock } from "../design-system/dock.js";
 import { ScreenBand } from "../design-system/screen-band.js";
 import { Type } from "../design-system/type.js";
 import type { Clock } from "../host/clock.js";
@@ -41,8 +42,6 @@ export interface SearchProps {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
-  lede: { paddingHorizontal: 18, paddingTop: 18 },
-  commit: { paddingHorizontal: 18, paddingTop: 16 },
 });
 
 const Prompt = ({
@@ -59,28 +58,32 @@ const Prompt = ({
 > & {
   readonly programme: ProgrammeState;
 }) => (
-  <ScrollView>
-    <ScreenBand />
-    <TitleCard
-      onEdit={onAsk}
-      profile={profile}
-      programme={programme}
-      terms={terms}
-      today={today}
-    />
-    <View style={styles.lede}>
-      <Type set="sentence" tone="silverDim">
-        {ledeOf(terms, profile, today)}
+  <>
+    <ScrollView style={styles.screen} testID="prompt">
+      <ScreenBand />
+      <TitleCard
+        onEdit={onAsk}
+        profile={profile}
+        programme={programme}
+        terms={terms}
+        today={today}
+      />
+      <Recent
+        onRun={onRun}
+        remembered={useRemembered(seatscout)}
+        today={today}
+      />
+    </ScrollView>
+    <Dock>
+      <Type set="sentenceDock" tone="silverDim">
+        {ledeOf(terms)}
       </Type>
-    </View>
-    <View style={styles.commit}>
       <Velvet
-        label={FIND_SEATS}
+        label={nextStepOf(terms)}
         onPress={() => onAsk(terms.area === undefined ? "area" : "movie")}
       />
-    </View>
-    <Recent onRun={onRun} remembered={useRemembered(seatscout)} today={today} />
-  </ScrollView>
+    </Dock>
+  </>
 );
 
 export const Search = ({

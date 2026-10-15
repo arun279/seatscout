@@ -46,7 +46,7 @@ test("the Search screen's prompt face, drawn and read", async () => {
     />,
     {
       scenario: async () => {
-        await screen.findByRole("button", { name: "Find seats" });
+        await screen.findByRole("button", { name: "Name an area" });
         await screen.findByRole("button", { name: "Which movie?" });
       },
     },

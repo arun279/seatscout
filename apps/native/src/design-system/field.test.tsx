@@ -1,10 +1,11 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { fireEvent, render, screen } from "@testing-library/react-native";
-import { Platform, StyleSheet } from "react-native";
+import { createRef } from "react";
+import { Platform, StyleSheet, TextInput } from "react-native";
 import { contrastOf } from "../../test/contrast.js";
 import { houseLights } from "../../test/lights.js";
 import type { Appearance } from "../theme.js";
-import { Field } from "./field.js";
+import { Field, focusOn } from "./field.js";
 import { Type } from "./type.js";
 
 const APPEARANCES: readonly Appearance[] = ["down", "up"];
@@ -102,4 +103,30 @@ describe("a field with its name above it", () => {
         contrastOf(String(style.backgroundColor), String(style.color)),
       ).toBeGreaterThanOrEqual(4.5);
     });
+});
+
+describe("putting the cursor in a field", () => {
+  it("asks the field it holds for the keyboard", async () => {
+    const focused = jest.spyOn(TextInput.prototype, "focus");
+    const held = createRef<TextInput>();
+    await render(
+      <Field
+        focused={false}
+        label="Film"
+        onTyped={() => undefined}
+        ref={held}
+        value=""
+      />,
+    );
+    focused.mockClear();
+
+    focusOn(held);
+
+    expect(focused).toHaveBeenCalledTimes(1);
+    focused.mockRestore();
+  });
+
+  it("asks nothing of a field that is not drawn", () => {
+    expect(() => focusOn(createRef<TextInput>())).not.toThrow();
+  });
 });

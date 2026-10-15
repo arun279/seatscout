@@ -6,7 +6,7 @@ test("every screen of the app's web build, from Ask to the Room, carries no WCAG
 }, async ({ page }) => {
   await answeredByTheCorpus(page);
   await page.goto(ASKING);
-  const find = page.getByRole("button", { name: "Find seats" });
+  const find = page.getByRole("button", { name: "Pick a movie" });
   await expect(find).toBeVisible();
   expect(await violationsOn(page)).toEqual([]);
 
@@ -17,10 +17,7 @@ test("every screen of the app's web build, from Ask to the Room, carries no WCAG
 
   await film.fill("Practical Magic");
   await page.getByRole("button", { name: "Practical Magic 2 (2026)" }).click();
-  await page
-    .getByTestId("dock")
-    .getByRole("button", { name: "Find seats" })
-    .click();
+  await page.getByRole("button", { name: "Find seats" }).click();
   const seats = page.getByTestId("seats").first();
   await expect(seats).toBeVisible();
   expect(await violationsOn(page)).toEqual([]);

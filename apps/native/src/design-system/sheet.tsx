@@ -18,6 +18,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../theme.js";
+import { Dock } from "./dock.js";
 import { ON_ANDROID } from "./platform.js";
 import { TOUCH_FLOOR } from "./touch.js";
 import { Type } from "./type.js";
@@ -74,13 +75,6 @@ const styles = StyleSheet.create({
   ruled: { borderBottomWidth: 1 },
   body: { flex: 1 },
   read: { paddingBottom: 18 },
-  dock: {
-    borderTopWidth: 1,
-    gap: 8,
-    paddingBottom: 12,
-    paddingHorizontal: 18,
-    paddingTop: 12,
-  },
 });
 
 const keyboardLift = () => {
@@ -227,19 +221,7 @@ export const Sheet = ({
           {children}
         </ScrollView>
       </View>
-      <SafeAreaView
-        edges={["bottom"]}
-        style={[
-          styles.dock,
-          {
-            backgroundColor: theme.colours.house,
-            borderTopColor: theme.colours.hairline,
-          },
-        ]}
-        testID="dock"
-      >
-        {dock}
-      </SafeAreaView>
+      <Dock>{dock}</Dock>
     </View>
   );
 };

@@ -1,159 +1,157 @@
 export { ASKING, playingStatusOf } from "./ask-phrases.js";
-export { askedFrom } from "./asked.js";
-export { keyOf } from "./asked.js";
-export { ALSO_IN_THE_LIST } from "./auditorium-phrases.js";
-export { AMONG_THE_UNREAD } from "./auditorium-phrases.js";
-export { centreOnOf } from "./auditorium-phrases.js";
-export { chosenOf } from "./auditorium-phrases.js";
-export { creditsOf } from "./auditorium-phrases.js";
-export { GONE_FROM_THE_LISTING } from "./auditorium-phrases.js";
-export { groupsOf } from "./auditorium-phrases.js";
-export { heldWhileOfflineOf } from "./auditorium-phrases.js";
-export { legendOf } from "./auditorium-phrases.js";
-export { mapLabelOf } from "./auditorium-phrases.js";
+export { askedFrom, keyOf } from "./asked.js";
 export type { LegendMark } from "./auditorium-phrases.js";
-export { NOT_IN_THE_LISTING } from "./auditorium-phrases.js";
-export { NOT_READ_SO_FAR } from "./auditorium-phrases.js";
-export { notBookableIn } from "./auditorium-phrases.js";
-export { OPENING_THIS_SHOWTIME } from "./auditorium-phrases.js";
-export { RE_CHECKED_ON_THE_TAP } from "./auditorium-phrases.js";
-export { readingOf } from "./auditorium-phrases.js";
-export { refusalOf } from "./auditorium-phrases.js";
-export { rowOf } from "./auditorium-phrases.js";
-export { rowTextOf } from "./auditorium-phrases.js";
-export { seatNameOf } from "./auditorium-phrases.js";
-export { waitingOf } from "./auditorium-phrases.js";
-export { YOUR_SEATS_IN_THIS_ROOM } from "./auditorium-phrases.js";
+export {
+  ALSO_IN_THE_LIST,
+  AMONG_THE_UNREAD,
+  centreOnOf,
+  chosenOf,
+  creditsOf,
+  GONE_FROM_THE_LISTING,
+  groupsOf,
+  heldWhileOfflineOf,
+  legendOf,
+  mapLabelOf,
+  NOT_IN_THE_LISTING,
+  NOT_READ_SO_FAR,
+  notBookableIn,
+  OPENING_THIS_SHOWTIME,
+  RE_CHECKED_ON_THE_TAP,
+  readingOf,
+  refusalOf,
+  rowOf,
+  rowTextOf,
+  seatNameOf,
+  waitingOf,
+  YOUR_SEATS_IN_THIS_ROOM,
+} from "./auditorium-phrases.js";
 export type { Mark } from "./calendar.js";
-export { dayNameOf } from "./calendar.js";
-export { markOf } from "./calendar.js";
-export { monthAfter } from "./calendar.js";
-export { monthNameOf } from "./calendar.js";
-export { tapped } from "./calendar.js";
-export { weekdaysOf } from "./calendar.js";
-export { weeksOf } from "./calendar.js";
+export {
+  dayNameOf,
+  markOf,
+  monthAfter,
+  monthNameOf,
+  tapped,
+  weekdaysOf,
+  weeksOf,
+} from "./calendar.js";
 export { toggled } from "./chips.js";
-export { accountOf } from "./derived.js";
-export { listed } from "./derived.js";
-export { tiedIn } from "./derived.js";
-export { unreachedIn } from "./derived.js";
-export { BACK_TO_THE_LIST } from "./hand-off-phrases.js";
-export { CHECK_AGAIN } from "./hand-off-phrases.js";
-export { checkingOf } from "./hand-off-phrases.js";
-export { judgedOf } from "./hand-off-phrases.js";
-export { MOVED_ON } from "./hand-off-phrases.js";
-export { NEXT_BEST } from "./hand-off-phrases.js";
-export { NEXT_BEST_MARK } from "./hand-off-phrases.js";
-export { OFFLINE_AT_HAND_OFF } from "./hand-off-phrases.js";
-export { offNowOf } from "./hand-off-phrases.js";
-export { openingOf } from "./hand-off-phrases.js";
-export { placeOf } from "./hand-off-phrases.js";
-export { RE_CHECKED_THEN_OPENED } from "./hand-off-phrases.js";
-export { recheckedOf } from "./hand-off-phrases.js";
-export { showingOf } from "./hand-off-phrases.js";
-export { takeOf } from "./hand-off-phrases.js";
-export { triedOf } from "./hand-off-phrases.js";
-export { UNCONFIRMED } from "./hand-off-phrases.js";
-export { uncheckedOf } from "./hand-off-phrases.js";
-export { UNREACHABLE } from "./hand-off-phrases.js";
-export { wentOf } from "./hand-off-phrases.js";
-export { whereTheyWereOf } from "./hand-off-phrases.js";
-export { yoursOf } from "./hand-off-phrases.js";
-export { FITTED } from "./gesture.js";
-export type { Point } from "./gesture.js";
-export { revealedIn } from "./gesture.js";
-export { TOUCH_SLOP } from "./gesture.js";
-export type { View } from "./gesture.js";
-export { mostZoomFor } from "./gesture.js";
-export { panned } from "./gesture.js";
-export { zoomed } from "./gesture.js";
+export { accountOf, listed, tiedIn, unreachedIn } from "./derived.js";
+export type { Point, View } from "./gesture.js";
+export {
+  FITTED,
+  mostZoomFor,
+  panned,
+  revealedIn,
+  TOUCH_SLOP,
+  zoomed,
+} from "./gesture.js";
+export {
+  BACK_TO_THE_LIST,
+  CHECK_AGAIN,
+  checkingOf,
+  judgedOf,
+  MOVED_ON,
+  NEXT_BEST,
+  NEXT_BEST_MARK,
+  OFFLINE_AT_HAND_OFF,
+  offNowOf,
+  openingOf,
+  placeOf,
+  RE_CHECKED_THEN_OPENED,
+  recheckedOf,
+  showingOf,
+  takeOf,
+  triedOf,
+  UNCONFIRMED,
+  UNREACHABLE,
+  uncheckedOf,
+  wentOf,
+  whereTheyWereOf,
+  yoursOf,
+} from "./hand-off-phrases.js";
 export type { HeldSnapshots } from "./held.js";
 export { heldSnapshots } from "./held.js";
-export { ACCOUNTED_FOR } from "./ledger-phrases.js";
 export type { LedgerRow } from "./ledger-phrases.js";
-export { ledgerOf } from "./ledger-phrases.js";
-export { sumOf } from "./ledger-phrases.js";
-export { ageOf } from "./phrases.js";
-export { clockOf } from "./phrases.js";
-export { FIND_SEATS } from "./phrases.js";
-export { labelOf } from "./phrases.js";
-export { ledeOf } from "./phrases.js";
-export { NOTHING_REMEMBERED } from "./phrases.js";
-export { OFFLINE } from "./phrases.js";
-export { partyOf } from "./phrases.js";
-export { saidOf } from "./phrases.js";
-export { timeOf } from "./phrases.js";
-export { twoDigits } from "./phrases.js";
-export { whyOf } from "./phrases.js";
-export { aimAt } from "./plan.js";
-export { hundredths } from "./plan.js";
-export { marksOf } from "./plan.js";
-export { SEAT_PICKER } from "./plan.js";
-export { aimOf } from "./profile-phrases.js";
-export { DEPTH } from "./profile-phrases.js";
-export { depthOf } from "./profile-phrases.js";
-export { LATERAL } from "./profile-phrases.js";
-export { mindOf } from "./profile-phrases.js";
+export { ACCOUNTED_FOR, ledgerOf, sumOf } from "./ledger-phrases.js";
+export {
+  ageOf,
+  clockOf,
+  labelOf,
+  ledeOf,
+  NOTHING_REMEMBERED,
+  nextStepOf,
+  OFFLINE,
+  partyOf,
+  saidOf,
+  timeOf,
+  twoDigits,
+  whyOf,
+} from "./phrases.js";
+export { aimAt, hundredths, marksOf, SEAT_PICKER } from "./plan.js";
 export type { Scale } from "./profile-phrases.js";
-export { SITTING } from "./profile-phrases.js";
-export { WEIGHT } from "./profile-phrases.js";
-export { WEIGHTS } from "./profile-phrases.js";
+export {
+  aimOf,
+  DEPTH,
+  depthOf,
+  LATERAL,
+  mindOf,
+  SITTING,
+  WEIGHT,
+  WEIGHTS,
+} from "./profile-phrases.js";
 export type { ProgrammeState } from "./programme.js";
-export { markedIn } from "./programme.js";
-export { carriedTitleOf } from "./programme.js";
-export { chosenFrom } from "./programme.js";
-export { knownFilms } from "./programme.js";
-export { offeredFor } from "./programme.js";
-export { programmeNear } from "./programme.js";
-export { titleOf } from "./programme.js";
-export { BELOW_THE_TIE } from "./results-phrases.js";
-export { CHANGE_THE_QUERY } from "./results-phrases.js";
-export { coverageOf } from "./results-phrases.js";
-export { dayCoverageOf } from "./results-phrases.js";
-export { designationsOf } from "./results-phrases.js";
-export { emptyOf } from "./results-phrases.js";
-export { headOf } from "./results-phrases.js";
-export { LEDGER } from "./results-phrases.js";
-export { nameOf } from "./results-phrases.js";
-export { notAnAnswerAbout } from "./results-phrases.js";
-export { notBookableOf } from "./results-phrases.js";
-export { ONE_SOURCE } from "./results-phrases.js";
-export { partialOf } from "./results-phrases.js";
-export { readMoreOf } from "./results-phrases.js";
-export { refusedOf } from "./results-phrases.js";
-export { retryOf } from "./results-phrases.js";
-export { RETRY_THE_SEARCH } from "./results-phrases.js";
-export { roomNameOf } from "./results-phrases.js";
-export { talliesOf } from "./results-phrases.js";
-export { tiedOf } from "./results-phrases.js";
-export { UNREACHED } from "./results-phrases.js";
-export { UNREADABLE } from "./results-phrases.js";
-export { WAITING_TO_RETRY } from "./results-phrases.js";
-export { WIDEN } from "./results-phrases.js";
-export { aimedAt } from "./seat-map.js";
-export { consolesIn } from "./seat-map.js";
-export { dividersIn } from "./seat-map.js";
-export { everyGroupIn } from "./seat-map.js";
-export type { Frame } from "./seat-map.js";
-export { frameOf } from "./seat-map.js";
-export { groupHolding } from "./seat-map.js";
-export { holds } from "./seat-map.js";
-export type { Place } from "./seat-map.js";
+export {
+  carriedTitleOf,
+  chosenFrom,
+  knownFilms,
+  markedIn,
+  offeredFor,
+  programmeNear,
+  titleOf,
+} from "./programme.js";
+export {
+  BELOW_THE_TIE,
+  CHANGE_THE_QUERY,
+  coverageOf,
+  dayCoverageOf,
+  designationsOf,
+  emptyOf,
+  headOf,
+  LEDGER,
+  nameOf,
+  notAnAnswerAbout,
+  notBookableOf,
+  ONE_SOURCE,
+  partialOf,
+  RETRY_THE_SEARCH,
+  readMoreOf,
+  refusedOf,
+  retryOf,
+  roomNameOf,
+  talliesOf,
+  tiedOf,
+  UNREACHED,
+  UNREADABLE,
+  WAITING_TO_RETRY,
+  WIDEN,
+} from "./results-phrases.js";
+export type { Frame, Place } from "./seat-map.js";
+export {
+  aimedAt,
+  consolesIn,
+  dividersIn,
+  everyGroupIn,
+  frameOf,
+  groupHolding,
+  holds,
+} from "./seat-map.js";
 export { signal } from "./signal.js";
-export type { RawTerms } from "./terms.js";
-export type { Terms } from "./terms.js";
-export { parametersOf } from "./terms.js";
-export { termsFrom } from "./terms.js";
-export { termsOf } from "./terms.js";
+export { nextOf } from "./step.js";
+export type { RawTerms, Terms } from "./terms.js";
+export { parametersOf, termsFrom, termsOf } from "./terms.js";
 export type { Term } from "./title-card-terms.js";
-export type { TitleCardEntry } from "./title-card-terms.js";
-export { termLinesOf } from "./title-card-terms.js";
-export type { Span } from "./when.js";
-export { isPast } from "./when.js";
-export type { Kind } from "./when.js";
-export { spanIn } from "./when.js";
-export { spanOf } from "./when.js";
-export { valuesOf } from "./when.js";
-export { costOf } from "./when-phrases.js";
-export { whenSaidOf } from "./when-phrases.js";
-export { whenWordsOf } from "./when-phrases.js";
+export { titleCardOf } from "./title-card-terms.js";
+export type { Kind, Span } from "./when.js";
+export { isPast, spanIn, spanOf, valuesOf } from "./when.js";
+export { costOf, whenSaidOf, whenWordsOf } from "./when-phrases.js";

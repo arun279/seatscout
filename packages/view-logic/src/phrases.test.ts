@@ -3,16 +3,16 @@ import { describe, expect, it } from "vitest";
 import {
   ageOf,
   clockOf,
+  FIND_SEATS,
   labelOf,
   lateralOf,
-  noneOf,
-  FIND_SEATS,
   ledeOf,
   NOTHING_REMEMBERED,
+  nextStepOf,
+  noneOf,
   partyOf,
   saidOf,
   seatOf,
-  seatSetOf,
   spokenOf,
   whyOf,
 } from "./phrases.js";
@@ -182,34 +182,25 @@ describe("the words a card uses", () => {
     expect(seatOf({ ...REFERENCE, targetDepth: 0 })).toBe("Custom seat");
   });
 
-  it("names the Seat Profile already set, inside a sentence", () => {
-    expect(seatSetOf(REFERENCE)).toBe("the Reference seat");
-    expect(seatSetOf({ ...REFERENCE, targetDepth: 0 })).toBe(
-      "your custom seat",
+  it("says what to name first while the query has no area", () => {
+    expect(ledeOf({ movie: "245569" })).toBe(
+      "Name an area, then a movie playing near it.",
     );
-  });
-
-  it("opens the prompt with what to name next, then the party, the day and the seat already set", () => {
-    const said = ledeOf(
-      { date: "2026-08-29", partySize: 2 },
-      REFERENCE,
-      "2026-08-28",
-    );
-
-    expect(said.startsWith("Name an area")).toBe(true);
-    expect(said).toContain(partyOf(2));
-    expect(said).toContain(whenOf("2026-08-29", "2026-08-28"));
-    expect(said).toContain(seatSetOf(REFERENCE));
   });
 
   it("asks only for the movie once the area is named, and names that area", () => {
-    expect(
-      ledeOf(
-        { date: "2026-08-29", partySize: 2, area: "75234" },
-        REFERENCE,
-        "2026-08-28",
-      ),
-    ).toBe("Pick a movie playing near 75234.");
+    expect(ledeOf({ area: "75234" })).toBe("Pick a movie playing near 75234.");
+  });
+
+  it("says nothing more once the query can run", () => {
+    expect(ledeOf({ area: "75234", movie: "245569" })).toBeUndefined();
+  });
+
+  it("labels the one button with the step it takes, and with the search once nothing is missing", () => {
+    expect(nextStepOf({})).toBe("Name an area");
+    expect(nextStepOf({ area: "75234" })).toBe("Pick a movie");
+    expect(nextStepOf({ area: "75234", movie: "245569" })).toBe(FIND_SEATS);
+    expect(FIND_SEATS).toBe("Find seats");
   });
 
   it("gives a control and an empty history words of their own, because an empty one names nothing", () => {

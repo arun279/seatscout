@@ -1,9 +1,9 @@
 import type { Movie, Theater } from "@seatscout/client";
 import { describe, expect, it } from "vitest";
 import { ASKING, playingStatusOf } from "./ask-phrases.js";
-import type { Span } from "./when.js";
 import type { ProgrammeState } from "./programme.js";
 import { termsOf } from "./terms.js";
+import type { Span } from "./when.js";
 
 const TODAY = "2026-09-19";
 
@@ -157,13 +157,9 @@ describe("what the film field says about the listing under it", () => {
 describe("the words the Ask sheet is asked in", () => {
   it("says something for every control and every heading it names", () => {
     const named = [
-      "heading",
       "keep",
       "area",
-      "areaDecides",
       "film",
-      "when",
-      "party",
       "fewer",
       "more",
       "kept",
@@ -183,7 +179,30 @@ describe("the words the Ask sheet is asked in", () => {
       expect([line, ASKING[line].trim()]).not.toEqual([line, ""]);
   });
 
-  it("names a range's two days apart from the time window's two ends", () => {});
+  it("heads each editor with the question it answers", () => {
+    expect(ASKING.headings).toEqual({
+      area: "Near where?",
+      movie: "Which movie?",
+      date: "When?",
+      window: "What time?",
+      partySize: "How many seats?",
+      showtimes: "Which showtimes?",
+      profile: "Where you sit",
+    });
+  });
+
+  it("says what the area decides, in words that hold when the area is the only term on show", () => {
+    expect(ASKING.areaDecides).toBe(
+      "The films and theaters you can pick are the ones playing near it.",
+    );
+  });
+
+  it("says the film waits on the area, and why, when no area is named", () => {
+    expect(ASKING.areaFirst).toBe("Name an area first.");
+    expect(ASKING.areaFirstWhy).toBe(
+      "The films listed here are the ones playing near it, so there is nothing to pick from yet.",
+    );
+  });
 
   it("names each kind of when term", () => {
     for (const kind of ["day", "days", "range", "any"] as const)

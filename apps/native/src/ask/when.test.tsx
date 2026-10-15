@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 import { fireEvent, screen } from "@testing-library/react-native";
-import { asking, NEAR, PLAYING, submit, TODAY } from "../../test/ask.js";
+import { asking, NEAR, PLAYING, submit, TODAY, WHOLE } from "../../test/ask.js";
 
 const press = async (name: string) => {
   await fireEvent.press(screen.getByRole("button", { name }));
@@ -17,8 +17,9 @@ const READING = /days of reading\. The nearest day comes back first\.$/;
 describe("the when term in the Ask sheet", () => {
   it("offers its four readings, and opens on the one the query holds", async () => {
     await asking({
+      focus: "date",
       terms: {
-        ...NEAR,
+        ...WHOLE,
         when: { kind: "range", first: TODAY, last: "2026-09-21" },
       },
     });
@@ -29,7 +30,7 @@ describe("the when term in the Ask sheet", () => {
   });
 
   it("opens on one day when the query holds one", async () => {
-    await asking({ terms: NEAR });
+    await asking({ focus: "date", terms: WHOLE });
 
     expect(screen.getByRole("button", { name: "One day" })).toBeSelected();
     expect(screen.queryByText(READING)).toBeNull();
@@ -38,7 +39,8 @@ describe("the when term in the Ask sheet", () => {
 
   it("hands out any day from today, and says what those days cost under Find seats", async () => {
     const { found } = await asking({
-      terms: { ...NEAR, date: "2026-09-24" },
+      focus: "date",
+      terms: { ...WHOLE, date: "2026-09-24" },
     });
 
     await press("Any day");
@@ -51,25 +53,25 @@ describe("the when term in the Ask sheet", () => {
       ),
     ).toBeOnTheScreen();
     expect(handedOut(found)).toEqual({
-      ...NEAR,
+      ...WHOLE,
       when: { kind: "any" },
     });
   });
 
   it("starts a range on the day the query holds and runs it a week", async () => {
-    const { found } = await asking({ terms: NEAR });
+    const { found } = await asking({ focus: "date", terms: WHOLE });
 
     await press("A range");
     await submit();
 
     expect(handedOut(found)).toEqual({
-      ...NEAR,
+      ...WHOLE,
       when: { kind: "range", first: TODAY, last: "2026-09-25" },
     });
   });
 
   it("sets a range's first day and then its last on the calendar", async () => {
-    const { found } = await asking({ terms: NEAR });
+    const { found } = await asking({ focus: "date", terms: WHOLE });
 
     await press("A range");
     await press("Monday 21 September");
@@ -84,7 +86,7 @@ describe("the when term in the Ask sheet", () => {
   });
 
   it("adds each day tapped on the calendar to some days, and hands them out nearest first", async () => {
-    const { found } = await asking({ terms: NEAR });
+    const { found } = await asking({ focus: "date", terms: WHOLE });
 
     await press("Some days");
     await press("Tuesday 22 September");
@@ -108,8 +110,9 @@ describe("the when term in the Ask sheet", () => {
 
   it("takes a day out of some days when it is tapped again on the calendar", async () => {
     const { found } = await asking({
+      focus: "date",
       terms: {
-        ...NEAR,
+        ...WHOLE,
         when: { kind: "days", dates: [TODAY, "2026-09-23"] },
       },
     });
@@ -117,20 +120,20 @@ describe("the when term in the Ask sheet", () => {
     await press("Wednesday 23 September");
     await submit();
 
-    expect(handedOut(found)).toEqual(NEAR);
+    expect(handedOut(found)).toEqual(WHOLE);
   });
 
   it("moves the one day to the day tapped", async () => {
-    const { found } = await asking({ terms: NEAR });
+    const { found } = await asking({ focus: "date", terms: WHOLE });
 
     await press("Thursday 24 September");
     await submit();
 
-    expect(handedOut(found)).toEqual({ ...NEAR, date: "2026-09-24" });
+    expect(handedOut(found)).toEqual({ ...WHOLE, date: "2026-09-24" });
   });
 
   it("shows any day's week on the calendar and takes no tap", async () => {
-    await asking({ terms: NEAR });
+    await asking({ focus: "date", terms: WHOLE });
 
     await press("Any day");
 
@@ -141,7 +144,7 @@ describe("the when term in the Ask sheet", () => {
   });
 
   it("opens a time the query does not hold at seven in the evening", async () => {
-    await asking({ terms: NEAR });
+    await asking({ focus: "window", terms: WHOLE });
 
     await press("From, Any time");
     const at = screen.getByTestId("time-picker").props["value"];
@@ -150,7 +153,10 @@ describe("the when term in the Ask sheet", () => {
   });
 
   it("says the times the query holds on the clock a person reads", async () => {
-    await asking({ terms: { ...NEAR, from: "18:30", until: "23:05" } });
+    await asking({
+      focus: "window",
+      terms: { ...WHOLE, from: "18:30", until: "23:05" },
+    });
 
     expect(
       screen.getByRole("button", { name: "From, 6:30p" }),
@@ -161,13 +167,13 @@ describe("the when term in the Ask sheet", () => {
   });
 
   it("keeps the last day of some days when it is tapped again", async () => {
-    const { found } = await asking({ terms: NEAR });
+    const { found } = await asking({ focus: "date", terms: WHOLE });
 
     await press("Some days");
     await press("Today, Saturday 19 September");
     await submit();
 
-    expect(handedOut(found)).toEqual(NEAR);
+    expect(handedOut(found)).toEqual(WHOLE);
     expect(
       screen.getByRole("button", { name: "Today, Saturday 19 September" }),
     ).toBeSelected();
@@ -175,8 +181,9 @@ describe("the when term in the Ask sheet", () => {
 
   it("goes back to one day, the nearest the query held, from any other reading", async () => {
     const { found } = await asking({
+      focus: "date",
       terms: {
-        ...NEAR,
+        ...WHOLE,
         date: "2026-09-21",
         when: { kind: "days", dates: ["2026-09-21", "2026-09-23"] },
       },
@@ -185,34 +192,42 @@ describe("the when term in the Ask sheet", () => {
     await press("One day");
     await submit();
 
-    expect(handedOut(found)).toEqual({ ...NEAR, date: "2026-09-21" });
+    expect(handedOut(found)).toEqual({ ...WHOLE, date: "2026-09-21" });
   });
 
   it("keeps the day it holds when some days is chosen, until another is added", async () => {
-    const { found } = await asking({ terms: { ...NEAR, date: "2026-09-21" } });
+    const { found } = await asking({
+      focus: "date",
+      terms: { ...WHOLE, date: "2026-09-21" },
+    });
 
     await press("Some days");
     await submit();
 
-    expect(handedOut(found)).toEqual({ ...NEAR, date: "2026-09-21" });
+    expect(handedOut(found)).toEqual({ ...WHOLE, date: "2026-09-21" });
     expect(
       screen.getByRole("button", { name: "Monday 21 September" }),
     ).toBeSelected();
   });
 
-  it("names every day picked wherever the sheet speaks of a day, never one day alone", async () => {
-    const picked = [TODAY, "2026-09-22", "2026-09-24"];
-    await asking({
-      terms: { ...NEAR, when: { kind: "days", dates: picked } },
-      playing: PLAYING,
-    });
-    await screen.findByText(/films playing near 75234/);
-    const whole = "Sat 19, Tue 22, Thu 24 Sep";
-    const naming = screen
-      .getAllByText(DAY_NAMED)
-      .map((node) => [node.props["children"]].flat().join(""));
+  for (const [focus, terms] of [
+    ["date", WHOLE],
+    ["movie", NEAR],
+  ] as const)
+    it(`names every day picked wherever the ${focus} editor speaks of a day, never one day alone`, async () => {
+      const picked = [TODAY, "2026-09-22", "2026-09-24"];
+      await asking({
+        focus,
+        terms: { ...terms, when: { kind: "days", dates: picked } },
+        playing: PLAYING,
+      });
+      await screen.findByText(/Sat 19, Tue 22, Thu 24 Sep/);
+      const whole = "Sat 19, Tue 22, Thu 24 Sep";
+      const naming = screen
+        .getAllByText(DAY_NAMED)
+        .map((node) => [node.props["children"]].flat().join(""));
 
-    expect(naming.length).toBeGreaterThan(1);
-    expect(naming.filter((words) => !words.includes(whole))).toEqual([]);
-  });
+      expect(naming.length).toBeGreaterThan(0);
+      expect(naming.filter((words) => !words.includes(whole))).toEqual([]);
+    });
 });

@@ -31,6 +31,13 @@ interface Choice<Value> {
   readonly value: Value;
 }
 
+export interface TagsProps {
+  readonly tags: readonly {
+    readonly text: string;
+    readonly onPress: () => void;
+  }[];
+}
+
 export interface ChoicesProps<Value> {
   readonly choices: readonly Choice<Value>[];
   readonly chosen: string;
@@ -124,6 +131,21 @@ export const Chips = <Named extends string>({
     </View>
   );
 };
+
+export const Tags = ({ tags }: TagsProps): ReactElement => (
+  <View style={styles.group}>
+    {tags.map(({ text, onPress }) => (
+      <Face
+        key={text}
+        on={false}
+        onPress={onPress}
+        role="button"
+        state={{}}
+        text={text}
+      />
+    ))}
+  </View>
+);
 
 export const Choices = <Value,>({
   choices,

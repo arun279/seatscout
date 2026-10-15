@@ -7,8 +7,8 @@ import {
   within,
 } from "@testing-library/react-native";
 import { renderRouter } from "expo-router/testing-library";
-import { source as mockSource, reads } from "../test/stack-phone.js";
 import { WARM_UP, warmTheCorpus } from "../test/rooms.js";
+import { source as mockSource, reads } from "../test/stack-phone.js";
 import Layout, { unstable_settings } from "./app/_layout.js";
 import Ask from "./app/ask.js";
 import HandOffRoute from "./app/hand-off.js";
@@ -57,10 +57,10 @@ describe("several days picked in the sheet", () => {
         "hand-off": HandOffRoute,
         ledger: LedgerRoute,
       },
-      { initialUrl: "/ask?term=movie&area=75234&movie=23184&partySize=2" },
+      { initialUrl: "/ask?term=date&area=75234&movie=23184&partySize=2" },
     );
     await app;
-    await screen.findByText("What are we seeing?");
+    await screen.findByRole("header", { name: "When?" });
     const before = reads.length;
 
     await fireEvent.press(screen.getByRole("button", { name: "Some days" }));

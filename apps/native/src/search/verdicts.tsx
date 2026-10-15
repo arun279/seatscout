@@ -158,7 +158,7 @@ export const Empty = ({
     <Velvet
       label={CHANGE_THE_QUERY}
       onPress={() =>
-        onEdit(snapshot.coverage.candidates === 0 ? "formats" : "partySize")
+        onEdit(snapshot.coverage.candidates === 0 ? "showtimes" : "partySize")
       }
     />
   </View>

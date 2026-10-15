@@ -1,5 +1,5 @@
-import type { SearchTerms, Snapshot } from "@seatscout/client";
 import { describe, expect, it, jest } from "@jest/globals";
+import type { SearchTerms, Snapshot } from "@seatscout/client";
 import type { Term, Terms } from "@seatscout/view-logic";
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import { settled, TODAY } from "../../test/rooms.js";
@@ -199,7 +199,7 @@ describe("the search that found nothing", () => {
       screen.getByRole("button", { name: "Change the query" }),
     );
 
-    expect(asked).toHaveBeenCalledWith("formats");
+    expect(asked).toHaveBeenCalledWith("showtimes");
   });
 });
 
