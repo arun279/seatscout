@@ -1,9 +1,19 @@
 import type { SeatProfile } from "@seatscout/client";
-import type { ProgrammeState, Term, Terms } from "@seatscout/view-logic";
+import type {
+  ProgrammeState,
+  Term,
+  Terms,
+  TitleCardEntry,
+} from "@seatscout/view-logic";
 import { ASKING, titleCardOf } from "@seatscout/view-logic";
-import { type MemoExoticComponent, memo, type ReactElement } from "react";
+import {
+  type MemoExoticComponent,
+  memo,
+  type ReactElement,
+  type ReactNode,
+} from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
-import { Tags } from "../design-system/chips.js";
+import { Pills, Tags } from "../design-system/chips.js";
 import { TOUCH_FLOOR } from "../design-system/touch.js";
 import { Type } from "../design-system/type.js";
 import type { Palette, Role } from "../theme.js";
@@ -19,9 +29,9 @@ interface TitleCardProps {
 
 const styles = StyleSheet.create({
   card: { paddingBottom: 6, paddingHorizontal: 18 },
+  group: { borderBottomWidth: 1, gap: 2, paddingBottom: 12 },
   row: {
     alignItems: "center",
-    borderBottomWidth: 1,
     flexDirection: "row",
     gap: 12,
     justifyContent: "space-between",
@@ -31,7 +41,6 @@ const styles = StyleSheet.create({
   },
   words: { flexShrink: 1 },
   chevron: { fontSize: 16 },
-  chips: { paddingTop: 12 },
 });
 
 interface RowProps {
@@ -42,30 +51,52 @@ interface RowProps {
   readonly onPress: () => void;
 }
 
-const Row = ({ words, set, tone, faint = false, onPress }: RowProps) => {
+const Row = ({ words, set, tone, faint = false, onPress }: RowProps) => (
+  <TouchableOpacity
+    accessibilityHint={faint ? ASKING.areaFirst : undefined}
+    accessibilityLabel={words}
+    accessibilityRole="button"
+    onPress={onPress}
+    style={styles.row}
+  >
+    <Type set={set} style={styles.words} tone={tone}>
+      {words}
+    </Type>
+    <Type
+      set="sentenceStrong"
+      style={styles.chevron}
+      tone={faint ? "silverFaint" : "beam"}
+    >
+      ›
+    </Type>
+  </TouchableOpacity>
+);
+
+const Group = ({
+  testID,
+  children,
+}: {
+  readonly testID: string;
+  readonly children: ReactNode;
+}) => {
   const { colours } = useTheme();
 
   return (
-    <TouchableOpacity
-      accessibilityHint={faint ? ASKING.areaFirst : undefined}
-      accessibilityLabel={words}
-      accessibilityRole="button"
-      onPress={onPress}
-      style={[styles.row, { borderBottomColor: colours.hairline }]}
+    <View
+      style={[styles.group, { borderBottomColor: colours.hairline }]}
+      testID={testID}
     >
-      <Type set={set} style={styles.words} tone={tone}>
-        {words}
-      </Type>
-      <Type
-        set="sentenceStrong"
-        style={styles.chevron}
-        tone={faint ? "silverFaint" : "beam"}
-      >
-        ›
-      </Type>
-    </TouchableOpacity>
+      {children}
+    </View>
   );
 };
+
+const opening =
+  (onEdit: (term: Term) => void) =>
+  ({ term, words }: TitleCardEntry) => ({
+    text: words,
+    onPress: () => onEdit(term),
+  });
 
 const filmTone = ({ area, movie }: Terms): keyof Palette => {
   if (area === undefined) return "silverFaint";
@@ -80,38 +111,71 @@ const Card = ({
   onEdit,
 }: TitleCardProps): ReactElement => {
   const card = titleCardOf(terms, programme, today, profile);
+  const open = opening(onEdit);
 
   return (
     <View style={styles.card} testID="title-card">
-      <Row
-        onPress={() => onEdit("partySize")}
-        set="marqueeTitle"
-        tone="silver"
-        words={card.party}
-      />
-      <Row
-        onPress={() => onEdit("area")}
-        set="marqueeTitle"
-        tone={terms.area === undefined ? "beam" : "silver"}
-        words={card.area}
-      />
-      <Row
-        faint={terms.area === undefined}
-        onPress={() => onEdit("movie")}
-        set="marqueeHero"
-        tone={filmTone(terms)}
-        words={card.movie}
-      />
-      <View style={styles.chips}>
-        <Tags
-          tags={card.chips.map(({ term, words }) => ({
-            text: words,
-            onPress: () => onEdit(term),
-          }))}
+      <Group testID="party-group">
+        <Row
+          onPress={() => onEdit("partySize")}
+          set="marqueeTitle"
+          tone="silver"
+          words={card.party}
         />
-      </View>
+        <Tags tags={card.seats.map(open)} />
+      </Group>
+      <Group testID="area-group">
+        <Row
+          onPress={() => onEdit("area")}
+          set="marqueeTitle"
+          tone={terms.area === undefined ? "beam" : "silver"}
+          words={card.area}
+        />
+      </Group>
+      <Group testID="movie-group">
+        <Row
+          faint={terms.area === undefined}
+          onPress={() => onEdit("movie")}
+          set="marqueeHero"
+          tone={filmTone(terms)}
+          words={card.movie}
+        />
+        <Tags tags={card.showing.map(open)} />
+      </Group>
     </View>
   );
 };
 
 export const TitleCard: MemoExoticComponent<typeof Card> = memo(Card);
+
+const Asked = ({
+  terms,
+  programme,
+  profile,
+  today,
+  onEdit,
+}: TitleCardProps): ReactElement => {
+  const card = titleCardOf(terms, programme, today, profile);
+  const open = opening(onEdit);
+
+  return (
+    <View style={styles.card} testID="asked-card">
+      <Pills
+        pills={[
+          { text: card.party, onPress: () => onEdit("partySize") },
+          ...card.seats.map(open),
+        ]}
+      />
+      <Pills pills={[{ text: card.area, onPress: () => onEdit("area") }]} />
+      <Row
+        onPress={() => onEdit("movie")}
+        set="marqueeTitle"
+        tone="velvetLit"
+        words={card.movie}
+      />
+      <Pills pills={card.showing.map(open)} />
+    </View>
+  );
+};
+
+export const AskedCard: MemoExoticComponent<typeof Asked> = memo(Asked);

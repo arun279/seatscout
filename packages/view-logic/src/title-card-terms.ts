@@ -24,9 +24,10 @@ export interface TitleCardEntry {
 
 export interface TitleCard {
   readonly party: string;
+  readonly seats: readonly TitleCardEntry[];
   readonly area: string;
   readonly movie: string;
-  readonly chips: readonly TitleCardEntry[];
+  readonly showing: readonly TitleCardEntry[];
 }
 
 const windowOf = (from: string | undefined, until: string | undefined) => {
@@ -55,18 +56,20 @@ export const titleCardOf = (
   profile: SeatProfile,
 ): TitleCard => ({
   party: partyOf(terms.partySize),
+  seats: [
+    ...(terms.accessibleSeating === true
+      ? [{ term: "partySize" as const, words: "Accessible seating" }]
+      : []),
+    { term: "profile", words: seatOf(profile) },
+  ],
   area: terms.area === undefined ? ASKING.headings.area : `Near ${terms.area}`,
   movie:
     terms.movie === undefined
       ? ASKING.headings.movie
       : filmOf(programme.movies, terms),
-  chips: [
+  showing: [
     { term: "date", words: whenWordsOf(terms, today) },
     { term: "window", words: windowOf(terms.from, terms.until) },
     ...showtimesOf(terms, programme),
-    ...(terms.accessibleSeating === true
-      ? [{ term: "partySize" as const, words: "Accessible seating" }]
-      : []),
-    { term: "profile", words: seatOf(profile) },
   ],
 });

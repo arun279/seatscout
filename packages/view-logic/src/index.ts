@@ -146,7 +146,7 @@ export type { Terms } from "./terms.js";
 export { parametersOf } from "./terms.js";
 export { termsFrom } from "./terms.js";
 export { termsOf } from "./terms.js";
-export type { Term } from "./title-card-terms.js";
+export type { Term, TitleCardEntry } from "./title-card-terms.js";
 export { TERMS } from "./title-card-terms.js";
 export { titleCardOf } from "./title-card-terms.js";
 export type { Span } from "./when.js";

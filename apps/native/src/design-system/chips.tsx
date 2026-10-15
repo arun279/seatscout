@@ -31,11 +31,17 @@ interface Choice<Value> {
   readonly value: Value;
 }
 
+interface Tag {
+  readonly text: string;
+  readonly onPress: () => void;
+}
+
 export interface TagsProps {
-  readonly tags: readonly {
-    readonly text: string;
-    readonly onPress: () => void;
-  }[];
+  readonly tags: readonly Tag[];
+}
+
+export interface PillsProps {
+  readonly pills: readonly Tag[];
 }
 
 export interface ChoicesProps<Value> {
@@ -43,6 +49,8 @@ export interface ChoicesProps<Value> {
   readonly chosen: string;
   readonly onChoose: (value: Value) => void;
 }
+
+const PILL_INSET = 9;
 
 const styles = StyleSheet.create({
   group: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
@@ -58,6 +66,22 @@ const styles = StyleSheet.create({
   },
   square: { borderRadius: 12 },
   filter: { borderRadius: 8 },
+  pills: {
+    columnGap: 8,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginLeft: -PILL_INSET,
+  },
+  pill: {
+    justifyContent: "center",
+    minHeight: TOUCH_FLOOR,
+    minWidth: TOUCH_FLOOR,
+  },
+  wash: {
+    borderRadius: 8,
+    paddingHorizontal: PILL_INSET,
+    paddingVertical: 4,
+  },
 });
 
 interface FaceProps {
@@ -143,6 +167,33 @@ export const Tags = ({ tags }: TagsProps): ReactElement => (
         state={{}}
         text={text}
       />
+    ))}
+  </View>
+);
+
+const Pill = ({ text, onPress }: Tag) => {
+  const { colours } = useTheme();
+
+  return (
+    <TouchableOpacity
+      accessibilityLabel={text}
+      accessibilityRole="button"
+      onPress={felt(onPress)}
+      style={styles.pill}
+    >
+      <View style={[styles.wash, { backgroundColor: colours.beamWash }]}>
+        <Type set="sentence" tone="beam">
+          {text}
+        </Type>
+      </View>
+    </TouchableOpacity>
+  );
+};
+
+export const Pills = ({ pills }: PillsProps): ReactElement => (
+  <View style={styles.pills}>
+    {pills.map(({ text, onPress }) => (
+      <Pill key={text} onPress={onPress} text={text} />
     ))}
   </View>
 );

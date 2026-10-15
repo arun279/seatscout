@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from "@testing-library/react-native";
 import { selectionAsync } from "expo-haptics";
 import { Platform, StyleSheet } from "react-native";
 import { houseLights } from "../../test/lights.js";
-import { Chips, Choices, Tags } from "./chips.js";
+import { Chips, Choices, Pills, Tags } from "./chips.js";
 
 const FORMATS = [
   { value: "IMAX", text: "IMAX" },
@@ -178,5 +178,41 @@ describe("a row of tags, each opening something rather than choosing it", () => 
     await fireEvent.press(chip("Any time"));
 
     expect(opened.mock.calls).toEqual([["Any time"]]);
+  });
+});
+
+describe("a line of pills, each opening something in less room than a tag", () => {
+  it("draws its words in the beam on the beam's wash, with no edge", async () => {
+    houseLights("down");
+    await render(
+      <Pills pills={[{ text: "Any time", onPress: () => undefined }]} />,
+    );
+    const words = screen.getByText("Any time");
+
+    expect(StyleSheet.flatten(words.props["style"]).color).toBe("#b3dff5");
+    expect(StyleSheet.flatten(words.parent?.props["style"])).toMatchObject({
+      backgroundColor: "#242c38",
+      borderRadius: 8,
+    });
+    expect(
+      StyleSheet.flatten(chip("Any time").props["style"]),
+    ).not.toHaveProperty("borderWidth");
+  });
+
+  it("says which pill was pressed, with one selection tick", async () => {
+    const opened = jest.fn();
+    await render(
+      <Pills
+        pills={[
+          { text: "Today", onPress: () => opened("Today") },
+          { text: "Any time", onPress: () => opened("Any time") },
+        ]}
+      />,
+    );
+
+    await fireEvent.press(chip("Any time"));
+
+    expect(opened.mock.calls).toEqual([["Any time"]]);
+    expect(selectionAsync).toHaveBeenCalledTimes(1);
   });
 });

@@ -30,11 +30,14 @@ const playing = (): ProgrammeState => ({
   unreached: [],
 });
 
-const chipsOf = (terms: Terms, programme: ProgrammeState = NOTHING_READ) =>
-  titleCardOf(terms, programme, TODAY, REFERENCE).chips;
+const showingOf = (terms: Terms, programme: ProgrammeState = NOTHING_READ) =>
+  titleCardOf(terms, programme, TODAY, REFERENCE).showing;
+
+const seatsOf = (terms: Terms) =>
+  titleCardOf(terms, NOTHING_READ, TODAY, REFERENCE).seats;
 
 describe("the rows and chips a title card states a Query in", () => {
-  it("states the party, the area and the Movie as rows, and every other term as a chip carrying the editor it opens", () => {
+  it("states the party, the area and the Movie as rows, the seat as a chip of the party, and the showing as chips of the Movie", () => {
     expect(
       titleCardOf(
         { movie: "245569", date: "2026-08-28", area: "75006", partySize: 2 },
@@ -44,13 +47,13 @@ describe("the rows and chips a title card states a Query in", () => {
       ),
     ).toEqual({
       party: "Two seats together",
+      seats: [{ term: "profile", words: "Reference seat" }],
       area: "Near 75006",
       movie: "Your movie",
-      chips: [
+      showing: [
         { term: "date", words: "Today" },
         { term: "window", words: "Any time" },
         { term: "narrowing", words: "Any showtime" },
-        { term: "profile", words: "Reference seat" },
       ],
     });
   });
@@ -63,13 +66,13 @@ describe("the rows and chips a title card states a Query in", () => {
       }),
     ).toEqual({
       party: "Two seats together",
+      seats: [{ term: "profile", words: "Custom seat" }],
       area: "Near where?",
       movie: "Which movie?",
-      chips: [
+      showing: [
         { term: "date", words: "Today" },
         { term: "window", words: "Any time" },
         { term: "narrowing", words: "Any showtime" },
-        { term: "profile", words: "Custom seat" },
       ],
     });
   });
@@ -107,17 +110,16 @@ describe("the rows and chips a title card states a Query in", () => {
     ["no window", {}, "Any time"],
   ])("states %s as the chip after the days", (_named, window, words) => {
     expect(
-      chipsOf({ date: "2026-08-29", area: "75006", partySize: 2, ...window }),
+      showingOf({ date: "2026-08-29", area: "75006", partySize: 2, ...window }),
     ).toEqual([
       { term: "date", words: "Tomorrow" },
       { term: "window", words },
       { term: "narrowing", words: "Any showtime" },
-      { term: "profile", words: "Reference seat" },
     ]);
   });
 
   it("states every value that narrows the showtimes as a chip of its own, each opening the one editor that narrows them", () => {
-    expect(chipsOf(termsFrom(EVERY_PARAMETER, TODAY), playing())).toEqual([
+    expect(showingOf(termsFrom(EVERY_PARAMETER, TODAY), playing())).toEqual([
       { term: "date", words: "Today" },
       { term: "window", words: "7:00p to 9:00p" },
       { term: "narrowing", words: "Dolby Cinema" },
@@ -127,8 +129,6 @@ describe("the rows and chips a title card states a Query in", () => {
       { term: "narrowing", words: "Landmark" },
       { term: "narrowing", words: "Cinemark Dallas XD and IMAX" },
       { term: "narrowing", words: "AMC Village on the Parkway 9" },
-      { term: "partySize", words: "Accessible seating" },
-      { term: "profile", words: "Reference seat" },
     ]);
   });
 
@@ -150,7 +150,7 @@ describe("the rows and chips a title card states a Query in", () => {
     "states a Query that narrows by one %s alone as that value, in place of any showtime",
     (_named, narrowing, stated) => {
       expect(
-        chipsOf({
+        showingOf({
           date: "2026-08-28",
           area: "75006",
           partySize: 2,
@@ -160,14 +160,13 @@ describe("the rows and chips a title card states a Query in", () => {
         { term: "date", words: "Today" },
         { term: "window", words: "Any time" },
         stated,
-        { term: "profile", words: "Reference seat" },
       ]);
     },
   );
 
   it("names a Theater the programme does not hold by its identity", () => {
     expect(
-      chipsOf(
+      showingOf(
         termsOf({ area: "75006", theaters: ["zzzzz", "aacbt"] }, TODAY),
         playing(),
       ).filter((chip) => chip.term === "narrowing"),
@@ -177,22 +176,15 @@ describe("the rows and chips a title card states a Query in", () => {
     ]);
   });
 
-  it("states accessible seating only for a Query that asks for it, as a chip that opens the seats", () => {
+  it("states accessible seating only for a Query that asks for it, as a chip of the party that opens the seats", () => {
     const tonight: Terms = { date: "2026-08-28", area: "75006", partySize: 2 };
-    const wordsOf = (terms: Terms) => chipsOf(terms).map((chip) => chip.words);
 
-    expect(wordsOf({ ...tonight, accessibleSeating: true })).toEqual([
-      "Today",
-      "Any time",
-      "Any showtime",
-      "Accessible seating",
-      "Reference seat",
+    expect(seatsOf({ ...tonight, accessibleSeating: true })).toEqual([
+      { term: "partySize", words: "Accessible seating" },
+      { term: "profile", words: "Reference seat" },
     ]);
-    expect(wordsOf({ ...tonight, accessibleSeating: false })).toEqual([
-      "Today",
-      "Any time",
-      "Any showtime",
-      "Reference seat",
+    expect(seatsOf({ ...tonight, accessibleSeating: false })).toEqual([
+      { term: "profile", words: "Reference seat" },
     ]);
   });
 
@@ -209,18 +201,19 @@ describe("the rows and chips a title card states a Query in", () => {
     expect(partyOf(4)).toBe("Four seats together");
   });
 
-  it("states the days a Query spans as its first chip", () => {
+  it("states the days a Query spans as the Movie's first chip", () => {
     expect(
-      chipsOf(termsFrom([["date", "2026-08-29..2026-09-02"]], TODAY))[0],
+      showingOf(termsFrom([["date", "2026-08-29..2026-09-02"]], TODAY))[0],
     ).toEqual({ term: "date", words: "Sat 29 Aug to Wed 2 Sep" });
   });
 
   it("opens exactly the editors there are, between its rows and its chips", () => {
+    const every = termsFrom(EVERY_PARAMETER, TODAY);
     const opened = [
       "partySize",
       "area",
       "movie",
-      ...chipsOf(termsFrom(EVERY_PARAMETER, TODAY)).map((chip) => chip.term),
+      ...[...seatsOf(every), ...showingOf(every)].map((chip) => chip.term),
     ];
 
     expect(new Set(opened)).toEqual(new Set(TERMS));

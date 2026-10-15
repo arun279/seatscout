@@ -6,8 +6,10 @@ import {
   fireEvent,
   render,
   screen,
+  within,
 } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
+import { houseLights } from "../../test/lights.js";
 import { TitleCard } from "./title-card.js";
 
 const TODAY = "2026-09-19";
@@ -134,18 +136,41 @@ describe("the film before an area is named", () => {
   });
 });
 
-describe("the rows", () => {
-  it("are ruled off one from the next", async () => {
-    await card(NEAR);
+const namesIn = (group: string) =>
+  within(screen.getByTestId(group))
+    .getAllByRole("button")
+    .map((button) => button.props["accessibilityLabel"]);
 
-    const rule = StyleSheet.flatten(
-      screen.getByRole("button", { name: "Near 75234" }).props["style"],
-    );
+describe("the groups the rows gather their chips into", () => {
+  it("keeps the seat with the party and the showing with the film, apart from the area", async () => {
+    await card({ ...NEAR, accessibleSeating: true });
 
-    expect(Number(rule.borderBottomWidth)).toBeGreaterThan(0);
-    expect(String(rule.borderBottomColor)).toMatch(/^#[0-9a-f]{6}$/);
+    expect(namesIn("party-group")).toEqual([
+      "Two seats together",
+      "Accessible seating",
+      "Reference seat",
+    ]);
+    expect(namesIn("area-group")).toEqual(["Near 75234"]);
+    expect(namesIn("movie-group")).toEqual([
+      "Which movie?",
+      "Today",
+      "Any time",
+      "Any showtime",
+    ]);
   });
 
+  it("rules each group off from the next in the hairline", async () => {
+    houseLights("down");
+    await card(NEAR);
+
+    for (const group of ["party-group", "area-group", "movie-group"])
+      expect(
+        StyleSheet.flatten(screen.getByTestId(group).props["style"]),
+      ).toMatchObject({ borderBottomColor: "#323748", borderBottomWidth: 1 });
+  });
+});
+
+describe("the rows", () => {
   it("draw the film's chevron faint until an area is named, and as the others once it is", async () => {
     const chevrons = async (terms: Terms) => {
       await card(terms);
