@@ -182,28 +182,58 @@ describe("a row of tags, each opening something rather than choosing it", () => 
 });
 
 describe("a line of pills, each opening something in less room than a tag", () => {
-  it("draws its words in the beam on the beam's wash, with no edge", async () => {
+  it("draws its words in the beam on the beam's wash, in a rounded box inset from the words' edge", async () => {
     houseLights("down");
     await render(
-      <Pills pills={[{ text: "Any time", onPress: () => undefined }]} />,
+      <Pills tags={[{ text: "Any time", onPress: () => undefined }]} />,
     );
-    const words = screen.getByText("Any time");
 
-    expect(StyleSheet.flatten(words.props["style"]).color).toBe("#b3dff5");
-    expect(StyleSheet.flatten(words.parent?.props["style"])).toMatchObject({
+    expect(
+      StyleSheet.flatten(screen.getByText("Any time").props["style"]),
+    ).toMatchObject({
       backgroundColor: "#242c38",
       borderRadius: 8,
+      color: "#b3dff5",
+      overflow: "hidden",
+      paddingHorizontal: 9,
+      paddingVertical: 4,
     });
+  });
+
+  it("lays its pills in a wrapping row that starts its words where the lines above and below start theirs", async () => {
+    await render(
+      <Pills
+        tags={[
+          { text: "Today", onPress: () => undefined },
+          { text: "Any time", onPress: () => undefined },
+        ]}
+      />,
+    );
+
+    expect(StyleSheet.flatten(screen.root?.props["style"])).toEqual({
+      columnGap: 8,
+      flexDirection: "row",
+      flexWrap: "wrap",
+      marginLeft: -9,
+      rowGap: 4,
+    });
+  });
+
+  it("centres each pill's words in the full height a finger can press", async () => {
+    await render(
+      <Pills tags={[{ text: "Any time", onPress: () => undefined }]} />,
+    );
+
     expect(
-      StyleSheet.flatten(chip("Any time").props["style"]),
-    ).not.toHaveProperty("borderWidth");
+      StyleSheet.flatten(chip("Any time").props["style"]).justifyContent,
+    ).toBe("center");
   });
 
   it("says which pill was pressed, with one selection tick", async () => {
     const opened = jest.fn();
     await render(
       <Pills
-        pills={[
+        tags={[
           { text: "Today", onPress: () => opened("Today") },
           { text: "Any time", onPress: () => opened("Any time") },
         ]}

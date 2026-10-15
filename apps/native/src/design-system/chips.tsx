@@ -40,10 +40,6 @@ export interface TagsProps {
   readonly tags: readonly Tag[];
 }
 
-export interface PillsProps {
-  readonly pills: readonly Tag[];
-}
-
 export interface ChoicesProps<Value> {
   readonly choices: readonly Choice<Value>[];
   readonly chosen: string;
@@ -71,6 +67,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     marginLeft: -PILL_INSET,
+    rowGap: 4,
   },
   pill: {
     justifyContent: "center",
@@ -79,6 +76,7 @@ const styles = StyleSheet.create({
   },
   wash: {
     borderRadius: 8,
+    overflow: "hidden",
     paddingHorizontal: PILL_INSET,
     paddingVertical: 4,
   },
@@ -181,18 +179,20 @@ const Pill = ({ text, onPress }: Tag) => {
       onPress={felt(onPress)}
       style={styles.pill}
     >
-      <View style={[styles.wash, { backgroundColor: colours.beamWash }]}>
-        <Type set="sentence" tone="beam">
-          {text}
-        </Type>
-      </View>
+      <Type
+        set="sentence"
+        style={[styles.wash, { backgroundColor: colours.beamWash }]}
+        tone="beam"
+      >
+        {text}
+      </Type>
     </TouchableOpacity>
   );
 };
 
-export const Pills = ({ pills }: PillsProps): ReactElement => (
+export const Pills = ({ tags }: TagsProps): ReactElement => (
   <View style={styles.pills}>
-    {pills.map(({ text, onPress }) => (
+    {tags.map(({ text, onPress }) => (
       <Pill key={text} onPress={onPress} text={text} />
     ))}
   </View>

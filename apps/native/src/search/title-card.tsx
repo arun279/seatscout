@@ -28,7 +28,7 @@ interface TitleCardProps {
 }
 
 const styles = StyleSheet.create({
-  card: { paddingBottom: 6, paddingHorizontal: 18 },
+  card: { gap: 2, paddingBottom: 6, paddingHorizontal: 18 },
   group: { borderBottomWidth: 1, gap: 2, paddingBottom: 12 },
   row: {
     alignItems: "center",
@@ -161,19 +161,19 @@ const Asked = ({
   return (
     <View style={styles.card} testID="asked-card">
       <Pills
-        pills={[
+        tags={[
           { text: card.party, onPress: () => onEdit("partySize") },
           ...card.seats.map(open),
         ]}
       />
-      <Pills pills={[{ text: card.area, onPress: () => onEdit("area") }]} />
+      <Pills tags={[{ text: card.area, onPress: () => onEdit("area") }]} />
       <Row
         onPress={() => onEdit("movie")}
         set="marqueeTitle"
         tone="velvetLit"
         words={card.movie}
       />
-      <Pills pills={card.showing.map(open)} />
+      <Pills tags={card.showing.map(open)} />
     </View>
   );
 };

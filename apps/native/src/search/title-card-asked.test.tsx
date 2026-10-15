@@ -1,13 +1,9 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { REFERENCE } from "@seatscout/client";
 import type { ProgrammeState, Term, Terms } from "@seatscout/view-logic";
-import {
-  fireEvent,
-  render,
-  screen,
-  within,
-} from "@testing-library/react-native";
+import { fireEvent, render, screen } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
+import { buttonsIn } from "../../test/buttons.js";
 import { houseLights } from "../../test/lights.js";
 import { AskedCard } from "./title-card.js";
 
@@ -41,11 +37,6 @@ const asked = async (
   );
 };
 
-const names = () =>
-  within(screen.getByTestId("asked-card"))
-    .getAllByRole("button")
-    .map((button) => button.props["accessibilityLabel"]);
-
 const sizeOf = (words: string) =>
   Number(StyleSheet.flatten(screen.getByText(words).props["style"]).fontSize);
 
@@ -53,7 +44,7 @@ describe("the card that states a Query once it has been asked", () => {
   it("reads in the order the Search screen asks, the seat with the party and the showing after the film", async () => {
     await asked();
 
-    expect(names()).toEqual([
+    expect(buttonsIn("asked-card")).toEqual([
       "Two seats together",
       "Reference seat",
       "Near 75234",

@@ -6,9 +6,9 @@ import {
   fireEvent,
   render,
   screen,
-  within,
 } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
+import { buttonsIn } from "../../test/buttons.js";
 import { houseLights } from "../../test/lights.js";
 import { TitleCard } from "./title-card.js";
 
@@ -136,22 +136,17 @@ describe("the film before an area is named", () => {
   });
 });
 
-const namesIn = (group: string) =>
-  within(screen.getByTestId(group))
-    .getAllByRole("button")
-    .map((button) => button.props["accessibilityLabel"]);
-
 describe("the groups the rows gather their chips into", () => {
   it("keeps the seat with the party and the showing with the film, apart from the area", async () => {
     await card({ ...NEAR, accessibleSeating: true });
 
-    expect(namesIn("party-group")).toEqual([
+    expect(buttonsIn("party-group")).toEqual([
       "Two seats together",
       "Accessible seating",
       "Reference seat",
     ]);
-    expect(namesIn("area-group")).toEqual(["Near 75234"]);
-    expect(namesIn("movie-group")).toEqual([
+    expect(buttonsIn("area-group")).toEqual(["Near 75234"]);
+    expect(buttonsIn("movie-group")).toEqual([
       "Which movie?",
       "Today",
       "Any time",
