@@ -9,7 +9,7 @@ import { Type } from "../design-system/type.js";
 import type { Palette, Role } from "../theme.js";
 import { useTheme } from "../theme.js";
 
-export interface TitleCardProps {
+interface TitleCardProps {
   readonly terms: Terms;
   readonly programme: ProgrammeState;
   readonly profile: SeatProfile;
