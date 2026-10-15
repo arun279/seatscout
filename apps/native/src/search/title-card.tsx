@@ -1,7 +1,7 @@
 import type { SeatProfile } from "@seatscout/client";
 import type { ProgrammeState, Term, Terms } from "@seatscout/view-logic";
 import { ASKING, titleCardOf } from "@seatscout/view-logic";
-import type { ReactElement } from "react";
+import { type MemoExoticComponent, memo, type ReactElement } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Tags } from "../design-system/chips.js";
 import { TOUCH_FLOOR } from "../design-system/touch.js";
@@ -72,7 +72,7 @@ const filmTone = ({ area, movie }: Terms): keyof Palette => {
   return movie === undefined ? "beam" : "velvetLit";
 };
 
-export const TitleCard = ({
+const Card = ({
   terms,
   programme,
   profile,
@@ -113,3 +113,5 @@ export const TitleCard = ({
     </View>
   );
 };
+
+export const TitleCard: MemoExoticComponent<typeof Card> = memo(Card);
