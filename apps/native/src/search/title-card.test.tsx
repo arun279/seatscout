@@ -96,6 +96,7 @@ describe("the film before an area is named", () => {
   it("is drawn faint, apart from both the lit term and a plain one", async () => {
     const faint = await colourIn(SHORT, "Which movie?");
 
+    expect(faint).toMatch(/^#[0-9a-f]{6}$/);
     expect(faint).not.toBe(await colourIn(SHORT, "Near where?"));
     expect(faint).not.toBe(await colourIn(SHORT, "Two seats together"));
   });
@@ -157,6 +158,7 @@ describe("the rows", () => {
     const [, area, film] = await chevrons(SHORT);
     const named = await chevrons(NEAR);
 
+    expect(String(film)).toMatch(/^#[0-9a-f]{6}$/);
     expect(film).not.toBe(area);
     expect(named[2]).toBe(named[1]);
   });

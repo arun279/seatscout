@@ -171,6 +171,7 @@ describe("the button in the dock", () => {
       REFERENCE,
     );
     expect(dock().queryByText(/^Name an area|^Pick a movie/)).toBeNull();
+    expect(dock().queryAllByText(/^$/)).toEqual([]);
   });
 
   it("carries what one editor changed through the steps that follow it, and hands it all out together", async () => {
