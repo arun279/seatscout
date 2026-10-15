@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { ProgrammeState } from "./programme.js";
 import { EVERY_PARAMETER, TODAY } from "./terms.fixtures.js";
 import { type Terms, termsFrom, termsOf } from "./terms.js";
-import { type TitleCardEntry, titleCardOf } from "./title-card-terms.js";
+import { TERMS, type TitleCardEntry, titleCardOf } from "./title-card-terms.js";
 
 const NOTHING_READ: ProgrammeState = {
   phase: "none",
@@ -49,7 +49,7 @@ describe("the rows and chips a title card states a Query in", () => {
       chips: [
         { term: "date", words: "Today" },
         { term: "window", words: "Any time" },
-        { term: "showtimes", words: "Any showtime" },
+        { term: "narrowing", words: "Any showtime" },
         { term: "profile", words: "Reference seat" },
       ],
     });
@@ -68,7 +68,7 @@ describe("the rows and chips a title card states a Query in", () => {
       chips: [
         { term: "date", words: "Today" },
         { term: "window", words: "Any time" },
-        { term: "showtimes", words: "Any showtime" },
+        { term: "narrowing", words: "Any showtime" },
         { term: "profile", words: "Custom seat" },
       ],
     });
@@ -111,7 +111,7 @@ describe("the rows and chips a title card states a Query in", () => {
     ).toEqual([
       { term: "date", words: "Tomorrow" },
       { term: "window", words },
-      { term: "showtimes", words: "Any showtime" },
+      { term: "narrowing", words: "Any showtime" },
       { term: "profile", words: "Reference seat" },
     ]);
   });
@@ -120,13 +120,13 @@ describe("the rows and chips a title card states a Query in", () => {
     expect(chipsOf(termsFrom(EVERY_PARAMETER, TODAY), playing())).toEqual([
       { term: "date", words: "Today" },
       { term: "window", words: "7:00p to 9:00p" },
-      { term: "showtimes", words: "Dolby Cinema" },
-      { term: "showtimes", words: "IMAX" },
-      { term: "showtimes", words: "Recliners" },
-      { term: "showtimes", words: "AMC" },
-      { term: "showtimes", words: "Landmark" },
-      { term: "showtimes", words: "Cinemark Dallas XD and IMAX" },
-      { term: "showtimes", words: "AMC Village on the Parkway 9" },
+      { term: "narrowing", words: "Dolby Cinema" },
+      { term: "narrowing", words: "IMAX" },
+      { term: "narrowing", words: "Recliners" },
+      { term: "narrowing", words: "AMC" },
+      { term: "narrowing", words: "Landmark" },
+      { term: "narrowing", words: "Cinemark Dallas XD and IMAX" },
+      { term: "narrowing", words: "AMC Village on the Parkway 9" },
       { term: "partySize", words: "Accessible seating" },
       { term: "profile", words: "Reference seat" },
     ]);
@@ -135,16 +135,16 @@ describe("the rows and chips a title card states a Query in", () => {
   it.each<
     [string, Pick<Terms, "formats" | "amenities" | "chains">, TitleCardEntry]
   >([
-    ["Format", { formats: ["IMAX"] }, { term: "showtimes", words: "IMAX" }],
+    ["Format", { formats: ["IMAX"] }, { term: "narrowing", words: "IMAX" }],
     [
       "Amenity",
       { amenities: ["Recliners"] },
-      { term: "showtimes", words: "Recliners" },
+      { term: "narrowing", words: "Recliners" },
     ],
     [
       "Chain",
       { chains: ["Landmark"] },
-      { term: "showtimes", words: "Landmark" },
+      { term: "narrowing", words: "Landmark" },
     ],
   ])(
     "states a Query that narrows by one %s alone as that value, in place of any showtime",
@@ -170,10 +170,10 @@ describe("the rows and chips a title card states a Query in", () => {
       chipsOf(
         termsOf({ area: "75006", theaters: ["zzzzz", "aacbt"] }, TODAY),
         playing(),
-      ).filter((chip) => chip.term === "showtimes"),
+      ).filter((chip) => chip.term === "narrowing"),
     ).toEqual([
-      { term: "showtimes", words: "zzzzz" },
-      { term: "showtimes", words: "Cinemark Dallas XD and IMAX" },
+      { term: "narrowing", words: "zzzzz" },
+      { term: "narrowing", words: "Cinemark Dallas XD and IMAX" },
     ]);
   });
 
@@ -213,5 +213,17 @@ describe("the rows and chips a title card states a Query in", () => {
     expect(
       chipsOf(termsFrom([["date", "2026-08-29..2026-09-02"]], TODAY))[0],
     ).toEqual({ term: "date", words: "Sat 29 Aug to Wed 2 Sep" });
+  });
+
+  it("opens exactly the editors there are, between its rows and its chips", () => {
+    const opened = [
+      "partySize",
+      "area",
+      "movie",
+      ...chipsOf(termsFrom(EVERY_PARAMETER, TODAY)).map((chip) => chip.term),
+    ];
+
+    expect(new Set(opened)).toEqual(new Set(TERMS));
+    expect(TERMS).toHaveLength(new Set(TERMS).size);
   });
 });

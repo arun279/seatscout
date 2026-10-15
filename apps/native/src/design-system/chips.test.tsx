@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from "@testing-library/react-native";
 import { selectionAsync } from "expo-haptics";
 import { Platform, StyleSheet } from "react-native";
 import { houseLights } from "../../test/lights.js";
-import { Chips, Choices } from "./chips.js";
+import { Chips, Choices, Tags } from "./chips.js";
 
 const FORMATS = [
   { value: "IMAX", text: "IMAX" },
@@ -146,5 +146,37 @@ describe("a group of chips, exactly one of them chosen", () => {
 
     expect(ink("Row 6 · on the centreline")).toBe("#06070e");
     expect(ink("Row 7 · three seats right of centre")).toBe("#aab2bd");
+  });
+});
+
+describe("a row of tags, each opening something rather than choosing it", () => {
+  it("draws every tag in the face an unchosen chip wears", async () => {
+    await render(
+      <>
+        <Tags tags={[{ text: "Any time", onPress: () => undefined }]} />
+        <Chips chips={FORMATS} chosen={[]} onChosen={() => undefined} />
+      </>,
+    );
+    const ground = (name: string) =>
+      StyleSheet.flatten(chip(name).props["style"]).backgroundColor;
+
+    expect(ground("Any time")).toBe(ground("IMAX"));
+    expect(chip("Any time")).not.toBeSelected();
+  });
+
+  it("says which tag was pressed", async () => {
+    const opened = jest.fn();
+    await render(
+      <Tags
+        tags={[
+          { text: "Today", onPress: () => opened("Today") },
+          { text: "Any time", onPress: () => opened("Any time") },
+        ]}
+      />,
+    );
+
+    await fireEvent.press(chip("Any time"));
+
+    expect(opened.mock.calls).toEqual([["Any time"]]);
   });
 });

@@ -18,7 +18,7 @@ const NAMED: readonly (readonly [string, Term])[] = [
   ["Which movie?", "movie"],
   ["Today", "date"],
   ["Any time", "window"],
-  ["Any showtime", "showtimes"],
+  ["Any showtime", "narrowing"],
   ["Reference seat", "profile"],
 ];
 
@@ -100,6 +100,15 @@ describe("the film before an area is named", () => {
     expect(faint).not.toBe(await colourIn(SHORT, "Two seats together"));
   });
 
+  it("is drawn faint even when the query carries a film, because it cannot be searched for without an area", async () => {
+    const carried = await colourIn(
+      { ...SHORT, movie: "246329", title: "Spider-Man: Brand New Day" },
+      "Spider-Man: Brand New Day",
+    );
+
+    expect(carried).toBe(await colourIn(SHORT, "Which movie?"));
+  });
+
   it("tells a screen reader it needs an area first, and stops saying so once there is one", async () => {
     await card(SHORT);
     expect(screen.getByRole("button", { name: "Which movie?" })).toHaveProp(
@@ -121,6 +130,35 @@ describe("the film before an area is named", () => {
     await fireEvent.press(screen.getByRole("button", { name: "Which movie?" }));
 
     expect(asked).toHaveBeenCalledWith("movie");
+  });
+});
+
+describe("the rows", () => {
+  it("are ruled off one from the next", async () => {
+    await card(NEAR);
+
+    const rule = StyleSheet.flatten(
+      screen.getByRole("button", { name: "Near 75234" }).props["style"],
+    );
+
+    expect(Number(rule.borderBottomWidth)).toBeGreaterThan(0);
+    expect(String(rule.borderBottomColor)).toMatch(/^#[0-9a-f]{6}$/);
+  });
+
+  it("draw the film's chevron faint until an area is named, and as the others once it is", async () => {
+    const chevrons = async (terms: Terms) => {
+      await card(terms);
+      const drawn = screen
+        .getAllByText("›")
+        .map((one) => StyleSheet.flatten(one.props["style"]).color);
+      await cleanup();
+      return drawn;
+    };
+    const [, area, film] = await chevrons(SHORT);
+    const named = await chevrons(NEAR);
+
+    expect(film).not.toBe(area);
+    expect(named[2]).toBe(named[1]);
   });
 });
 

@@ -99,7 +99,7 @@ const Movie = ({
     />
   );
 
-const Days = ({ draft, today, onSettle, onFollow }: EditorProps) => (
+const Dates = ({ draft, today, onSettle, onFollow }: EditorProps) => (
   <When
     draft={draft}
     onSpan={({ date, when }: Span) => onFollow(onSettle({ date, when }))}
@@ -131,7 +131,7 @@ const Seats = ({ draft, onChange }: EditorProps) => (
   </>
 );
 
-const Showtimes = ({ draft, playing, onChange }: EditorProps) => (
+const Narrowing = ({ draft, playing, onChange }: EditorProps) => (
   <>
     <Section label={ASKING.format}>
       <Chips
@@ -176,10 +176,10 @@ const Sitting = ({ profile, onProfile, onHolding }: EditorProps) => (
 const EDITORS: Readonly<Record<Term, (props: EditorProps) => ReactElement>> = {
   area: Area,
   movie: Movie,
-  date: Days,
+  date: Dates,
   window: TimeOfDay,
   partySize: Seats,
-  showtimes: Showtimes,
+  narrowing: Narrowing,
   profile: Sitting,
 };
 

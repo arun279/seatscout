@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it, jest } from "@jest/globals";
 import type { SeatGroupResult } from "@seatscout/client";
+import { TERMS } from "@seatscout/view-logic";
 import { renderHook } from "@testing-library/react-native";
 import { first, settled, WARM_UP } from "../../test/rooms.js";
 
@@ -173,15 +174,7 @@ describe("opening the Ask sheet over the query it is editing", () => {
     });
   });
 
-  for (const term of [
-    "partySize",
-    "area",
-    "movie",
-    "date",
-    "window",
-    "showtimes",
-    "profile",
-  ])
+  for (const term of TERMS)
     it(`opens on the ${term} editor when the route names it`, () => {
       mockParams.mockReturnValue({ term });
       expect(useFocus()).toBe(term);

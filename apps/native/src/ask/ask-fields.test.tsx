@@ -19,6 +19,14 @@ describe("the area", () => {
     );
   });
 
+  it("holds the area the query already names", async () => {
+    await asking({ focus: "area", terms: NEAR });
+
+    expect(screen.getByLabelText("Near, by postal code")).toHaveDisplayValue(
+      "75234",
+    );
+  });
+
   it("holds an empty area as an empty field", async () => {
     await asking({ focus: "area" });
 
@@ -71,6 +79,21 @@ describe("the area", () => {
     await fireEvent(screen.getByLabelText("Near, by postal code"), "blur");
 
     expect(read).not.toHaveBeenCalled();
+  });
+});
+
+describe("the days", () => {
+  it("reads the listing again for the day a person picked, because a listing is dated", async () => {
+    const { seatscout } = await asking({
+      focus: "date",
+      terms: NEAR,
+      playing: PLAYING,
+    });
+    const read = jest.spyOn(seatscout, "programme");
+
+    await press("Saturday 26 September");
+
+    expect(read).toHaveBeenCalledWith("75234", "2026-09-26");
   });
 });
 

@@ -12,7 +12,7 @@ const handedOut = (found: Awaited<ReturnType<typeof asking>>["found"]) =>
 
 describe("the narrowing terms the Ask sheet carries", () => {
   it("hands out every Format, Comfort and Chain chip pressed, in the order each set lists them", async () => {
-    const { found } = await asking({ focus: "showtimes", terms: WHOLE });
+    const { found } = await asking({ focus: "narrowing", terms: WHOLE });
 
     await press("IMAX");
     await press("Dolby Cinema");
@@ -29,7 +29,7 @@ describe("the narrowing terms the Ask sheet carries", () => {
 
   it("shows the chips the query already holds as chosen, and lets one be taken out", async () => {
     const { found } = await asking({
-      focus: "showtimes",
+      focus: "narrowing",
       terms: { ...WHOLE, formats: ["IMAX"], chains: ["AMC", "Landmark"] },
     });
 
@@ -45,7 +45,7 @@ describe("the narrowing terms the Ask sheet carries", () => {
 
   it("offers the Theaters playing near the area as chips once they are read, and hands out the one pressed", async () => {
     const { found } = await asking({
-      focus: "showtimes",
+      focus: "narrowing",
       terms: WHOLE,
       playing: PLAYING,
     });
@@ -61,7 +61,7 @@ describe("the narrowing terms the Ask sheet carries", () => {
   });
 
   it("offers no Theater until the area's Theaters are read", async () => {
-    await asking({ focus: "showtimes", terms: WHOLE });
+    await asking({ focus: "narrowing", terms: WHOLE });
 
     expect(screen.queryByText("Theater")).toBeNull();
   });
@@ -113,7 +113,7 @@ describe("the narrowing terms the Ask sheet carries", () => {
   });
 
   it("hands out the Seat Profile it was opened with when nothing in it moved", async () => {
-    const { found } = await asking({ focus: "showtimes", terms: WHOLE });
+    const { found } = await asking({ focus: "narrowing", terms: WHOLE });
 
     await submit();
 

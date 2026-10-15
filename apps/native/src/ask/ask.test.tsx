@@ -24,7 +24,7 @@ const EDITORS: readonly (readonly [Term, string, () => unknown])[] = [
     () => screen.queryByRole("button", { name: "More seats" }),
   ],
   [
-    "showtimes",
+    "narrowing",
     "Which showtimes?",
     () => screen.queryByRole("button", { name: "IMAX" }),
   ],
@@ -141,18 +141,20 @@ describe("the button in the dock", () => {
     ).toBeOnTheScreen();
   });
 
-  it("puts the cursor in the field when the step it names is the one already open", async () => {
-    const focused = jest.spyOn(TextInput.prototype, "focus");
-    await asking({ focus: "area" });
-    focused.mockClear();
+  for (const [focus, terms, step, heading] of [
+    ["area", SHORT, "Name an area", "Near where?"],
+    ["movie", NEAR, "Pick a movie", "Which movie?"],
+  ] as const)
+    it(`puts the cursor in the ${focus} field when the step it names is the one already open`, async () => {
+      const focused = jest.spyOn(TextInput.prototype, "focus");
+      await asking({ focus, terms });
+      focused.mockClear();
 
-    await press("Name an area");
+      await press(step);
 
-    expect(focused).toHaveBeenCalledTimes(1);
-    expect(
-      screen.getByRole("header", { name: "Near where?" }),
-    ).toBeOnTheScreen();
-  });
+      expect(focused).toHaveBeenCalledTimes(1);
+      expect(screen.getByRole("header", { name: heading })).toBeOnTheScreen();
+    });
 
   it("finds seats once a film is picked, and says nothing more above it", async () => {
     const { found } = await asking({

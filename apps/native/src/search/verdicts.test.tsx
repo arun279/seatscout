@@ -199,7 +199,7 @@ describe("the search that found nothing", () => {
       screen.getByRole("button", { name: "Change the query" }),
     );
 
-    expect(asked).toHaveBeenCalledWith("showtimes");
+    expect(asked).toHaveBeenCalledWith("narrowing");
   });
 });
 

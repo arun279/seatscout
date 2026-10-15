@@ -1,6 +1,6 @@
 import type { SeatProfile } from "@seatscout/client";
 import type { ProgrammeState, Term, Terms } from "@seatscout/view-logic";
-import { ASKING, nextOf, titleCardOf } from "@seatscout/view-logic";
+import { ASKING, titleCardOf } from "@seatscout/view-logic";
 import type { ReactElement } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Tags } from "../design-system/chips.js";
@@ -67,9 +67,9 @@ const Row = ({ words, set, tone, faint = false, onPress }: RowProps) => {
   );
 };
 
-const filmTone = (terms: Terms, lit: boolean): keyof Palette => {
-  if (terms.movie !== undefined) return "velvetLit";
-  return lit ? "beam" : "silverFaint";
+const filmTone = ({ area, movie }: Terms): keyof Palette => {
+  if (area === undefined) return "silverFaint";
+  return movie === undefined ? "beam" : "velvetLit";
 };
 
 export const TitleCard = ({
@@ -80,7 +80,6 @@ export const TitleCard = ({
   onEdit,
 }: TitleCardProps): ReactElement => {
   const card = titleCardOf(terms, programme, today, profile);
-  const next = nextOf(terms);
 
   return (
     <View style={styles.card} testID="title-card">
@@ -93,14 +92,14 @@ export const TitleCard = ({
       <Row
         onPress={() => onEdit("area")}
         set="marqueeTitle"
-        tone={next === "area" ? "beam" : "silver"}
+        tone={terms.area === undefined ? "beam" : "silver"}
         words={card.area}
       />
       <Row
         faint={terms.area === undefined}
         onPress={() => onEdit("movie")}
         set="marqueeHero"
-        tone={filmTone(terms, next === "movie")}
+        tone={filmTone(terms)}
         words={card.movie}
       />
       <View style={styles.chips}>

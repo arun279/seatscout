@@ -52,7 +52,7 @@ const SEGMENTS: readonly Chip<Kind>[] = KINDS.map((value) => ({
 const EVENING = "19:00";
 
 const styles = StyleSheet.create({
-  window: { flexDirection: "row", gap: 10 },
+  window: { ...SECTION, flexDirection: "row", gap: 10 },
 });
 
 interface DaysProps {
@@ -113,7 +113,7 @@ export const When = ({ draft, today, onSpan }: WhenProps): ReactElement => {
 };
 
 export const Window = ({ draft, onWindow }: WindowProps): ReactElement => (
-  <View style={[SECTION, styles.window]}>
+  <View style={styles.window}>
     <TimeField
       clear={ASKING.clear}
       clock={draft.from}

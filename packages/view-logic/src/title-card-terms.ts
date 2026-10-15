@@ -1,17 +1,21 @@
 import type { SeatProfile } from "@seatscout/client";
+import { ASKING } from "./ask-phrases.js";
 import { partyOf, seatOf, timeOf } from "./phrases.js";
 import { filmOf, type ProgrammeState, theaterNamed } from "./programme.js";
 import type { Terms } from "./terms.js";
 import { whenWordsOf } from "./when-phrases.js";
 
-export type Term =
-  | "partySize"
-  | "area"
-  | "movie"
-  | "date"
-  | "window"
-  | "showtimes"
-  | "profile";
+export const TERMS = [
+  "partySize",
+  "area",
+  "movie",
+  "date",
+  "window",
+  "narrowing",
+  "profile",
+] as const;
+
+export type Term = (typeof TERMS)[number];
 
 export interface TitleCardEntry {
   readonly term: Term;
@@ -40,7 +44,7 @@ const showtimesOf = (terms: Terms, programme: ProgrammeState) => {
     ...(terms.theaters ?? []).map((id) => theaterNamed(programme.theaters, id)),
   ];
   return (narrowed.length > 0 ? narrowed : ["Any showtime"]).map(
-    (words): TitleCardEntry => ({ term: "showtimes", words }),
+    (words): TitleCardEntry => ({ term: "narrowing", words }),
   );
 };
 
@@ -51,10 +55,10 @@ export const titleCardOf = (
   profile: SeatProfile,
 ): TitleCard => ({
   party: partyOf(terms.partySize),
-  area: terms.area === undefined ? "Near where?" : `Near ${terms.area}`,
+  area: terms.area === undefined ? ASKING.headings.area : `Near ${terms.area}`,
   movie:
     terms.movie === undefined
-      ? "Which movie?"
+      ? ASKING.headings.movie
       : filmOf(programme.movies, terms),
   chips: [
     { term: "date", words: whenWordsOf(terms, today) },

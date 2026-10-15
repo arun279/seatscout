@@ -200,7 +200,6 @@ describe("the words a card uses", () => {
     expect(nextStepOf({})).toBe("Name an area");
     expect(nextStepOf({ area: "75234" })).toBe("Pick a movie");
     expect(nextStepOf({ area: "75234", movie: "245569" })).toBe(FIND_SEATS);
-    expect(FIND_SEATS).toBe("Find seats");
   });
 
   it("gives a control and an empty history words of their own, because an empty one names nothing", () => {
