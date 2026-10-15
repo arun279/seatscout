@@ -44,6 +44,14 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
 });
 
+const Remembered = ({
+  seatscout,
+  today,
+  onRun,
+}: Pick<SearchProps, "seatscout" | "today" | "onRun">) => (
+  <Recent onRun={onRun} remembered={useRemembered(seatscout)} today={today} />
+);
+
 const Prompt = ({
   seatscout,
   terms,
@@ -68,11 +76,7 @@ const Prompt = ({
         terms={terms}
         today={today}
       />
-      <Recent
-        onRun={onRun}
-        remembered={useRemembered(seatscout)}
-        today={today}
-      />
+      <Remembered onRun={onRun} seatscout={seatscout} today={today} />
     </ScrollView>
     <Dock>
       <Type set="sentenceDock" tone="silverDim">
