@@ -54,7 +54,7 @@ jest.mock("expo-haptics", () => ({
 }));
 
 afterEach(async () => {
-  const { house } = themeFor(appearanceOf(useColorScheme())).colours;
+  const { house } = themeFor(appearanceOf(useColorScheme(), "system")).colours;
   try {
     await audit(house);
   } finally {

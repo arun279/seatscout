@@ -1,7 +1,5 @@
 import type { HouseLights } from "@seatscout/client";
 
-type Lit = Exclude<HouseLights, "system">;
-
 export const HOUSE_LIGHTS: {
   readonly label: string;
   readonly choices: readonly {
@@ -19,5 +17,8 @@ export const HOUSE_LIGHTS: {
   note: "System follows your phone's own light and dark setting. The choice is kept on this phone.",
 };
 
-export const lightsSaidOf = (chosen: HouseLights, now: Lit): string =>
+export const lightsSaidOf = (
+  chosen: HouseLights,
+  now: Exclude<HouseLights, "system">,
+): string =>
   chosen === "system" ? `System · ${now} right now` : `Always ${chosen}`;

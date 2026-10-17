@@ -19,7 +19,7 @@ export const HouseLightsControl = ({
   chosen,
   onChosen,
 }: HouseLightsProps): ReactElement => (
-  <View style={styles.lights} testID="house-lights">
+  <View style={styles.lights}>
     <Type set="ledgerLabel" tone="silverFaint">
       {HOUSE_LIGHTS.label}
     </Type>

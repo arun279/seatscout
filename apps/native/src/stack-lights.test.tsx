@@ -103,6 +103,10 @@ describe("the house lights across the app", () => {
     await fireEvent.press(await screen.findByRole("button", { name: "Up" }));
 
     expect(grounds()).toEqual([UP_HOUSE]);
+    expect(
+      screen.getByRole("button", { name: "Up", selected: true }),
+    ).toBeOnTheScreen();
+    expect(screen.getByText("Always up")).toBeOnTheScreen();
     expect(phone.written).toEqual(["up"]);
 
     await fireEvent.press(screen.getByRole("button", { name: "Name an area" }));

@@ -53,8 +53,8 @@ and the phase carries those Showtimes through with their reason.
 operations. `read` answers `unknown`, because what a device hands back is not to be believed
 and the caller has to say what it will accept. `write` takes `Stored`, a closed union of the
 shapes this application remembers: a cached catalogue, a cached programme, a Seat Profile, a
-history of recent searches, the refusal cooldown, and the house lights a person chose. That union is the deny list, and none of its members holds a
-Seat.
+history of recent searches, the refusal cooldown, and the house lights a person chose. That
+union is the deny list, and none of its members holds a Seat.
 `store.write(key, seats)` is a type error, and so is
 `store.write(key, JSON.stringify(seats))`, which is the way round that a store of strings
 would have left open. Remembering one more thing is a line added to `Remembered`, the record the
