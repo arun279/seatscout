@@ -31,6 +31,11 @@ export type {
 } from "./search.js";
 export type { SeatScout } from "./seatscout.js";
 export { createSeatScout } from "./seatscout.js";
-export type { CachedCatalogue, KeyValueStore, RecentSearch } from "./store.js";
+export type {
+  CachedCatalogue,
+  HouseLights,
+  KeyValueStore,
+  RecentSearch,
+} from "./store.js";
 export { storeContract } from "./store-contract.js";
 export type { Verified } from "./verify.js";

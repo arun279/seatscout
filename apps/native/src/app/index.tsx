@@ -8,9 +8,10 @@ import {
   useTerms,
 } from "../host/address.js";
 import { deviceClock, today } from "../host/clock.js";
+import { useLights } from "../host/lights.js";
 import { useOnline } from "../host/online.js";
 import { useProfile } from "../host/profile.js";
-import { seatProfile, seatScout } from "../host/source.js";
+import { houseLights, seatProfile, seatScout } from "../host/source.js";
 import { Search } from "../search/search.js";
 
 const clock = deviceClock();
@@ -20,13 +21,16 @@ export default function Index(): ReactElement | null {
   const terms = useTerms(now);
   const online = useOnline();
   const profile = useProfile(seatProfile());
+  const lights = useLights(houseLights());
 
-  return profile === undefined ? null : (
+  return profile === undefined || lights === undefined ? null : (
     <Search
       clock={clock}
+      lights={lights}
       onAsk={(term) => askAbout(terms, term)}
       onHandOff={handOff}
       onLedger={() => openLedger(terms)}
+      onLights={houseLights().choose}
       online={online}
       onRoom={(result) => openRoom(terms, result.showtime.id, result.key)}
       onRun={goTo}

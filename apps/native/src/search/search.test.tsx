@@ -51,9 +51,11 @@ const showing = async (
   await render(
     <Search
       clock={STILL}
+      lights="system"
       onAsk={over.onAsk ?? (() => undefined)}
       onHandOff={() => undefined}
       onLedger={() => undefined}
+      onLights={() => undefined}
       online={over.online ?? true}
       onRoom={() => undefined}
       onRun={over.onRun ?? (() => undefined)}

@@ -2,6 +2,7 @@ import type { SeatProfile } from "@seatscout/core";
 import type {
   CachedCatalogue,
   CachedProgramme,
+  HouseLights,
   KeyValueStore,
   RecentSearch,
   Remembered,
@@ -80,6 +81,12 @@ const COOLDOWN: Sample<number> = {
   text: "1789000390000",
 };
 
+const HOUSE_LIGHTS: Sample<HouseLights> = {
+  named: "choice of house lights",
+  value: "up",
+  text: '"up"',
+};
+
 const remembered = (): {
   readonly [Kind in keyof Remembered]: Sample<Remembered[Kind]>;
 } => ({
@@ -88,6 +95,7 @@ const remembered = (): {
   profile: PROFILE,
   recent: RECENT,
   cooldown: COOLDOWN,
+  houseLights: HOUSE_LIGHTS,
 });
 
 const reads = async (store: KeyValueStore, key: string, expected: string) => {
