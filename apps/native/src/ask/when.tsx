@@ -52,7 +52,7 @@ const SEGMENTS: readonly Chip<Kind>[] = KINDS.map((value) => ({
 const EVENING = "19:00";
 
 const styles = StyleSheet.create({
-  window: { ...SECTION, flexDirection: "row", gap: 10 },
+  window: { ...SECTION, gap: 14 },
 });
 
 interface DaysProps {
@@ -112,23 +112,33 @@ export const When = ({ draft, today, onSpan }: WhenProps): ReactElement => {
   );
 };
 
-export const Window = ({ draft, onWindow }: WindowProps): ReactElement => (
-  <View style={styles.window}>
-    <TimeField
-      clear={ASKING.clear}
-      clock={draft.from}
-      label={ASKING.from}
-      onClock={(from) => onWindow({ from })}
-      opensAt={EVENING}
-      words={clockWords(draft.from)}
-    />
-    <TimeField
-      clear={ASKING.clear}
-      clock={draft.until}
-      label={ASKING.until}
-      onClock={(until) => onWindow({ until })}
-      opensAt={EVENING}
-      words={clockWords(draft.until)}
-    />
-  </View>
-);
+export const Window = ({ draft, onWindow }: WindowProps): ReactElement => {
+  const [open, setOpen] = useState<"from" | "until">();
+  const picking = (end: "from" | "until") => (on: boolean) =>
+    setOpen(on ? end : undefined);
+
+  return (
+    <View style={styles.window}>
+      <TimeField
+        clear={ASKING.clear}
+        clock={draft.from}
+        label={ASKING.from}
+        onClock={(from) => onWindow({ from })}
+        onPicking={picking("from")}
+        opensAt={EVENING}
+        picking={open === "from"}
+        words={clockWords(draft.from)}
+      />
+      <TimeField
+        clear={ASKING.clear}
+        clock={draft.until}
+        label={ASKING.until}
+        onClock={(until) => onWindow({ until })}
+        onPicking={picking("until")}
+        opensAt={EVENING}
+        picking={open === "until"}
+        words={clockWords(draft.until)}
+      />
+    </View>
+  );
+};

@@ -12,6 +12,8 @@ export interface TimeFieldProps {
   readonly clear: string;
   readonly opensAt: string;
   readonly onClock: (clock: string | undefined) => void;
+  readonly picking: boolean;
+  readonly onPicking: (picking: boolean) => void;
 }
 
 const styles = StyleSheet.create({
@@ -33,6 +35,8 @@ export const TimeField = ({
   clear,
   opensAt,
   onClock,
+  picking,
+  onPicking,
 }: TimeFieldProps): ReactElement => (
   <View style={styles.end}>
     <Type set="ledgerLabel" tone="silverFaint">
@@ -44,6 +48,8 @@ export const TimeField = ({
           at={timeAt(clock ?? opensAt)}
           label={label}
           onPicked={(at) => onClock(clockFor(at))}
+          onPicking={onPicking}
+          picking={picking}
           words={words}
         />
       </View>

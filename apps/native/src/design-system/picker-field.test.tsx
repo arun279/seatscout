@@ -1,19 +1,25 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { fireEvent, render, screen } from "@testing-library/react-native";
+import { useState } from "react";
 import { Platform } from "react-native";
 import { houseLights } from "../../test/lights.js";
 import type { Appearance } from "../theme.js";
-import { PickerField } from "./picker-field.js";
+import { PickerField, type PickerFieldProps } from "./picker-field.js";
 
 const FIELD = "From, 7:00p";
 
 const HELD = new Date(2026, 8, 26, 19);
 
+const Held = (props: Omit<PickerFieldProps, "picking" | "onPicking">) => {
+  const [picking, setPicking] = useState(false);
+  return <PickerField {...props} onPicking={setPicking} picking={picking} />;
+};
+
 const showing = async (appearance: Appearance = "down") => {
   const onPicked = jest.fn<(at: Date) => void>();
   houseLights(appearance);
   await render(
-    <PickerField at={HELD} label="From" onPicked={onPicked} words="7:00p" />,
+    <Held at={HELD} label="From" onPicked={onPicked} words="7:00p" />,
   );
   return onPicked;
 };

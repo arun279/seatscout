@@ -1,11 +1,17 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { fireEvent, render, screen } from "@testing-library/react-native";
-import { TimeField } from "./time-field.js";
+import { useState } from "react";
+import { TimeField, type TimeFieldProps } from "./time-field.js";
+
+const Held = (props: Omit<TimeFieldProps, "picking" | "onPicking">) => {
+  const [picking, setPicking] = useState(false);
+  return <TimeField {...props} onPicking={setPicking} picking={picking} />;
+};
 
 const timing = async (clock?: string) => {
   const onClock = jest.fn<(clock: string | undefined) => void>();
   await render(
-    <TimeField
+    <Held
       clear="Clear"
       clock={clock}
       label="From"

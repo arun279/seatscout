@@ -166,6 +166,23 @@ describe("the when term in the Ask sheet", () => {
     ).toBeOnTheScreen();
   });
 
+  it("opens one wheel at a time, under the end pressed, so the two never lie over each other", async () => {
+    await asking({ focus: "window", terms: WHOLE });
+    const end = (name: string) =>
+      screen.getByRole("button", { name: new RegExp(`^${name}, `) });
+
+    await fireEvent.press(end("From"));
+    await fireEvent.press(end("Until"));
+
+    expect(screen.getAllByTestId("time-picker")).toHaveLength(1);
+    expect(end("Until")).toBeExpanded();
+    expect(end("From")).not.toBeExpanded();
+
+    await fireEvent.press(end("Until"));
+
+    expect(screen.queryByTestId("time-picker")).toBeNull();
+  });
+
   it("keeps the last day of some days when it is tapped again", async () => {
     const { found } = await asking({ focus: "date", terms: WHOLE });
 

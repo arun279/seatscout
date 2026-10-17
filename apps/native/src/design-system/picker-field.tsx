@@ -1,7 +1,7 @@
 import DateTimePicker, {
   type DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import { type ReactElement, useState } from "react";
+import type { ReactElement } from "react";
 import { TouchableOpacity } from "react-native";
 import { useTheme } from "../theme.js";
 import { fieldBox, fieldColours } from "./field.js";
@@ -13,6 +13,8 @@ export interface PickerFieldProps {
   readonly words: string;
   readonly at: Date;
   readonly onPicked: (at: Date) => void;
+  readonly picking: boolean;
+  readonly onPicking: (picking: boolean) => void;
 }
 
 export const PickerField = ({
@@ -20,12 +22,13 @@ export const PickerField = ({
   words,
   at,
   onPicked,
+  picking,
+  onPicking,
 }: PickerFieldProps): ReactElement => {
   const theme = useTheme();
-  const [picking, setPicking] = useState(false);
   const wheels = !ON_ANDROID;
   const picked = (event: DateTimePickerEvent, chosen: Date | undefined) => {
-    if (!wheels) setPicking(false);
+    if (!wheels) onPicking(false);
     if (event.type === "set" && chosen !== undefined) onPicked(chosen);
   };
 
@@ -37,7 +40,7 @@ export const PickerField = ({
         accessibilityState={{ expanded: picking }}
         onPress={() => {
           if (wheels && !picking) onPicked(at);
-          setPicking(!picking);
+          onPicking(!picking);
         }}
         style={[fieldBox, fieldColours(theme)]}
       >
