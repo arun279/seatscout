@@ -37,10 +37,18 @@ export const DEVICE_CLAIMS = [
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /The judge rounds this commit's median and the previous run's worst to those same places/,
+    says: /The judge rounds both medians and the figure past which a measure is worse to those same places/,
     holds: "the precision each measure is compared at",
     pattern: "roundedTo(value, axis.decimals)",
     paths: ["tools/device/src"],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /A reading that did not hold is kept as `device-reading-worse`/,
+    holds: "the artifact a reading that did not hold leaves",
+    pattern: "'device-reading-worse'",
+    paths: [BASELINE],
     files: 1,
   },
   {
