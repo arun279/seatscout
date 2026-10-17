@@ -1,4 +1,4 @@
-import type { ReactElement } from "react";
+import { type ReactElement, useContext } from "react";
 import {
   askAbout,
   goTo,
@@ -8,11 +8,11 @@ import {
   useTerms,
 } from "../host/address.js";
 import { deviceClock, today } from "../host/clock.js";
-import { useLights } from "../host/lights.js";
 import { useOnline } from "../host/online.js";
 import { useProfile } from "../host/profile.js";
 import { houseLights, seatProfile, seatScout } from "../host/source.js";
 import { Search } from "../search/search.js";
+import { ChosenLights } from "../theme.js";
 
 const clock = deviceClock();
 
@@ -21,9 +21,9 @@ export default function Index(): ReactElement | null {
   const terms = useTerms(now);
   const online = useOnline();
   const profile = useProfile(seatProfile());
-  const lights = useLights(houseLights());
+  const lights = useContext(ChosenLights);
 
-  return profile === undefined || lights === undefined ? null : (
+  return profile === undefined ? null : (
     <Search
       clock={clock}
       lights={lights}

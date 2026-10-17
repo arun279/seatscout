@@ -11,7 +11,7 @@ const phoneHolding = (kept?: unknown) => {
   const store: KeyValueStore = {
     read: (key) =>
       new Promise((settle) => {
-        answer = () => settle(key === "seatscout.appearance.v1" ? kept : 0);
+        answer = () => settle(key === "seatscout.houseLights.v1" ? kept : 0);
       }),
     write: (key, value) => {
       written.push([key, value]);
@@ -73,7 +73,7 @@ describe("the house lights this phone holds", () => {
 
     expect(result.current).toBe("down");
     expect(phone.applied).toEqual(["down"]);
-    expect(phone.written).toEqual([["seatscout.appearance.v1", "down"]]);
+    expect(phone.written).toEqual([["seatscout.houseLights.v1", "down"]]);
   });
 
   it("keeps a choice made before the store answered over what the store held", async () => {

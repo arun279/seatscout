@@ -274,7 +274,7 @@ const THEMES: Readonly<Record<Appearance, Theme>> = {
 
 export const appearanceOf = (
   scheme: ColorSchemeName,
-  lights: HouseLights = "system",
+  lights: HouseLights,
 ): Appearance => {
   if (lights !== "system") return lights;
   return scheme === "light" ? "up" : "down";

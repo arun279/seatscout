@@ -3,7 +3,7 @@ import { signal } from "@seatscout/view-logic";
 import { useSyncExternalStore } from "react";
 import { Appearance, type ColorSchemeName } from "react-native";
 
-const KEY = "seatscout.appearance.v1";
+const KEY = "seatscout.houseLights.v1";
 
 const SCHEMES: Readonly<Record<HouseLights, ColorSchemeName>> = {
   system: "unspecified",
@@ -21,9 +21,9 @@ export interface HeldLights {
 }
 
 export const overriding =
-  (web: boolean) =>
+  (onWeb: boolean) =>
   (lights: HouseLights): void => {
-    if (!web) Appearance.setColorScheme(SCHEMES[lights]);
+    if (!onWeb) Appearance.setColorScheme(SCHEMES[lights]);
   };
 
 export const heldLights = (
