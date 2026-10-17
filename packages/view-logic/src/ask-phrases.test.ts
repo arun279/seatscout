@@ -186,7 +186,7 @@ describe("the words the Ask sheet is asked in", () => {
       date: "When?",
       window: "What time?",
       partySize: "How many seats?",
-      narrowing: "Which showtimes?",
+      narrowing: "Which theaters?",
       profile: "Where you sit",
     });
   });

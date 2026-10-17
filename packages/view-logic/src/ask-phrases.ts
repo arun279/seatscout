@@ -39,7 +39,7 @@ export const ASKING: AskWords = {
     date: "When?",
     window: "What time?",
     partySize: "How many seats?",
-    narrowing: "Which showtimes?",
+    narrowing: "Which theaters?",
     profile: "Where you sit",
   },
   keep: "Keep as it was",

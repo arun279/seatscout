@@ -41,17 +41,17 @@ const sizeOf = (words: string) =>
   Number(StyleSheet.flatten(screen.getByText(words).props["style"]).fontSize);
 
 describe("the card that states a Query once it has been asked", () => {
-  it("reads in the order the Search screen asks, the seat with the party and the showing after the film", async () => {
+  it("reads the film first as the page's title, then the party and the area, then the chips in the Search screen's order", async () => {
     await asked();
 
     expect(buttonsIn("asked-card")).toEqual([
-      "Two seats together",
-      "Reference seat",
-      "Near 75234",
       "Spider-Man: Brand New Day",
+      "Two seats together",
+      "Near 75234",
       "Today",
       "Any time",
-      "Any showtime",
+      "Any theater",
+      "Reference seat",
     ]);
   });
 
@@ -60,37 +60,37 @@ describe("the card that states a Query once it has been asked", () => {
     await asked({ ...NAMED_FILM, accessibleSeating: true }, opened);
 
     for (const words of [
-      "Two seats together",
-      "Accessible seating",
-      "Reference seat",
-      "Near 75234",
       "Spider-Man: Brand New Day",
+      "Two seats together",
+      "Near 75234",
       "Today",
       "Any time",
-      "Any showtime",
+      "Any theater",
+      "Accessible seating",
+      "Reference seat",
     ])
       await fireEvent.press(screen.getByRole("button", { name: words }));
 
     expect(opened.mock.calls.flat()).toEqual([
-      "partySize",
-      "partySize",
-      "profile",
-      "area",
       "movie",
+      "partySize",
+      "area",
       "date",
       "window",
       "narrowing",
+      "partySize",
+      "profile",
     ]);
   });
 
-  it("keeps the marquee for the film alone, and states the party and the area in running words", async () => {
+  it("gives the film the largest line, and the party and the area a smaller one each, every row with its chevron", async () => {
     await asked();
 
     expect(sizeOf("Two seats together")).toBeLessThan(
       sizeOf("Spider-Man: Brand New Day"),
     );
     expect(sizeOf("Near 75234")).toBe(sizeOf("Two seats together"));
-    expect(screen.getAllByText("›")).toHaveLength(1);
+    expect(screen.getAllByText("›")).toHaveLength(3);
   });
 
   it("draws the film in its own tone, as the title card does once a film is named", async () => {

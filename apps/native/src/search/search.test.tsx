@@ -98,44 +98,51 @@ describe("the Search screen's prompt face", () => {
       "Near where?",
       "Today",
       "Any time",
-      "Any showtime",
+      "Any theater",
       "Reference seat",
     ])
       expect(screen.getByRole("button", { name: words })).toBeOnTheScreen();
   });
 
-  it("says what to name next in the dock, above the button that names it", async () => {
+  it("says what is missing on the page, and docks only the button that names the next step", async () => {
     await showing();
     const dock = within(screen.getByTestId("dock"));
 
     expect(
-      dock.getByText("Name an area, then a movie playing near it."),
+      within(screen.getByTestId("prompt")).getByText(
+        "Name an area, then a movie playing near it.",
+      ),
     ).toBeOnTheScreen();
-    expect(
-      dock.getByRole("button", { name: "Name an area" }),
-    ).toBeOnTheScreen();
+    expect(dock.getAllByRole("button")).toHaveLength(1);
+    expect(dock.getByText("Name an area")).toBeOnTheScreen();
   });
 
   it("asks only for the movie once the area is named", async () => {
     await showing({ terms: { ...SHORT, area: "75234" } });
-    const dock = within(screen.getByTestId("dock"));
 
     expect(
-      dock.getByText("Pick a movie playing near 75234."),
+      within(screen.getByTestId("prompt")).getByText(
+        "Pick a movie playing near 75234.",
+      ),
     ).toBeOnTheScreen();
     expect(
-      dock.getByRole("button", { name: "Pick a movie" }),
+      within(screen.getByTestId("dock")).getByRole("button", {
+        name: "Pick a movie",
+      }),
     ).toBeOnTheScreen();
     expect(screen.queryByText(/^Name an area/)).toBeNull();
   });
 
-  it("keeps the dock out of the scroll, so the next step stays in reach however far the screen is scrolled", async () => {
+  it("keeps the dock out of the scroll, so the next step stays in reach however far the screen is scrolled, with no rule across the screen above it", async () => {
     await showing();
+    const dock = screen.getByTestId("dock");
 
     expect(
       within(screen.getByTestId("prompt")).queryByTestId("dock"),
     ).toBeNull();
-    expect(screen.getByTestId("dock")).toBeOnTheScreen();
+    expect(StyleSheet.flatten(dock.props["style"]).borderTopWidth).toBe(
+      undefined,
+    );
   });
 
   it("stands the query on the room's own ground", async () => {

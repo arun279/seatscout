@@ -42,7 +42,18 @@ export interface SearchProps {
 
 const styles = StyleSheet.create({
   screen: { flex: 1 },
+  lede: { paddingHorizontal: 18, paddingTop: 10 },
 });
+
+const Lede = ({ terms }: Pick<SearchProps, "terms">) => {
+  const lede = ledeOf(terms);
+
+  return lede === undefined ? null : (
+    <Type set="sentence" style={styles.lede} tone="silverDim">
+      {lede}
+    </Type>
+  );
+};
 
 const Remembered = ({
   seatscout,
@@ -76,12 +87,10 @@ const Prompt = ({
         terms={terms}
         today={today}
       />
+      <Lede terms={terms} />
       <Remembered onRun={onRun} seatscout={seatscout} today={today} />
     </ScrollView>
     <Dock>
-      <Type set="sentenceDock" tone="silverDim">
-        {ledeOf(terms)}
-      </Type>
       <Velvet
         label={nextStepOf(terms)}
         onPress={() => onAsk(terms.area === undefined ? "area" : "movie")}

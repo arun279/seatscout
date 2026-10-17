@@ -221,7 +221,7 @@ export const Sheet = ({
           {children}
         </ScrollView>
       </View>
-      <Dock>{dock}</Dock>
+      <Dock ruled>{dock}</Dock>
     </View>
   );
 };

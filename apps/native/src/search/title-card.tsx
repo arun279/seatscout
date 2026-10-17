@@ -6,14 +6,9 @@ import type {
   TitleCardEntry,
 } from "@seatscout/view-logic";
 import { ASKING, titleCardOf } from "@seatscout/view-logic";
-import {
-  type MemoExoticComponent,
-  memo,
-  type ReactElement,
-  type ReactNode,
-} from "react";
+import { type MemoExoticComponent, memo, type ReactElement } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
-import { Pills, Tags } from "../design-system/chips.js";
+import { Tags, TagStrip } from "../design-system/chips.js";
 import { TOUCH_FLOOR } from "../design-system/touch.js";
 import { Type } from "../design-system/type.js";
 import type { Palette, Role } from "../theme.js";
@@ -27,19 +22,21 @@ interface TitleCardProps {
   readonly onEdit: (term: Term) => void;
 }
 
+const INSET = 18;
+
 const styles = StyleSheet.create({
-  card: { gap: 2, paddingBottom: 6, paddingHorizontal: 18 },
-  group: { borderBottomWidth: 1, gap: 2, paddingBottom: 12 },
+  card: { paddingBottom: 6, paddingHorizontal: INSET },
+  groups: { paddingTop: 4 },
   row: {
     alignItems: "center",
     flexDirection: "row",
-    gap: 12,
-    justifyContent: "space-between",
+    gap: 8,
     minHeight: TOUCH_FLOOR,
     minWidth: TOUCH_FLOOR,
-    paddingVertical: 4,
+    paddingVertical: 2,
   },
   words: { flexShrink: 1 },
+  lit: { borderBottomWidth: 3, paddingBottom: 3 },
   chevron: { fontSize: 16 },
 });
 
@@ -47,47 +44,49 @@ interface RowProps {
   readonly words: string;
   readonly set: Role;
   readonly tone: keyof Palette;
-  readonly faint?: boolean;
+  readonly lit?: boolean;
+  readonly shut?: boolean;
   readonly onPress: () => void;
 }
 
-const Row = ({ words, set, tone, faint = false, onPress }: RowProps) => (
-  <TouchableOpacity
-    accessibilityHint={faint ? ASKING.areaFirst : undefined}
-    accessibilityLabel={words}
-    accessibilityRole="button"
-    onPress={onPress}
-    style={styles.row}
-  >
-    <Type set={set} style={styles.words} tone={tone}>
-      {words}
-    </Type>
-    <Type
-      set="sentenceStrong"
-      style={styles.chevron}
-      tone={faint ? "silverFaint" : "beam"}
-    >
-      ›
-    </Type>
-  </TouchableOpacity>
-);
-
-const Group = ({
-  testID,
-  children,
-}: {
-  readonly testID: string;
-  readonly children: ReactNode;
-}) => {
+const Row = ({
+  words,
+  set,
+  tone,
+  lit = false,
+  shut = false,
+  onPress,
+}: RowProps) => {
   const { colours } = useTheme();
 
   return (
-    <View
-      style={[styles.group, { borderBottomColor: colours.hairline }]}
-      testID={testID}
+    <TouchableOpacity
+      accessibilityHint={shut ? ASKING.areaFirst : undefined}
+      accessibilityLabel={words}
+      accessibilityRole="button"
+      onPress={onPress}
+      style={styles.row}
     >
-      {children}
-    </View>
+      <View
+        style={[
+          styles.words,
+          lit && [styles.lit, { borderBottomColor: colours.beam }],
+        ]}
+      >
+        <Type set={set} tone={lit ? "beam" : tone}>
+          {words}
+        </Type>
+      </View>
+      {!shut && (
+        <Type
+          set="sentenceStrong"
+          style={styles.chevron}
+          tone={lit ? "beam" : "silverFaint"}
+        >
+          ›
+        </Type>
+      )}
+    </TouchableOpacity>
   );
 };
 
@@ -99,8 +98,8 @@ const opening =
   });
 
 const filmTone = ({ area, movie }: Terms): keyof Palette => {
-  if (area === undefined) return "silverFaint";
-  return movie === undefined ? "beam" : "velvetLit";
+  if (area === undefined || movie === undefined) return "silverFaint";
+  return "velvetLit";
 };
 
 const Card = ({
@@ -115,33 +114,32 @@ const Card = ({
 
   return (
     <View style={styles.card} testID="title-card">
-      <Group testID="party-group">
-        <Row
-          onPress={() => onEdit("partySize")}
-          set="marqueeTitle"
-          tone="silver"
-          words={card.party}
-        />
-        <Tags tags={card.seats.map(open)} />
-      </Group>
-      <Group testID="area-group">
-        <Row
-          onPress={() => onEdit("area")}
-          set="marqueeTitle"
-          tone={terms.area === undefined ? "beam" : "silver"}
-          words={card.area}
-        />
-      </Group>
-      <Group testID="movie-group">
-        <Row
-          faint={terms.area === undefined}
-          onPress={() => onEdit("movie")}
-          set="marqueeHero"
-          tone={filmTone(terms)}
-          words={card.movie}
-        />
-        <Tags tags={card.showing.map(open)} />
-      </Group>
+      <Row
+        onPress={() => onEdit("partySize")}
+        set="marqueeTitle"
+        tone="silver"
+        words={card.party}
+      />
+      <Row
+        lit={terms.area === undefined}
+        onPress={() => onEdit("area")}
+        set="marqueeTitle"
+        tone="silver"
+        words={card.area}
+      />
+      <Row
+        lit={terms.area !== undefined && terms.movie === undefined}
+        onPress={() => onEdit("movie")}
+        set="marqueeHero"
+        shut={terms.area === undefined}
+        tone={filmTone(terms)}
+        words={card.movie}
+      />
+      <View style={styles.groups}>
+        {card.groups.map(({ lead, entries }) => (
+          <Tags key={lead} lead={lead} tags={entries.map(open)} />
+        ))}
+      </View>
     </View>
   );
 };
@@ -160,20 +158,28 @@ const Asked = ({
 
   return (
     <View style={styles.card} testID="asked-card">
-      <Pills
-        tags={[
-          { text: card.party, onPress: () => onEdit("partySize") },
-          ...card.seats.map(open),
-        ]}
-      />
-      <Pills tags={[{ text: card.area, onPress: () => onEdit("area") }]} />
       <Row
         onPress={() => onEdit("movie")}
-        set="marqueeTitle"
+        set="marqueeHero"
         tone="velvetLit"
         words={card.movie}
       />
-      <Pills tags={card.showing.map(open)} />
+      <Row
+        onPress={() => onEdit("partySize")}
+        set="marqueeRow"
+        tone="silver"
+        words={card.party}
+      />
+      <Row
+        onPress={() => onEdit("area")}
+        set="marqueeRow"
+        tone="silver"
+        words={card.area}
+      />
+      <TagStrip
+        inset={INSET}
+        tags={card.groups.flatMap(({ entries }) => entries).map(open)}
+      />
     </View>
   );
 };

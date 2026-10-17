@@ -30,14 +30,16 @@ const playing = (): ProgrammeState => ({
   unreached: [],
 });
 
-const showingOf = (terms: Terms, programme: ProgrammeState = NOTHING_READ) =>
-  titleCardOf(terms, programme, TODAY, REFERENCE).showing;
-
-const seatsOf = (terms: Terms) =>
-  titleCardOf(terms, NOTHING_READ, TODAY, REFERENCE).seats;
+const entriesOf = (
+  terms: Terms,
+  programme: ProgrammeState = NOTHING_READ,
+): readonly TitleCardEntry[] =>
+  titleCardOf(terms, programme, TODAY, REFERENCE).groups.flatMap(
+    (group) => group.entries,
+  );
 
 describe("the rows and chips a title card states a Query in", () => {
-  it("states the party, the area and the Movie as rows, the seat as a chip of the party, and the showing as chips of the Movie", () => {
+  it("states the party, the area and the Movie as rows, the day and time as chips When, and the theaters and seat as chips Where", () => {
     expect(
       titleCardOf(
         { movie: "245569", date: "2026-08-28", area: "75006", partySize: 2 },
@@ -47,13 +49,23 @@ describe("the rows and chips a title card states a Query in", () => {
       ),
     ).toEqual({
       party: "Two seats together",
-      seats: [{ term: "profile", words: "Reference seat" }],
       area: "Near 75006",
       movie: "Your movie",
-      showing: [
-        { term: "date", words: "Today" },
-        { term: "window", words: "Any time" },
-        { term: "narrowing", words: "Any showtime" },
+      groups: [
+        {
+          lead: "When",
+          entries: [
+            { term: "date", words: "Today" },
+            { term: "window", words: "Any time" },
+          ],
+        },
+        {
+          lead: "Where",
+          entries: [
+            { term: "narrowing", words: "Any theater" },
+            { term: "profile", words: "Reference seat" },
+          ],
+        },
       ],
     });
   });
@@ -66,13 +78,23 @@ describe("the rows and chips a title card states a Query in", () => {
       }),
     ).toEqual({
       party: "Two seats together",
-      seats: [{ term: "profile", words: "Custom seat" }],
       area: "Near where?",
       movie: "Which movie?",
-      showing: [
-        { term: "date", words: "Today" },
-        { term: "window", words: "Any time" },
-        { term: "narrowing", words: "Any showtime" },
+      groups: [
+        {
+          lead: "When",
+          entries: [
+            { term: "date", words: "Today" },
+            { term: "window", words: "Any time" },
+          ],
+        },
+        {
+          lead: "Where",
+          entries: [
+            { term: "narrowing", words: "Any theater" },
+            { term: "profile", words: "Custom seat" },
+          ],
+        },
       ],
     });
   });
@@ -110,18 +132,21 @@ describe("the rows and chips a title card states a Query in", () => {
     ["no window", {}, "Any time"],
   ])("states %s as the chip after the days", (_named, window, words) => {
     expect(
-      showingOf({ date: "2026-08-29", area: "75006", partySize: 2, ...window }),
+      entriesOf({ date: "2026-08-29", area: "75006", partySize: 2, ...window }),
     ).toEqual([
       { term: "date", words: "Tomorrow" },
       { term: "window", words },
-      { term: "narrowing", words: "Any showtime" },
+      { term: "narrowing", words: "Any theater" },
+      { term: "profile", words: "Reference seat" },
     ]);
   });
 
   it("states every value that narrows the showtimes as a chip of its own, each opening the one editor that narrows them", () => {
-    expect(showingOf(termsFrom(EVERY_PARAMETER, TODAY), playing())).toEqual([
-      { term: "date", words: "Today" },
-      { term: "window", words: "7:00p to 9:00p" },
+    expect(
+      entriesOf(termsFrom(EVERY_PARAMETER, TODAY), playing()).filter(
+        (chip) => chip.term === "narrowing",
+      ),
+    ).toEqual([
       { term: "narrowing", words: "Dolby Cinema" },
       { term: "narrowing", words: "IMAX" },
       { term: "narrowing", words: "Recliners" },
@@ -147,10 +172,10 @@ describe("the rows and chips a title card states a Query in", () => {
       { term: "narrowing", words: "Landmark" },
     ],
   ])(
-    "states a Query that narrows by one %s alone as that value, in place of any showtime",
+    "states a Query that narrows by one %s alone as that value, in place of any theater",
     (_named, narrowing, stated) => {
       expect(
-        showingOf({
+        entriesOf({
           date: "2026-08-28",
           area: "75006",
           partySize: 2,
@@ -160,13 +185,14 @@ describe("the rows and chips a title card states a Query in", () => {
         { term: "date", words: "Today" },
         { term: "window", words: "Any time" },
         stated,
+        { term: "profile", words: "Reference seat" },
       ]);
     },
   );
 
   it("names a Theater the programme does not hold by its identity", () => {
     expect(
-      showingOf(
+      entriesOf(
         termsOf({ area: "75006", theaters: ["zzzzz", "aacbt"] }, TODAY),
         playing(),
       ).filter((chip) => chip.term === "narrowing"),
@@ -176,14 +202,21 @@ describe("the rows and chips a title card states a Query in", () => {
     ]);
   });
 
-  it("states accessible seating only for a Query that asks for it, as a chip of the party that opens the seats", () => {
+  it("states accessible seating only for a Query that asks for it, Where before the seat, opening the seats", () => {
     const tonight: Terms = { date: "2026-08-28", area: "75006", partySize: 2 };
+    const whereOf = (terms: Terms) =>
+      titleCardOf(terms, NOTHING_READ, TODAY, REFERENCE).groups[1];
 
-    expect(seatsOf({ ...tonight, accessibleSeating: true })).toEqual([
-      { term: "partySize", words: "Accessible seating" },
-      { term: "profile", words: "Reference seat" },
-    ]);
-    expect(seatsOf({ ...tonight, accessibleSeating: false })).toEqual([
+    expect(whereOf({ ...tonight, accessibleSeating: true })).toEqual({
+      lead: "Where",
+      entries: [
+        { term: "narrowing", words: "Any theater" },
+        { term: "partySize", words: "Accessible seating" },
+        { term: "profile", words: "Reference seat" },
+      ],
+    });
+    expect(whereOf({ ...tonight, accessibleSeating: false })?.entries).toEqual([
+      { term: "narrowing", words: "Any theater" },
       { term: "profile", words: "Reference seat" },
     ]);
   });
@@ -201,9 +234,9 @@ describe("the rows and chips a title card states a Query in", () => {
     expect(partyOf(4)).toBe("Four seats together");
   });
 
-  it("states the days a Query spans as the Movie's first chip", () => {
+  it("states the days a Query spans as the first chip", () => {
     expect(
-      showingOf(termsFrom([["date", "2026-08-29..2026-09-02"]], TODAY))[0],
+      entriesOf(termsFrom([["date", "2026-08-29..2026-09-02"]], TODAY))[0],
     ).toEqual({ term: "date", words: "Sat 29 Aug to Wed 2 Sep" });
   });
 
@@ -213,7 +246,7 @@ describe("the rows and chips a title card states a Query in", () => {
       "partySize",
       "area",
       "movie",
-      ...[...seatsOf(every), ...showingOf(every)].map((chip) => chip.term),
+      ...entriesOf(every).map((chip) => chip.term),
     ];
 
     expect(new Set(opened)).toEqual(new Set(TERMS));

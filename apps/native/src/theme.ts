@@ -23,7 +23,6 @@ export interface Palette {
   readonly velvetLit: string;
   readonly beam: string;
   readonly beamDim: string;
-  readonly beamWash: string;
   readonly seatFree: string;
   readonly seatGone: string;
   readonly chosen: string;
@@ -46,7 +45,6 @@ const DOWN: Palette = {
   velvetLit: "#f798a4",
   beam: "#b3dff5",
   beamDim: "#82bad5",
-  beamWash: "#242c38",
   seatFree: "#8b9aab",
   seatGone: "#697187",
   chosen: "#e6ecf2",
@@ -69,7 +67,6 @@ const UP: Palette = {
   velvetLit: "#940331",
   beam: "#213a53",
   beamDim: "#3d556d",
-  beamWash: "#dbdad4",
   seatFree: "#745e4e",
   seatGone: "#8e7c6b",
   chosen: "#231e17",

@@ -74,14 +74,6 @@ describe("every appearance carries its own room past the standard", () => {
       ).toBeGreaterThanOrEqual(4.5);
     });
 
-    it(`reads the beam on its own wash at 4.5 to 1 with the lights ${appearance}`, () => {
-      const { colours } = themeFor(appearance);
-
-      expect(contrastOf(colours.beam, colours.beamWash)).toBeGreaterThanOrEqual(
-        4.5,
-      );
-    });
-
     it(`separates the console tick from the map's ground at 3 to 1 with the lights ${appearance}`, () => {
       const { colours } = themeFor(appearance);
 

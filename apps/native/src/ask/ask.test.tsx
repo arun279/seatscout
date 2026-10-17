@@ -25,7 +25,7 @@ const EDITORS: readonly (readonly [Term, string, () => unknown])[] = [
   ],
   [
     "narrowing",
-    "Which showtimes?",
+    "Which theaters?",
     () => screen.queryByRole("button", { name: "IMAX" }),
   ],
   ["profile", "Where you sit", () => screen.queryByLabelText("How far back")],

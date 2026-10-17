@@ -1,9 +1,11 @@
-import { describe, expect, it, jest } from "@jest/globals";
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { afterEach, describe, expect, it, jest } from "@jest/globals";
+import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import { selectionAsync } from "expo-haptics";
 import { Platform, StyleSheet } from "react-native";
 import { houseLights } from "../../test/lights.js";
-import { Chips, Choices, Pills, Tags } from "./chips.js";
+import { scaledTo, sizedAsAtStart } from "../../test/text-size.js";
+import { Chips, Choices, Tags, TagStrip } from "./chips.js";
+import { TextSizeProvider } from "./text-size.js";
 
 const FORMATS = [
   { value: "IMAX", text: "IMAX" },
@@ -149,22 +151,44 @@ describe("a group of chips, exactly one of them chosen", () => {
   });
 });
 
-describe("a row of tags, each opening something rather than choosing it", () => {
-  it("draws every tag in the face an unchosen chip wears", async () => {
-    await render(
-      <>
-        <Tags tags={[{ text: "Any time", onPress: () => undefined }]} />
-        <Chips chips={FORMATS} chosen={[]} onChosen={() => undefined} />
-      </>,
-    );
-    const ground = (name: string) =>
-      StyleSheet.flatten(chip(name).props["style"]).backgroundColor;
+const TWO = [
+  { text: "Today", onPress: () => undefined },
+  { text: "Any time", onPress: () => undefined },
+];
 
-    expect(ground("Any time")).toBe(ground("IMAX"));
-    expect(chip("Any time")).not.toBeSelected();
+const outlineOf = (words: string) =>
+  StyleSheet.flatten(screen.getByText(words).parent?.props["style"]);
+
+describe("a row of tags, each opening something rather than choosing it", () => {
+  it("draws each tag's words in the ledger voice, inside a faint outline shorter than the height a finger can press", async () => {
+    houseLights("down");
+    await render(<Tags tags={TWO} />);
+
+    expect(
+      StyleSheet.flatten(screen.getByText("Today").props["style"]),
+    ).toMatchObject({ color: "#e6ecf2", fontFamily: "SplineSansMono-Regular" });
+    expect(outlineOf("Today")).toMatchObject({
+      borderColor: "#a0a8b5",
+      borderRadius: Platform.OS === "android" ? 8 : 10,
+      borderWidth: 1,
+      minHeight: 32,
+    });
+    expect(StyleSheet.flatten(chip("Today").props["style"])).toMatchObject({
+      justifyContent: "center",
+      maxWidth: "100%",
+      minHeight: Platform.OS === "android" ? 48 : 44,
+    });
   });
 
-  it("says which tag was pressed", async () => {
+  it("names its row with a lead that is read but not pressed", async () => {
+    await render(<Tags lead="When" tags={TWO} />);
+
+    expect(screen.getByText("When")).toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: "When" })).toBeNull();
+    expect(screen.getAllByRole("button")).toHaveLength(2);
+  });
+
+  it("says which tag was pressed, with one selection tick", async () => {
     const opened = jest.fn();
     await render(
       <Tags
@@ -178,71 +202,41 @@ describe("a row of tags, each opening something rather than choosing it", () => 
     await fireEvent.press(chip("Any time"));
 
     expect(opened.mock.calls).toEqual([["Any time"]]);
+    expect(selectionAsync).toHaveBeenCalledTimes(1);
   });
 });
 
-describe("a line of pills, each opening something in less room than a tag", () => {
-  it("draws its words in the beam on the beam's wash, in a rounded box inset from the words' edge", async () => {
-    houseLights("down");
-    await render(
-      <Pills tags={[{ text: "Any time", onPress: () => undefined }]} />,
+describe("a strip of tags", () => {
+  afterEach(() => act(sizedAsAtStart));
+
+  const strip = () =>
+    render(
+      <TextSizeProvider>
+        <TagStrip inset={18} tags={TWO} />
+      </TextSizeProvider>,
     );
 
-    expect(
-      StyleSheet.flatten(screen.getByText("Any time").props["style"]),
-    ).toMatchObject({
-      backgroundColor: "#242c38",
-      borderRadius: 8,
-      color: "#b3dff5",
-      overflow: "hidden",
-      paddingHorizontal: 9,
-      paddingVertical: 4,
+  it("scrolls sideways from the card's edge to the screen's at the standard text sizes", async () => {
+    await act(() => scaledTo(1.353));
+    await strip();
+    const scroller = screen.getByTestId("tag-strip");
+
+    expect(StyleSheet.flatten(scroller.props["style"])).toEqual({
+      marginHorizontal: -18,
     });
-  });
-
-  it("lays its pills in a wrapping row that starts its words where the lines above and below start theirs", async () => {
-    await render(
-      <Pills
-        tags={[
-          { text: "Today", onPress: () => undefined },
-          { text: "Any time", onPress: () => undefined },
-        ]}
-      />,
-    );
-
-    expect(StyleSheet.flatten(screen.root?.props["style"])).toEqual({
-      columnGap: 8,
-      flexDirection: "row",
-      flexWrap: "wrap",
-      marginLeft: -9,
-      rowGap: 4,
-    });
-  });
-
-  it("centres each pill's words in the full height a finger can press", async () => {
-    await render(
-      <Pills tags={[{ text: "Any time", onPress: () => undefined }]} />,
-    );
-
     expect(
-      StyleSheet.flatten(chip("Any time").props["style"]).justifyContent,
-    ).toBe("center");
+      StyleSheet.flatten(scroller.props["contentContainerStyle"]),
+    ).toMatchObject({ flexDirection: "row", paddingHorizontal: 18 });
+    expect(screen.getAllByRole("button")).toHaveLength(2);
   });
 
-  it("says which pill was pressed, with one selection tick", async () => {
-    const opened = jest.fn();
-    await render(
-      <Pills
-        tags={[
-          { text: "Today", onPress: () => opened("Today") },
-          { text: "Any time", onPress: () => opened("Any time") },
-        ]}
-      />,
-    );
+  it("wraps instead at the accessibility text sizes, so no tag is out of reach", async () => {
+    await act(() => scaledTo(1.786));
+    await strip();
 
-    await fireEvent.press(chip("Any time"));
-
-    expect(opened.mock.calls).toEqual([["Any time"]]);
-    expect(selectionAsync).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId("tag-strip")).toBeNull();
+    expect(
+      StyleSheet.flatten(chip("Today").parent?.props["style"]),
+    ).toMatchObject({ flexDirection: "row", flexWrap: "wrap" });
   });
 });

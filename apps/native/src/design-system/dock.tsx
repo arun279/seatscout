@@ -5,19 +5,20 @@ import { useTheme } from "../theme.js";
 
 export interface DockProps {
   readonly children: ReactNode;
+  readonly ruled?: boolean;
 }
 
 const styles = StyleSheet.create({
   dock: {
-    borderTopWidth: 1,
     gap: 8,
     paddingBottom: 12,
     paddingHorizontal: 18,
     paddingTop: 12,
   },
+  ruled: { borderTopWidth: 1 },
 });
 
-export const Dock = ({ children }: DockProps): ReactElement => {
+export const Dock = ({ children, ruled = false }: DockProps): ReactElement => {
   const theme = useTheme();
 
   return (
@@ -25,10 +26,8 @@ export const Dock = ({ children }: DockProps): ReactElement => {
       edges={["bottom"]}
       style={[
         styles.dock,
-        {
-          backgroundColor: theme.colours.house,
-          borderTopColor: theme.colours.hairline,
-        },
+        { backgroundColor: theme.colours.house },
+        ruled && [styles.ruled, { borderTopColor: theme.colours.hairline }],
       ]}
       testID="dock"
     >

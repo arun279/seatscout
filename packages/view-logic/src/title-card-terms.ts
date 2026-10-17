@@ -22,12 +22,16 @@ export interface TitleCardEntry {
   readonly words: string;
 }
 
+interface TitleCardGroup {
+  readonly lead: string;
+  readonly entries: readonly TitleCardEntry[];
+}
+
 export interface TitleCard {
   readonly party: string;
-  readonly seats: readonly TitleCardEntry[];
   readonly area: string;
   readonly movie: string;
-  readonly showing: readonly TitleCardEntry[];
+  readonly groups: readonly TitleCardGroup[];
 }
 
 const windowOf = (from: string | undefined, until: string | undefined) => {
@@ -37,14 +41,14 @@ const windowOf = (from: string | undefined, until: string | undefined) => {
   return until === undefined ? "Any time" : `Until ${timeOf(until)}`;
 };
 
-const showtimesOf = (terms: Terms, programme: ProgrammeState) => {
+const theatersOf = (terms: Terms, programme: ProgrammeState) => {
   const narrowed = [
     ...(terms.formats ?? []),
     ...(terms.amenities ?? []),
     ...(terms.chains ?? []),
     ...(terms.theaters ?? []).map((id) => theaterNamed(programme.theaters, id)),
   ];
-  return (narrowed.length > 0 ? narrowed : ["Any showtime"]).map(
+  return (narrowed.length > 0 ? narrowed : ["Any theater"]).map(
     (words): TitleCardEntry => ({ term: "narrowing", words }),
   );
 };
@@ -56,20 +60,28 @@ export const titleCardOf = (
   profile: SeatProfile,
 ): TitleCard => ({
   party: partyOf(terms.partySize),
-  seats: [
-    ...(terms.accessibleSeating === true
-      ? [{ term: "partySize" as const, words: "Accessible seating" }]
-      : []),
-    { term: "profile", words: seatOf(profile) },
-  ],
   area: terms.area === undefined ? ASKING.headings.area : `Near ${terms.area}`,
   movie:
     terms.movie === undefined
       ? ASKING.headings.movie
       : filmOf(programme.movies, terms),
-  showing: [
-    { term: "date", words: whenWordsOf(terms, today) },
-    { term: "window", words: windowOf(terms.from, terms.until) },
-    ...showtimesOf(terms, programme),
+  groups: [
+    {
+      lead: "When",
+      entries: [
+        { term: "date", words: whenWordsOf(terms, today) },
+        { term: "window", words: windowOf(terms.from, terms.until) },
+      ],
+    },
+    {
+      lead: "Where",
+      entries: [
+        ...theatersOf(terms, programme),
+        ...(terms.accessibleSeating === true
+          ? [{ term: "partySize" as const, words: "Accessible seating" }]
+          : []),
+        { term: "profile", words: seatOf(profile) },
+      ],
+    },
   ],
 });

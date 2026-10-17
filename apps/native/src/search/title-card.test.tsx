@@ -20,7 +20,7 @@ const NAMED: readonly (readonly [string, Term])[] = [
   ["Which movie?", "movie"],
   ["Today", "date"],
   ["Any time", "window"],
-  ["Any showtime", "narrowing"],
+  ["Any theater", "narrowing"],
   ["Reference seat", "profile"],
 ];
 
@@ -136,51 +136,73 @@ describe("the film before an area is named", () => {
   });
 });
 
-describe("the groups the rows gather their chips into", () => {
-  it("keeps the seat with the party and the showing with the film, apart from the area", async () => {
+describe("the chips under the rows", () => {
+  it("gathers the day and time When, and the theaters and the seat Where, after the three rows", async () => {
     await card({ ...NEAR, accessibleSeating: true });
 
-    expect(buttonsIn("party-group")).toEqual([
+    expect(buttonsIn("title-card")).toEqual([
       "Two seats together",
-      "Accessible seating",
-      "Reference seat",
-    ]);
-    expect(buttonsIn("area-group")).toEqual(["Near 75234"]);
-    expect(buttonsIn("movie-group")).toEqual([
+      "Near 75234",
       "Which movie?",
       "Today",
       "Any time",
-      "Any showtime",
+      "Any theater",
+      "Accessible seating",
+      "Reference seat",
     ]);
+    expect(screen.getByText("When")).toBeOnTheScreen();
+    expect(screen.getByText("Where")).toBeOnTheScreen();
   });
 
-  it("rules each group off from the next in the hairline", async () => {
-    houseLights("down");
-    await card(NEAR);
+  it("draws one chip for each value that narrows the showtimes", async () => {
+    await card({ ...NEAR, formats: ["IMAX", "Dolby Cinema"] });
 
-    for (const group of ["party-group", "area-group", "movie-group"])
-      expect(
-        StyleSheet.flatten(screen.getByTestId(group).props["style"]),
-      ).toMatchObject({ borderBottomColor: "#323748", borderBottomWidth: 1 });
+    expect(screen.getByRole("button", { name: "IMAX" })).toBeOnTheScreen();
+    expect(
+      screen.getByRole("button", { name: "Dolby Cinema" }),
+    ).toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: "Any theater" })).toBeNull();
   });
 });
 
-describe("the rows", () => {
-  it("draw the film's chevron faint until an area is named, and as the others once it is", async () => {
-    const chevrons = async (terms: Terms) => {
-      await card(terms);
-      const drawn = screen
-        .getAllByText("›")
-        .map((one) => StyleSheet.flatten(one.props["style"]).color);
-      await cleanup();
-      return drawn;
-    };
-    const [, area, film] = await chevrons(SHORT);
-    const named = await chevrons(NEAR);
+describe("the strip under the term to name next", () => {
+  const stripOf = (words: string) =>
+    StyleSheet.flatten(screen.getByText(words).parent?.props["style"]);
 
-    expect(String(film)).toMatch(/^#[0-9a-f]{6}$/);
-    expect(film).not.toBe(area);
-    expect(named[2]).toBe(named[1]);
+  it("lies under the lit term in the beam, and under no other", async () => {
+    houseLights("down");
+    await card(SHORT);
+
+    expect(stripOf("Near where?")).toMatchObject({
+      borderBottomColor: "#b3dff5",
+      borderBottomWidth: 3,
+    });
+    expect(stripOf("Two seats together").borderBottomWidth).toBeUndefined();
+    expect(stripOf("Which movie?").borderBottomWidth).toBeUndefined();
+  });
+
+  it("moves to the film once the area is named", async () => {
+    await card(NEAR);
+
+    expect(stripOf("Which movie?").borderBottomWidth).toBe(3);
+    expect(stripOf("Near 75234").borderBottomWidth).toBeUndefined();
+  });
+});
+
+describe("the rows' chevrons", () => {
+  const chevrons = async (terms: Terms) => {
+    houseLights("down");
+    await card(terms);
+    const drawn = screen
+      .getAllByText("›")
+      .map((one) => StyleSheet.flatten(one.props["style"]).color);
+    await cleanup();
+    return drawn;
+  };
+
+  it("leave the film without one until an area is named, since it cannot open a list yet", async () => {
+    expect(await chevrons(SHORT)).toEqual(["#a0a8b5", "#b3dff5"]);
+    expect(await chevrons(NEAR)).toEqual(["#a0a8b5", "#a0a8b5", "#b3dff5"]);
   });
 });
 
@@ -194,17 +216,5 @@ describe("the film the card announces", () => {
     expect(named).toMatch(/^#[0-9a-f]{6}$/);
     expect(named).not.toBe(await colourIn(NEAR, "Which movie?"));
     expect(named).not.toBe(await colourIn(NEAR, "Near 75234"));
-  });
-});
-
-describe("the chips under the rows", () => {
-  it("draws one chip for each value that narrows the showtimes", async () => {
-    await card({ ...NEAR, formats: ["IMAX", "Dolby Cinema"] });
-
-    expect(screen.getByRole("button", { name: "IMAX" })).toBeOnTheScreen();
-    expect(
-      screen.getByRole("button", { name: "Dolby Cinema" }),
-    ).toBeOnTheScreen();
-    expect(screen.queryByRole("button", { name: "Any showtime" })).toBeNull();
   });
 });
