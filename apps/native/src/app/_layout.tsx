@@ -9,6 +9,7 @@ import type { ReactElement } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SHEET_PRESENTATION } from "../design-system/sheet.js";
 import { TextSizeProvider } from "../design-system/text-size.js";
+import { atRestOn } from "../host/address.js";
 import { useLatestUpdate } from "../host/updates.js";
 import { FACES } from "../theme.js";
 
@@ -40,7 +41,7 @@ export default function Layout(): ReactElement | null {
   const [loaded, unreadable] = useFonts(FACES);
   const pathname = usePathname();
   const params = useGlobalSearchParams();
-  useLatestUpdate(pathname === "/" && Object.keys(params).length === 0);
+  useLatestUpdate(atRestOn(pathname, params));
 
   if (!loaded && unreadable === null) return null;
 

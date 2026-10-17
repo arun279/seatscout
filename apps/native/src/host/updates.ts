@@ -21,10 +21,10 @@ export const useLatestUpdate = (atRest: boolean): void => {
   }, [isUpdatePending, atRest]);
 
   useEffect(() => {
-    if (!isEnabled) return;
+    if (!isEnabled || isUpdatePending) return;
     const watching = AppState.addEventListener("change", (state) => {
       if (state === "active") fetchNewer().catch(() => undefined);
     });
     return () => watching.remove();
-  }, []);
+  }, [isUpdatePending]);
 };

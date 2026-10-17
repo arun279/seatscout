@@ -132,6 +132,18 @@ describe("the newest update, applied when nothing would be lost", () => {
     expect(listen).not.toHaveBeenCalled();
   });
 
+  it("stops watching once an update is downloaded and waiting, since there is nothing newer to fetch", async () => {
+    const { listen, remove } = listening();
+    const hooked = await renderHook(() => useLatestUpdate(false));
+    expect(listen).toHaveBeenCalledTimes(1);
+
+    mockPending = true;
+    await hooked.rerender(undefined);
+
+    expect(remove).toHaveBeenCalledTimes(1);
+    expect(listen).toHaveBeenCalledTimes(1);
+  });
+
   it("stops watching when the app's root goes away", async () => {
     const { remove } = listening();
     const hooked = await renderHook(() => useLatestUpdate(false));
