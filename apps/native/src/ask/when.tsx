@@ -112,10 +112,11 @@ export const When = ({ draft, today, onSpan }: WhenProps): ReactElement => {
   );
 };
 
+type End = "from" | "until";
+
 export const Window = ({ draft, onWindow }: WindowProps): ReactElement => {
-  const [open, setOpen] = useState<"from" | "until">();
-  const picking = (end: "from" | "until") => (on: boolean) =>
-    setOpen(on ? end : undefined);
+  const [open, setOpen] = useState<End>();
+  const picking = (end: End) => (on: boolean) => setOpen(on ? end : undefined);
 
   return (
     <View style={styles.window}>

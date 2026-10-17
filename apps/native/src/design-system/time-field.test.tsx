@@ -65,11 +65,13 @@ describe("one end of the time window", () => {
     expect(clocked).toHaveBeenCalledWith("18:05");
   });
 
-  it("lets a held time be cleared back to any time", async () => {
+  it("lets a held time be cleared back to any time, closing the wheel that showed it", async () => {
     const clocked = await timing("21:30");
 
+    await fireEvent.press(screen.getByRole("button", { name: "From, 7:00p" }));
     await fireEvent.press(screen.getByRole("button", { name: "Clear, From" }));
 
-    expect(clocked).toHaveBeenCalledWith(undefined);
+    expect(clocked).toHaveBeenLastCalledWith(undefined);
+    expect(screen.queryByTestId("time-picker")).toBeNull();
   });
 });

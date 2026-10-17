@@ -17,9 +17,7 @@ export interface TimeFieldProps {
 }
 
 const styles = StyleSheet.create({
-  end: { flex: 1, gap: 6 },
-  row: { alignItems: "flex-start", flexDirection: "row" },
-  picked: { flex: 1 },
+  end: { gap: 6 },
   clear: {
     alignItems: "center",
     justifyContent: "center",
@@ -42,29 +40,30 @@ export const TimeField = ({
     <Type set="ledgerLabel" tone="silverFaint">
       {label}
     </Type>
-    <View style={styles.row}>
-      <View style={styles.picked}>
-        <PickerField
-          at={timeAt(clock ?? opensAt)}
-          label={label}
-          onPicked={(at) => onClock(clockFor(at))}
-          onPicking={onPicking}
-          picking={picking}
-          words={words}
-        />
-      </View>
-      {clock !== undefined && (
-        <TouchableOpacity
-          accessibilityLabel={`${clear}, ${label}`}
-          accessibilityRole="button"
-          onPress={() => onClock(undefined)}
-          style={styles.clear}
-        >
-          <Type set="sentenceStrong" tone="silverDim">
-            ✕
-          </Type>
-        </TouchableOpacity>
-      )}
-    </View>
+    <PickerField
+      at={timeAt(clock ?? opensAt)}
+      beside={
+        clock !== undefined && (
+          <TouchableOpacity
+            accessibilityLabel={`${clear}, ${label}`}
+            accessibilityRole="button"
+            onPress={() => {
+              onPicking(false);
+              onClock(undefined);
+            }}
+            style={styles.clear}
+          >
+            <Type set="sentenceStrong" tone="silverDim">
+              ✕
+            </Type>
+          </TouchableOpacity>
+        )
+      }
+      label={label}
+      onPicked={(at) => onClock(clockFor(at))}
+      onPicking={onPicking}
+      picking={picking}
+      words={words}
+    />
   </View>
 );
