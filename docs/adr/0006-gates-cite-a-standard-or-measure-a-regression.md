@@ -967,8 +967,8 @@ and `tools/planted-red/src/literal-ids.test.ts` runs the rule over them.
 **Words drawn any way but through `Type` or `Field` are refused, until React Native 0.87.** On
 React Native's New Architecture a text keeps the height it measured at the old text size when the
 reader changes the size while the app is open, so words grow inside a box that does not
-([react-native#57512](https://github.com/facebook/react-native/issues/57512)). The fix,
-[react-native#57246](https://github.com/facebook/react-native/pull/57246), ships in 0.87. Until
+([react-native#57512](https://github.com/react/react-native/issues/57512)). The fix,
+[react-native#57246](https://github.com/react/react-native/pull/57246), ships in 0.87. Until
 then `Type` keys its `Text` on the font scale, so each change draws the words again and they
 measure fresh. A `TextInput` measures again by itself, so `Field` keeps its input and the reader
 keeps the keyboard, the cursor and what they typed.
