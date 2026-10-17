@@ -27,7 +27,6 @@ export const DEPTH: Scale = { min: 0, max: 1, step: 0.01 };
 export const LATERAL: Scale = { min: -1, max: 1, step: 0.01 };
 
 export const SITTING = {
-  heading: "Where you sit",
   drag: "Drag the dot, or use the two ranges below. The faint circle is Reference, where it was.",
   depth: "How far back",
   depthEnds: ["Front row", "Back row"],

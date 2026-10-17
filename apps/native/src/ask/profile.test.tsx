@@ -2,7 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 import { REFERENCE } from "@seatscout/client";
 import { act, fireEvent, screen } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
-import { asking, NEAR, submit } from "../../test/ask.js";
+import { asking, submit, WHOLE } from "../../test/ask.js";
 import { houseLights } from "../../test/lights.js";
 import { TOUCH_FLOOR } from "../design-system/touch.js";
 
@@ -34,7 +34,7 @@ const laidOut = async (width: number) => {
 
 describe("where you sit, in the Ask sheet", () => {
   it("opens on the Profile it was given, saying each value in words", async () => {
-    await asking({ terms: NEAR });
+    await asking({ focus: "profile", terms: WHOLE });
 
     expect(screen.getByText("67% of the way back")).toBeOnTheScreen();
     expect(screen.getByText("on the centreline")).toBeOnTheScreen();
@@ -44,7 +44,7 @@ describe("where you sit, in the Ask sheet", () => {
   });
 
   it("hands out the depth and side slid to with the search", async () => {
-    const { found } = await asking({ terms: NEAR });
+    const { found } = await asking({ focus: "profile", terms: WHOLE });
 
     await slide("How far back", 0.2);
     await slide("Left or right", -0.5);
@@ -60,7 +60,7 @@ describe("where you sit, in the Ask sheet", () => {
   });
 
   it("hands out each weight slid to, and says how much it is minded", async () => {
-    const { found } = await asking({ terms: NEAR });
+    const { found } = await asking({ focus: "profile", terms: WHOLE });
 
     await slide("The front rows", 1.5);
     await slide("A console between seats", 0);
@@ -75,7 +75,7 @@ describe("where you sit, in the Ask sheet", () => {
   });
 
   it("moves the target to where the room drawing is touched and dragged", async () => {
-    const { found } = await asking({ terms: NEAR });
+    const { found } = await asking({ focus: "profile", terms: WHOLE });
     await laidOut(320);
 
     await respond("onResponderGrant", touched(160, 45));
@@ -90,7 +90,7 @@ describe("where you sit, in the Ask sheet", () => {
   });
 
   it("takes the whole drawing as the room, whatever width it is laid out at", async () => {
-    const { found } = await asking({ terms: NEAR });
+    const { found } = await asking({ focus: "profile", terms: WHOLE });
     await laidOut(640);
 
     await respond("onResponderGrant", touched(170, 250));
@@ -104,7 +104,7 @@ describe("where you sit, in the Ask sheet", () => {
   });
 
   it("takes a touch that lands on the dot, and leaves one anywhere else to the scroll", async () => {
-    await asking({ terms: NEAR });
+    await asking({ focus: "profile", terms: WHOLE });
     await laidOut(320);
     const takes = (x: number, y: number) =>
       picker().props["onStartShouldSetResponder"](touched(x, y));
@@ -119,7 +119,7 @@ describe("where you sit, in the Ask sheet", () => {
   });
 
   it("holds the sheet still while a finger is on the drawing, and lets it scroll again on release", async () => {
-    await asking({ terms: NEAR });
+    await asking({ focus: "profile", terms: WHOLE });
     const scrolls = () =>
       screen.getByTestId("sheet-scroll").props["scrollEnabled"];
     expect(scrolls()).toBe(true);
@@ -138,7 +138,7 @@ describe("where you sit, in the Ask sheet", () => {
 
   it("draws the pair where the target is, on the room's own ground", async () => {
     houseLights("down");
-    await asking({ terms: NEAR });
+    await asking({ focus: "profile", terms: WHOLE });
     const hidden = { includeHiddenElements: true };
 
     expect(screen.getByTestId("pair", hidden).props).toMatchObject({
@@ -153,7 +153,7 @@ describe("where you sit, in the Ask sheet", () => {
 
   it("draws the faint Reference circle only once the Profile has left it", async () => {
     const was = { includeHiddenElements: true };
-    await asking({ terms: NEAR });
+    await asking({ focus: "profile", terms: WHOLE });
     expect(screen.queryByTestId("was", was)).toBeNull();
 
     await slide("How far back", 0.2);
@@ -165,7 +165,11 @@ describe("where you sit, in the Ask sheet", () => {
   });
 
   it("goes back to Reference in one press, and offers no such press at Reference", async () => {
-    const { found } = await asking({ terms: NEAR, profile: FRONT_ROW });
+    const { found } = await asking({
+      focus: "profile",
+      terms: WHOLE,
+      profile: FRONT_ROW,
+    });
 
     await fireEvent.press(
       screen.getByRole("button", { name: "Back to Reference" }),

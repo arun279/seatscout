@@ -103,6 +103,7 @@ export type Role =
   | "sentenceStrong"
   | "sentenceLead"
   | "sentence"
+  | "sentenceDock"
   | "sentenceSmall"
   | "ledgerCount"
   | "ledgerField"
@@ -164,6 +165,14 @@ const TYPE: Readonly<Record<Role, TypeRole>> = {
     tracking: 0,
     leading: 1.55,
     transform: "none",
+  },
+  sentenceDock: {
+    family: BODY,
+    size: 15,
+    tracking: 0,
+    leading: 1.55,
+    transform: "none",
+    cap: 2,
   },
   sentenceSmall: {
     family: BODY,

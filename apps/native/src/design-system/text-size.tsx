@@ -17,3 +17,8 @@ export const TextSizeProvider = ({
 );
 
 export const useTextSize = (): number => useContext(TextSize);
+
+const LARGEST_STANDARD_SIZE = 1.353;
+
+export const useLargeText = (): boolean =>
+  useTextSize() > LARGEST_STANDARD_SIZE;

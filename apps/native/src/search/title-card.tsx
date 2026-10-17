@@ -5,15 +5,16 @@ import type {
   Terms,
   TitleCardEntry,
 } from "@seatscout/view-logic";
-import { termLinesOf } from "@seatscout/view-logic";
-import { Fragment, type ReactElement } from "react";
+import { ASKING, nextOf, titleCardOf } from "@seatscout/view-logic";
+import { type MemoExoticComponent, memo, type ReactElement } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
-import { SLOP, TOUCH_FLOOR } from "../design-system/touch.js";
+import { Tags, TagStrip } from "../design-system/chips.js";
+import { TOUCH_FLOOR } from "../design-system/touch.js";
 import { Type } from "../design-system/type.js";
 import type { Palette, Role } from "../theme.js";
 import { useTheme } from "../theme.js";
 
-export interface TitleCardProps {
+interface TitleCardProps {
   readonly terms: Terms;
   readonly programme: ProgrammeState;
   readonly profile: SeatProfile;
@@ -21,104 +22,162 @@ export interface TitleCardProps {
   readonly onEdit: (term: Term) => void;
 }
 
+const INSET = 18;
+
 const styles = StyleSheet.create({
-  card: { gap: 7, paddingBottom: 6, paddingHorizontal: 22, paddingTop: 10 },
-  line: { alignItems: "baseline", flexDirection: "row", flexWrap: "wrap" },
-  term: {
-    justifyContent: "center",
-    minWidth: TOUCH_FLOOR - SLOP.left - SLOP.right,
+  card: { paddingBottom: 6, paddingHorizontal: INSET },
+  groups: { paddingTop: 4 },
+  row: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 8,
+    minHeight: TOUCH_FLOOR,
+    minWidth: TOUCH_FLOOR,
+    paddingVertical: 2,
   },
-  underline: {
-    textDecorationLine: "underline",
-    textDecorationStyle: "dotted",
-  },
+  words: { flexShrink: 1 },
+  lit: { borderBottomWidth: 3, paddingBottom: 3 },
+  chevron: { fontSize: 16 },
 });
 
-const Line = ({
-  entries,
-  set,
-  tone,
-  ruled,
-  onEdit,
-}: {
-  readonly entries: readonly TitleCardEntry[];
+interface RowProps {
+  readonly words: string;
   readonly set: Role;
   readonly tone: keyof Palette;
-  readonly ruled: keyof Palette;
-  readonly onEdit: (term: Term) => void;
-}) => {
-  const theme = useTheme();
+  readonly lit?: boolean;
+  readonly shut?: boolean;
+  readonly onPress: () => void;
+}
+
+const Row = ({
+  words,
+  set,
+  tone,
+  lit = false,
+  shut = false,
+  onPress,
+}: RowProps) => {
+  const { colours } = useTheme();
 
   return (
-    <View style={styles.line}>
-      {entries.map((entry, at) => (
-        <Fragment key={entry.words}>
-          {at > 0 && (
-            <Type set={set} tone="silverFaint">
-              {entry.joinedBy ?? " · "}
-            </Type>
-          )}
-          <TouchableOpacity
-            accessibilityRole="button"
-            hitSlop={SLOP}
-            onPress={() => onEdit(entry.term)}
-            style={[
-              styles.term,
-              { minHeight: theme.type[set].size * theme.type[set].leading },
-            ]}
-          >
-            <Type
-              set={set}
-              style={[
-                styles.underline,
-                { textDecorationColor: theme.colours[ruled] },
-              ]}
-              tone={tone}
-            >
-              {entry.words}
-            </Type>
-          </TouchableOpacity>
-        </Fragment>
-      ))}
-    </View>
+    <TouchableOpacity
+      accessibilityHint={shut ? ASKING.areaFirst : undefined}
+      accessibilityLabel={words}
+      accessibilityRole="button"
+      onPress={onPress}
+      style={styles.row}
+    >
+      <View
+        style={[
+          styles.words,
+          lit && [styles.lit, { borderBottomColor: colours.beam }],
+        ]}
+      >
+        <Type set={set} tone={lit ? "beam" : tone}>
+          {words}
+        </Type>
+      </View>
+      {!shut && (
+        <Type
+          set="sentenceStrong"
+          style={styles.chevron}
+          tone={lit ? "beam" : "silverFaint"}
+        >
+          ›
+        </Type>
+      )}
+    </TouchableOpacity>
   );
 };
 
-export const TitleCard = ({
+const opening =
+  (onEdit: (term: Term) => void) =>
+  ({ term, words }: TitleCardEntry) => ({
+    text: words,
+    onPress: () => onEdit(term),
+  });
+
+const Card = ({
   terms,
   programme,
   profile,
   today,
   onEdit,
 }: TitleCardProps): ReactElement => {
-  const [party, movie, details] = termLinesOf(terms, programme, today, profile);
+  const card = titleCardOf(terms, programme, today, profile);
+  const open = opening(onEdit);
+  const next = nextOf(terms);
 
   return (
     <View style={styles.card} testID="title-card">
-      <Type set="ledgerLabel" tone="silverFaint">
-        Your query · tap any line to change it
-      </Type>
-      <Line
-        entries={party}
-        onEdit={onEdit}
-        ruled="hairline"
+      <Row
+        onPress={() => onEdit("partySize")}
         set="marqueeTitle"
         tone="silver"
+        words={card.party}
       />
-      <Line
-        entries={movie}
-        onEdit={onEdit}
-        ruled="hairline"
+      <Row
+        lit={next === "area"}
+        onPress={() => onEdit("area")}
+        set="marqueeTitle"
+        tone="silver"
+        words={card.area}
+      />
+      <Row
+        lit={next === "movie"}
+        onPress={() => onEdit("movie")}
         set="marqueeHero"
-        tone={terms.movie === undefined ? "silverFaint" : "velvetLit"}
+        shut={next === "area"}
+        tone={next === "area" ? "silverFaint" : "velvetLit"}
+        words={card.movie}
       />
-      <Line
-        entries={details}
-        onEdit={onEdit}
-        ruled="silverFaint"
-        set="ledger"
-        tone="silverDim"
+      <View style={styles.groups}>
+        {card.groups.map(({ lead, entries }) => (
+          <Tags key={lead} lead={lead} tags={entries.map(open)} />
+        ))}
+      </View>
+    </View>
+  );
+};
+
+export const TitleCard: MemoExoticComponent<typeof Card> = memo(Card);
+
+const Asked = ({
+  terms,
+  programme,
+  profile,
+  today,
+  onEdit,
+}: TitleCardProps): ReactElement => {
+  const card = titleCardOf(terms, programme, today, profile);
+  const open = opening(onEdit);
+
+  return (
+    <View style={styles.card} testID="asked-card">
+      <Row
+        onPress={() => onEdit("movie")}
+        set="marqueeHero"
+        tone="velvetLit"
+        words={card.movie}
+      />
+      <Row
+        onPress={() => onEdit("partySize")}
+        set="marqueeRow"
+        tone="silver"
+        words={card.party}
+      />
+      <Row
+        onPress={() => onEdit("area")}
+        set="marqueeRow"
+        tone="silver"
+        words={card.area}
+      />
+      <TagStrip
+        inset={INSET}
+        tags={card.groups.flatMap(({ entries }) => entries).map(open)}
       />
     </View>
   );
 };
+
+export const AskedCard: MemoExoticComponent<typeof Asked> = memo(Asked);

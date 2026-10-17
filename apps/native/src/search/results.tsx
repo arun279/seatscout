@@ -27,7 +27,7 @@ import { type Session, useSession, useShown } from "../host/session.js";
 import { useTheme } from "../theme.js";
 import { Card } from "./card.js";
 import { Strip } from "./coverage.js";
-import { TitleCard } from "./title-card.js";
+import { AskedCard } from "./title-card.js";
 import { Empty, Partial, Refused, Unreachable } from "./verdicts.js";
 
 export interface ResultsProps {
@@ -219,7 +219,7 @@ export const Results = ({
       ListHeaderComponent={
         <>
           <ScreenBand />
-          <TitleCard
+          <AskedCard
             onEdit={onEdit}
             profile={profile}
             programme={programme}

@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it, jest } from "@jest/globals";
 import type { SeatGroupResult } from "@seatscout/client";
+import { TERMS } from "@seatscout/view-logic";
 import { renderHook } from "@testing-library/react-native";
 import { first, settled, WARM_UP } from "../../test/rooms.js";
 
@@ -173,16 +174,14 @@ describe("opening the Ask sheet over the query it is editing", () => {
     });
   });
 
-  it("opens focused on either term the sheet has a field for", () => {
-    mockParams.mockReturnValue({ term: "movie" });
-    expect(useFocus()).toBe("movie");
+  for (const term of TERMS)
+    it(`opens on the ${term} editor when the route names it`, () => {
+      mockParams.mockReturnValue({ term });
+      expect(useFocus()).toBe(term);
+    });
 
-    mockParams.mockReturnValue({ term: "area" });
-    expect(useFocus()).toBe("area");
-  });
-
-  it("ignores a term it cannot open focused on, and one nobody named", () => {
-    mockParams.mockReturnValue({ term: "profile" });
+  it("ignores a term it has no editor for, and one nobody named", () => {
+    mockParams.mockReturnValue({ term: "formats" });
     expect(useFocus()).toBeUndefined();
 
     mockParams.mockReturnValue({ term: "nonsense" });

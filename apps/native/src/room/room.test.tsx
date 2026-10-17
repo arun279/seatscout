@@ -59,6 +59,16 @@ describe("the Room a Seat Group opens", () => {
     expect(room.handedOff.map(labelOf)).toEqual(["D18·D17"]);
   });
 
+  it("answers a touch a little above and below the way back, beyond where it is drawn", async () => {
+    await shown();
+
+    const reach = screen.getByRole("button", { name: "‹ Back to the list" })
+      .props["hitSlop"];
+
+    expect(reach.top).toBeGreaterThan(0);
+    expect(reach.bottom).toBeGreaterThan(0);
+  });
+
   it("sets out the room's own standing lines where the board puts them", async () => {
     await shown();
 

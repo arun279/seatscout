@@ -1,9 +1,11 @@
-import { describe, expect, it, jest } from "@jest/globals";
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { afterEach, describe, expect, it, jest } from "@jest/globals";
+import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import { selectionAsync } from "expo-haptics";
 import { Platform, StyleSheet } from "react-native";
 import { houseLights } from "../../test/lights.js";
-import { Chips, Choices } from "./chips.js";
+import { scaledTo, sizedAsAtStart } from "../../test/text-size.js";
+import { Chips, Choices, Tags, TagStrip } from "./chips.js";
+import { TextSizeProvider } from "./text-size.js";
 
 const FORMATS = [
   { value: "IMAX", text: "IMAX" },
@@ -146,5 +148,98 @@ describe("a group of chips, exactly one of them chosen", () => {
 
     expect(ink("Row 6 · on the centreline")).toBe("#06070e");
     expect(ink("Row 7 · three seats right of centre")).toBe("#aab2bd");
+  });
+});
+
+const TWO = [
+  { text: "Today", onPress: () => undefined },
+  { text: "Any time", onPress: () => undefined },
+];
+
+const outlineOf = (words: string) =>
+  StyleSheet.flatten(screen.getByText(words).parent?.props["style"]);
+
+describe("a row of tags, each opening something rather than choosing it", () => {
+  it("draws each tag's words in the ledger voice, inside a faint outline", async () => {
+    houseLights("down");
+    await render(<Tags tags={TWO} />);
+
+    expect(
+      StyleSheet.flatten(screen.getByText("Today").props["style"]),
+    ).toMatchObject({ color: "#e6ecf2", fontFamily: "SplineSansMono-Regular" });
+    expect(outlineOf("Today").borderColor).toBe("#a0a8b5");
+  });
+
+  it("names its row with a lead that is read but not pressed", async () => {
+    await render(<Tags lead="When" tags={TWO} />);
+
+    expect(screen.getByText("When")).toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: "When" })).toBeNull();
+    expect(screen.getAllByRole("button")).toHaveLength(2);
+  });
+
+  it("draws nothing but its tags when it has no lead", async () => {
+    await render(<Tags tags={TWO} />);
+
+    expect(chip("Today").parent?.children).toHaveLength(2);
+  });
+
+  it("says which tag was pressed, with one selection tick", async () => {
+    const opened = jest.fn();
+    await render(
+      <Tags
+        tags={[
+          { text: "Today", onPress: () => opened("Today") },
+          { text: "Any time", onPress: () => opened("Any time") },
+        ]}
+      />,
+    );
+
+    await fireEvent.press(chip("Any time"));
+
+    expect(opened.mock.calls).toEqual([["Any time"]]);
+    expect(selectionAsync).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("a strip of tags", () => {
+  afterEach(() => act(sizedAsAtStart));
+
+  const strip = () =>
+    render(
+      <TextSizeProvider>
+        <TagStrip inset={18} tags={TWO} />
+      </TextSizeProvider>,
+    );
+
+  it("scrolls sideways from the card's edge to the screen's at the standard text sizes", async () => {
+    await act(() => scaledTo(1.353));
+    await strip();
+    const scroller = screen.getByTestId("tag-strip");
+
+    expect(StyleSheet.flatten(scroller.props["style"])).toEqual({
+      marginHorizontal: -18,
+    });
+    expect(
+      StyleSheet.flatten(scroller.props["contentContainerStyle"]),
+    ).toMatchObject({ flexDirection: "row", paddingHorizontal: 18 });
+    expect(scroller.props["showsHorizontalScrollIndicator"]).toBe(false);
+    expect(screen.getAllByRole("button")).toHaveLength(2);
+  });
+
+  it("draws nothing but its tags when it has no lead", async () => {
+    await render(<Tags tags={TWO} />);
+
+    expect(chip("Today").parent?.children).toHaveLength(2);
+  });
+
+  it("wraps instead at the accessibility text sizes, so no tag is out of reach", async () => {
+    await act(() => scaledTo(1.786));
+    await strip();
+
+    expect(screen.queryByTestId("tag-strip")).toBeNull();
+    expect(
+      StyleSheet.flatten(chip("Today").parent?.props["style"]),
+    ).toMatchObject({ flexDirection: "row", flexWrap: "wrap" });
   });
 });

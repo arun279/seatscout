@@ -1,4 +1,4 @@
-import type { ReactElement, ReactNode } from "react";
+import type { ReactElement, ReactNode, Ref, RefObject } from "react";
 import { StyleSheet, TextInput, View, type ViewStyle } from "react-native";
 import { type Theme, useTheme } from "../theme.js";
 import { ON_ANDROID } from "./platform.js";
@@ -15,6 +15,7 @@ export interface FieldProps extends Omit<SectionProps, "children"> {
   readonly onTyped: (typed: string) => void;
   readonly onSettled?: () => void;
   readonly focused: boolean;
+  readonly ref?: Ref<TextInput> | undefined;
   readonly children?: ReactNode;
 }
 
@@ -61,12 +62,17 @@ export const Section = ({ label, children }: SectionProps): ReactElement => (
   </View>
 );
 
+export const focusOn = (field: RefObject<TextInput | null>): void => {
+  field.current?.focus();
+};
+
 export const Field = ({
   label,
   value,
   onTyped,
   onSettled,
   focused,
+  ref,
   children,
 }: FieldProps): ReactElement => {
   const theme = useTheme();
@@ -79,6 +85,7 @@ export const Field = ({
         autoFocus={focused}
         onBlur={onSettled}
         onChangeText={onTyped}
+        ref={ref}
         style={[
           fieldBox,
           fieldColours(theme),

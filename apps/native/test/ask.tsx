@@ -7,9 +7,11 @@ import { nearby, type Phone, type Playing, phone } from "./phone.js";
 
 export const TODAY = "2026-09-19";
 
-const SHORT: Terms = { date: TODAY, partySize: 2 };
+export const SHORT: Terms = { date: TODAY, partySize: 2 };
 
 export const NEAR: Terms = { ...SHORT, area: "75234" };
+
+export const WHOLE: Terms = { ...NEAR, movie: "23184", title: "Akira" };
 
 export const PLAYING: Playing = {
   area: "75234",

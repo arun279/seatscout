@@ -69,7 +69,7 @@ rooms it had not reached still named.
 the glossary's own words, so the back button is the previous query and a test can open a journey
 by navigating to one. The Seat Profile is not among them: it is the device's, not the query's.
 The title card states every term it holds, each value its own button that opens the Ask sheet
-with that field focused. The Movie is still the identity the Source states, and a title is now
+holding that term alone. The Movie is still the identity the Source states, and a title is now
 resolved against it: the Movies playing near the area on the date are read from the dated
 theater-centric route, so the sheet can offer a half-remembered title and the card can say the
 title rather than the number. The title the film was picked by rides beside it as `title`, and a

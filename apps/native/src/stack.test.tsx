@@ -49,11 +49,10 @@ const opened = (initialUrl = "/") =>
     { initialUrl },
   );
 
-const asked = async () => {
-  const app = opened();
+const asked = async (initialUrl: string, heading: string) => {
+  const app = opened(initialUrl);
   await app;
-  await fireEvent.press(screen.getByRole("button", { name: "Find seats" }));
-  await screen.findByText("What are we seeing?");
+  await screen.findByRole("header", { name: heading });
   return { app };
 };
 
@@ -79,39 +78,50 @@ describe("the stack the app opens on", () => {
 
     expect(app.getPathname()).toBe("/");
     expect(
-      screen.getByRole("button", { name: "Find seats" }),
+      screen.getByRole("button", { name: "Name an area" }),
     ).toBeOnTheScreen();
   });
 
-  it("presents the Ask sheet over it when the velvet control is pressed", async () => {
+  it("presents the area's editor over it when the velvet control is pressed", async () => {
     const app = opened();
     await app;
 
-    await fireEvent.press(screen.getByRole("button", { name: "Find seats" }));
-    await screen.findByText("What are we seeing?");
+    await fireEvent.press(screen.getByRole("button", { name: "Name an area" }));
+    await screen.findByRole("header", { name: "Near where?" });
 
     expect(app.getPathname()).toBe("/ask");
+    expect(app.getSearchParams()).toMatchObject({ term: "area" });
   });
 
-  it("presents it when a title-card line is pressed too, at the term that line names", async () => {
+  it("presents the editor of the term a title-card row names when it is pressed", async () => {
     const app = opened();
     await app;
 
     await fireEvent.press(
       screen.getByRole("button", { name: "Two seats together" }),
     );
-    await screen.findByText("What are we seeing?");
+    await screen.findByRole("header", { name: "How many seats?" });
 
     expect(app.getPathname()).toBe("/ask");
     expect(app.getSearchParams()).toMatchObject({ term: "partySize" });
   });
 
-  it("opens the sheet holding the query the screen beneath it was showing", async () => {
+  it("presents the editor of the term a chip names when it is pressed", async () => {
+    const app = opened();
+    await app;
+
+    await fireEvent.press(screen.getByRole("button", { name: "Any time" }));
+    await screen.findByRole("header", { name: "What time?" });
+
+    expect(app.getSearchParams()).toMatchObject({ term: "window" });
+  });
+
+  it("opens the film's editor holding the query the screen beneath it was showing", async () => {
     const app = opened("/?area=75234&partySize=3");
     await app;
 
-    await fireEvent.press(screen.getByRole("button", { name: "Find seats" }));
-    await screen.findByText("What are we seeing?");
+    await fireEvent.press(screen.getByRole("button", { name: "Pick a movie" }));
+    await screen.findByRole("header", { name: "Which movie?" });
 
     expect(app.getSearchParams()).toMatchObject({
       area: "75234",
@@ -123,7 +133,7 @@ describe("the stack the app opens on", () => {
   it("keeps the Search screen under the sheet when the sheet itself is the link that was opened", async () => {
     const app = opened("/ask?term=movie&area=75234");
     await app;
-    await screen.findByText("What are we seeing?");
+    await screen.findByRole("header", { name: "Which movie?" });
 
     await fireEvent.press(
       screen.getByRole("button", { name: "Keep as it was" }),
@@ -131,15 +141,15 @@ describe("the stack the app opens on", () => {
 
     expect(app.getPathname()).toBe("/");
     expect(
-      screen.getByRole("button", { name: "Find seats" }),
+      screen.getByRole("button", { name: "Name an area" }),
     ).toBeOnTheScreen();
   });
 
   it("stands the sheet on the same ground the screen beneath it uses", async () => {
     const app = opened();
     await app;
-    await fireEvent.press(screen.getByRole("button", { name: "Find seats" }));
-    await screen.findByText("What are we seeing?");
+    await fireEvent.press(screen.getByRole("button", { name: "Name an area" }));
+    await screen.findByRole("header", { name: "Near where?" });
 
     const sheet = StyleSheet.flatten(
       screen.getAllByTestId("stage").at(-1)?.props["style"],
@@ -150,30 +160,34 @@ describe("the stack the app opens on", () => {
 });
 
 describe("the Query a search is", () => {
-  it("writes what the sheet states into the Search route's parameters, several days included", async () => {
-    const { app } = await asked();
+  it("writes what the sheet states into the Search route's parameters", async () => {
+    const { app } = await asked(
+      "/ask?term=area&movie=246473&date=2026-09-20&partySize=2&from=19:00&until=19:20",
+      "Near where?",
+    );
 
     await fireEvent.changeText(
       screen.getByLabelText("Near, by postal code"),
-      "75234",
+      "75006",
     );
-    await fireEvent.press(screen.getByRole("button", { name: "Any day" }));
     await commit();
 
     expect(app.getPathname()).toBe("/");
     expect(app.getSearchParams()).toMatchObject({
-      area: "75234",
+      area: "75006",
+      movie: "246473",
       partySize: "2",
-      date: "any",
     });
   });
 
   it("leaves the sheet closed behind it, so the query before it is what back returns to", async () => {
-    await asked();
+    await asked(`/ask${LISTED.slice(1)}&term=partySize`, "How many seats?");
 
     await commit();
 
-    expect(screen.queryByText("What are we seeing?")).toBeNull();
+    expect(
+      screen.queryByRole("header", { name: "How many seats?" }),
+    ).toBeNull();
   });
 
   it("states the same query again when the same link is opened cold", async () => {
@@ -199,9 +213,9 @@ describe("what the sheet changes beyond the address", () => {
   it("draws neither screen until the phone's Seat Profile has been read, so no search runs twice", async () => {
     jest.spyOn(seatProfile(), "snapshot").mockReturnValue(undefined);
     await opened();
-    expect(screen.queryByRole("button", { name: "Find seats" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Name an area" })).toBeNull();
     await opened("/ask?term=movie&area=75234");
-    expect(screen.queryByText("What are we seeing?")).toBeNull();
+    expect(screen.queryByRole("header", { name: "Which movie?" })).toBeNull();
   });
 
   it("runs the search again under a Seat Profile moved in the sheet, and keeps it on the phone", async () => {
@@ -209,7 +223,7 @@ describe("what the sheet changes beyond the address", () => {
     await fireEvent.press(
       screen.getByRole("button", { name: "Reference seat" }),
     );
-    await screen.findByText("What are we seeing?");
+    await screen.findByRole("header", { name: "Where you sit" });
     await fireEvent(screen.getByLabelText("How far back"), "valueChange", 0.1);
     await commit();
 
@@ -270,7 +284,7 @@ describe("the faces the app is set in", () => {
 
     await opened();
 
-    expect(screen.queryByRole("button", { name: "Find seats" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Name an area" })).toBeNull();
   });
 
   it("draws it anyway when a face cannot be read, so the platform's own still reads", async () => {
@@ -279,7 +293,7 @@ describe("the faces the app is set in", () => {
     await opened();
 
     expect(
-      screen.getByRole("button", { name: "Find seats" }),
+      screen.getByRole("button", { name: "Name an area" }),
     ).toBeOnTheScreen();
   });
 });

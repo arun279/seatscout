@@ -14,6 +14,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import { phone, type Upstream } from "../../test/phone.js";
@@ -82,33 +83,32 @@ describe("the Search screen's prompt face", () => {
     ).toBeOnTheScreen();
   });
 
-  it("asks for the film it has not been given, and that can be pressed too", async () => {
-    await showing();
-
-    expect(
-      screen.getByRole("button", { name: "Which movie?" }),
-    ).toBeOnTheScreen();
-  });
-
-  it("sets out the rest of the query one pressable value at a time", async () => {
+  it("sets out the rest of the query one pressable value at a time, the film it has not been given too", async () => {
     await showing();
 
     for (const words of [
-      "Today",
       "Near where?",
-      "Any showtime",
+      "Which movie?",
+      "Today",
+      "Any time",
+      "Any theater",
       "Reference seat",
     ])
       expect(screen.getByRole("button", { name: words })).toBeOnTheScreen();
   });
 
-  it("says what to name next and what is already set", async () => {
+  it("says what is missing on the page, and docks only the button that names the next step", async () => {
     await showing();
+    const dock = within(screen.getByTestId("dock"));
 
     expect(
-      screen.getByText(
-        "Name an area, then a movie playing near it. Two seats together, today and the Reference seat are already set.",
+      within(screen.getByTestId("prompt")).getByText(
+        "Name an area, then a movie playing near it.",
       ),
+    ).toBeOnTheScreen();
+    expect(dock.getAllByRole("button")).toHaveLength(1);
+    expect(
+      dock.getByRole("button", { name: "Name an area" }),
     ).toBeOnTheScreen();
   });
 
@@ -116,9 +116,28 @@ describe("the Search screen's prompt face", () => {
     await showing({ terms: { ...SHORT, area: "75234" } });
 
     expect(
-      screen.getByText("Pick a movie playing near 75234."),
+      within(screen.getByTestId("prompt")).getByText(
+        "Pick a movie playing near 75234.",
+      ),
+    ).toBeOnTheScreen();
+    expect(
+      within(screen.getByTestId("dock")).getByRole("button", {
+        name: "Pick a movie",
+      }),
     ).toBeOnTheScreen();
     expect(screen.queryByText(/^Name an area/)).toBeNull();
+  });
+
+  it("keeps the dock out of the scroll, so the next step stays in reach however far the screen is scrolled, with no rule across the screen above it", async () => {
+    await showing();
+    const dock = screen.getByTestId("dock");
+
+    expect(
+      within(screen.getByTestId("prompt")).queryByTestId("dock"),
+    ).toBeNull();
+    expect(StyleSheet.flatten(dock.props["style"]).borderTopWidth).toBe(
+      undefined,
+    );
   });
 
   it("stands the query on the room's own ground", async () => {
@@ -149,20 +168,20 @@ describe("the Search screen's prompt face", () => {
 });
 
 describe("asking for what the query is missing", () => {
-  it("opens Ask at the area when the query names none", async () => {
+  it("opens the area's editor from the button when the query names none", async () => {
     const asked = jest.fn<(term: Term) => void>();
     await showing({ onAsk: asked });
 
-    await fireEvent.press(screen.getByRole("button", { name: "Find seats" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Name an area" }));
 
     expect(asked).toHaveBeenCalledWith("area");
   });
 
-  it("opens Ask at the film once the area is named", async () => {
+  it("opens the film's editor from the button once the area is named", async () => {
     const asked = jest.fn<(term: Term) => void>();
     await showing({ onAsk: asked, terms: { ...SHORT, area: "75234" } });
 
-    await fireEvent.press(screen.getByRole("button", { name: "Find seats" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Pick a movie" }));
 
     expect(asked).toHaveBeenCalledWith("movie");
   });
@@ -220,7 +239,7 @@ describe("the face the Search screen wears", () => {
     await showing();
 
     expect(
-      screen.getByRole("button", { name: "Find seats" }),
+      screen.getByRole("button", { name: "Name an area" }),
     ).toBeOnTheScreen();
     expect(screen.queryByTestId("list")).toBeNull();
   });
@@ -233,7 +252,7 @@ describe("the face the Search screen wears", () => {
     });
 
     expect(await screen.findByText("Best seats first")).toBeOnTheScreen();
-    expect(screen.queryByRole("button", { name: "Find seats" })).toBeNull();
+    expect(screen.queryByTestId("velvet")).toBeNull();
   });
 });
 

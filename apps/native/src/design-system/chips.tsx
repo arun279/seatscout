@@ -3,6 +3,7 @@ import type { ReactElement } from "react";
 import {
   type AccessibilityRole,
   type AccessibilityState,
+  ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -10,6 +11,7 @@ import {
 import { useTheme } from "../theme.js";
 import { felt } from "./feedback.js";
 import { ON_ANDROID } from "./platform.js";
+import { useLargeText } from "./text-size.js";
 import { TOUCH_FLOOR } from "./touch.js";
 import { Type } from "./type.js";
 
@@ -29,6 +31,21 @@ interface Choice<Value> {
   readonly text: string;
   readonly sub: string;
   readonly value: Value;
+}
+
+interface Tag {
+  readonly text: string;
+  readonly onPress: () => void;
+}
+
+export interface TagsProps {
+  readonly tags: readonly Tag[];
+  readonly lead?: string;
+}
+
+export interface TagStripProps {
+  readonly tags: readonly Tag[];
+  readonly inset: number;
 }
 
 export interface ChoicesProps<Value> {
@@ -51,6 +68,28 @@ const styles = StyleSheet.create({
   },
   square: { borderRadius: 12 },
   filter: { borderRadius: 8 },
+  tags: {
+    alignItems: "center",
+    columnGap: 8,
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  strip: { alignItems: "center", columnGap: 8, flexDirection: "row" },
+  lead: { minWidth: 52 },
+  tag: {
+    justifyContent: "center",
+    maxWidth: "100%",
+    minHeight: TOUCH_FLOOR,
+    minWidth: TOUCH_FLOOR,
+  },
+  outline: {
+    borderRadius: ON_ANDROID ? 8 : 10,
+    borderWidth: 1,
+    justifyContent: "center",
+    minHeight: 32,
+    paddingHorizontal: 11,
+    paddingVertical: 4,
+  },
 });
 
 interface FaceProps {
@@ -124,6 +163,56 @@ export const Chips = <Named extends string>({
     </View>
   );
 };
+
+const Tagged = ({ text, onPress }: Tag) => {
+  const { colours } = useTheme();
+
+  return (
+    <TouchableOpacity
+      accessibilityLabel={text}
+      accessibilityRole="button"
+      onPress={felt(onPress)}
+      style={styles.tag}
+    >
+      <View style={[styles.outline, { borderColor: colours.silverFaint }]}>
+        <Type set="ledger" tone="silver">
+          {text}
+        </Type>
+      </View>
+    </TouchableOpacity>
+  );
+};
+
+const tagged = (tags: readonly Tag[]) =>
+  tags.map(({ text, onPress }) => (
+    <Tagged key={text} onPress={onPress} text={text} />
+  ));
+
+export const Tags = ({ tags, lead }: TagsProps): ReactElement => (
+  <View style={styles.tags}>
+    {lead !== undefined && (
+      <Type set="ledgerLabel" style={styles.lead} tone="silverFaint">
+        {lead}
+      </Type>
+    )}
+    {tagged(tags)}
+  </View>
+);
+
+export const TagStrip = ({ tags, inset }: TagStripProps): ReactElement =>
+  useLargeText() ? (
+    <Tags tags={tags} />
+  ) : (
+    <ScrollView
+      contentContainerStyle={[styles.strip, { paddingHorizontal: inset }]}
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={{ marginHorizontal: -inset }}
+      testID="tag-strip"
+    >
+      {tagged(tags)}
+    </ScrollView>
+  );
 
 export const Choices = <Value,>({
   choices,

@@ -1,14 +1,15 @@
 appId: ${APP_ID}
-name: Ask, the ranked Seat Groups, the hand-off, the ledger and the Room, each left by gesture and by its own way back, with the Source answered from the corpus
+name: The film and the party each in an editor of its own, the ranked Seat Groups, the hand-off, the ledger and the Room, each left by gesture and by its own way back, with the Source answered from the corpus
 ---
 - openLink: ${LINK}
 - extendedWaitUntil:
-    visible: Find seats
+    visible: Pick a movie
     timeout: 120000
 
-- tapOn: Find seats
+- tapOn: Pick a movie
 - extendedWaitUntil:
-    visible: What are we seeing\?
+    visible:
+      id: sheet-head
     timeout: 15000
 - hideKeyboard
 - runFlow:
@@ -16,22 +17,26 @@ name: Ask, the ranked Seat Groups, the hand-off, the ledger and the Room, each l
     env:
       LEVEL: dialog
 - extendedWaitUntil:
-    notVisible: What are we seeing\?
+    notVisible:
+      id: sheet-head
     timeout: 10000
-- assertVisible: Find seats
+- assertVisible: Pick a movie
 
-- tapOn: Find seats
+- tapOn: Two seats together
 - extendedWaitUntil:
-    visible: What are we seeing\?
+    visible: More seats
     timeout: 15000
+- assertNotVisible: Film
 - tapOn: Keep as it was
 - extendedWaitUntil:
-    notVisible: What are we seeing\?
+    notVisible:
+      id: sheet-head
     timeout: 10000
 
-- tapOn: Find seats
+- tapOn: Pick a movie
 - extendedWaitUntil:
-    visible: What are we seeing\?
+    visible:
+      id: sheet-head
     timeout: 15000
 - inputText: Practical Magic
 - extendedWaitUntil:

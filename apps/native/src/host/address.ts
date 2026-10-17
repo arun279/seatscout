@@ -1,13 +1,12 @@
 import type { SeatGroupResult } from "@seatscout/client";
 import {
   parametersOf,
+  TERMS,
   type Term,
   type Terms,
   termsFrom,
 } from "@seatscout/view-logic";
 import { router, useLocalSearchParams } from "expo-router";
-
-const FOCUSED: readonly Term[] = ["area", "movie"];
 
 type Given = Readonly<Record<string, string | readonly string[] | undefined>>;
 
@@ -49,7 +48,7 @@ export const useTerms = (today: string): Terms =>
 
 export const useFocus = (): Term | undefined => {
   const term = useLocalSearchParams()["term"];
-  return FOCUSED.find((named) => named === term);
+  return TERMS.find((named) => named === term);
 };
 
 export const goTo = (terms: Terms): void => {

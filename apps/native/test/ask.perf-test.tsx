@@ -10,10 +10,10 @@ const TODAY = "2026-09-19";
 
 const NEAR: Terms = { date: TODAY, area: "75234", partySize: 2 };
 
-test("the Ask sheet with every term and the calendar", async () => {
+test("the film's editor, with what is playing near the area", async () => {
   await measureRenders(
     <Ask
-      focus={undefined}
+      focus="movie"
       onFind={() => undefined}
       onKeep={() => undefined}
       profile={REFERENCE}
@@ -39,7 +39,7 @@ test("the Ask sheet with every term and the calendar", async () => {
     {
       scenario: async () => {
         await screen.findByRole("button", { name: "Coyote vs. Acme" });
-        await screen.findByRole("button", { name: "Find seats" });
+        await screen.findByRole("button", { name: "Pick a movie" });
       },
     },
   );

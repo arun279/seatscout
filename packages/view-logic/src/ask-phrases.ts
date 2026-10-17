@@ -1,6 +1,7 @@
+import type { ProgrammeState } from "./programme.js";
+import type { Term } from "./title-card-terms.js";
 import type { Kind, Span } from "./when.js";
 import { whenOf, whenSaidOf } from "./when-phrases.js";
-import type { ProgrammeState } from "./programme.js";
 
 export interface PlayingStatus {
   readonly words: string;
@@ -8,13 +9,13 @@ export interface PlayingStatus {
 }
 
 interface AskWords {
-  readonly heading: string;
+  readonly headings: Readonly<Record<Term, string>>;
   readonly keep: string;
   readonly area: string;
   readonly areaDecides: string;
+  readonly areaFirst: string;
+  readonly areaFirstWhy: string;
   readonly film: string;
-  readonly when: string;
-  readonly party: string;
   readonly fewer: string;
   readonly more: string;
   readonly kept: string;
@@ -32,13 +33,23 @@ interface AskWords {
 }
 
 export const ASKING: AskWords = {
-  heading: "What are we seeing?",
+  headings: {
+    area: "Near where?",
+    movie: "Which movie?",
+    date: "When?",
+    window: "What time?",
+    partySize: "How many seats?",
+    narrowing: "Which theaters?",
+    profile: "Where you sit",
+  },
   keep: "Keep as it was",
   area: "Near, by postal code",
-  areaDecides: "The films and theaters below are the ones playing near it.",
+  areaDecides:
+    "The films and theaters you can pick are the ones playing near it.",
+  areaFirst: "Name an area first.",
+  areaFirstWhy:
+    "The films listed here are the ones playing near it, so there is nothing to pick from yet.",
   film: "Film",
-  when: "When",
-  party: "Party",
   fewer: "Fewer seats",
   more: "More seats",
   kept: "Preferences and history stay on this phone. No account exists.",
