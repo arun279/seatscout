@@ -41,7 +41,7 @@ const windowOf = (from: string | undefined, until: string | undefined) => {
   return until === undefined ? "Any time" : `Until ${timeOf(until)}`;
 };
 
-const theatersOf = (terms: Terms, programme: ProgrammeState) => {
+const narrowingOf = (terms: Terms, programme: ProgrammeState) => {
   const narrowed = [
     ...(terms.formats ?? []),
     ...(terms.amenities ?? []),
@@ -76,7 +76,7 @@ export const titleCardOf = (
     {
       lead: "Where",
       entries: [
-        ...theatersOf(terms, programme),
+        ...narrowingOf(terms, programme),
         ...(terms.accessibleSeating === true
           ? [{ term: "partySize" as const, words: "Accessible seating" }]
           : []),

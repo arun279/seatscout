@@ -5,7 +5,7 @@ import type {
   Terms,
   TitleCardEntry,
 } from "@seatscout/view-logic";
-import { ASKING, titleCardOf } from "@seatscout/view-logic";
+import { ASKING, nextOf, titleCardOf } from "@seatscout/view-logic";
 import { type MemoExoticComponent, memo, type ReactElement } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Tags, TagStrip } from "../design-system/chips.js";
@@ -97,11 +97,6 @@ const opening =
     onPress: () => onEdit(term),
   });
 
-const filmTone = ({ area, movie }: Terms): keyof Palette => {
-  if (area === undefined || movie === undefined) return "silverFaint";
-  return "velvetLit";
-};
-
 const Card = ({
   terms,
   programme,
@@ -111,6 +106,7 @@ const Card = ({
 }: TitleCardProps): ReactElement => {
   const card = titleCardOf(terms, programme, today, profile);
   const open = opening(onEdit);
+  const next = nextOf(terms);
 
   return (
     <View style={styles.card} testID="title-card">
@@ -121,18 +117,18 @@ const Card = ({
         words={card.party}
       />
       <Row
-        lit={terms.area === undefined}
+        lit={next === "area"}
         onPress={() => onEdit("area")}
         set="marqueeTitle"
         tone="silver"
         words={card.area}
       />
       <Row
-        lit={terms.area !== undefined && terms.movie === undefined}
+        lit={next === "movie"}
         onPress={() => onEdit("movie")}
         set="marqueeHero"
-        shut={terms.area === undefined}
-        tone={filmTone(terms)}
+        shut={next === "area"}
+        tone={next === "area" ? "silverFaint" : "velvetLit"}
         words={card.movie}
       />
       <View style={styles.groups}>

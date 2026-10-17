@@ -183,6 +183,11 @@ const Tagged = ({ text, onPress }: Tag) => {
   );
 };
 
+const tagged = (tags: readonly Tag[]) =>
+  tags.map(({ text, onPress }) => (
+    <Tagged key={text} onPress={onPress} text={text} />
+  ));
+
 export const Tags = ({ tags, lead }: TagsProps): ReactElement => (
   <View style={styles.tags}>
     {lead !== undefined && (
@@ -190,9 +195,7 @@ export const Tags = ({ tags, lead }: TagsProps): ReactElement => (
         {lead}
       </Type>
     )}
-    {tags.map(({ text, onPress }) => (
-      <Tagged key={text} onPress={onPress} text={text} />
-    ))}
+    {tagged(tags)}
   </View>
 );
 
@@ -207,9 +210,7 @@ export const TagStrip = ({ tags, inset }: TagStripProps): ReactElement =>
       style={{ marginHorizontal: -inset }}
       testID="tag-strip"
     >
-      {tags.map(({ text, onPress }) => (
-        <Tagged key={text} onPress={onPress} text={text} />
-      ))}
+      {tagged(tags)}
     </ScrollView>
   );
 

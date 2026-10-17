@@ -83,19 +83,12 @@ describe("the Search screen's prompt face", () => {
     ).toBeOnTheScreen();
   });
 
-  it("asks for the film it has not been given, and that can be pressed too", async () => {
-    await showing();
-
-    expect(
-      screen.getByRole("button", { name: "Which movie?" }),
-    ).toBeOnTheScreen();
-  });
-
-  it("sets out the rest of the query one pressable value at a time", async () => {
+  it("sets out the rest of the query one pressable value at a time, the film it has not been given too", async () => {
     await showing();
 
     for (const words of [
       "Near where?",
+      "Which movie?",
       "Today",
       "Any time",
       "Any theater",
@@ -114,7 +107,9 @@ describe("the Search screen's prompt face", () => {
       ),
     ).toBeOnTheScreen();
     expect(dock.getAllByRole("button")).toHaveLength(1);
-    expect(dock.getByText("Name an area")).toBeOnTheScreen();
+    expect(
+      dock.getByRole("button", { name: "Name an area" }),
+    ).toBeOnTheScreen();
   });
 
   it("asks only for the movie once the area is named", async () => {

@@ -208,12 +208,13 @@ describe("the rows' chevrons", () => {
 
 describe("the film the card announces", () => {
   it("draws the film it was given in a tone of its own, apart from the lit term", async () => {
+    houseLights("down");
     const named = await colourIn(
       { ...NEAR, movie: "246329", title: "Spider-Man: Brand New Day" },
       "Spider-Man: Brand New Day",
     );
 
-    expect(named).toMatch(/^#[0-9a-f]{6}$/);
+    expect(named).toBe("#f798a4");
     expect(named).not.toBe(await colourIn(NEAR, "Which movie?"));
     expect(named).not.toBe(await colourIn(NEAR, "Near 75234"));
   });

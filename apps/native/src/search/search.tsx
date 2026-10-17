@@ -45,16 +45,6 @@ const styles = StyleSheet.create({
   lede: { paddingHorizontal: 18, paddingTop: 10 },
 });
 
-const Lede = ({ terms }: Pick<SearchProps, "terms">) => {
-  const lede = ledeOf(terms);
-
-  return lede === undefined ? null : (
-    <Type set="sentence" style={styles.lede} tone="silverDim">
-      {lede}
-    </Type>
-  );
-};
-
 const Remembered = ({
   seatscout,
   today,
@@ -87,7 +77,9 @@ const Prompt = ({
         terms={terms}
         today={today}
       />
-      <Lede terms={terms} />
+      <Type set="sentence" style={styles.lede} tone="silverDim">
+        {ledeOf(terms)}
+      </Type>
       <Remembered onRun={onRun} seatscout={seatscout} today={today} />
     </ScrollView>
     <Dock>
