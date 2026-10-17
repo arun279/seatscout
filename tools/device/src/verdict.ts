@@ -6,7 +6,7 @@ interface Axis {
   readonly decimals: number;
   readonly of: (side: Reading) => Figure;
   readonly worsening: 1 | -1;
-  readonly drift: number;
+  readonly noise: number;
 }
 
 const AXES: readonly Axis[] = [
@@ -16,7 +16,7 @@ const AXES: readonly Axis[] = [
     decimals: 0,
     of: (side) => side.runtime,
     worsening: 1,
-    drift: 31576,
+    noise: 31576,
   },
   {
     name: "Frame rate over the walk",
@@ -24,7 +24,7 @@ const AXES: readonly Axis[] = [
     decimals: 1,
     of: (side) => side.fps,
     worsening: -1,
-    drift: 0.7,
+    noise: 0.7,
   },
   {
     name: "CPU over the walk",
@@ -32,7 +32,7 @@ const AXES: readonly Axis[] = [
     decimals: 1,
     of: (side) => side.cpu,
     worsening: 1,
-    drift: 9.6,
+    noise: 9.6,
   },
   {
     name: "Memory over the walk",
@@ -40,7 +40,7 @@ const AXES: readonly Axis[] = [
     decimals: 1,
     of: (side) => side.ram,
     worsening: 1,
-    drift: 7.1,
+    noise: 7.1,
   },
 ];
 
@@ -58,7 +58,7 @@ const medianAtPrecision = (axis: Axis, side: Reading) =>
   atPrecision(axis, axis.of(side).median);
 
 const limitOf = (axis: Axis, previous: Reading) =>
-  atPrecision(axis, axis.of(previous).median + axis.worsening * axis.drift);
+  atPrecision(axis, axis.of(previous).median + axis.worsening * axis.noise);
 
 const isWorse = (axis: Axis, latest: Reading, previous: Reading) =>
   axis.worsening * (medianAtPrecision(axis, latest) - limitOf(axis, previous)) >

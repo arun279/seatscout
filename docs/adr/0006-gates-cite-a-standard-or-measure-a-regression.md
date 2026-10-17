@@ -903,10 +903,12 @@ The [NIST/SEMATECH handbook](https://www.itl.nist.gov/div898/handbook/mpc/sectio
 says the same of any measurement process: one measurement cannot be judged by the standard
 deviation of short-term repetitions, only by the process's own standard deviation, which it
 takes over time. It sets the limit at three of those to flag only what is clearly out of
-control, about 1 per cent of readings of an unchanged process; two flags about 5 per cent, one
-false issue in twenty runs. A test over the two runs' iterations, such as Mann-Whitney U, uses
-the short-term kind. Over the three readings main kept on 10 October, which all held, it called
-every pair different in frame rate and in CPU at p < 0.001.
+control: about 1 per cent of readings of an unchanged process, where two would flag about 5.
+Those rates assume more than 100 degrees of freedom, and these limits rest on 22, 12 for CPU
+and 9 for the walk, so they are a guide rather than a promise. A test over the two runs'
+iterations, such as Mann-Whitney U, uses the short-term kind. Over the three readings main kept
+on 10 October, which all held, it called every pair different in frame rate and in CPU at p of
+0.001 or less.
 [Laaber, Scheuner and Leitner](https://doi.org/10.1007/s10664-019-09681-1) found the same on
 cloud machines: Wilcoxon rank-sum, the same test, reports changes between identical code when
 each side ran on one instance. An
@@ -924,13 +926,14 @@ times that of the ten medians. Main's own runs show how runs differ over time: s
 joined the walk, 13 pairs of consecutive runs shipped the same app. For the standard deviation
 of a two-run difference, the ten give 0.23 FPS, 2.06 MB and 2.9 points of CPU; main's pairs give
 0.23 FPS, 2.54 MB and, from the three pairs that held CPU, 3.9 points. The limits in
-`tools/device/src/verdict.ts` pool the two, each weighted by how many differences it holds, and
-are three of the pooled standard deviation: 0.7 FPS, 9.6 per cent CPU and 7.1 MB. The walk's
-limit, 31576 ms, comes from the ten alone, since no pair of main's runs held it. Held to these
-limits, the five readings pass, and so does every run since the Room joined the walk. The Room
-itself, which put 15.4 MB on the walk, fails. The cost is stated plainly: on medians near 72
-seconds and 21 per cent, the walk can rise by about 44 per cent and CPU by about 47 before two
-runs can tell it from the runner, so a rise of a third in either passes. Frame rate and memory,
+`tools/device/src/verdict.ts` pool the two, each weighted by its degrees of freedom (nine from
+the ten, one from each pair), and are three of the pooled standard deviation: 0.7 FPS, 9.6 per
+cent CPU and 7.1 MB. The walk's limit, 31576 ms, comes from the ten alone, since no pair of
+main's runs held it. Held to these limits, the five readings pass, and so does every run since
+the Room joined the walk. The Room itself, which put 15.4 MB on the walk, fails. The cost is
+stated plainly: on the ten's medians, 72.4 seconds and 20.6 per cent, the walk can rise by about
+44 per cent and CPU by about 47 before two runs can tell it from the runner, so a rise of a
+third in either passes. Frame rate and memory,
 which are steady, are held to 0.7 FPS and 2.3 per cent.
 
 **Why the reading left the pull request.** On run 36287276171 the two sides' twenty walks took 27

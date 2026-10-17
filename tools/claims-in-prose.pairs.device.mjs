@@ -13,13 +13,13 @@ const limit = (says, holds, pattern) => ({
 });
 
 export const DEVICE_CLAIMS = [
-  limit(POOLED, "the frame rate's limit", "drift: 0.7,"),
-  limit(POOLED, "the CPU's limit", "drift: 9.6,"),
-  limit(POOLED, "the memory's limit", "drift: 7.1,"),
+  limit(POOLED, "the frame rate's limit", "noise: 0.7,"),
+  limit(POOLED, "the CPU's limit", "noise: 9.6,"),
+  limit(POOLED, "the memory's limit", "noise: 7.1,"),
   limit(
     /The walk's limit, 31576 ms, comes from the ten alone/,
     "the walk's limit",
-    "drift: 31576,",
+    "noise: 31576,",
   ),
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
