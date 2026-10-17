@@ -1,11 +1,17 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { fireEvent, render, screen } from "@testing-library/react-native";
-import { TimeField } from "./time-field.js";
+import { useState } from "react";
+import { TimeField, type TimeFieldProps } from "./time-field.js";
+
+const Held = (props: Omit<TimeFieldProps, "picking" | "onPicking">) => {
+  const [picking, setPicking] = useState(false);
+  return <TimeField {...props} onPicking={setPicking} picking={picking} />;
+};
 
 const timing = async (clock?: string) => {
   const onClock = jest.fn<(clock: string | undefined) => void>();
   await render(
-    <TimeField
+    <Held
       clear="Clear"
       clock={clock}
       label="From"
@@ -59,11 +65,13 @@ describe("one end of the time window", () => {
     expect(clocked).toHaveBeenCalledWith("18:05");
   });
 
-  it("lets a held time be cleared back to any time", async () => {
+  it("lets a held time be cleared back to any time, closing the wheel that showed it", async () => {
     const clocked = await timing("21:30");
 
+    await fireEvent.press(screen.getByRole("button", { name: "From, 7:00p" }));
     await fireEvent.press(screen.getByRole("button", { name: "Clear, From" }));
 
-    expect(clocked).toHaveBeenCalledWith(undefined);
+    expect(clocked).toHaveBeenLastCalledWith(undefined);
+    expect(screen.queryByTestId("time-picker")).toBeNull();
   });
 });
