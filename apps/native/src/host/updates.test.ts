@@ -43,33 +43,62 @@ beforeEach(() => {
   mockReload.mockReset().mockResolvedValue(undefined);
 });
 
-describe("the newest update, applied when the app is opened", () => {
-  it("runs a downloaded update at once instead of on the next launch", async () => {
+describe("the newest update, applied when nothing would be lost", () => {
+  it("runs a downloaded update at once on an empty Search screen", async () => {
     mockPending = true;
-    await renderHook(() => useLatestUpdate());
+    await renderHook(() => useLatestUpdate(true));
 
     expect(mockReload).toHaveBeenCalledTimes(1);
   });
 
-  it("leaves the running app alone while nothing is downloaded", async () => {
-    await renderHook(() => useLatestUpdate());
-
+  it("runs it the moment the download finishes, without waiting for the next launch", async () => {
+    const hooked = await renderHook(() => useLatestUpdate(true));
     expect(mockReload).not.toHaveBeenCalled();
+
+    mockPending = true;
+    await hooked.rerender(undefined);
+
+    expect(mockReload).toHaveBeenCalledTimes(1);
+  });
+
+  it("holds a downloaded update while a search, a room or a hand-off is open, and runs it back on the empty Search screen", async () => {
+    mockPending = true;
+    const hooked = await renderHook(
+      ({ atRest }: { atRest: boolean }) => useLatestUpdate(atRest),
+      {
+        initialProps: { atRest: false },
+      },
+    );
+    expect(mockReload).not.toHaveBeenCalled();
+
+    await hooked.rerender({ atRest: true });
+
+    expect(mockReload).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps running when the reload fails", async () => {
+    mockPending = true;
+    mockReload.mockRejectedValue(new Error("not now"));
+
+    await expect(
+      renderHook(() => useLatestUpdate(true)),
+    ).resolves.toBeDefined();
   });
 
   it("downloads a newer update when the app comes back to the front", async () => {
     const { listen } = listening();
     mockCheck.mockResolvedValue({ isAvailable: true });
-    await renderHook(() => useLatestUpdate());
+    await renderHook(() => useLatestUpdate(false));
 
     await comeBack(listen);
 
+    expect(listen).toHaveBeenCalledWith("change", expect.any(Function));
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
   it("downloads nothing when no newer update is published", async () => {
     const { listen } = listening();
-    await renderHook(() => useLatestUpdate());
+    await renderHook(() => useLatestUpdate(false));
 
     await comeBack(listen);
 
@@ -79,7 +108,7 @@ describe("the newest update, applied when the app is opened", () => {
 
   it("checks nothing when the app only goes to the background", async () => {
     const { listen } = listening();
-    await renderHook(() => useLatestUpdate());
+    await renderHook(() => useLatestUpdate(false));
 
     await comeBack(listen, "background");
 
@@ -89,7 +118,7 @@ describe("the newest update, applied when the app is opened", () => {
   it("keeps running when the check fails, as it does offline", async () => {
     const { listen } = listening();
     mockCheck.mockRejectedValue(new Error("offline"));
-    await renderHook(() => useLatestUpdate());
+    await renderHook(() => useLatestUpdate(false));
 
     await expect(comeBack(listen)).resolves.toBeUndefined();
     expect(mockFetch).not.toHaveBeenCalled();
@@ -98,14 +127,14 @@ describe("the newest update, applied when the app is opened", () => {
   it("does not watch the app at all in a build that takes no updates", async () => {
     const { listen } = listening();
     mockEnabled = false;
-    await renderHook(() => useLatestUpdate());
+    await renderHook(() => useLatestUpdate(false));
 
     expect(listen).not.toHaveBeenCalled();
   });
 
   it("stops watching when the app's root goes away", async () => {
     const { remove } = listening();
-    const hooked = await renderHook(() => useLatestUpdate());
+    const hooked = await renderHook(() => useLatestUpdate(false));
 
     await hooked.unmount();
 

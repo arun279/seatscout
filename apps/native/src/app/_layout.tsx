@@ -1,5 +1,10 @@
 import { useFonts } from "expo-font";
-import { type NativeStackNavigationOptions, Stack } from "expo-router";
+import {
+  type NativeStackNavigationOptions,
+  Stack,
+  useGlobalSearchParams,
+  usePathname,
+} from "expo-router";
 import type { ReactElement } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SHEET_PRESENTATION } from "../design-system/sheet.js";
@@ -33,7 +38,9 @@ const RESTING: NativeStackNavigationOptions = {
 
 export default function Layout(): ReactElement | null {
   const [loaded, unreadable] = useFonts(FACES);
-  useLatestUpdate();
+  const pathname = usePathname();
+  const params = useGlobalSearchParams();
+  useLatestUpdate(pathname === "/" && Object.keys(params).length === 0);
 
   if (!loaded && unreadable === null) return null;
 

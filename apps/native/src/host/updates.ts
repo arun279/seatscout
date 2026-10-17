@@ -13,12 +13,12 @@ const fetchNewer = async (): Promise<void> => {
   if (isAvailable) await fetchUpdateAsync();
 };
 
-export const useLatestUpdate = (): void => {
+export const useLatestUpdate = (atRest: boolean): void => {
   const { isUpdatePending } = useUpdates();
 
   useEffect(() => {
-    if (isUpdatePending) void reloadAsync();
-  }, [isUpdatePending]);
+    if (isUpdatePending && atRest) reloadAsync().catch(() => undefined);
+  }, [isUpdatePending, atRest]);
 
   useEffect(() => {
     if (!isEnabled) return;
