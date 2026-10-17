@@ -4,6 +4,7 @@ import type { ReactElement } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SHEET_PRESENTATION } from "../design-system/sheet.js";
 import { TextSizeProvider } from "../design-system/text-size.js";
+import { useLatestUpdate } from "../host/updates.js";
 import { FACES } from "../theme.js";
 
 export const unstable_settings: { readonly anchor: string } = {
@@ -32,6 +33,7 @@ const RESTING: NativeStackNavigationOptions = {
 
 export default function Layout(): ReactElement | null {
   const [loaded, unreadable] = useFonts(FACES);
+  useLatestUpdate();
 
   if (!loaded && unreadable === null) return null;
 
