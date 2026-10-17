@@ -96,9 +96,10 @@ describe("the light on the term to name next", () => {
 
 describe("the film before an area is named", () => {
   it("is drawn faint, apart from both the lit term and a plain one", async () => {
+    houseLights("down");
     const faint = await colourIn(SHORT, "Which movie?");
 
-    expect(faint).toMatch(/^#[0-9a-f]{6}$/);
+    expect(faint).toBe("#a0a8b5");
     expect(faint).not.toBe(await colourIn(SHORT, "Near where?"));
     expect(faint).not.toBe(await colourIn(SHORT, "Two seats together"));
   });
