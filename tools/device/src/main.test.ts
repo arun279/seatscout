@@ -3,8 +3,11 @@ import { heldWith, ran } from "./main.fixtures.ts";
 
 const WALK = "Walk, as Maestro makes it";
 
-describe("what the emulator measured, each measure held to the previous run while it is steady", () => {
-  it("passes a commit no worse than the previous run's worst on a steady runner, saying what it measured", () => {
+const WORSE =
+  "Worse than the previous run, past the noise between two runs of one build:";
+
+describe("what the emulator measured, each steady measure held to the previous run past the noise between two runs of one build", () => {
+  it("passes a commit no worse than the previous run on a steady runner, saying what it measured and where each measure turns worse", () => {
     const report = ran(
       "--journey",
       "head-walk.json",
@@ -18,76 +21,89 @@ describe("what the emulator measured, each measure held to the previous run whil
       [
         "### On the Android emulator",
         "",
-        "One emulator, one build of main. The walk is Flashlight over 3 iterations with the app's data cleared before each. This commit's median stands beside the previous Baseline run's worst; the spread is the standard deviation as a share of the mean, and a measure is held only while it stays under the 5 per cent Reassure calls steady. Both sides are rounded before they are compared, to the places Flashlight's report gives its averages: ms to 0 decimals, FPS to 1 decimal, % to 1 decimal, MB to 1 decimal.",
+        "One emulator, one build of main. The walk is Flashlight over 3 iterations with the app's data cleared before each. A measure is worse when this commit's median is past the previous Baseline run's by more than the noise between two runs of one build: three standard deviations of that difference, measured on ten emulators reading one build and on main's own runs, the limit NIST's handbook sets for a single measurement. A measure is held only while its spread, the standard deviation as a share of the mean, stays under the 5 per cent Reassure calls steady. Figures are rounded to the places Flashlight's report gives its averages: ms to 0 decimals, FPS to 1 decimal, % to 1 decimal, MB to 1 decimal.",
         "",
-        "| Measure | This commit, median | Spread | Previous run, worst | Spread |",
-        "| --- | --- | --- | --- | --- |",
-        `| ${WALK} | 20200 ms | 0.8% | 20500 ms | 0.8% |`,
-        "| Frame rate over the walk | 60 FPS | 0% | 60 FPS | 0% |",
-        "| CPU over the walk | 50% | 0% | 50% | 0% |",
-        "| Memory over the walk | 201 MB | 0.4% | 203 MB | 0.6% |",
+        "| Measure | This commit, median | Spread | Previous run, median | Spread | Worse past |",
+        "| --- | --- | --- | --- | --- | --- |",
+        `| ${WALK} | 20200 ms | 0.8% | 20300 ms | 0.8% | 51876 ms |`,
+        "| Frame rate over the walk | 60 FPS | 0% | 60 FPS | 0% | 59.3 FPS |",
+        "| CPU over the walk | 50% | 0% | 50% | 0% | 59.6% |",
+        "| Memory over the walk | 201 MB | 0.4% | 201 MB | 0.6% | 208.1 MB |",
         "",
-        "No figure held here is worse than the previous run's worst iteration.",
+        "No figure held here is worse than the previous run past the noise between two runs of one build.",
         "",
       ].join("\n"),
     );
   });
 
-  it("fails a commit whose median walk is slower than the previous run's slowest iteration", () => {
-    const report = heldWith("--journey", "slower-walk.json");
+  it.each([
+    "docs-and-lint.json",
+    "text-size.json",
+    "action-pins.json",
+    "dev-tools.json",
+    "adr-links.json",
+  ])(
+    "passes %s, which a runner read worse than the run before, within the noise between two runs of one build",
+    (journey) => {
+      const report = ran("--journey", journey, "--previous", "reference.json");
 
-    expect(report.code).toBe(1);
-    expect(report.out).toContain(
-      `| ${WALK} | 21200 ms | 0.8% | 20500 ms | 0.8% |`,
-    );
-    expect(report.out).toContain(
-      `Worse than the previous run's worst iteration: ${WALK}.`,
-    );
-  });
+      expect(report.code).toBe(0);
+      expect(report.out).toContain(
+        "No figure held here is worse than the previous run past the noise between two runs of one build.",
+      );
+    },
+  );
 
-  it("holds a frame rate the other way, failing one below the previous run's lowest", () => {
-    const report = heldWith("--journey", "fewer-frames.json");
-
-    expect(report.code).toBe(1);
-    expect(report.out).toContain(
-      "Worse than the previous run's worst iteration: Frame rate over the walk.",
-    );
-  });
-
-  it("holds each figure at the precision Flashlight reports it, so a frame rate and a walk that round to the previous worst are not worse", () => {
+  it("fails a frame rate 3 FPS below the previous run's", () => {
     const report = ran(
       "--journey",
-      "within-precision.json",
+      "three-fewer-frames.json",
       "--previous",
-      "base-fractions.json",
-    );
-
-    expect(report.code).toBe(0);
-    expect(report.out).toContain(
-      `| ${WALK} | 20500 ms | 0% | 20500 ms | 0.8% |`,
-    );
-    expect(report.out).toContain(
-      "| Frame rate over the walk | 59.9 FPS | 0% | 59.9 FPS | 0% |",
-    );
-  });
-
-  it("fails a frame rate one tenth below the previous worst, the smallest step Flashlight reports", () => {
-    const report = ran(
-      "--journey",
-      "one-tenth-fewer.json",
-      "--previous",
-      "base-fractions.json",
+      "reference.json",
     );
 
     expect(report.code).toBe(1);
     expect(report.out).toContain(
-      "| Frame rate over the walk | 59.8 FPS | 0% | 59.9 FPS | 0% |",
+      "| Frame rate over the walk | 56.1 FPS | 0% | 59.1 FPS | 0% | 58.4 FPS |",
     );
+    expect(report.out).toContain(`${WORSE} Frame rate over the walk.`);
   });
+
+  it("fails memory up by the 15.4 MB the Room cost when it joined the walk", () => {
+    const report = ran(
+      "--journey",
+      "room-memory.json",
+      "--previous",
+      "reference.json",
+    );
+
+    expect(report.code).toBe(1);
+    expect(report.out).toContain(`${WORSE} Memory over the walk.`);
+  });
+
+  it.each([
+    ["walk-at-limit.json", 0],
+    ["walk-rounding-to-limit.json", 0],
+    ["walk-past-limit.json", 1],
+    ["frames-at-limit.json", 0],
+    ["frames-rounding-to-limit.json", 0],
+    ["frames-past-limit.json", 1],
+    ["cpu-at-limit.json", 0],
+    ["cpu-past-limit.json", 1],
+    ["memory-at-limit.json", 0],
+    ["memory-past-limit.json", 1],
+  ])(
+    "holds %s at the precision Flashlight reports, passing a median at the limit and failing one a step past it",
+    (journey, code) => {
+      expect(
+        ran("--journey", journey, "--previous", "reference.json").code,
+      ).toBe(code);
+    },
+  );
 
   it("names every figure that got worse", () => {
     expect(heldWith("--journey", "slower-fewer.json").out).toContain(
-      `Worse than the previous run's worst iteration: ${WALK}, Frame rate over the walk.`,
+      `${WORSE} ${WALK}, Frame rate over the walk.`,
     );
   });
 
@@ -100,7 +116,7 @@ describe("what the emulator measured, each measure held to the previous run whil
       `Left out, too unsteady to hold: ${WALK} (40.8%).\n\nNo figure held here`,
     );
     expect(report.out).toContain(
-      "| Frame rate over the walk | 60 FPS | 0% | 60 FPS | 0% |",
+      "| Frame rate over the walk | 60 FPS | 0% | 60 FPS | 0% | 59.3 FPS |",
     );
   });
 
@@ -117,9 +133,7 @@ describe("what the emulator measured, each measure held to the previous run whil
     const report = heldWith("--journey", "unsteady-fewer.json");
 
     expect(report.code).toBe(1);
-    expect(report.out).toContain(
-      "Worse than the previous run's worst iteration: Frame rate over the walk.",
-    );
+    expect(report.out).toContain(`${WORSE} Frame rate over the walk.`);
   });
 
   it("names every measure it leaves out, and draws no table when nothing is left to hold", () => {
@@ -151,13 +165,13 @@ describe("what the emulator measured, each measure held to the previous run whil
 
   it("takes the middle iteration rather than the mean, so one slow iteration cannot move it", () => {
     expect(heldWith("--journey", "skewed-walk.json").out).toContain(
-      `| ${WALK} | 20100 ms | 0.8% | 20500 ms | 0.8% |`,
+      `| ${WALK} | 20100 ms | 0.8% | 20300 ms | 0.8% |`,
     );
   });
 
   it("takes the mean of the two middle iterations when there is an even number", () => {
     expect(heldWith("--journey", "even-walk.json").out).toContain(
-      `| ${WALK} | 20100 ms | 3.6% | 20500 ms | 0.8% |`,
+      `| ${WALK} | 20100 ms | 3.6% | 20300 ms | 0.8% |`,
     );
   });
 

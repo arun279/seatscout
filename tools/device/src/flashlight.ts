@@ -16,7 +16,6 @@ interface Run {
 }
 
 export interface Figure {
-  readonly values: readonly number[];
   readonly median: number;
   readonly spread: number;
 }
@@ -66,7 +65,6 @@ const figureOf = (values: readonly number[]): Figure => {
     meanOf(values.map((value) => (value - mean) ** 2)),
   );
   return {
-    values,
     median: medianOf(values),
     spread: roundedTo((deviation / mean) * 100, 1),
   };

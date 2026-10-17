@@ -153,11 +153,10 @@ jobs:
           else
             echo "keep=false" >> "$GITHUB_OUTPUT"
           fi
-      - name: Keep a reading that held, or one accepted by hand, for the next run to be held to
-        if: steps.held.outputs.keep == 'true'
+      - name: Keep the reading, as the reference when it held or was accepted, and as device-reading-worse when it did not
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: device-reading
+          name: ${{ steps.held.outputs.keep == 'true' && 'device-reading' || 'device-reading-worse' }}
           path: |
             ${{ env.OUT }}/journey.json
             ${{ env.OUT }}/device.md
@@ -167,7 +166,7 @@ jobs:
         if: steps.held.outputs.regressed == 'true' && github.event_name != 'workflow_dispatch'
         run: |
           {
-            echo "The Baseline run on main read the app on the emulator worse than the previous run's worst iteration on a steady measure. The report names each measure, this commit's median and the previous run's worst."
+            echo "The Baseline run on main read the app on the emulator worse than the run before, on a steady measure, past the noise between two runs of one build. The report names each measure, this commit's median, the previous run's, and the figure past which it is worse."
             echo
             cat "$OUT/device.md"
             echo

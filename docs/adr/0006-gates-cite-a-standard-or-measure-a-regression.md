@@ -853,16 +853,18 @@ so every reading that starts finishes and the queue never grows past one. Runs s
 wait in a group of their own, so a push cannot replace one either. It walks the
 journey and has Flashlight read the walk for its default ten iterations with the app's data
 cleared before each: the walk's own time, frame rate, CPU and memory. A measure is worse when
-this commit's median is worse than the worst iteration of the reading the previous Baseline run
-left. Flashlight's report has no median. It shows the average walk to the millisecond and the
-average frame rate, CPU and memory to a tenth (`getAverageMetrics` in its reporter's
+this commit's median is past the previous Baseline run's median by more than two runs of one
+build differ, a limit measured below. Flashlight's report has no
+median. It shows the average walk to the millisecond and the average frame rate, CPU and memory
+to a tenth (`getAverageMetrics` in its reporter's
 [`Report.ts`](https://github.com/bamlab/flashlight/blob/v0.18.0/packages/core/reporter/src/reporting/Report.ts)).
-The judge rounds this commit's median and the previous run's worst to those same places before it
-compares them, so a difference finer than the instrument shows its averages at is not called
-worse. Before that, a median of 58.8 FPS was called worse than a worst iteration of 58.845 FPS.
-The previous reading is the newest `device-reading` artifact a run on main left, and a first
-run, with none to collect, is held to nothing. A run keeps its reading only when it held, so a
-worse reading never becomes the one the next run is held to by accident. A cost a change was
+The judge rounds both medians and the figure past which a measure is worse to those same places
+before it compares them, so a difference finer than the instrument shows its averages at is not
+called worse. The previous reading is the newest `device-reading` artifact a run on main left,
+and a first run, with none to collect, is held to nothing. A run keeps its reading as the
+reference only when it held, so a worse reading never becomes the one the next run is held to by
+accident. A reading that did not hold is kept as `device-reading-worse`, so whoever looks into it
+has every iteration, not only the medians in the report. A cost a change was
 meant to carry, such as a new screen in the walk, is accepted by hand: run Baseline on main from
 the Actions tab with `accept` set to the reason. That run keeps its reading whatever it read. It
 records who started it, when and why in the report it keeps, and on an issue labelled
@@ -878,8 +880,61 @@ report and the verdict, named with its spread, and the rest are still held. A re
 measured nothing, failed, carried no frame rate or memory, or read a figure that was nothing on
 every iteration is refused, and the job fails. A steady measure that got worse files an issue
 labelled `device-red`, or comments on the open one, with the report, which names each measure,
-this commit's median and the previous run's worst; a later reading that holds closes it. The
-job stays green on a worse reading: it reports a trend, and it gates no pull request.
+this commit's median, the previous run's, and the figure past which it is worse; a later reading
+that holds closes it. The job stays green on a worse reading: it reports a trend, and it gates no
+pull request.
+
+**Two runs of one build differ more than one run's iterations do, so the limit is measured
+across runs.** A measure used to be worse when this commit's median was worse than the previous
+run's worst iteration. That held each run to the spread inside the other: ten iterations on one
+emulator, on one runner. But each Baseline run boots a fresh emulator on another runner, and
+runners differ more than iterations do. On 11 October 2026 four runs in a row (38155436887,
+38155492808, 38175516989 and 38175524189) were called worse than run 38087889572, and a fifth
+followed on 17 October (39062940305). None of them changed what the app costs. The first moved
+one constant into the design system. The second drew words again when the text size changes.
+The last three changed only action pins, developer tools and a link in this record, so they
+shipped the second's app, and read it at 17, 22.5 and 22.7 per cent CPU and 308.4, 313.9 and
+308.2 MB. The reference was the luckiest reading since the Room joined the walk: its 59.1 FPS was
+the highest median of the 28 runs since, and its 15.6 per cent CPU the lowest of the eight runs
+that held CPU. Only a reading that holds becomes the reference, so one lucky run held every run
+after it to itself.
+
+The [NIST/SEMATECH handbook](https://www.itl.nist.gov/div898/handbook/mpc/section2/mpc221.htm)
+says the same of any measurement process: one measurement cannot be judged by the standard
+deviation of short-term repetitions, only by the process's own standard deviation, which it
+takes over time. It sets the limit at three of those to flag only what is clearly out of
+control: about 1 per cent of readings of an unchanged process, where two would flag about 5.
+Those rates assume more than 100 degrees of freedom, and these limits rest on 22, 12 for CPU
+and 9 for the walk, so they are a guide rather than a promise. A test over the two runs'
+iterations, such as Mann-Whitney U, uses the short-term kind. Over the three readings main kept
+on 10 October, which all held, it called every pair different in frame rate and in CPU at p of
+0.001 or less.
+[Laaber, Scheuner and Leitner](https://doi.org/10.1007/s10664-019-09681-1) found the same on
+cloud machines: Wilcoxon rank-sum, the same test, reports changes between identical code when
+each side ran on one instance. An
+[experiment on GitHub's own runners](https://github.com/kaihowl/git-perf/blob/d795edbe1579ab4e27b4945416a36520eaa937a2/docs/ci-variance-experiment/README.md)
+found the floor for detecting a regression set by how runners differ, not by repetitions on one.
+Flashlight's own comparison, `flashlight report` over several readings, sets them side by side
+with their difference
+([its changelog](https://github.com/bamlab/flashlight/blob/main/CHANGELOG.md)) and leaves
+whether the difference is real to whoever reads it.
+
+So the limit is measured, as the render gate's is. Run 39063208028 built main once and read it
+on ten emulators at once, which shows how runners differ. The reference is one run rather than a
+long average, so the limit is on the difference of two runs, whose standard deviation is √2
+times that of the ten medians. Main's own runs show how runs differ over time: since the Room
+joined the walk, 13 pairs of consecutive runs shipped the same app. For the standard deviation
+of a two-run difference, the ten give 0.23 FPS, 2.06 MB and 2.9 points of CPU; main's pairs give
+0.23 FPS, 2.54 MB and, from the three pairs that held CPU, 3.9 points. The limits in
+`tools/device/src/verdict.ts` pool the two, each weighted by its degrees of freedom (nine from
+the ten, one from each pair), and are three of the pooled standard deviation: 0.7 FPS, 9.6 per
+cent CPU and 7.1 MB. The walk's limit, 31576 ms, comes from the ten alone, since no pair of
+main's runs held it. Held to these limits, the five readings pass, and so does every run since
+the Room joined the walk. The Room itself, which put 15.4 MB on the walk, fails. The cost is
+stated plainly: on the ten's medians, 72.4 seconds and 20.6 per cent, the walk can rise by about
+44 per cent and CPU by about 47 before two runs can tell it from the runner, so a rise of a
+third in either passes. Frame rate and memory,
+which are steady, are held to 0.7 FPS and 2.3 per cent.
 
 **Why the reading left the pull request.** On run 36287276171 the two sides' twenty walks took 27
 of the run's 49 minutes. Flashlight's own [page on

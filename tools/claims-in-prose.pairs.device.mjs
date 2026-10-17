@@ -1,7 +1,26 @@
 const BASELINE = ".github/workflows/baseline.yml";
 const WORKFLOW = ".github/workflows/ci.yml";
+const POOLED =
+  /are three of the pooled standard deviation: 0\.7 FPS, 9\.6 per cent CPU and 7\.1 MB/;
+
+const limit = (says, holds, pattern) => ({
+  adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+  says,
+  holds,
+  pattern,
+  paths: ["tools/device/src"],
+  files: 1,
+});
 
 export const DEVICE_CLAIMS = [
+  limit(POOLED, "the frame rate's limit", "noise: 0.7,"),
+  limit(POOLED, "the CPU's limit", "noise: 9.6,"),
+  limit(POOLED, "the memory's limit", "noise: 7.1,"),
+  limit(
+    /The walk's limit, 31576 ms, comes from the ten alone/,
+    "the walk's limit",
+    "noise: 31576,",
+  ),
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
     says: /\*\*What the emulator reads is measured on main, held to the run before/,
@@ -37,10 +56,18 @@ export const DEVICE_CLAIMS = [
   },
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /The judge rounds this commit's median and the previous run's worst to those same places/,
+    says: /The judge rounds both medians and the figure past which a measure is worse to those same places/,
     holds: "the precision each measure is compared at",
     pattern: "roundedTo(value, axis.decimals)",
     paths: ["tools/device/src"],
+    files: 1,
+  },
+  {
+    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+    says: /A reading that did not hold is kept as `device-reading-worse`/,
+    holds: "the artifact a reading that did not hold leaves",
+    pattern: "'device-reading-worse'",
+    paths: [BASELINE],
     files: 1,
   },
   {
