@@ -73,6 +73,8 @@ export { ACCOUNTED_FOR } from "./ledger-phrases.js";
 export type { LedgerRow } from "./ledger-phrases.js";
 export { ledgerOf } from "./ledger-phrases.js";
 export { sumOf } from "./ledger-phrases.js";
+export { HOUSE_LIGHTS } from "./lights-phrases.js";
+export { lightsSaidOf } from "./lights-phrases.js";
 export { ageOf } from "./phrases.js";
 export { clockOf } from "./phrases.js";
 export { labelOf } from "./phrases.js";

@@ -19,12 +19,15 @@ export interface RecentSearch {
   readonly partySize: number;
 }
 
+export type HouseLights = "system" | "down" | "up";
+
 export interface Remembered {
   readonly listing: CachedCatalogue;
   readonly programme: CachedProgramme;
   readonly profile: SeatProfile;
   readonly recent: readonly RecentSearch[];
   readonly cooldown: number;
+  readonly houseLights: HouseLights;
 }
 
 export type Stored = Remembered[keyof Remembered];

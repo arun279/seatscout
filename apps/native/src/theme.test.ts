@@ -30,6 +30,16 @@ describe("which house lights the system asked for", () => {
   it("puts them down when the system says nothing, which is the direction's own room", () => {
     expect(appearanceOf("unspecified")).toBe("down");
   });
+
+  it("follows the system when the person chose the system's setting", () => {
+    expect(appearanceOf("light", "system")).toBe("up");
+    expect(appearanceOf("dark", "system")).toBe("down");
+  });
+
+  it("holds the lights the person chose, whatever the system says", () => {
+    expect(appearanceOf("light", "down")).toBe("down");
+    expect(appearanceOf("dark", "up")).toBe("up");
+  });
 });
 
 describe("the reading that measures a contrast ratio", () => {

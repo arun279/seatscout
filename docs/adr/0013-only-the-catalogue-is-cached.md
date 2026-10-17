@@ -52,12 +52,12 @@ and the phase carries those Showtimes through with their reason.
 **A Seat cannot be written to the store, and that is a type error.** `KeyValueStore` is two
 operations. `read` answers `unknown`, because what a device hands back is not to be believed
 and the caller has to say what it will accept. `write` takes `Stored`, a closed union of the
-shapes this application remembers: a cached catalogue, a cached programme, a Seat Profile, and
-a history of recent searches. That union is the deny list, and none of its members holds a
+shapes this application remembers: a cached catalogue, a cached programme, a Seat Profile, a
+history of recent searches, the refusal cooldown, and the house lights a person chose. That union is the deny list, and none of its members holds a
 Seat.
 `store.write(key, seats)` is a type error, and so is
 `store.write(key, JSON.stringify(seats))`, which is the way round that a store of strings
-would have left open. Remembering a fifth thing is a line added to `Remembered`, the record the
+would have left open. Remembering one more thing is a line added to `Remembered`, the record the
 union is derived from, and the contract below grows a clause with it because the compiler says
 so: the contract's samples are a record keyed by `Remembered`'s own keys, so a member with no
 sample and no clause does not build. It is the technique
@@ -76,9 +76,10 @@ What moves the version is a test rather than a memory: `catalogue-cache.test.ts`
 `ENTRY_SHAPE` to the field paths a written entry actually carries, so a `Catalogue` that grows
 a field or moves one fails the suite beside the version that has to move with it, and
 `programme.test.ts` holds the programme's entry to its own key and field paths the same way. The
-remembered Profile and the search history follow the same rule under their own keys, and each
-reads its entry back only when every field it needs is the type it needs, answering Reference
-or nothing rather than trusting what a device handed over.
+remembered Profile, the search history and the house lights follow the same rule under their own
+keys, and each reads its entry back only when every field it needs is the type it needs,
+answering Reference, nothing, or the system's own setting rather than trusting what a device
+handed over.
 
 What comes back is still checked, because `read` answers `unknown` and something has to make
 a value of it: a numeric fetch moment and a catalogue carrying its three arrays. It stops

@@ -10,8 +10,10 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SHEET_PRESENTATION } from "../design-system/sheet.js";
 import { TextSizeProvider } from "../design-system/text-size.js";
 import { atRestOn } from "../host/address.js";
+import { useLights } from "../host/lights.js";
+import { houseLights } from "../host/source.js";
 import { useLatestUpdate } from "../host/updates.js";
-import { FACES } from "../theme.js";
+import { ChosenLights, FACES } from "../theme.js";
 
 export const unstable_settings: { readonly anchor: string } = {
   anchor: "index",
@@ -41,21 +43,28 @@ export default function Layout(): ReactElement | null {
   const [loaded, unreadable] = useFonts(FACES);
   const pathname = usePathname();
   const params = useGlobalSearchParams();
+  const lights = useLights(houseLights());
   useLatestUpdate(atRestOn(pathname, params));
 
-  if (!loaded && unreadable === null) return null;
+  if ((!loaded && unreadable === null) || lights === undefined) return null;
 
   return (
-    <GestureHandlerRootView>
-      <TextSizeProvider>
-        <Stack screenOptions={STAGE}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="room" />
-          <Stack.Screen name="ask" options={ASK} />
-          <Stack.Screen dangerouslySingular name="hand-off" options={FITTED} />
-          <Stack.Screen dangerouslySingular name="ledger" options={RESTING} />
-        </Stack>
-      </TextSizeProvider>
-    </GestureHandlerRootView>
+    <ChosenLights value={lights}>
+      <GestureHandlerRootView>
+        <TextSizeProvider>
+          <Stack screenOptions={STAGE}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="room" />
+            <Stack.Screen name="ask" options={ASK} />
+            <Stack.Screen
+              dangerouslySingular
+              name="hand-off"
+              options={FITTED}
+            />
+            <Stack.Screen dangerouslySingular name="ledger" options={RESTING} />
+          </Stack>
+        </TextSizeProvider>
+      </GestureHandlerRootView>
+    </ChosenLights>
   );
 }

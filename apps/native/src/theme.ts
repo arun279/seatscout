@@ -1,3 +1,5 @@
+import type { HouseLights } from "@seatscout/client";
+import { type Context, createContext, useContext } from "react";
 import {
   type ColorSchemeName,
   type TextStyle,
@@ -270,9 +272,18 @@ const THEMES: Readonly<Record<Appearance, Theme>> = {
   },
 };
 
-export const appearanceOf = (scheme: ColorSchemeName): Appearance =>
-  scheme === "light" ? "up" : "down";
+export const appearanceOf = (
+  scheme: ColorSchemeName,
+  lights: HouseLights = "system",
+): Appearance => {
+  if (lights !== "system") return lights;
+  return scheme === "light" ? "up" : "down";
+};
 
 export const themeFor = (appearance: Appearance): Theme => THEMES[appearance];
 
-export const useTheme = (): Theme => themeFor(appearanceOf(useColorScheme()));
+export const ChosenLights: Context<HouseLights> =
+  createContext<HouseLights>("system");
+
+export const useTheme = (): Theme =>
+  themeFor(appearanceOf(useColorScheme(), useContext(ChosenLights)));
