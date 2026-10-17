@@ -36,14 +36,7 @@ const medians = (time: number, fps: number, cpu: number, ram: number) =>
     ...Array.from({ length: 3 }, () => ({
       time,
       status: "SUCCESS",
-      measures: [
-        {
-          cpu: { perName: { "UI Thread": cpu }, perCore: {} },
-          fps,
-          ram,
-          time: 500,
-        },
-      ],
+      measures: [measure(fps, cpu, 0, ram)],
     })),
   );
 
@@ -53,17 +46,19 @@ const FILES: Readonly<Record<string, string>> = {
   "text-size.json": medians(58531, 58.6, 15.6, 310.6),
   "action-pins.json": medians(57625, 59, 17, 308.4),
   "dev-tools.json": medians(58531, 58.5, 22.5, 313.9),
+  "adr-links.json": medians(58531, 58.6, 22.7, 308.2),
   "three-fewer-frames.json": medians(58531, 56.1, 15.6, 309.6),
   "room-memory.json": medians(58531, 59.1, 15.6, 325),
   "walk-at-limit.json": medians(90107, 59.1, 15.6, 309.6),
-  "walk-past-limit.json": medians(90108, 59.1, 15.6, 309.6),
+  "walk-rounding-to-limit.json": medians(90107.4, 59.1, 15.6, 309.6),
+  "walk-past-limit.json": medians(90107.5, 59.1, 15.6, 309.6),
   "frames-at-limit.json": medians(58531, 58.4, 15.6, 309.6),
   "frames-rounding-to-limit.json": medians(58531, 58.35, 15.6, 309.6),
   "frames-past-limit.json": medians(58531, 58.34, 15.6, 309.6),
-  "cpu-at-limit.json": medians(58531, 59.1, 24.4, 309.6),
-  "cpu-past-limit.json": medians(58531, 59.1, 24.5, 309.6),
-  "memory-at-limit.json": medians(58531, 59.1, 15.6, 315.8),
-  "memory-past-limit.json": medians(58531, 59.1, 15.6, 315.9),
+  "cpu-at-limit.json": medians(58531, 59.1, 25.2, 309.6),
+  "cpu-past-limit.json": medians(58531, 59.1, 25.3, 309.6),
+  "memory-at-limit.json": medians(58531, 59.1, 15.6, 316.7),
+  "memory-past-limit.json": medians(58531, 59.1, 15.6, 316.8),
   "head-walk.json": times([20000, 20400, 20200], [60, 60, 60], [200, 202, 201]),
   "base-walk.json": times([20100, 20500, 20300], [60, 60, 60], [200, 203, 201]),
   "fewer-frames.json": times(

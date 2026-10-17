@@ -4,9 +4,9 @@ import { heldWith, ran } from "./main.fixtures.ts";
 const WALK = "Walk, as Maestro makes it";
 
 const WORSE =
-  "Worse than the previous run by more than two runs of one build differ:";
+  "Worse than the previous run, past the noise between two runs of one build:";
 
-describe("what the emulator measured, each steady measure held to the previous run past what two runs of one build differ by", () => {
+describe("what the emulator measured, each steady measure held to the previous run past the noise between two runs of one build", () => {
   it("passes a commit no worse than the previous run on a steady runner, saying what it measured and where each measure turns worse", () => {
     const report = ran(
       "--journey",
@@ -21,16 +21,16 @@ describe("what the emulator measured, each steady measure held to the previous r
       [
         "### On the Android emulator",
         "",
-        "One emulator, one build of main. The walk is Flashlight over 3 iterations with the app's data cleared before each. A measure is worse when this commit's median is past the previous Baseline run's median by more than two runs of one build differ on these runners: three standard deviations of that difference, measured on ten emulators reading one build at once. The spread is the standard deviation as a share of the mean, and a measure is held only while it stays under the 5 per cent Reassure calls steady. Figures are rounded to the places Flashlight's report gives its averages: ms to 0 decimals, FPS to 1 decimal, % to 1 decimal, MB to 1 decimal.",
+        "One emulator, one build of main. The walk is Flashlight over 3 iterations with the app's data cleared before each. A measure is worse when this commit's median is past the previous Baseline run's by more than the noise between two runs of one build: three standard deviations of that difference, measured on ten emulators reading one build and on main's own runs, the limit NIST's handbook sets for a single measurement. A measure is held only while its spread, the standard deviation as a share of the mean, stays under the 5 per cent Reassure calls steady. Figures are rounded to the places Flashlight's report gives its averages: ms to 0 decimals, FPS to 1 decimal, % to 1 decimal, MB to 1 decimal.",
         "",
         "| Measure | This commit, median | Spread | Previous run, median | Spread | Worse past |",
         "| --- | --- | --- | --- | --- | --- |",
         `| ${WALK} | 20200 ms | 0.8% | 20300 ms | 0.8% | 51876 ms |`,
         "| Frame rate over the walk | 60 FPS | 0% | 60 FPS | 0% | 59.3 FPS |",
-        "| CPU over the walk | 50% | 0% | 50% | 0% | 58.8% |",
-        "| Memory over the walk | 201 MB | 0.4% | 201 MB | 0.6% | 207.2 MB |",
+        "| CPU over the walk | 50% | 0% | 50% | 0% | 59.6% |",
+        "| Memory over the walk | 201 MB | 0.4% | 201 MB | 0.6% | 208.1 MB |",
         "",
-        "No figure held here is worse than the previous run by more than two runs of one build differ.",
+        "No figure held here is worse than the previous run past the noise between two runs of one build.",
         "",
       ].join("\n"),
     );
@@ -41,14 +41,15 @@ describe("what the emulator measured, each steady measure held to the previous r
     "text-size.json",
     "action-pins.json",
     "dev-tools.json",
+    "adr-links.json",
   ])(
-    "passes %s, which a runner read worse than the run before by no more than two runs of one build differ",
+    "passes %s, which a runner read worse than the run before, within the noise between two runs of one build",
     (journey) => {
       const report = ran("--journey", journey, "--previous", "reference.json");
 
       expect(report.code).toBe(0);
       expect(report.out).toContain(
-        "No figure held here is worse than the previous run by more than two runs of one build differ.",
+        "No figure held here is worse than the previous run past the noise between two runs of one build.",
       );
     },
   );
@@ -82,6 +83,7 @@ describe("what the emulator measured, each steady measure held to the previous r
 
   it.each([
     ["walk-at-limit.json", 0],
+    ["walk-rounding-to-limit.json", 0],
     ["walk-past-limit.json", 1],
     ["frames-at-limit.json", 0],
     ["frames-rounding-to-limit.json", 0],

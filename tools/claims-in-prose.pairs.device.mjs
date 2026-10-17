@@ -1,7 +1,26 @@
 const BASELINE = ".github/workflows/baseline.yml";
 const WORKFLOW = ".github/workflows/ci.yml";
+const POOLED =
+  /are three of the pooled standard deviation: 0\.7 FPS, 9\.6 per cent CPU and 7\.1 MB/;
+
+const limit = (says, holds, pattern) => ({
+  adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
+  says,
+  holds,
+  pattern,
+  paths: ["tools/device/src"],
+  files: 1,
+});
 
 export const DEVICE_CLAIMS = [
+  limit(POOLED, "the frame rate's limit", "drift: 0.7,"),
+  limit(POOLED, "the CPU's limit", "drift: 9.6,"),
+  limit(POOLED, "the memory's limit", "drift: 7.1,"),
+  limit(
+    /The walk's limit, 31576 ms, comes from the ten alone/,
+    "the walk's limit",
+    "drift: 31576,",
+  ),
   {
     adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
     says: /\*\*What the emulator reads is measured on main, held to the run before/,

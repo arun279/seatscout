@@ -889,38 +889,49 @@ across runs.** A measure used to be worse when this commit's median was worse th
 run's worst iteration. That held each run to the spread inside the other: ten iterations on one
 emulator, on one runner. But each Baseline run boots a fresh emulator on another runner, and
 runners differ more than iterations do. On 11 October 2026 four runs in a row (38155436887,
-38155492808, 38175516989 and 38175524189) were called worse than run 38087889572, and none of
-them changed what the app costs. The first moved one constant into the design system. The second
-drew words again when the text size changes. The last two changed only action pins and developer
-tools, so they shipped the second's app, and read it at 17 and 22.5 per cent CPU and 308.4 and
-313.9 MB. The reference was the luckiest reading since the Room joined the walk: its 59.1 FPS was
-the highest median of the 27 runs since, and its 15.6 per cent CPU the lowest of the seven runs
+38155492808, 38175516989 and 38175524189) were called worse than run 38087889572, and a fifth
+followed on 17 October (39062940305). None of them changed what the app costs. The first moved
+one constant into the design system. The second drew words again when the text size changes.
+The last three changed only action pins, developer tools and a link in this record, so they
+shipped the second's app, and read it at 17, 22.5 and 22.7 per cent CPU and 308.4, 313.9 and
+308.2 MB. The reference was the luckiest reading since the Room joined the walk: its 59.1 FPS was
+the highest median of the 28 runs since, and its 15.6 per cent CPU the lowest of the eight runs
 that held CPU. Only a reading that holds becomes the reference, so one lucky run held every run
 after it to itself.
 
 The [NIST/SEMATECH handbook](https://www.itl.nist.gov/div898/handbook/mpc/section2/mpc221.htm)
 says the same of any measurement process: one measurement cannot be judged by the standard
-deviation of short-term repetitions, only by the standard deviation over time, and the limit is
-three of those. A test over the two runs' iterations, such as Mann-Whitney U, uses the
-short-term kind. Over the three readings main kept on 10 October, which all held, it called
+deviation of short-term repetitions, only by the process's own standard deviation, which it
+takes over time. It sets the limit at three of those to flag only what is clearly out of
+control, about 1 per cent of readings of an unchanged process; two flags about 5 per cent, one
+false issue in twenty runs. A test over the two runs' iterations, such as Mann-Whitney U, uses
+the short-term kind. Over the three readings main kept on 10 October, which all held, it called
 every pair different in frame rate and in CPU at p < 0.001.
 [Laaber, Scheuner and Leitner](https://doi.org/10.1007/s10664-019-09681-1) found the same on
 cloud machines: Wilcoxon rank-sum, the same test, reports changes between identical code when
 each side ran on one instance. An
 [experiment on GitHub's own runners](https://github.com/kaihowl/git-perf/blob/d795edbe1579ab4e27b4945416a36520eaa937a2/docs/ci-variance-experiment/README.md)
 found the floor for detecting a regression set by how runners differ, not by repetitions on one.
-Flashlight compares readings only by drawing them side by side in `flashlight report`.
+Flashlight's own comparison, `flashlight report` over several readings, sets them side by side
+with their difference
+([its changelog](https://github.com/bamlab/flashlight/blob/main/CHANGELOG.md)) and leaves
+whether the difference is real to whoever reads it.
 
 So the limit is measured, as the render gate's is. Run 39063208028 built main once and read it
-on ten emulators at once. A two-run difference has a standard deviation √2 times that of the ten
-medians, and three of those are the limits in `tools/device/src/verdict.ts`: 31576 ms for the
-walk, 0.7 FPS, 8.8 per cent CPU and 6.2 MB. Main's own runs agree. Since the Room joined the walk,
-12 pairs of runs shipped the same app, and their differences give 0.23 FPS and 2.07 MB for that
-standard deviation, against 0.23 and 2.06 from the ten. Held to these limits, the four readings
-of 11 October pass, and so does every run since the Room joined the walk. The Room itself, which
-put 15.4 MB on the walk, fails. The cost is stated plainly: on medians near 72 seconds and 21 per
-cent, the walk and CPU can each rise by about 43 per cent before two runs can tell it from the
-runner. Frame rate and memory, which are steady, are held to 0.7 FPS and 2 per cent.
+on ten emulators at once, which shows how runners differ. The reference is one run rather than a
+long average, so the limit is on the difference of two runs, whose standard deviation is √2
+times that of the ten medians. Main's own runs show how runs differ over time: since the Room
+joined the walk, 13 pairs of consecutive runs shipped the same app. For the standard deviation
+of a two-run difference, the ten give 0.23 FPS, 2.06 MB and 2.9 points of CPU; main's pairs give
+0.23 FPS, 2.54 MB and, from the three pairs that held CPU, 3.9 points. The limits in
+`tools/device/src/verdict.ts` pool the two, each weighted by how many differences it holds, and
+are three of the pooled standard deviation: 0.7 FPS, 9.6 per cent CPU and 7.1 MB. The walk's
+limit, 31576 ms, comes from the ten alone, since no pair of main's runs held it. Held to these
+limits, the five readings pass, and so does every run since the Room joined the walk. The Room
+itself, which put 15.4 MB on the walk, fails. The cost is stated plainly: on medians near 72
+seconds and 21 per cent, the walk can rise by about 44 per cent and CPU by about 47 before two
+runs can tell it from the runner, so a rise of a third in either passes. Frame rate and memory,
+which are steady, are held to 0.7 FPS and 2.3 per cent.
 
 **Why the reading left the pull request.** On run 36287276171 the two sides' twenty walks took 27
 of the run's 49 minutes. Flashlight's own [page on

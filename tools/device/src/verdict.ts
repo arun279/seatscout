@@ -5,7 +5,7 @@ interface Axis {
   readonly unit: string;
   readonly decimals: number;
   readonly of: (side: Reading) => Figure;
-  readonly worse: 1 | -1;
+  readonly worsening: 1 | -1;
   readonly drift: number;
 }
 
@@ -15,7 +15,7 @@ const AXES: readonly Axis[] = [
     unit: " ms",
     decimals: 0,
     of: (side) => side.runtime,
-    worse: 1,
+    worsening: 1,
     drift: 31576,
   },
   {
@@ -23,7 +23,7 @@ const AXES: readonly Axis[] = [
     unit: " FPS",
     decimals: 1,
     of: (side) => side.fps,
-    worse: -1,
+    worsening: -1,
     drift: 0.7,
   },
   {
@@ -31,16 +31,16 @@ const AXES: readonly Axis[] = [
     unit: "%",
     decimals: 1,
     of: (side) => side.cpu,
-    worse: 1,
-    drift: 8.8,
+    worsening: 1,
+    drift: 9.6,
   },
   {
     name: "Memory over the walk",
     unit: " MB",
     decimals: 1,
     of: (side) => side.ram,
-    worse: 1,
-    drift: 6.2,
+    worsening: 1,
+    drift: 7.1,
   },
 ];
 
@@ -58,10 +58,11 @@ const medianAtPrecision = (axis: Axis, side: Reading) =>
   atPrecision(axis, axis.of(side).median);
 
 const limitOf = (axis: Axis, previous: Reading) =>
-  atPrecision(axis, axis.of(previous).median + axis.worse * axis.drift);
+  atPrecision(axis, axis.of(previous).median + axis.worsening * axis.drift);
 
 const isWorse = (axis: Axis, latest: Reading, previous: Reading) =>
-  axis.worse * (medianAtPrecision(axis, latest) - limitOf(axis, previous)) > 0;
+  axis.worsening * (medianAtPrecision(axis, latest) - limitOf(axis, previous)) >
+  0;
 
 const spreadOf = (axis: Axis, latest: Reading, previous: Reading | null) =>
   Math.max(
@@ -117,11 +118,11 @@ const verdictOf = (
   return worse.length > 0
     ? {
         code: 1,
-        line: `Worse than the previous run by more than two runs of one build differ: ${worse.map((axis) => axis.name).join(", ")}.`,
+        line: `Worse than the previous run, past the noise between two runs of one build: ${worse.map((axis) => axis.name).join(", ")}.`,
       }
     : {
         code: 0,
-        line: "No figure held here is worse than the previous run by more than two runs of one build differ.",
+        line: "No figure held here is worse than the previous run past the noise between two runs of one build.",
       };
 };
 
@@ -139,7 +140,7 @@ export const judged = (
     report: [
       "### On the Android emulator",
       "",
-      `One emulator, one build of main. The walk is Flashlight over ${latest.iterations} iterations with the app's data cleared before each. A measure is worse when this commit's median is past the previous Baseline run's median by more than two runs of one build differ on these runners: three standard deviations of that difference, measured on ten emulators reading one build at once. The spread is the standard deviation as a share of the mean, and a measure is held only while it stays under the ${STEADY} per cent Reassure calls steady. Figures are rounded to the places Flashlight's report gives its averages: ${PLACES}.`,
+      `One emulator, one build of main. The walk is Flashlight over ${latest.iterations} iterations with the app's data cleared before each. A measure is worse when this commit's median is past the previous Baseline run's by more than the noise between two runs of one build: three standard deviations of that difference, measured on ten emulators reading one build and on main's own runs, the limit NIST's handbook sets for a single measurement. A measure is held only while its spread, the standard deviation as a share of the mean, stays under the ${STEADY} per cent Reassure calls steady. Figures are rounded to the places Flashlight's report gives its averages: ${PLACES}.`,
       "",
       ...table(kept, latest, previous),
       ...(unsteady.length === 0
