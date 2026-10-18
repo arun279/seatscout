@@ -1,0 +1,7 @@
+[
+  {
+    "shard": "native-ask",
+    "files": "apps/native/src/ask/film.tsx:3:2-3:9",
+    "mutants": 1
+  }
+]

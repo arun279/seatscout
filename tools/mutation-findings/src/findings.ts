@@ -19,7 +19,7 @@ interface Report {
 export interface Judged {
   readonly shard: string;
   readonly outcome: string | undefined;
-  readonly reports: readonly string[];
+  readonly report: string | null;
 }
 
 interface Findings {
@@ -37,20 +37,11 @@ const MISSED: Readonly<Record<string, string>> = {
 const ABOUT =
   "Stryker changed one place on each line this merge added or edited, as Google's code review does, and ran the tests that reach it. Fix each finding in the next pull request, before new feature work: add the test that kills the mutant, or say on this issue why it is not useful.";
 
-const isReport = (parsed: unknown): parsed is Report =>
-  typeof parsed === "object" &&
-  parsed !== null &&
-  "files" in parsed &&
-  typeof parsed.files === "object" &&
-  parsed.files !== null;
-
 const mutantsIn = (text: string) => {
-  const parsed: unknown = JSON.parse(text);
-  return isReport(parsed)
-    ? Object.entries(parsed.files).flatMap(([file, { source, mutants }]) =>
-        mutants.map((mutant) => ({ file, source, mutant })),
-      )
-    : [];
+  const { files }: Report = JSON.parse(text);
+  return Object.entries(files).flatMap(([file, { source, mutants }]) =>
+    mutants.map((mutant) => ({ file, source, mutant })),
+  );
 };
 
 const offset = (lines: readonly string[], { line, column }: Position) =>
@@ -77,12 +68,20 @@ const diffOf = (source: string, { replacement, location }: Mutant) => {
   ].join("\n");
 };
 
-const brokenIn = ({ shard, outcome }: Judged, run: string) =>
-  outcome === "success"
+const notJudgedBecause = ({ outcome, report }: Judged) => {
+  if (outcome === undefined) return "left no result";
+  if (outcome !== "success") return "broke";
+  return report === null ? "left no report" : undefined;
+};
+
+const brokenIn = (job: Judged, run: string) => {
+  const why = notJudgedBecause(job);
+  return why === undefined
     ? []
     : [
-        `The ${shard} job ${outcome === undefined ? "left no result" : "broke"}, so the lines it was given were not judged. [The run](${run}) says why.`,
+        `The ${job.shard} job ${why}, so the lines it was given were not judged. [The run](${run}) says why.`,
       ];
+};
 
 const summaryOf = (judged: number, missed: number) =>
   missed === 0
@@ -104,7 +103,7 @@ export const findings = (
       body: "This merge adds or edits no line Stryker can mutate.",
     };
   const judged = jobs
-    .flatMap((job) => job.reports.flatMap(mutantsIn))
+    .flatMap((job) => (job.report === null ? [] : mutantsIn(job.report)))
     .filter(({ mutant }) => JUDGED.includes(mutant.status));
   const missed = judged.filter(({ mutant }) => mutant.status in MISSED);
   const broken = jobs.flatMap((job) => brokenIn(job, run));
