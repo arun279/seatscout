@@ -23,7 +23,8 @@ SeatScout runs on a phone as its own app: an EAS internal build, made on Expo's 
 `preview` profile in `apps/native/eas.json`; nothing is built on your machine. Each build
 follows the `preview` channel. Every merge to `main` that changes the app, or anything under
 `packages/`, publishes an update there. An installed build fetches the newest update when it
-opens and runs it from the next launch.
+opens or comes back to the front, and runs it as soon as it has it, without waiting for the next
+launch.
 
 ```sh
 npx eas-cli@latest build --platform android --profile preview   # an APK to install from its link

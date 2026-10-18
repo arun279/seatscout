@@ -21,6 +21,7 @@ jest.mock("expo-router", () => ({
 import {
   askAbout,
   askedIn,
+  atRestOn,
   goTo,
   handOff,
   keepAsItWas,
@@ -265,5 +266,20 @@ describe("handing a Seat Group to the hand-off sheet", () => {
 
     expect(await handed(`${chosen.key}+`)).toBeUndefined();
     expect(await handed(undefined)).toBeUndefined();
+  });
+});
+
+describe("whether the app is at rest, with nothing a reload would lose", () => {
+  it("is at rest on the Search screen with nothing entered", () => {
+    expect(atRestOn("/", {})).toBe(true);
+  });
+
+  it("is not at rest on the Search screen once anything is entered", () => {
+    expect(atRestOn("/", { area: "75006" })).toBe(false);
+  });
+
+  it("is not at rest anywhere else, with or without a query", () => {
+    expect(atRestOn("/room", {})).toBe(false);
+    expect(atRestOn("", {})).toBe(false);
   });
 });

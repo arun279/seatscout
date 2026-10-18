@@ -93,3 +93,6 @@ export const runInstead = (terms: Terms): void => {
 export const keepAsItWas = (): void => {
   router.back();
 };
+
+export const atRestOn = (pathname: string, given: Given): boolean =>
+  pathname === "/" && Object.keys(given).length === 0;

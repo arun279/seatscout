@@ -1,9 +1,16 @@
 import { useFonts } from "expo-font";
-import { type NativeStackNavigationOptions, Stack } from "expo-router";
+import {
+  type NativeStackNavigationOptions,
+  Stack,
+  useGlobalSearchParams,
+  usePathname,
+} from "expo-router";
 import type { ReactElement } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SHEET_PRESENTATION } from "../design-system/sheet.js";
 import { TextSizeProvider } from "../design-system/text-size.js";
+import { atRestOn } from "../host/address.js";
+import { useLatestUpdate } from "../host/updates.js";
 import { FACES } from "../theme.js";
 
 export const unstable_settings: { readonly anchor: string } = {
@@ -32,6 +39,9 @@ const RESTING: NativeStackNavigationOptions = {
 
 export default function Layout(): ReactElement | null {
   const [loaded, unreadable] = useFonts(FACES);
+  const pathname = usePathname();
+  const params = useGlobalSearchParams();
+  useLatestUpdate(atRestOn(pathname, params));
 
   if (!loaded && unreadable === null) return null;
 
