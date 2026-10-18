@@ -304,6 +304,13 @@ Each `mutantsPerJob` is the largest N that meets both:
 | search | 146 | 0.22 | 0.55 | 76 | 1,397 | 3,227 |
 | theme | 692 | 0.61 | 1.88 | 2 | 1,144 | 2,023 |
 
+**At most ten mutation jobs run at once** (`max-parallel` in `ci.yml`). The account that owns the
+repository shares one pool of hosted runners across all its repositories: 20 concurrent jobs on
+the Free plan and 40 on Pro ([GitHub's limits](https://docs.github.com/en/actions/reference/limits)).
+A pull request that touches the app can plan 30 or more jobs, which alone would fill the Free pool
+and queue every other repository's work behind it. Ten is half the smaller pool. A pull request
+with ten jobs or fewer is not slowed; a larger one runs in waves.
+
 **One kind of value is ignored, by a plugin rather than by file.** `tools/stryker-style-tables.mjs`
 skips the argument of `StyleSheet.create`, and a table declared at the top of a file the plugin
 names: the theme, whose two appearances, type roles and scales are all table; the router's layout,
