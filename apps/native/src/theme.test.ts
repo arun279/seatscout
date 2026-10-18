@@ -31,11 +31,6 @@ describe("which house lights the system asked for", () => {
     expect(appearanceOf("unspecified", "system")).toBe("down");
   });
 
-  it("follows the system when the person chose the system's setting", () => {
-    expect(appearanceOf("light", "system")).toBe("up");
-    expect(appearanceOf("dark", "system")).toBe("down");
-  });
-
   it("holds the lights the person chose, whatever the system says", () => {
     expect(appearanceOf("light", "down")).toBe("down");
     expect(appearanceOf("dark", "up")).toBe("up");

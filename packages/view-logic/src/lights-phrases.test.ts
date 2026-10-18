@@ -15,9 +15,11 @@ describe("the words the house lights are chosen in", () => {
     expect(lightsSaidOf("system", "up")).toBe("System · up right now");
   });
 
-  it("says something for every line of the section", () => {
-    for (const line of [HOUSE_LIGHTS.label, HOUSE_LIGHTS.note])
-      expect(line.trim()).not.toBe("");
+  it("names the section, and says what System means and where the choice is kept", () => {
+    expect(HOUSE_LIGHTS.label).toBe("House lights");
+    expect(HOUSE_LIGHTS.note).toBe(
+      "System follows your phone's own light and dark setting. The choice is kept on this phone.",
+    );
   });
 
   it("says a held choice holds whatever the phone says", () => {
