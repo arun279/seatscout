@@ -45,7 +45,7 @@ const phoneKeeping = (kept?: HouseLights) => {
       return Promise.resolve();
     },
   };
-  mockHeld.current = heldLights(store, () => undefined);
+  mockHeld.current = heldLights(store, false);
   return { answer: () => answer(), written };
 };
 
