@@ -33,9 +33,11 @@ test("the Search screen's prompt face, drawn and read", async () => {
   await measureRenders(
     <Search
       clock={still(NOW)}
+      lights="system"
       onAsk={nothing}
       onHandOff={nothing}
       onLedger={nothing}
+      onLights={nothing}
       online
       onRoom={nothing}
       onRun={nothing}

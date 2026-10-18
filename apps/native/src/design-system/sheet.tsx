@@ -13,13 +13,13 @@ import {
   ScrollView,
   StyleSheet,
   type Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../theme.js";
 import { Dock } from "./dock.js";
 import { ON_ANDROID } from "./platform.js";
+import { Press } from "./press.js";
 import { TOUCH_FLOOR } from "./touch.js";
 import { Type } from "./type.js";
 
@@ -115,7 +115,7 @@ type HeadProps = Pick<SheetProps, "heading" | "keep" | "onKeep"> & {
 
 const AppBar = ({ heading, keep, onKeep, titled }: HeadProps) => (
   <View style={styles.bar}>
-    <TouchableOpacity
+    <Press
       accessibilityLabel={keep}
       accessibilityRole="button"
       onPress={onKeep}
@@ -124,7 +124,7 @@ const AppBar = ({ heading, keep, onKeep, titled }: HeadProps) => (
       <Type set="sentenceStrong" tone="silver">
         ✕
       </Type>
-    </TouchableOpacity>
+    </Press>
     <Type
       accessibilityRole="header"
       ref={titled}
@@ -138,7 +138,7 @@ const AppBar = ({ heading, keep, onKeep, titled }: HeadProps) => (
 
 const Head = ({ heading, keep, onKeep, titled }: HeadProps) => (
   <View style={styles.head}>
-    <TouchableOpacity
+    <Press
       accessibilityLabel={keep}
       accessibilityRole="button"
       onPress={onKeep}
@@ -147,7 +147,7 @@ const Head = ({ heading, keep, onKeep, titled }: HeadProps) => (
       <Type set="sentence" tone="beam">
         {`‹ ${keep}`}
       </Type>
-    </TouchableOpacity>
+    </Press>
     <Type
       accessibilityRole="header"
       ref={titled}

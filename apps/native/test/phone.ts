@@ -26,6 +26,7 @@ export interface Upstream {
 
 export interface Phone {
   readonly seatscout: SeatScout;
+  readonly store: KeyValueStore;
   readonly reads: readonly string[];
 }
 
@@ -77,8 +78,10 @@ export const phone = (
   const reads: string[] = [];
   const upstream = reaching(given);
   const send = given.through === undefined ? upstream : given.through(upstream);
+  const store = heldBy(remembered, given);
   return {
     reads,
+    store,
     seatscout: createSeatScout({
       fetch: (url, init) => {
         reads.push(url);
@@ -87,7 +90,7 @@ export const phone = (
       now: () => NOW,
       wait: () => Promise.resolve(),
       random: () => 0,
-      store: heldBy(remembered, given),
+      store,
     }),
   };
 };

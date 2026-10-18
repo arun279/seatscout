@@ -1,6 +1,15 @@
 import { afterEach, describe, expect, it, jest } from "@jest/globals";
 import { REFERENCE } from "@seatscout/client";
-import { deviceSeatScout, reaching, seatProfile, seatScout } from "./source.js";
+import { waitFor } from "@testing-library/react-native";
+import { heldLights } from "./lights.js";
+import {
+  deviceSeatScout,
+  houseLights,
+  reaching,
+  seatProfile,
+  seatScout,
+} from "./source.js";
+import { deviceStore } from "./store.js";
 
 const answered = { status: 200, text: () => Promise.resolve("{}") };
 
@@ -106,10 +115,19 @@ describe("what the device gives the application", () => {
   });
 });
 
-describe("the one SeatScout and Seat Profile an app run holds", () => {
-  it("hands every caller the same SeatScout and the same held profile", () => {
+describe("the one SeatScout, Seat Profile and house lights an app run holds", () => {
+  it("hands every caller the same SeatScout, the same held profile and the same held lights", () => {
     expect(seatScout()).toBe(seatScout());
     expect(seatProfile()).toBe(seatProfile());
+    expect(houseLights()).toBe(houseLights());
+  });
+
+  it("keeps the house lights chosen on the phone, so the next run starts under them", async () => {
+    houseLights().choose("up");
+
+    const next = heldLights(deviceStore, true);
+
+    await waitFor(() => expect(next.snapshot()).toBe("up"));
   });
 
   it("keeps the profile chosen through the held profile in that SeatScout's store", async () => {

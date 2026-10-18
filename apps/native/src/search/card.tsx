@@ -10,7 +10,8 @@ import {
   whyOf,
 } from "@seatscout/view-logic";
 import { type ReactElement, useSyncExternalStore } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { Press } from "../design-system/press.js";
 import { RoomPlan } from "../design-system/room-plan.js";
 import { SEATS_SLOP, TOUCH_FLOOR } from "../design-system/touch.js";
 import { Type } from "../design-system/type.js";
@@ -131,7 +132,7 @@ export const Card = ({
       ]}
       testID="card"
     >
-      <TouchableOpacity
+      <Press
         accessibilityLabel={roomNameOf(result)}
         accessibilityRole="button"
         onPress={() => onRoom(result)}
@@ -162,10 +163,10 @@ export const Card = ({
             </Type>
           )}
         </View>
-      </TouchableOpacity>
+      </Press>
       <View style={styles.side}>
         {online ? (
-          <TouchableOpacity
+          <Press
             accessibilityRole="button"
             hitSlop={SEATS_SLOP}
             onPress={() => onHandOff(result)}
@@ -173,7 +174,7 @@ export const Card = ({
             testID="seats"
           >
             {seats}
-          </TouchableOpacity>
+          </Press>
         ) : (
           seats
         )}

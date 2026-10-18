@@ -7,8 +7,9 @@ import {
   readMoreOf,
 } from "@seatscout/view-logic";
 import type { ReactElement } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { Ghost } from "../design-system/button.js";
+import { Press } from "../design-system/press.js";
 import { WIDE_SLOP } from "../design-system/touch.js";
 import { Type } from "../design-system/type.js";
 import { useTheme } from "../theme.js";
@@ -78,7 +79,7 @@ export const Strip = ({
           {coverageOf(snapshot)}
         </Type>
         {counted && (
-          <TouchableOpacity
+          <Press
             accessibilityRole="button"
             hitSlop={WIDE_SLOP}
             onPress={onLedger}
@@ -87,7 +88,7 @@ export const Strip = ({
             <Type set="ledgerRow" tone="beamDim">
               {LEDGER}
             </Type>
-          </TouchableOpacity>
+          </Press>
         )}
       </View>
       {snapshot.phase === "searching" && (
