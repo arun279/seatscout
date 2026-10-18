@@ -1,0 +1,11 @@
+{
+  "name": "@seatscout/gating-time",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "devDependencies": {
+    "@types/node": "26.6.4",
+    "vitest": "4.1.11"
+  }
+}

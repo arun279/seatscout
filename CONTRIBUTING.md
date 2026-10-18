@@ -41,8 +41,8 @@ iOS and once as Android.
 
 ## Before you push
 
-The `quality` job runs this list, in this order. Run all of it: a shorter list that passes
-is how a pull request arrives red.
+The `quality`, `native-tests` and `bundle` jobs share this list, and each runs its part in this
+order. Run all of it: a shorter list that passes is how a pull request arrives red.
 
 ```sh
 pnpm format:check
@@ -77,11 +77,15 @@ so it runs between `bundle` and `weigh`, which overwrites that directory.
 - **On commit.** The pre-commit hook runs five checks over staged files, as `lefthook.yml`
   declares.
 - **On every push to a pull request, draft or not.** The fast jobs: `changes`, `quality`,
-  `secrets` (gitleaks) and `dependencies` (OSV advisories and licences). Then `footprint` posts
-  one comment saying what every job did, and refuses the change if any job failed.
+  `native-tests`, `bundle`, `secrets` (gitleaks) and `dependencies` (OSV advisories and
+  licences). Then `footprint` posts one comment saying what every job did and how long the jobs
+  it waits on took. It refuses the change if any job failed, or if those jobs took more than ten
+  minutes.
 - **Once the pull request is ready for review, and on every push after.** `measure`, which
-  weighs the change for the footprint comment. When the change touches the app, also `android`, which walks the journey on an
-  emulator, and `performance`, which runs Reassure against main as the change merges into it.
+  weighs the change for the footprint comment. When the change touches the app, also
+  `performance`, which runs Reassure against main as the change merges into it, and `android`,
+  which walks the journey on an emulator. `android` is a later stage: `footprint` does not wait
+  for it.
 - **When the `bundle-grows` label is added or removed.** `measure` and `footprint` again, on
   the same head, once its CI has finished, when the label can change `measure`'s verdict.
 - **On main, after a merge.** The fast jobs again, over the merged result. Mutation, once per
@@ -161,9 +165,17 @@ as it is. Where another record explains a gate, the item links it.
 - **A mutant Stryker could not judge.** The issue says the run broke, and the run's log names
   the mutant and its whole error. Most often a test file computed a value at load, so move that
   work into each test. ([ADR 12](docs/adr/0012-mutation-is-judged-after-each-merge.md))
-- **The walk on the emulator.** The job log names the step that found nothing, and the
-  `device` artifact holds what Maestro wrote of the walk. Fix the screen, or change
+- **The walk on the emulator.** Neither `footprint` nor the ruleset waits for it, so GitHub
+  lets the change merge while it is red. Do not merge it until the walk is green. The job log
+  names the step that found nothing, and the `device` artifact holds what Maestro wrote of the
+  walk. Fix the screen, or change
   `apps/native/e2e/journey.yaml` in the same diff if the journey changed on purpose.
+- **Gating time over ten minutes.** The jobs `footprint` waits on may take ten minutes, the
+  guideline for the build that gates a change in Martin Fowler's
+  [Continuous Integration](https://martinfowler.com/articles/continuousIntegration.html#build-fast).
+  The comment names the longest chain of jobs. Make a job in it faster, split it into jobs that
+  run side by side, or move it to a later stage that `footprint` does not wait on.
+  ([ADR 6](docs/adr/0006-gates-cite-a-standard-or-measure-a-regression.md))
 - **A render regression.** Make the screen render as it did. The `performance` comment names
   the scenarios that moved.
 - **A comment.** Say it in the code, or raise the comment ratchet in `.footprint.json` in the
