@@ -20,22 +20,16 @@ export interface HeldLights {
   readonly choose: (lights: HouseLights) => void;
 }
 
-export const overriding =
-  (onWeb: boolean) =>
-  (lights: HouseLights): void => {
-    if (!onWeb) Appearance.setColorScheme(SCHEMES[lights]);
-  };
-
 export const heldLights = (
   store: KeyValueStore,
-  apply: (lights: HouseLights) => void,
+  onWeb: boolean,
 ): HeldLights => {
   const changes = signal();
   let held: HouseLights | undefined;
 
   const hold = (lights: HouseLights) => {
     held = lights;
-    apply(lights);
+    if (!onWeb) Appearance.setColorScheme(SCHEMES[lights]);
     changes.notify();
   };
 

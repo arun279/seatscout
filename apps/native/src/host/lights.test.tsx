@@ -1,12 +1,16 @@
-import { describe, expect, it, jest } from "@jest/globals";
-import type { HouseLights, KeyValueStore } from "@seatscout/client";
+import { afterEach, describe, expect, it, jest } from "@jest/globals";
+import type { KeyValueStore } from "@seatscout/client";
 import { act, renderHook, waitFor } from "@testing-library/react-native";
 import { Appearance } from "react-native";
-import { heldLights, overriding, useLights } from "./lights.js";
+import { heldLights, useLights } from "./lights.js";
 
-const phoneHolding = (kept?: unknown) => {
+afterEach(() => {
+  jest.mocked(Appearance.setColorScheme).mockRestore();
+});
+
+const phoneHolding = (kept?: unknown, onWeb = false) => {
+  const set = jest.spyOn(Appearance, "setColorScheme");
   const written: [string, unknown][] = [];
-  const applied: HouseLights[] = [];
   let answer: () => void = () => undefined;
   const store: KeyValueStore = {
     read: (key) =>
@@ -19,31 +23,31 @@ const phoneHolding = (kept?: unknown) => {
     },
   };
   return {
-    held: heldLights(store, (lights) => applied.push(lights)),
+    held: heldLights(store, onWeb),
     answer: () => answer(),
     written,
-    applied,
+    schemes: () => set.mock.calls.map(([scheme]) => scheme),
   };
 };
 
 describe("the house lights this phone holds", () => {
-  it("holds nothing, and applies nothing, until the phone's store has answered", async () => {
+  it("holds nothing, and overrides nothing, until the phone's store has answered", async () => {
     const phone = phoneHolding("up");
 
     const { result } = await renderHook(() => useLights(phone.held));
 
     expect(result.current).toBeUndefined();
-    expect(phone.applied).toEqual([]);
+    expect(phone.schemes()).toEqual([]);
   });
 
-  it("holds and applies the choice the phone kept once the store answers", async () => {
+  it("holds the choice the phone kept once the store answers, and holds the phone's own controls to it", async () => {
     const phone = phoneHolding("up");
     const { result } = await renderHook(() => useLights(phone.held));
 
     await act(phone.answer);
 
     await waitFor(() => expect(result.current).toBe("up"));
-    expect(phone.applied).toEqual(["up"]);
+    expect(phone.schemes()).toEqual(["light"]);
   });
 
   it("follows the system when the phone kept no choice", async () => {
@@ -53,7 +57,7 @@ describe("the house lights this phone holds", () => {
     await act(phone.answer);
 
     await waitFor(() => expect(result.current).toBe("system"));
-    expect(phone.applied).toEqual(["system"]);
+    expect(phone.schemes()).toEqual(["unspecified"]);
   });
 
   it("follows the system when what the phone kept is no choice it offers", async () => {
@@ -65,14 +69,14 @@ describe("the house lights this phone holds", () => {
     await waitFor(() => expect(result.current).toBe("system"));
   });
 
-  it("holds, applies and keeps a choice at once, telling everyone who reads it", async () => {
+  it("holds, overrides and keeps a choice at once, telling everyone who reads it", async () => {
     const phone = phoneHolding();
     const { result } = await renderHook(() => useLights(phone.held));
 
     await act(() => phone.held.choose("down"));
 
     expect(result.current).toBe("down");
-    expect(phone.applied).toEqual(["down"]);
+    expect(phone.schemes()).toEqual(["dark"]);
     expect(phone.written).toEqual([["seatscout.houseLights.v1", "down"]]);
   });
 
@@ -84,29 +88,16 @@ describe("the house lights this phone holds", () => {
     await act(phone.answer);
 
     expect(result.current).toBe("down");
-    expect(phone.applied).toEqual(["down"]);
-  });
-});
-
-describe("the phone's own controls under the house lights", () => {
-  it("holds the phone's own controls dark, light, or back on the system's setting", () => {
-    const set = jest.spyOn(Appearance, "setColorScheme");
-    const apply = overriding(false);
-
-    apply("down");
-    apply("up");
-    apply("system");
-
-    expect(set.mock.calls).toEqual([["dark"], ["light"], ["unspecified"]]);
-    set.mockRestore();
+    expect(phone.schemes()).toEqual(["dark"]);
   });
 
-  it("leaves a web page's controls to the browser, which has no override", () => {
-    const set = jest.spyOn(Appearance, "setColorScheme");
+  it("leaves a web page's controls to the browser, which has no override, and still holds the choice", async () => {
+    const phone = phoneHolding(undefined, true);
+    const { result } = await renderHook(() => useLights(phone.held));
 
-    overriding(true)("down");
+    await act(() => phone.held.choose("down"));
 
-    expect(set).not.toHaveBeenCalled();
-    set.mockRestore();
+    expect(result.current).toBe("down");
+    expect(phone.schemes()).toEqual([]);
   });
 });
