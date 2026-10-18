@@ -2,10 +2,11 @@ import DateTimePicker, {
   type DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import type { ReactElement, ReactNode } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useTheme } from "../theme.js";
 import { fieldBox, fieldColours } from "./field.js";
 import { ON_ANDROID } from "./platform.js";
+import { Press } from "./press.js";
 import { Type } from "./type.js";
 
 export interface PickerFieldProps {
@@ -42,7 +43,7 @@ export const PickerField = ({
   return (
     <>
       <View style={styles.row}>
-        <TouchableOpacity
+        <Press
           accessibilityLabel={`${label}, ${words}`}
           accessibilityRole="button"
           accessibilityState={{ expanded: picking }}
@@ -55,7 +56,7 @@ export const PickerField = ({
           <Type set="ledgerField" tone="silver">
             {words}
           </Type>
-        </TouchableOpacity>
+        </Press>
         {beside}
       </View>
       {picking && (

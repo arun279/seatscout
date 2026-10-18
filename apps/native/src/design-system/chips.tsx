@@ -5,12 +5,12 @@ import {
   type AccessibilityState,
   ScrollView,
   StyleSheet,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { useTheme } from "../theme.js";
 import { felt } from "./feedback.js";
 import { ON_ANDROID } from "./platform.js";
+import { Press } from "./press.js";
 import { useLargeText } from "./text-size.js";
 import { TOUCH_FLOOR } from "./touch.js";
 import { Type } from "./type.js";
@@ -105,7 +105,7 @@ const Face = ({ on, text, sub, role, state, onPress }: FaceProps) => {
   const { colours } = useTheme();
 
   return (
-    <TouchableOpacity
+    <Press
       accessibilityLabel={sub === undefined ? text : `${text}, ${sub}`}
       accessibilityRole={role}
       accessibilityState={state}
@@ -134,7 +134,7 @@ const Face = ({ on, text, sub, role, state, onPress }: FaceProps) => {
           {sub}
         </Type>
       )}
-    </TouchableOpacity>
+    </Press>
   );
 };
 
@@ -168,7 +168,7 @@ const Tagged = ({ text, onPress }: Tag) => {
   const { colours } = useTheme();
 
   return (
-    <TouchableOpacity
+    <Press
       accessibilityLabel={text}
       accessibilityRole="button"
       onPress={felt(onPress)}
@@ -179,7 +179,7 @@ const Tagged = ({ text, onPress }: Tag) => {
           {text}
         </Type>
       </View>
-    </TouchableOpacity>
+    </Press>
   );
 };
 

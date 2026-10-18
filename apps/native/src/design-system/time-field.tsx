@@ -1,7 +1,8 @@
 import type { ReactElement } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { clockFor, timeAt } from "../host/clock.js";
 import { PickerField } from "./picker-field.js";
+import { Press } from "./press.js";
 import { TOUCH_FLOOR } from "./touch.js";
 import { Type } from "./type.js";
 
@@ -44,7 +45,7 @@ export const TimeField = ({
       at={timeAt(clock ?? opensAt)}
       beside={
         clock !== undefined && (
-          <TouchableOpacity
+          <Press
             accessibilityLabel={`${clear}, ${label}`}
             accessibilityRole="button"
             onPress={() => {
@@ -56,7 +57,7 @@ export const TimeField = ({
             <Type set="sentenceStrong" tone="silverDim">
               ✕
             </Type>
-          </TouchableOpacity>
+          </Press>
         )
       }
       label={label}

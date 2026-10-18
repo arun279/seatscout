@@ -8,7 +8,8 @@ import {
   termsOf,
 } from "@seatscout/view-logic";
 import type { ReactElement } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { Press } from "../design-system/press.js";
 import { TOUCH_FLOOR } from "../design-system/touch.js";
 import { Type } from "../design-system/type.js";
 import { useTheme } from "../theme.js";
@@ -48,7 +49,7 @@ const Row = ({
   const theme = useTheme();
 
   return (
-    <TouchableOpacity
+    <Press
       accessibilityLabel={`${carriedTitleOf(search)}, ${saidOf(search, today)}`}
       accessibilityRole="button"
       onPress={() => onRun(termsOf({ ...search, date: search.dates }, today))}
@@ -71,7 +72,7 @@ const Row = ({
       <Type set="sentenceStrong" style={styles.go} tone="beam">
         ›
       </Type>
-    </TouchableOpacity>
+    </Press>
   );
 };
 

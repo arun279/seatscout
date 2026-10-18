@@ -1,9 +1,10 @@
 import { type ReactElement, useId } from "react";
-import { Platform, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 import type { Appearance, Palette, Theme } from "../theme.js";
 import { useTheme } from "../theme.js";
 import { committed } from "./feedback.js";
+import { Press } from "./press.js";
 import { useTextSize } from "./text-size.js";
 import { TOUCH_FLOOR } from "./touch.js";
 import { Type } from "./type.js";
@@ -82,7 +83,7 @@ export const Velvet = ({ label, onPress }: VelvetProps): ReactElement => {
   const scale = useTextSize();
 
   return (
-    <TouchableOpacity
+    <Press
       accessibilityRole="button"
       onPress={committed(onPress)}
       style={[
@@ -102,7 +103,7 @@ export const Velvet = ({ label, onPress }: VelvetProps): ReactElement => {
       <Type set="sentenceStrong" tone={labelTone(theme.appearance)}>
         {label}
       </Type>
-    </TouchableOpacity>
+    </Press>
   );
 };
 
@@ -126,13 +127,13 @@ export const Ghost = ({ label, onPress }: GhostProps): ReactElement => {
       {said}
     </View>
   ) : (
-    <TouchableOpacity
+    <Press
       accessibilityRole="button"
       onPress={onPress}
       style={drawn}
       testID="ghost"
     >
       {said}
-    </TouchableOpacity>
+    </Press>
   );
 };
