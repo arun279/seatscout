@@ -31,6 +31,9 @@ updates:
       - dependency-name: jest
       - dependency-name: '@jest/globals'
       - dependency-name: '@types/react'
+      # Stryker's Vitest runner runs no tests per mutant on Vitest 5 (stryker-js#6210); lift when a fixed release ships.
+      - dependency-name: vitest
+        update-types: ['version-update:semver-major']
     groups:
       non-major-updates:
         update-types:
