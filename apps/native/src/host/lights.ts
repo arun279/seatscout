@@ -1,18 +1,13 @@
 import type { HouseLights, KeyValueStore } from "@seatscout/client";
 import { signal } from "@seatscout/view-logic";
 import { useSyncExternalStore } from "react";
-import { Appearance, type ColorSchemeName } from "react-native";
 
 const KEY = "seatscout.houseLights.v1";
 
-const SCHEMES: Readonly<Record<HouseLights, ColorSchemeName>> = {
-  system: "unspecified",
-  down: "dark",
-  up: "light",
-};
+const CHOICES: readonly HouseLights[] = ["system", "down", "up"];
 
 const isLights = (kept: unknown): kept is HouseLights =>
-  Object.keys(SCHEMES).some((lights) => lights === kept);
+  CHOICES.some((lights) => lights === kept);
 
 export interface HeldLights {
   readonly snapshot: () => HouseLights | undefined;
@@ -20,16 +15,12 @@ export interface HeldLights {
   readonly choose: (lights: HouseLights) => void;
 }
 
-export const heldLights = (
-  store: KeyValueStore,
-  onWeb: boolean,
-): HeldLights => {
+export const heldLights = (store: KeyValueStore): HeldLights => {
   const changes = signal();
   let held: HouseLights | undefined;
 
   const hold = (lights: HouseLights) => {
     held = lights;
-    if (!onWeb) Appearance.setColorScheme(SCHEMES[lights]);
     changes.notify();
   };
 

@@ -65,7 +65,7 @@ export const PickerField = ({
           mode="time"
           onChange={picked}
           testID="time-picker"
-          themeVariant={theme.appearance === "down" ? "dark" : "light"}
+          themeVariant={theme.scheme}
           value={at}
         />
       )}

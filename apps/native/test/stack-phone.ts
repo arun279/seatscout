@@ -20,7 +20,7 @@ export const reads: readonly string[] = carried.reads;
 
 const held = heldProfile(carried.seatscout);
 
-const lights = heldLights(carried.store, false);
+const lights = heldLights(carried.store);
 
 export const source: {
   readonly seatScout: () => SeatScout;

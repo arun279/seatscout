@@ -252,6 +252,7 @@ export type Appearance = "down" | "up";
 
 export interface Theme {
   readonly appearance: Appearance;
+  readonly scheme: "dark" | "light";
   readonly colours: Palette;
   readonly type: Readonly<Record<Role, TypeRole>>;
   readonly radius: Radii;
@@ -260,12 +261,14 @@ export interface Theme {
 const THEMES: Readonly<Record<Appearance, Theme>> = {
   down: {
     appearance: "down",
+    scheme: "dark",
     colours: DOWN,
     type: TYPE,
     radius: RADIUS,
   },
   up: {
     appearance: "up",
+    scheme: "light",
     colours: UP,
     type: TYPE,
     radius: RADIUS,
@@ -285,5 +288,7 @@ export const themeFor = (appearance: Appearance): Theme => THEMES[appearance];
 export const ChosenLights: Context<HouseLights> =
   createContext<HouseLights>("system");
 
-export const useTheme = (): Theme =>
-  themeFor(appearanceOf(useColorScheme(), useContext(ChosenLights)));
+export const useThemeUnder = (lights: HouseLights): Theme =>
+  themeFor(appearanceOf(useColorScheme(), lights));
+
+export const useTheme = (): Theme => useThemeUnder(useContext(ChosenLights));

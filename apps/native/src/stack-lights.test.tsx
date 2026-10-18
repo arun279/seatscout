@@ -1,9 +1,16 @@
-import { beforeAll, describe, expect, it, jest } from "@jest/globals";
+import {
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  jest,
+} from "@jest/globals";
 import type { HouseLights, KeyValueStore } from "@seatscout/client";
 import { act, fireEvent, screen, within } from "@testing-library/react-native";
 import { renderRouter } from "expo-router/testing-library";
-import { StyleSheet } from "react-native";
-import { houseLights } from "../test/lights.js";
+import { StatusBar, StyleSheet } from "react-native";
+import { houseLights, phoneThatLagsAnOverride } from "../test/lights.js";
 import { WARM_UP, warmTheCorpus } from "../test/rooms.js";
 import { source as mockSource } from "../test/stack-phone.js";
 import Layout, { unstable_settings } from "./app/_layout.js";
@@ -32,6 +39,10 @@ jest.mock("./host/source.js", () => ({
 
 beforeAll(warmTheCorpus, WARM_UP);
 
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+
 const phoneKeeping = (kept?: HouseLights) => {
   const written: unknown[] = [];
   let answer: () => void = () => undefined;
@@ -45,7 +56,7 @@ const phoneKeeping = (kept?: HouseLights) => {
       return Promise.resolve();
     },
   };
-  mockHeld.current = heldLights(store, false);
+  mockHeld.current = heldLights(store);
   return { answer: () => answer(), written };
 };
 
@@ -96,6 +107,7 @@ describe("the house lights across the app", () => {
 
   it("turns every screen to the lights pressed at once, and keeps the choice on the phone", async () => {
     houseLights("down");
+    const bar = jest.spyOn(StatusBar, "setBarStyle");
     const phone = phoneKeeping();
     await opened();
     await act(phone.answer);
@@ -103,6 +115,7 @@ describe("the house lights across the app", () => {
     await fireEvent.press(await screen.findByRole("button", { name: "Up" }));
 
     expect(grounds()).toEqual([UP_HOUSE]);
+    expect(bar.mock.calls.at(-1)).toEqual(["dark-content"]);
     expect(
       screen.getByRole("button", { name: "Up", selected: true }),
     ).toBeOnTheScreen();
@@ -117,6 +130,19 @@ describe("the house lights across the app", () => {
       within(sheet).getByRole("header", { name: "Near where?" }),
     ).toBeOnTheScreen();
     expect(grounds()).toEqual([UP_HOUSE]);
+  });
+
+  it("draws the phone's own lights the moment System is chosen again, though a phone reports a cleared override late", async () => {
+    phoneThatLagsAnOverride("down");
+    const phone = phoneKeeping();
+    await opened();
+    await act(phone.answer);
+
+    await fireEvent.press(await screen.findByRole("button", { name: "Up" }));
+    await fireEvent.press(screen.getByRole("button", { name: "System" }));
+
+    expect(grounds()).toEqual([DOWN_HOUSE]);
+    expect(screen.getByText("System · down right now")).toBeOnTheScreen();
   });
 
   it("follows the system again once its setting is chosen", async () => {

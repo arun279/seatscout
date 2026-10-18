@@ -83,6 +83,7 @@ export const Field = ({
       <TextInput
         accessibilityLabel={label}
         autoFocus={focused}
+        keyboardAppearance={theme.scheme}
         onBlur={onSettled}
         onChangeText={onTyped}
         ref={ref}

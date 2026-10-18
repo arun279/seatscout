@@ -4,8 +4,9 @@ import { createRef } from "react";
 import { Platform, StyleSheet, TextInput } from "react-native";
 import { contrastOf } from "../../test/contrast.js";
 import { houseLights } from "../../test/lights.js";
-import type { Appearance } from "../theme.js";
+import { type Appearance, ChosenLights } from "../theme.js";
 import { Field, focusOn } from "./field.js";
+import { Stage } from "./stage.js";
 import { Type } from "./type.js";
 
 const APPEARANCES: readonly Appearance[] = ["down", "up"];
@@ -103,6 +104,33 @@ describe("a field with its name above it", () => {
         contrastOf(String(style.backgroundColor), String(style.color)),
       ).toBeGreaterThanOrEqual(4.5);
     });
+
+  it("raises a keyboard in the house lights a person chose, whatever the phone says", async () => {
+    houseLights("down");
+    await render(
+      <ChosenLights value="up">
+        <Stage>
+          <Field
+            focused={false}
+            label="Near, by postal code"
+            onSettled={() => undefined}
+            onTyped={() => undefined}
+            value=""
+          />
+        </Stage>
+      </ChosenLights>,
+    );
+
+    expect(
+      screen.getByLabelText("Near, by postal code").props["keyboardAppearance"],
+    ).toBe("light");
+  });
+
+  it("raises a dark keyboard with the house lights down", async () => {
+    const { input } = await drawn();
+
+    expect(input.props["keyboardAppearance"]).toBe("dark");
+  });
 });
 
 describe("putting the cursor in a field", () => {
