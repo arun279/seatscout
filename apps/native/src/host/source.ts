@@ -1,4 +1,5 @@
 import { createSeatScout, type SeatScout } from "@seatscout/client";
+import { type HeldLights, heldLights } from "./lights.js";
 import { type HeldProfile, heldProfile } from "./profile.js";
 import { deviceStore } from "./store.js";
 import { type Fetch, upstream } from "./upstream.js";
@@ -40,4 +41,11 @@ let held: HeldProfile | undefined;
 export const seatProfile = (): HeldProfile => {
   held ??= heldProfile(seatScout());
   return held;
+};
+
+let lights: HeldLights | undefined;
+
+export const houseLights = (): HeldLights => {
+  lights ??= heldLights(deviceStore);
+  return lights;
 };

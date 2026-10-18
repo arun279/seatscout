@@ -1,9 +1,10 @@
 import type { ReactElement } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useTheme } from "../theme.js";
 import type { Chip } from "./chips.js";
 import { felt } from "./feedback.js";
 import { ON_ANDROID } from "./platform.js";
+import { Press } from "./press.js";
 import { TOUCH_FLOOR } from "./touch.js";
 import { Type } from "./type.js";
 
@@ -48,7 +49,7 @@ export const Segments = <Named extends string>({
       {segments.map(({ value, text }, at) => {
         const picked = value === chosen;
         return (
-          <TouchableOpacity
+          <Press
             accessibilityLabel={text}
             accessibilityRole="button"
             accessibilityState={{ selected: picked }}
@@ -70,7 +71,7 @@ export const Segments = <Named extends string>({
             <Type set="sentenceSmall" tone={picked ? "onChosen" : "silverDim"}>
               {text}
             </Type>
-          </TouchableOpacity>
+          </Press>
         );
       })}
     </View>

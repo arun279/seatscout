@@ -35,9 +35,11 @@ const opened = async (carried: Phone) => {
   await render(
     <Search
       clock={STILL}
+      lights="system"
       onAsk={nothing}
       onHandOff={nothing}
       onLedger={nothing}
+      onLights={nothing}
       online
       onRoom={nothing}
       onRun={nothing}

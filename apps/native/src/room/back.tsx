@@ -1,6 +1,7 @@
 import { BACK_TO_THE_LIST } from "@seatscout/view-logic";
 import type { ReactElement } from "react";
-import { StyleSheet, TouchableOpacity } from "react-native";
+import { StyleSheet } from "react-native";
+import { Press } from "../design-system/press.js";
 import { SLOP, TOUCH_FLOOR } from "../design-system/touch.js";
 import { Type } from "../design-system/type.js";
 
@@ -18,7 +19,7 @@ export const Back = ({
 }: {
   readonly onBack: () => void;
 }): ReactElement => (
-  <TouchableOpacity
+  <Press
     accessibilityRole="button"
     hitSlop={SLOP}
     onPress={onBack}
@@ -27,5 +28,5 @@ export const Back = ({
     <Type set="sentence" tone="beamDim">
       ‹ {BACK_TO_THE_LIST}
     </Type>
-  </TouchableOpacity>
+  </Press>
 );

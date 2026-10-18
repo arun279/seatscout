@@ -6,7 +6,8 @@ import {
   YOUR_SEATS_IN_THIS_ROOM,
 } from "@seatscout/view-logic";
 import type { ReactElement } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { Press } from "../design-system/press.js";
 import { SLOP } from "../design-system/touch.js";
 import { Type } from "../design-system/type.js";
 import { useTheme } from "../theme.js";
@@ -76,7 +77,7 @@ export const Alternates = ({
         const { group } = placed;
         const on = group.key === chosen.group.key;
         return (
-          <TouchableOpacity
+          <Press
             key={group.key}
             accessibilityRole="radio"
             accessibilityState={{ checked: on }}
@@ -118,7 +119,7 @@ export const Alternates = ({
                 {whyOf(group.reasons, group.podDividers)}
               </Type>
             </View>
-          </TouchableOpacity>
+          </Press>
         );
       })}
       <Type set="sentenceSmall" tone="silverFaint">

@@ -20,15 +20,20 @@ const READ_AT_LENGTH: readonly (keyof Palette)[] = [
 
 describe("which house lights the system asked for", () => {
   it("puts the house lights up when the system is light", () => {
-    expect(appearanceOf("light")).toBe("up");
+    expect(appearanceOf("light", "system")).toBe("up");
   });
 
   it("puts them down when the system is dark", () => {
-    expect(appearanceOf("dark")).toBe("down");
+    expect(appearanceOf("dark", "system")).toBe("down");
   });
 
   it("puts them down when the system says nothing, which is the direction's own room", () => {
-    expect(appearanceOf("unspecified")).toBe("down");
+    expect(appearanceOf("unspecified", "system")).toBe("down");
+  });
+
+  it("holds the lights the person chose, whatever the system says", () => {
+    expect(appearanceOf("light", "down")).toBe("down");
+    expect(appearanceOf("dark", "up")).toBe("up");
   });
 });
 

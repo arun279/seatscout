@@ -2,13 +2,9 @@ import { afterEach, beforeAll, jest } from "@jest/globals";
 import { cleanup, render } from "@testing-library/react-native/pure";
 import { impactAsync, notificationAsync, selectionAsync } from "expo-haptics";
 import { createElement } from "react";
-import {
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  useColorScheme,
-} from "react-native";
+import { ScrollView, Text, useColorScheme } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Press } from "../src/design-system/press.js";
 import { appearanceOf, themeFor } from "../src/theme.js";
 import { audit } from "./audit.js";
 
@@ -37,9 +33,9 @@ beforeAll(async () => {
   await render(
     <SafeAreaView>
       <ScrollView>
-        <TouchableOpacity>
+        <Press>
           <Text>.</Text>
-        </TouchableOpacity>
+        </Press>
       </ScrollView>
     </SafeAreaView>,
   );
@@ -54,7 +50,7 @@ jest.mock("expo-haptics", () => ({
 }));
 
 afterEach(async () => {
-  const { house } = themeFor(appearanceOf(useColorScheme())).colours;
+  const { house } = themeFor(appearanceOf(useColorScheme(), "system")).colours;
   try {
     await audit(house);
   } finally {

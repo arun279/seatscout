@@ -13,9 +13,10 @@ import {
   useMemo,
   useState,
 } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { type Palette, useTheme } from "../theme.js";
 import { felt } from "./feedback.js";
+import { Press } from "./press.js";
 import { TOUCH_FLOOR } from "./touch.js";
 import { Type } from "./type.js";
 
@@ -70,7 +71,7 @@ const Header = memo(
     return (
       <View>
         <View style={styles.header}>
-          <TouchableOpacity
+          <Press
             accessibilityLabel="Previous month"
             accessibilityRole="button"
             accessibilityState={{ disabled: first }}
@@ -81,11 +82,11 @@ const Header = memo(
             <Type set="sentence" tone={first ? "silverFaint" : "silver"}>
               ‹
             </Type>
-          </TouchableOpacity>
+          </Press>
           <Type accessibilityRole="header" set="sentence" tone="silver">
             {monthNameOf(`${month}-01`)}
           </Type>
-          <TouchableOpacity
+          <Press
             accessibilityLabel="Next month"
             accessibilityRole="button"
             onPress={() => onMonth(monthAfter(month, 1))}
@@ -94,7 +95,7 @@ const Header = memo(
             <Type set="sentence" tone="silver">
               ›
             </Type>
-          </TouchableOpacity>
+          </Press>
         </View>
         <View
           accessibilityElementsHidden
@@ -159,7 +160,7 @@ const DayCell = memo(
         {said}
       </View>
     ) : (
-      <TouchableOpacity
+      <Press
         accessibilityLabel={dayNameOf(day, today)}
         accessibilityRole="button"
         accessibilityState={{ selected: marked !== "none" }}
@@ -168,7 +169,7 @@ const DayCell = memo(
         style={drawn}
       >
         {said}
-      </TouchableOpacity>
+      </Press>
     );
   },
 );

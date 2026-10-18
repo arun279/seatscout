@@ -1,4 +1,5 @@
 import type {
+  HouseLights,
   SeatGroupResult,
   SeatProfile,
   SeatScout,
@@ -22,6 +23,7 @@ import { Type } from "../design-system/type.js";
 import type { Clock } from "../host/clock.js";
 import { useRemembered } from "../host/remembered.js";
 import { useTheme } from "../theme.js";
+import { HouseLightsControl } from "./house-lights.js";
 import { Recent } from "./recent.js";
 import { Results } from "./results.js";
 import { TitleCard } from "./title-card.js";
@@ -33,6 +35,8 @@ export interface SearchProps {
   readonly today: string;
   readonly clock: Clock;
   readonly online: boolean;
+  readonly lights: HouseLights;
+  readonly onLights: (lights: HouseLights) => void;
   readonly onAsk: (term: Term) => void;
   readonly onRun: (terms: Terms) => void;
   readonly onRoom: (result: SeatGroupResult) => void;
@@ -59,11 +63,20 @@ const Prompt = ({
   programme,
   profile,
   today,
+  lights,
+  onLights,
   onAsk,
   onRun,
 }: Pick<
   SearchProps,
-  "seatscout" | "terms" | "profile" | "today" | "onAsk" | "onRun"
+  | "seatscout"
+  | "terms"
+  | "profile"
+  | "today"
+  | "lights"
+  | "onLights"
+  | "onAsk"
+  | "onRun"
 > & {
   readonly programme: ProgrammeState;
 }) => (
@@ -81,6 +94,7 @@ const Prompt = ({
         {ledeOf(terms)}
       </Type>
       <Remembered onRun={onRun} seatscout={seatscout} today={today} />
+      <HouseLightsControl chosen={lights} onChosen={onLights} />
     </ScrollView>
     <Dock>
       <Velvet
@@ -98,6 +112,8 @@ export const Search = ({
   today,
   clock,
   online,
+  lights,
+  onLights,
   onAsk,
   onRun,
   onRoom,
@@ -118,7 +134,9 @@ export const Search = ({
     >
       {asked === null ? (
         <Prompt
+          lights={lights}
           onAsk={onAsk}
+          onLights={onLights}
           onRun={onRun}
           profile={profile}
           programme={programme}
