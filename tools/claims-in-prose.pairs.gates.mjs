@@ -3,6 +3,7 @@ const STRYKER = "stryker.config.mjs";
 const CYCLOMATIC = ".oxlintrc.json";
 const DUPLICATION = ".jscpd.json";
 const WORKFLOW = ".github/workflows/ci.yml";
+const MUTATION = ".github/workflows/mutation.yml";
 const COLOURS = "tools/lint/no-colour-literals.grit";
 const WORKSPACE = "pnpm-workspace.yaml";
 
@@ -46,23 +47,15 @@ export const GATE_CLAIMS = [
     files: 1,
   },
   {
-    adr: "0006-gates-cite-a-standard-or-measure-a-regression.md",
-    says: /calls it greater than or equal to a break threshold of 100, and exits/,
-    holds: "the mutation gate's breaking threshold",
-    pattern: "break: 100",
-    paths: [STRYKER],
+    adr: "0012-mutation-is-judged-after-each-merge.md",
+    says: /reads the push\s+against main as it was before the push/,
+    holds: "the plan read against main before the push",
+    pattern: '--plan "$BEFORE"',
+    paths: [MUTATION],
     files: 1,
   },
   {
-    adr: "0012-every-mutant-must-die.md",
-    says: /The change is read against the merge commit's first parent/,
-    holds: "the plan read against the merge commit's first parent",
-    pattern: "--plan HEAD^1",
-    paths: [WORKFLOW],
-    files: 1,
-  },
-  {
-    adr: "0012-every-mutant-must-die.md",
+    adr: "0012-mutation-is-judged-after-each-merge.md",
     says: /includes that workspace's test files and no others/,
     holds:
       "the configuration that limits a shard to the tests its workspace holds",
@@ -71,7 +64,7 @@ export const GATE_CLAIMS = [
     files: 1,
   },
   {
-    adr: "0012-every-mutant-must-die.md",
+    adr: "0012-mutation-is-judged-after-each-merge.md",
     says: /So a Jest shard runs two at a time\./,
     holds: "the two Jest runners a shard runs at once",
     pattern: "JEST_RUNNERS_AT_ONCE = 2",
@@ -79,7 +72,7 @@ export const GATE_CLAIMS = [
     files: 1,
   },
   {
-    adr: "0012-every-mutant-must-die.md",
+    adr: "0012-mutation-is-judged-after-each-merge.md",
     says: /`stryker\.config\.mjs` multiplies the 1\.5 by the number of projects/,
     holds: "the timeout factor a Jest shard scales by its projects",
     pattern:
@@ -88,7 +81,7 @@ export const GATE_CLAIMS = [
     files: 1,
   },
   {
-    adr: "0012-every-mutant-must-die.md",
+    adr: "0012-mutation-is-judged-after-each-merge.md",
     says: /The Vitest runner's `vitest\.related` is turned off for the/,
     holds: "the setting that keeps related mode off a shard's static mutants",
     pattern: "related: false",

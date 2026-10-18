@@ -1,0 +1,175 @@
+name: Mutation
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mutation
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      jobs: ${{ steps.plan.outputs.jobs }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@fbda4c85fc2e1e08721cd8763afea8f48d60f024 # v3.0.0
+        with:
+          runtime: node@24.20.0
+          cache: true
+          install: false
+      - name: Install, leaving a failure to the issue rather than to a red run
+        continue-on-error: true
+        run: pnpm install --frozen-lockfile
+      - name: Plan one mutant on each line this push adds or edits, read against main before the push
+        id: plan
+        continue-on-error: true
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          jobs="$(node tools/mutation.mjs --plan "$BEFORE")"
+          echo "$jobs" | jq .
+          echo "jobs=$jobs" >> "$GITHUB_OUTPUT"
+
+  mutation:
+    name: mutation (${{ matrix.shard }} ${{ strategy.job-index }})
+    needs: plan
+    if: needs.plan.outputs.jobs != '' && needs.plan.outputs.jobs != '[]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.jobs) }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@fbda4c85fc2e1e08721cd8763afea8f48d60f024 # v3.0.0
+        with:
+          runtime: node@24.20.0
+          cache: true
+          install: false
+      - name: Install, leaving a failure to the issue rather than to a red run
+        continue-on-error: true
+        run: pnpm install --frozen-lockfile
+      - name: Mutate the places the plan gave this job and run the tests that reach them
+        id: judge
+        continue-on-error: true
+        timeout-minutes: 55
+        env:
+          SHARD: ${{ matrix.shard }}
+          FILES: ${{ matrix.files }}
+          MUTANTS: ${{ matrix.mutants }}
+        run: |
+          set -o pipefail
+          VITEST_MAX_WORKERS=1 node tools/mutation.mjs --shard "$SHARD" --files "$FILES" 2>&1 | tee "$RUNNER_TEMP/stryker.log"
+          expected="$(tr ',' '\n' <<< "$FILES" | sed 's/:.*//' | sort -u | wc -l)"
+          if ! grep -qE "Found $expected of [0-9]+ file\(s\) to be mutated" "$RUNNER_TEMP/stryker.log"; then
+            echo "::error::Stryker was asked to mutate $expected file(s) and did not report finding them all, so this job would pass over less than it was given."
+            exit 1
+          fi
+          report="$(jq -r --arg shard "$SHARD" '.[] | select(.id == $shard) | .report' stryker.shards.json)"
+          judged="$(jq '[.files[].mutants[] | select(.status | IN("Killed", "Survived", "NoCoverage", "Timeout"))] | length' "$report")"
+          if [ "$judged" != "$MUTANTS" ]; then
+            echo "::error::The plan gave this job $MUTANTS mutant(s) and Stryker judged $judged, so the plan and the run disagree about what this job covers."
+            exit 1
+          fi
+      - name: Record how the job ended, for the issue
+        if: ${{ !cancelled() }}
+        env:
+          OUTCOME: ${{ steps.judge.outcome }}
+        run: |
+          mkdir -p reports/mutation
+          echo "$OUTCOME" > reports/mutation/outcome
+      - name: Hand the report and the outcome to the job that writes the issue
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: mutation-${{ strategy.job-index }}
+          path: reports/mutation/
+          retention-days: 14
+
+  issue:
+    needs: [plan, mutation]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+    env:
+      GH_REPO: ${{ github.repository }}
+      GH_TOKEN: ${{ github.token }}
+      RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Node.js
+        uses: pnpm/setup@fbda4c85fc2e1e08721cd8763afea8f48d60f024 # v3.0.0
+        with:
+          runtime: node@24.20.0
+          install: false
+      - name: Collect what each mutation job left
+        if: needs.mutation.result != 'skipped'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: mutation-*
+          path: results
+      - name: Open or update the mutation issue when a mutant survived or a run broke, and close it when none did
+        env:
+          PLAN: ${{ needs.plan.outputs.jobs }}
+        run: |
+          if [ "$PLAN" = "[]" ]; then
+            echo "This push adds or edits no line Stryker can mutate, so the mutation issue is left as it is." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          mkdir -p results
+          printf '%s' "$PLAN" > results/plan.json
+          found=0
+          node tools/mutation-findings/src/index.ts results "$RUN" > mutation.md || found=$?
+          pull="$(gh api "repos/$GH_REPO/commits/$GITHUB_SHA/pulls" --jq '.[0].number // empty')"
+          merge="merge ${GITHUB_SHA:0:7}"
+          if [ -n "$pull" ]; then
+            merge="$merge, from #$pull"
+          fi
+          open="$(gh issue list --label mutation --state open --limit 1 --json number --jq '.[0].number // empty')"
+          if [ "$found" = 0 ]; then
+            cat mutation.md >> "$GITHUB_STEP_SUMMARY"
+            if [ -n "$open" ]; then
+              gh issue comment "$open" --body "The $merge cleared this. $(cat mutation.md) $RUN"
+              gh issue close "$open" --reason completed
+            fi
+            exit 0
+          fi
+          if [ "$found" != 2 ]; then
+            echo "The findings could not be read, so this merge's lines were not judged. [The run]($RUN) says why." > mutation.md
+          fi
+          {
+            echo "Mutation testing after the $merge."
+            echo
+            cat mutation.md
+          } > issue.md
+          tee -a "$GITHUB_STEP_SUMMARY" < issue.md
+          gh label create mutation --color B60205 --force \
+            --description "Mutation testing after a merge found a surviving mutant or a broken run"
+          if [ -n "$open" ]; then
+            gh issue comment "$open" --body-file issue.md
+          else
+            gh issue create --label mutation --body-file issue.md \
+              --title "Mutation testing after a merge found something to fix"
+          fi

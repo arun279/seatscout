@@ -1,6 +1,5 @@
 import { spawnSync } from "node:child_process";
 import { globSync, readFileSync } from "node:fs";
-import { dirname, join, normalize } from "node:path";
 import { Instrumenter } from "@stryker-mutator/instrumenter";
 import { exactRanges, within } from "./stryker-exact-ranges.mjs";
 import { strykerPlugins as drawn } from "./stryker-style-tables.mjs";
@@ -20,8 +19,6 @@ const MACHINERY = [
   "pnpm-lock.yaml",
 ];
 const NOT_PRODUCTION = /\.(?:test|spec|fixtures)\.[cm]?[jt]sx?$/;
-const TEST = /\.(?:test|spec)(\.[cm]?[jt]sx?)$/;
-const RELATIVE_IMPORT = /(?:from|import)\s+["'](\.{1,2}\/[^"']+)["']/g;
 const HUNK = /^@@ -\S+ \+(\d+)(?:,(\d+))? @@/;
 const DRAWN = drawn.map((plugin) => plugin.value);
 
@@ -77,11 +74,17 @@ const judgedBy = (job, mutants) =>
     );
   });
 
-const packed = (mutants, most) => {
+const firstOnEachLine = (mutants) =>
+  [
+    ...Map.groupBy(
+      mutants,
+      ({ file, location }) => `${file}:${location.start.line}`,
+    ).values(),
+  ].map(([first]) => first);
+
+const packed = (pins, mutants, most) => {
   const jobs = [];
-  for (const pin of new Map(
-    mutants.map((each) => [each.range, each]),
-  ).values()) {
+  for (const pin of pins) {
     const last = jobs.at(-1);
     if (
       last !== undefined &&
@@ -94,6 +97,12 @@ const packed = (mutants, most) => {
   }
   return jobs;
 };
+
+const byFile = (pins) =>
+  chunked(
+    [...Map.groupBy(pins, (pin) => pin.file).values()],
+    FILES_PER_JOB,
+  ).map((files) => files.flat());
 
 const judgedIn = async (root, job) => {
   const ignorers = [
@@ -113,19 +122,21 @@ const judgedIn = async (root, job) => {
   return judged.flat();
 };
 
-const mutantJobs = async (root, { mutantsPerJob }, files, changed) => {
+const jobsOf = async (root, { runner, mutantsPerJob }, files, changed) => {
   const mutants = (
     await Promise.all(
       files.map((file) => mutantsIn(root, file, linesOf(changed.get(file)))),
     )
   ).flat();
-  const jobs = packed(mutants, mutantsPerJob);
+  const pins = firstOnEachLine(mutants);
+  const jobs =
+    runner === "jest" ? packed(pins, mutants, mutantsPerJob) : byFile(pins);
   const judged = await Promise.all(jobs.map((job) => judgedIn(root, job)));
   const planned = new Set(judged.flat().map((mutant) => mutant.key));
-  const missed = mutants.filter((mutant) => !planned.has(mutant.key));
+  const missed = pins.filter((pin) => !planned.has(pin.key));
   if (missed.length > 0) {
     throw new Error(
-      `The plan leaves these mutants to no job:\n${missed.map((mutant) => mutant.key).join("\n")}`,
+      `The plan leaves these mutants to no job:\n${missed.map((pin) => pin.key).join("\n")}`,
     );
   }
   const crowded = judged.findIndex(
@@ -167,23 +178,6 @@ const diffed = (root, args) => {
   return run.stdout;
 };
 
-const imported = (root, file) =>
-  [...readFileSync(`${root}${file}`, "utf8").matchAll(RELATIVE_IMPORT)]
-    .map(([, specifier]) =>
-      normalize(join(dirname(file), specifier)).replace(/\.js$/, ""),
-    )
-    .flatMap((stem) => [`${stem}.ts`, `${stem}.tsx`, `${stem}/index.ts`]);
-
-const reachedBy = (root, file) =>
-  NOT_PRODUCTION.test(file)
-    ? [file.replace(TEST, "$1"), ...imported(root, file)]
-    : [file];
-
-const jobsOf = async (root, shard, files, lines) =>
-  shard.runner === "jest"
-    ? mutantJobs(root, shard, files, lines)
-    : chunked(files, FILES_PER_JOB).map((chunk) => ({ files: chunk }));
-
 export const plan = async ({ base, root, shards }) => {
   const changed = diffed(root, [
     "--name-only",
@@ -192,7 +186,6 @@ export const plan = async ({ base, root, shards }) => {
   ])
     .split("\n")
     .filter(Boolean);
-  const touched = new Set(changed.flatMap((file) => reachedBy(root, file)));
   const lines = changedLines(
     diffed(root, ["-U0", "--diff-filter=d", `${base}...HEAD`]),
   );
@@ -200,7 +193,7 @@ export const plan = async ({ base, root, shards }) => {
   const jobs = await Promise.all(
     shards.map(async (shard) => {
       const picked = globSync(shard.mutate, { cwd: root }).filter(
-        (file) => !NOT_PRODUCTION.test(file) && touched.has(file),
+        (file) => !NOT_PRODUCTION.test(file) && lines.has(file),
       );
       const split = await jobsOf(root, shard, picked, lines);
       const judged =

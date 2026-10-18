@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "2.0",
+  "files": {
+    "packages/core/src/up.ts": {
+      "language": "typescript",
+      "source": "export const up = (s) => s === \"light\";\n",
+      "mutants": [
+        {
+          "id": "0",
+          "mutatorName": "EqualityOperator",
+          "replacement": "s !== \"light\"",
+          "status": "Survived",
+          "location": {
+            "start": { "line": 1, "column": 26 },
+            "end": { "line": 1, "column": 39 }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,16 @@
+name: Planted
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: pnpm test:unit
+  mutation:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: node tools/mutation.mjs --shard core

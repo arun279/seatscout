@@ -16,7 +16,6 @@ const RUNNERS = {
   }),
   jest: async (shard) => ({
     testRunner: "jest",
-    ignorers: ["drawn-values", "exact-ranges"],
     coverageAnalysis: shard.coverageAnalysis,
     dryRunTimeoutMinutes: 15,
     concurrency: JEST_RUNNERS_AT_ONCE,
@@ -60,6 +59,7 @@ if (shard === undefined) {
 
 export default {
   ...(await RUNNERS[shard.runner](shard)),
+  ignorers: ["drawn-values", "exact-ranges"],
   plugins: [
     "@stryker-mutator/vitest-runner",
     "@stryker-mutator/jest-runner",
@@ -71,5 +71,4 @@ export default {
   cleanTempDir: "always",
   reporters: ["clear-text", "json"],
   jsonReporter: { fileName: shard.report },
-  thresholds: { break: 100 },
 };

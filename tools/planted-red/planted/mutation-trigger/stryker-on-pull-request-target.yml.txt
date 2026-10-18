@@ -1,0 +1,9 @@
+name: Planted
+
+on: [pull_request_target]
+
+jobs:
+  stryker:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: pnpm exec stryker run

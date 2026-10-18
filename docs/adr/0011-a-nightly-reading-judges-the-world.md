@@ -32,7 +32,7 @@ a live listing and reports any of them that no longer becomes a domain object or
 nothing in it.
 `contract.live.test.ts` holds the live aggregator to that, and
 `.github/workflows/contract.yml` runs it nightly. It is not a required check and never gates
-a pull request. [ADR 12](0012-every-mutant-must-die.md) says why the mutation gate is off that
+a pull request. [ADR 12](0012-mutation-is-judged-after-each-merge.md) says why the mutation gate is off that
 list for an entirely different reason.
 
 **The recorded vocabulary is derived from the captures at the point of use** rather than

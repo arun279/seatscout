@@ -2,7 +2,7 @@ import { spawnSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
 
 const READ_RUNNERS =
-  'import("./stryker.config.mjs").then(({ default: config }) => console.log(JSON.stringify({ coverageAnalysis: config.coverageAnalysis ?? null, timeoutFactor: config.timeoutFactor ?? null, timeoutMS: config.timeoutMS ?? null, concurrency: config.concurrency ?? null })))';
+  'import("./stryker.config.mjs").then(({ default: config }) => console.log(JSON.stringify({ coverageAnalysis: config.coverageAnalysis ?? null, timeoutFactor: config.timeoutFactor ?? null, timeoutMS: config.timeoutMS ?? null, concurrency: config.concurrency ?? null, ignorers: config.ignorers ?? null, break: config.thresholds?.break ?? null })))';
 
 const runnersOf = (shard: string) => {
   const run = spawnSync("node", ["--eval", READ_RUNNERS], {
@@ -13,7 +13,7 @@ const runnersOf = (shard: string) => {
 };
 
 describe("how Stryker runs a shard's mutants", () => {
-  it("gives a Jest shard per-test coverage, two runners, factor 3 and 100 s more allowance", () => {
+  it("gives a Jest shard per-test coverage, two runners, factor 3, 100 s more allowance, the ignorers that keep a job to its places, and no score to break on", () => {
     const shell = runnersOf("native-shell");
 
     expect(shell.refused).toBe("");
@@ -23,6 +23,8 @@ describe("how Stryker runs a shard's mutants", () => {
       timeoutFactor: 3,
       timeoutMS: 100_000,
       concurrency: 2,
+      ignorers: ["drawn-values", "exact-ranges"],
+      break: null,
     });
   });
 
@@ -39,7 +41,7 @@ describe("how Stryker runs a shard's mutants", () => {
     expect(JSON.parse(run.said)).toMatchObject({ coverageAnalysis: coverage });
   });
 
-  it("leaves a Vitest shard, which runs each test once, at Stryker's own defaults", () => {
+  it("leaves a Vitest shard, which runs each test once, at Stryker's own defaults, with the same ignorers and no score to break on", () => {
     const core = runnersOf("core");
 
     expect(core.status).toBe(0);
@@ -48,6 +50,8 @@ describe("how Stryker runs a shard's mutants", () => {
       timeoutFactor: null,
       timeoutMS: null,
       concurrency: null,
+      ignorers: ["drawn-values", "exact-ranges"],
+      break: null,
     });
   });
 });

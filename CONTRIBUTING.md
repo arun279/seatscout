@@ -79,13 +79,18 @@ so it runs between `bundle` and `weigh`, which overwrites that directory.
 - **On every push to a pull request, draft or not.** The fast jobs: `changes`, `quality`,
   `secrets` (gitleaks) and `dependencies` (OSV advisories and licences). Then `footprint` posts
   one comment saying what every job did, and refuses the change if any job failed.
-- **Once the pull request is ready for review, and on every push after.** `mutation`, over the
-  source files the change touches, and `measure`, which weighs the change for the footprint
-  comment. When the change touches the app, also `android`, which walks the journey on an
+- **Once the pull request is ready for review, and on every push after.** `measure`, which
+  weighs the change for the footprint comment. When the change touches the app, also `android`, which walks the journey on an
   emulator, and `performance`, which runs Reassure against main as the change merges into it.
 - **When the `bundle-grows` label is added or removed.** `measure` and `footprint` again, on
   the same head, once its CI has finished, when the label can change `measure`'s verdict.
-- **On main, after a merge.** The fast jobs again, over the merged result. Baseline, which
+- **On main, after a merge.** The fast jobs again, over the merged result. Mutation, once per
+  merge and never on a pull request: one mutant on each line the merge added or edited, as
+  Google runs it ([Petrović and Ivanković, 2018](https://research.google/pubs/state-of-mutation-testing-at-google/);
+  [Petrović et al., 2021](https://arxiv.org/abs/2102.11378)), and as a later stage beside the
+  ten-minute commit build ([Fowler, 2024](https://martinfowler.com/articles/continuousIntegration.html#KeepTheBuildFast)).
+  A survivor or a broken run opens the `mutation` issue. Findings never block a pull request.
+  ([ADR 12](docs/adr/0012-mutation-is-judged-after-each-merge.md)) Baseline, which
   reads the walk with Flashlight and holds it to the previous run. When the app changed, the
   publish described under Publishing.
 - **Nightly.** The live checks below.
@@ -133,9 +138,9 @@ as it is. Where another record explains a gate, the item links it.
 - **An undeclared import.** Add the package to the nearest `package.json`, at the version the
   workspace already uses.
 - **A retried or concurrent test in the app.** Remove `jest.retryTimes` or `.concurrent`.
-  ([ADR 12](docs/adr/0012-every-mutant-must-die.md))
+  ([ADR 12](docs/adr/0012-mutation-is-judged-after-each-merge.md))
 - **A call at a test file's top level or in a describe body.** Make the call inside each test,
-  or keep the value as plain data. ([ADR 12](docs/adr/0012-every-mutant-must-die.md))
+  or keep the value as plain data. ([ADR 12](docs/adr/0012-mutation-is-judged-after-each-merge.md))
 - **The accessibility audit or the axe scan.** Fix the screen. The failure names the control
   and the criterion. Give a control below the touch floor the difference as `minHeight` and
   `minWidth`, and play haptic feedback through `src/design-system/feedback.ts`.
@@ -150,11 +155,12 @@ as it is. Where another record explains a gate, the item links it.
   `ignoreUntil` about a month out.
 - **A licence.** Add the SPDX identifier to the allowlist in `.github/workflows/ci.yml` in the
   same diff. `UNKNOWN` may never be added, so replace that dependency.
-- **A surviving mutant.** Add the assertion that kills it.
-  ([ADR 12](docs/adr/0012-every-mutant-must-die.md))
-- **A mutant Stryker could not judge.** The job names the mutant and its whole error. Most
-  often a test file computed a value at load, so move that work into each test.
-  ([ADR 12](docs/adr/0012-every-mutant-must-die.md))
+- **An open `mutation` issue.** Fix it in the next pull request, before new feature work. For
+  each surviving mutant, add the test that kills it, or answer on the issue why it is not
+  useful. ([ADR 12](docs/adr/0012-mutation-is-judged-after-each-merge.md))
+- **A mutant Stryker could not judge.** The issue says the run broke, and the run's log names
+  the mutant and its whole error. Most often a test file computed a value at load, so move that
+  work into each test. ([ADR 12](docs/adr/0012-mutation-is-judged-after-each-merge.md))
 - **The walk on the emulator.** The job log names the step that found nothing, and the
   `device` artifact holds what Maestro wrote of the walk. Fix the screen, or change
   `apps/native/e2e/journey.yaml` in the same diff if the journey changed on purpose.
@@ -193,7 +199,7 @@ Pass one `--attach` per file, with its alt text after the `#`. `gh pr create` an
 ## Writing tests
 
 Do the work of a test inside the test. A fixture built at module scope hides mutants.
-([ADR 12](docs/adr/0012-every-mutant-must-die.md))
+([ADR 12](docs/adr/0012-mutation-is-judged-after-each-merge.md))
 
 Keep each test's work well under Vitest's default five-second timeout. Under Stryker, a test
 runs slower by an amount that depends on files it never touches. So if a test nobody edited
@@ -210,14 +216,16 @@ faults. ([ADR 10](docs/adr/0010-the-corpus-is-the-contract.md))
 
 ## Mutation by hand
 
-`pnpm test:mutation` judges every shard over the whole tree. To judge your own change, name
-the lines: `node tools/mutation.mjs --shard <id> --files <file>:<start>-<end>`.
-`stryker.shards.json` names the shards, and [ADR 12](docs/adr/0012-every-mutant-must-die.md)
+`pnpm test:mutation` judges every shard over the whole tree.
+`node tools/mutation.mjs --plan <base>` prints the jobs a merge from `<base>` would run. To
+judge your own change, name the lines:
+`node tools/mutation.mjs --shard <id> --files <file>:<start>-<end>`.
+`stryker.shards.json` names the shards, and [ADR 12](docs/adr/0012-mutation-is-judged-after-each-merge.md)
 says how they are divided and run. Run Vitest on one worker under Stryker
 (`VITEST_MAX_WORKERS=1`), or the run reports survivors that are not there.
 
 A mutant's run in the app stops at its first failing test and skips the rest, so a killed
-mutant's log shows one failure. ([ADR 12](docs/adr/0012-every-mutant-must-die.md))
+mutant's log shows one failure. ([ADR 12](docs/adr/0012-mutation-is-judged-after-each-merge.md))
 
 ## The footprint report
 

@@ -1,9 +1,10 @@
 const STRYKER = "stryker.config.mjs";
 const SHARDS = "stryker.shards.json";
+const AFTER_MERGE = ".github/workflows/mutation.yml";
 
 export const MUTATION_CLAIMS = [
   {
-    adr: "0012-every-mutant-must-die.md",
+    adr: "0012-mutation-is-judged-after-each-merge.md",
     says: /\*\*Nothing is carved out, and it takes two runners to say so\.\*\*/,
     holds: "the shard that takes the directory Vitest cannot render",
     pattern: '"runner": "jest"',
@@ -11,7 +12,7 @@ export const MUTATION_CLAIMS = [
     files: 1,
   },
   {
-    adr: "0012-every-mutant-must-die.md",
+    adr: "0012-mutation-is-judged-after-each-merge.md",
     says: /with `coverageAnalysis`\s+`perTest` for every shard but the theme's/,
     holds: "the Jest shards' own coverage settings",
     pattern: '"coverageAnalysis": "perTest"',
@@ -19,7 +20,7 @@ export const MUTATION_CLAIMS = [
     files: 1,
   },
   {
-    adr: "0012-every-mutant-must-die.md",
+    adr: "0012-mutation-is-judged-after-each-merge.md",
     says: /\*\*The theme shard stays on `off`\.\*\*/,
     holds: "the theme shard's coverage setting",
     pattern: '"coverageAnalysis": "off"',
@@ -27,7 +28,7 @@ export const MUTATION_CLAIMS = [
     files: 1,
   },
   {
-    adr: "0012-every-mutant-must-die.md",
+    adr: "0012-mutation-is-judged-after-each-merge.md",
     says: /\*\*A test file's coverage is counted into objects made outside it\.\*\*/,
     holds:
       "the environment that makes coverage objects before a test file runs",
@@ -36,7 +37,7 @@ export const MUTATION_CLAIMS = [
     files: 1,
   },
   {
-    adr: "0012-every-mutant-must-die.md",
+    adr: "0012-mutation-is-judged-after-each-merge.md",
     says: /`jest\.shared\.js` names it by absolute path for the run and for each platform/,
     holds: "the top-level environment path the per-test workaround needs",
     pattern: "testEnvironment: shared.testEnvironment",
@@ -44,7 +45,7 @@ export const MUTATION_CLAIMS = [
     files: 1,
   },
   {
-    adr: "0012-every-mutant-must-die.md",
+    adr: "0012-mutation-is-judged-after-each-merge.md",
     says: /is React Native's own environment, wrapped in Stryker's documented `mixinJestEnvironment`/,
     holds: "the marked environment Stryker can see into",
     pattern: "mixinJestEnvironment(MarkedReactNativeEnvironment)",
@@ -52,7 +53,7 @@ export const MUTATION_CLAIMS = [
     files: 1,
   },
   {
-    adr: "0012-every-mutant-must-die.md",
+    adr: "0012-mutation-is-judged-after-each-merge.md",
     says: /fails every test file that does not carry the mark/,
     holds: "the guard every app test file runs",
     pattern: "<rootDir>/test/environment-held.cjs",
@@ -60,7 +61,7 @@ export const MUTATION_CLAIMS = [
     files: 1,
   },
   {
-    adr: "0012-every-mutant-must-die.md",
+    adr: "0012-mutation-is-judged-after-each-merge.md",
     says: /So `timeoutMS` is 100 s: the largest overhead/,
     holds: "the extra allowance for loading test files",
     pattern: "LOADING_TEST_FILES_AGAIN_MS = 100_000",
@@ -68,15 +69,15 @@ export const MUTATION_CLAIMS = [
     files: 1,
   },
   {
-    adr: "0012-every-mutant-must-die.md",
-    says: /It refuses a job in which any\s+mutant ended as a runtime or compile error/,
+    adr: "0012-mutation-is-judged-after-each-merge.md",
+    says: /A job in which any mutant ended as a runtime or compile error is broken too/,
     holds: "the statuses the mutation guard refuses",
     pattern: 'NOT_JUDGED: readonly string[] = ["RuntimeError", "CompileError"]',
     paths: ["tools/no-empty-run/src"],
     files: 1,
   },
   {
-    adr: "0012-every-mutant-must-die.md",
+    adr: "0012-mutation-is-judged-after-each-merge.md",
     says: /it acts only while `__STRYKER_ACTIVE_MUTANT__` is\s+set/,
     holds: "the mutant run the stop at the first failure is limited to",
     pattern: "stopAtFirstFailure(event, process.env.__STRYKER_ACTIVE_MUTANT__)",
@@ -84,7 +85,7 @@ export const MUTATION_CLAIMS = [
     files: 1,
   },
   {
-    adr: "0012-every-mutant-must-die.md",
+    adr: "0012-mutation-is-judged-after-each-merge.md",
     says: /a Grit plugin,\s+`tools\/lint\/no-retried-or-concurrent-tests\.grit`, refuses both in the app/,
     holds: "the rule that refuses a retried or concurrent test in the app",
     pattern: "no-retried-or-concurrent-tests.grit",
@@ -92,7 +93,7 @@ export const MUTATION_CLAIMS = [
     files: 1,
   },
   {
-    adr: "0012-every-mutant-must-die.md",
+    adr: "0012-mutation-is-judged-after-each-merge.md",
     says: /a Grit plugin,\s+`tools\/lint\/no-module-scope-app-calls\.grit`, refuses the shape/,
     holds: "the rule that refuses a load-time call in the app's tests",
     pattern: "no-module-scope-app-calls.grit",
@@ -100,7 +101,7 @@ export const MUTATION_CLAIMS = [
     files: 1,
   },
   {
-    adr: "0012-every-mutant-must-die.md",
+    adr: "0012-mutation-is-judged-after-each-merge.md",
     says: /skips the argument of `StyleSheet\.create`, and a table declared at the top of a file the plugin/,
     holds: "the plugin that skips a drawn value",
     pattern: "StyleSheet.create",
@@ -108,11 +109,43 @@ export const MUTATION_CLAIMS = [
     files: 1,
   },
   {
-    adr: "0012-every-mutant-must-die.md",
+    adr: "0012-mutation-is-judged-after-each-merge.md",
     says: /The `exact-ranges` ignorer \(`tools\/stryker-exact-ranges\.mjs`\) stops that/,
-    holds: "the Jest shards' ignorer that keeps a job to the mutants it names",
+    holds: "the ignorer that keeps a job to the places it names",
     pattern: '"exact-ranges"',
     paths: [STRYKER],
+    files: 1,
+  },
+  {
+    adr: "0012-mutation-is-judged-after-each-merge.md",
+    says: /with `cancel-in-progress` false and `queue: max`/,
+    holds: "the queue that keeps every merge's run",
+    pattern: "queue: max",
+    paths: [AFTER_MERGE],
+    files: 1,
+  },
+  {
+    adr: "0012-mutation-is-judged-after-each-merge.md",
+    says: /\*\*At most ten mutation jobs run at once\*\* \(`max-parallel` in `mutation\.yml`\)/,
+    holds: "the cap on mutation jobs at once",
+    pattern: "max-parallel: 10",
+    paths: [AFTER_MERGE],
+    files: 1,
+  },
+  {
+    adr: "0012-mutation-is-judged-after-each-merge.md",
+    says: /writes to the\s+one open issue labelled `mutation`/,
+    holds: "the issue a surviving mutant opens",
+    pattern: "--label mutation",
+    paths: [AFTER_MERGE],
+    files: 1,
+  },
+  {
+    adr: "0012-mutation-is-judged-after-each-merge.md",
+    says: /`tools\/planted-red\/src\/mutation-trigger\.test\.ts` fails if any workflow job/,
+    holds: "the test that keeps mutation off pull requests",
+    pattern: "mutationOnPullRequests",
+    paths: ["tools/planted-red/src/mutation-trigger.test.ts"],
     files: 1,
   },
 ];
