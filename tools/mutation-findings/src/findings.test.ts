@@ -57,13 +57,47 @@ const block = report({
   },
 });
 
-const judged = (outcome: string, ...reports: readonly string[]) => ({
+const judged = (outcome: string, report: string) => ({
   shard: "core",
   outcome,
-  reports,
+  report,
 });
 
 describe("the mutation findings", () => {
+  it("writes the issue as what was done and how to answer it, the count, then each survivor, a blank line apart", () => {
+    const survived = report({
+      "packages/core/src/up.ts": {
+        source:
+          'const light = "light";\nexport const up = (s) => s === light;\n',
+        mutants: [
+          {
+            id: "0",
+            mutatorName: "EqualityOperator",
+            replacement: "s !== light",
+            status: "Survived",
+            location: at([2, 26], [2, 37]),
+          },
+        ],
+      },
+    });
+
+    expect(findings([judged("success", survived)], RUN)).toEqual({
+      found: true,
+      body: [
+        "Stryker changed one place on each line this merge added or edited, as Google's code review does, and ran the tests that reach it. Fix each finding in the next pull request, before new feature work: add the test that kills the mutant, or say on this issue why it is not useful.",
+        "",
+        "**1 of 1 mutants survived.**",
+        "",
+        "### `packages/core/src/up.ts:2` EqualityOperator survived",
+        "",
+        "```diff",
+        "- export const up = (s) => s === light;",
+        "+ export const up = (s) => s !== light;",
+        "```",
+      ].join("\n"),
+    });
+  });
+
   it("names a survivor by file and line, with the line before and after Stryker changed it", () => {
     const { found, body } = findings(
       [judged("success", compared("Survived"))],
@@ -129,13 +163,17 @@ describe("the mutation findings", () => {
     const { found, body } = findings(
       [
         judged("success", compared("Killed")),
-        { shard: "native-ask", outcome: "failure", reports: [] },
-        { shard: "native-shell", outcome: undefined, reports: [] },
+        { shard: "native-ask", outcome: "failure", report: null },
+        { shard: "native-shell", outcome: undefined, report: null },
+        { shard: "native-search", outcome: "success", report: null },
       ],
       RUN,
     );
 
     expect(found).toBe(true);
+    expect(body).toContain(
+      `The native-search job left no report, so the lines it was given were not judged. [The run](${RUN}) says why.`,
+    );
     expect(body).toContain(
       `The native-ask job broke, so the lines it was given were not judged. [The run](${RUN}) says why.`,
     );

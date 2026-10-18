@@ -3,33 +3,33 @@ import { judgedFrom } from "./results.ts";
 
 const REPORT = '{"files":{}}';
 
-const over = (files: Readonly<Record<string, string>>) => {
-  const read = (path: string) => files[path] ?? null;
-  const list = (dir: string) =>
-    Object.keys(files)
-      .filter((path) => path.startsWith(`${dir}/`))
-      .map((path) => path.slice(dir.length + 1));
-  return judgedFrom("results", read, list);
-};
+const reader =
+  (files: Readonly<Record<string, string>>) =>
+  (path: string): string | null =>
+    files[path] ?? null;
+
+const over = (files: Readonly<Record<string, string>>) =>
+  judgedFrom("results", reader(files));
 
 describe("reading what the mutation jobs left", () => {
-  it("pairs each planned job with the outcome and the Stryker report its artifact holds, by its place in the plan", () => {
+  it("pairs each planned job, by its place in the plan, with its outcome and the report named after its shard", () => {
     expect(
       over({
         "results/plan.json": '[{"shard":"core"},{"shard":"native-ask"}]',
         "results/mutation-0/outcome": "success\n",
         "results/mutation-0/core.json": REPORT,
         "results/mutation-1/outcome": "failure\n",
+        "results/mutation-1/core.json": REPORT,
       }),
     ).toEqual([
-      { shard: "core", outcome: "success", reports: [REPORT] },
-      { shard: "native-ask", outcome: "failure", reports: [] },
+      { shard: "core", outcome: "success", report: REPORT },
+      { shard: "native-ask", outcome: "failure", report: null },
     ]);
   });
 
-  it("gives a planned job whose artifact never arrived no outcome", () => {
+  it("gives a planned job whose artifact never arrived neither an outcome nor a report", () => {
     expect(over({ "results/plan.json": '[{"shard":"core"}]' })).toEqual([
-      { shard: "core", outcome: undefined, reports: [] },
+      { shard: "core", outcome: undefined, report: null },
     ]);
   });
 
@@ -40,8 +40,16 @@ describe("reading what the mutation jobs left", () => {
   it.each([
     ["missing", {}],
     ["empty, as when the plan step failed", { "results/plan.json": "" }],
-    ["not a list of jobs", { "results/plan.json": '{"shard":"core"}' }],
   ])("reads no plan when the plan file is %s", (_, files) => {
     expect(over(files)).toBeUndefined();
+  });
+
+  it("reads no plan when no directory is named", () => {
+    expect(
+      judgedFrom(
+        undefined,
+        reader({ "undefined/plan.json": '[{"shard":"core"}]' }),
+      ),
+    ).toBeUndefined();
   });
 });
