@@ -99,6 +99,39 @@ jobs:
       - run: pnpm versions
       - run: pnpm --filter @seatscout/native run install-check
       - run: pnpm --filter @seatscout/native run doctor
+      - run: pnpm counts
+      - run: pnpm claims
+      - run: pnpm test:unit
+      - run: pnpm build
+
+  native-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@fbda4c85fc2e1e08721cd8763afea8f48d60f024 # v3.0.0
+        with:
+          runtime: node@24.20.0
+          cache: true
+          install: false
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test:native
+
+  bundle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@fbda4c85fc2e1e08721cd8763afea8f48d60f024 # v3.0.0
+        with:
+          runtime: node@24.20.0
+          cache: true
+          install: false
+      - run: pnpm install --frozen-lockfile
       - name: Check the app bundles for both phones and the web build the accessibility scan reads, on a machine that has only what the lockfile installs
         run: pnpm --filter @seatscout/native run bundle
       - name: Install the browser the accessibility scan drives
@@ -113,11 +146,6 @@ jobs:
           pnpm run weigh
           diff -r "$RUNNER_TEMP/first/_expo/static/js" dist/_expo/static/js
           rm -rf "$RUNNER_TEMP/first"
-      - run: pnpm counts
-      - run: pnpm claims
-      - run: pnpm test:unit
-      - run: pnpm test:native
-      - run: pnpm build
 
   android:
     needs: changes
@@ -349,16 +377,34 @@ jobs:
           if-no-files-found: ignore
 
   footprint:
-    needs: [changes, quality, android, performance, measure, secrets, dependencies]
+    needs: [changes, quality, native-tests, bundle, performance, measure, secrets, dependencies]
     if: ${{ !cancelled() && github.event_name == 'pull_request' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
       contents: read
+      actions: read
       pull-requests: write
     env:
       RESULTS: ${{ toJSON(needs) }}
     steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Node.js
+        uses: pnpm/setup@fbda4c85fc2e1e08721cd8763afea8f48d60f024 # v3.0.0
+        with:
+          runtime: node@24.20.0
+          cache: false
+          install: false
+      - name: Time the jobs this job waits on, against the ten-minute guideline for the build that gates a change
+        id: timed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          verdict=0
+          node tools/gating-time/src/index.ts --workflow .github/workflows/ci.yml --run "$GITHUB_RUN_ID" --job "$GITHUB_JOB" > gating-time.md || verdict=$?
+          echo "verdict=$verdict" >> "$GITHUB_OUTPUT"
       - name: Collect what the change weighs
         continue-on-error: true
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
@@ -373,7 +419,9 @@ jobs:
             echo "| --- | --- |"
             jq -r 'to_entries[] | "| \(.key) | \(.value.result) |"' <<< "$RESULTS"
             echo
-            echo "A skipped android or performance job means this change touches nothing the app is built from."
+            echo "A skipped performance job means this change touches nothing the app is built from. The walk on the emulator, \`android\`, is a later stage: this job does not wait for it, and its own check on the pull request shows its result."
+            echo
+            cat gating-time.md
             echo
             cat footprint.md 2>/dev/null || echo "The footprint was not measured on this run, so there are no figures below."
           } > report.md
@@ -385,16 +433,22 @@ jobs:
         with:
           header: footprint
           path: footprint.md
-      - name: Refuse the change if any gate failed or did not finish
+      - name: Refuse the change if any gate failed or did not finish, or the gates took longer than ten minutes
+        env:
+          TIMED: ${{ steps.timed.outputs.verdict }}
         run: |
           refused="$(jq -r 'to_entries[] | select(.value.result != "success" and .value.result != "skipped") | .key' <<< "$RESULTS")"
           if [ -n "$refused" ]; then
             echo "::error::These gates did not pass: $(echo "$refused" | tr '\n' ' ')"
             exit 1
           fi
-          skipped="$(jq -r '[.changes.result, .quality.result, .secrets.result, .dependencies.result] | map(select(. != "success")) | length' <<< "$RESULTS")"
+          skipped="$(jq -r '[.changes.result, .quality.result, ."native-tests".result, .bundle.result, .secrets.result, .dependencies.result] | map(select(. != "success")) | length' <<< "$RESULTS")"
           if [ "$skipped" != 0 ]; then
             echo "::error::A gate that runs on every change was skipped."
+            exit 1
+          fi
+          if [ "$TIMED" != 0 ]; then
+            echo "::error::The jobs that gate this change took longer than ten minutes, or could not be timed. The Gating time section of the report says which."
             exit 1
           fi
 

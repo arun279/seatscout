@@ -16,6 +16,7 @@
     { "path": "tools/no-empty-run" },
     { "path": "tools/planted-red" },
     { "path": "tools/footprint" },
+    { "path": "tools/gating-time" },
     { "path": "tests/app" }
   ]
 }

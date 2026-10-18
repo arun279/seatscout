@@ -550,7 +550,7 @@ figure is a sum of per-file brotli rather than the brotli of everything concaten
 the app's web build with Vercel's `serve`, which compresses what it sends as any host does, and
 `@axe-core/playwright` scans every screen from the Ask sheet to the Room against WCAG 2.2 at
 levels A and AA, which is the [W3C Recommendation](https://www.w3.org/TR/WCAG22/) rather than a
-bar this project invented. Any violation fails `quality`. The web build exists for this scan and
+bar this project invented. Any violation fails `bundle`. The web build exists for this scan and
 for nothing else. Its first runs found two real violations: the film list in the Ask sheet was a
 list with no items in it (axe's `aria-required-children`), so each film is now a list item, and
 the Ask sheet's sliders gave a screen reader no range or position. Both were fixed in the app's
@@ -775,8 +775,7 @@ what the handler does, a baseline measurement and a comparison over the same com
 
 The cost is stated plainly: a real slowdown under about 6 per cent now passes unseen, because it
 is inside the noise. Twenty runs add about 45 seconds to the job (220 against 174 seconds, median
-of the experiment's jobs), which keeps it well inside the `android` job that a pull request
-waits on.
+of the experiment's jobs).
 
 **Watched failing, watched silent.** The first run on the pull request that added the job left no
 reading at all, because the failure was piped into `tee` and lost. The reading is taken under
@@ -784,7 +783,7 @@ reading at all, because the failure was piped into `tee` and lost. The reading i
 fails is when main has no screen to measure, which the step that measures the base records for
 the step that judges.
 
-**The app is walked end to end on an emulator, and the walk gates every push that touches it.**
+**The app is walked end to end on an emulator, on every push that touches it, as a later stage.**
 The `android` job builds a release of the app for Android, with the Source answered in the
 build from the corpus, and Maestro walks it once from the Ask sheet through the ranked Seat
 Groups and the hand-off to the Room (`apps/native/e2e/journey.yaml`). It leaves every level it
@@ -796,7 +795,9 @@ event the back key sends; injected edge swipes are not recognised on the runner'
 with gesture navigation on (run 36223227514 swiped from the edge of Settings and opened a
 subpage instead), so the walk sends that back event itself. Then by the way back a person
 presses: the Ask sheet's own close control, and the Android back key. A step that finds nothing
-fails the job, and `footprint`, which is required, needs it. The corpus stands in through
+fails the job. The walk takes longer than the gates may (below), so `footprint` does not wait
+for it and the ruleset does not require it. Its check shows on the pull request, and a pull
+request whose walk is red is not merged. The corpus stands in through
 Metro: `SEATSCOUT_UPSTREAM=corpus` swaps `src/host/upstream.ts` for `e2e/upstream.ts`, which
 answers from the same `fakeUpstream` the accessibility scan uses, so the bundle a phone runs
 never carries the corpus. Any other value is refused, and `app.config.ts` turns updates off in
@@ -984,7 +985,7 @@ from a temporary directory named with `Math.random()` and the time (`exportHerme
 not the same twice either: Expo numbers modules in the order Metro meets them, and one commit
 weighed 992708 and 990513 B for iOS on two runs of the same job (run 36231517101). So
 `metro.config.ts` gives each module an id hashed from its path, refusing a clash by name, and
-`quality` exports the scripts twice and fails if a byte differs. The longer ids cost bytes,
+`bundle` exports the scripts twice and fails if a byte differs. The longer ids cost bytes,
 which is the price of a size that means the same thing on every run, and what lets the two
 sides of the bundle gate be weighed in one job and compared byte for byte.
 
@@ -1089,15 +1090,41 @@ one more thing that could carry a stale answer. What keeps a push short instead 
 runs only when the change reaches what it judges. Mutation runs once after the merge, never on
 the pull request (see [ADR 12](0012-mutation-is-judged-after-each-merge.md)), and the `android` and `performance` jobs
 run only when the change touches the app, its workspace packages, the lockfile, the workspace
-or compiler settings, or the CI workflow. `footprint` waits for every job and refuses the
-change when any of them failed, or when one that runs on every change was skipped. A draft runs
+or compiler settings, or the CI workflow. `footprint` waits for every job but the walk on the
+emulator, and refuses the change when any of them failed, or when one that runs on every change
+was skipped. A draft runs
 only the fast jobs; the slow ones run once the pull request is marked ready. The ruleset no
 longer requires a branch to be up to date with `main` before it merges: with several pull
 requests open, each merge forced the next to rebase and run the whole suite again. GitHub's
 merge queue is the standard answer and gives the same protection without the loop, but it is
 offered only for repositories owned by an organization. In its place a pull request run tests
-the branch merged onto `main` as it stood, and each push to `main` runs `quality`, `secrets`
-and `dependencies` over the merged result.
+the branch merged onto `main` as it stood, and each push to `main` runs `quality`,
+`native-tests`, `bundle`, `secrets` and `dependencies` over the merged result.
+
+**The jobs that gate a merge take ten minutes at most.** Martin Fowler's
+[Continuous Integration](https://martinfowler.com/articles/continuousIntegration.html#build-fast)
+calls the XP guideline of a ten-minute build "perfectly within reason", and puts slower suites in
+a later stage of a deployment pipeline, whose failure "may not have the same 'stop everything'
+quality". So on every pull request run `footprint` times the jobs it waits on, with
+`tools/gating-time`, and refuses the change when they took more than ten minutes. The time is the
+longest chain of those jobs through their `needs`, each job timed from when a runner started it
+to its end. Time queued for a runner is left out: the runners are shared with other work, so the
+queue measures the pool rather than the change. The comment also gives the run's runner time and
+job count, and names any later stage still running, which it cannot count yet. A job's times are
+final once it ends, so reading them again cannot change the verdict, and nothing reads twice.
+What keeps a noisy runner from failing a change is room under the line. Over the last 30 pull
+request runs before the gate, `quality` alone took 597 seconds at the median and 675 at the 90th
+percentile. It ran the static checks, the Jest suite over the app and the app's bundles one after
+another, so it is now three jobs side by side: `quality` keeps the static checks, the Vitest suite
+and the build, `native-tests` runs Jest over the app, and `bundle` exports the app, scans its web
+build with axe and checks the export is the same twice. The walk on the emulator took 895 seconds
+at the median and 1143 at the 90th percentile over 24 of those runs, so it became the later stage
+above. Mutation left the pull request
+([ADR 12](0012-mutation-is-judged-after-each-merge.md)), so `measure` is now the longest job the
+merge waits on: 425 seconds at the median and 538 at the 90th percentile over 25 runs, and 584 at
+most. Most of that is the Jest suite it runs to count the app's tests. Running that Jest in the
+background while `measure` exports the app was tried and was slower, 464 seconds, because the two
+share the runner's four processors.
 
 The line counter is [cloc](https://github.com/AlDanial/cloc), pinned to a released version
 and checked against its SHA-256 before use. scc and tokei were the alternatives for that
