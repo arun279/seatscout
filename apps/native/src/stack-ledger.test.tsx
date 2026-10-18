@@ -35,6 +35,7 @@ jest.mock("./host/source.js", () => {
   return {
     seatScout: () => seatscout,
     seatProfile: () => profile,
+    houseLights: source.houseLights,
     readTheProfile: () => mockRead(),
   };
 });

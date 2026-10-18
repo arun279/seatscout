@@ -72,9 +72,10 @@ function mockSource() {
 
 jest.mock("../host/source.js", () => {
   const { heldProfile } = require("../host/profile.js");
+  const { source } = require("../../test/stack-phone.js");
   const seatscout = mockSource();
   const profile = heldProfile(seatscout);
-  return { seatScout: () => seatscout, seatProfile: () => profile };
+  return { ...source, seatScout: () => seatscout, seatProfile: () => profile };
 });
 
 const THEATER = "AMC Village on the Parkway 9";
