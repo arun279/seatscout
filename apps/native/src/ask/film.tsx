@@ -8,8 +8,9 @@ import {
 } from "@seatscout/view-logic";
 import type { ReactElement, Ref } from "react";
 import type { TextInput } from "react-native";
-import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 import { Field } from "../design-system/field.js";
+import { Press } from "../design-system/press.js";
 import { Type } from "../design-system/type.js";
 import { useTheme } from "../theme.js";
 
@@ -50,7 +51,7 @@ const Suggestion = ({
   const [before, marked, after] = markedIn(movie.title, typed);
 
   return (
-    <TouchableOpacity
+    <Press
       accessibilityLabel={movie.title}
       accessibilityRole="button"
       onPress={() => onTyped(movie.title)}
@@ -69,7 +70,7 @@ const Suggestion = ({
         </Type>
         {after}
       </Type>
-    </TouchableOpacity>
+    </Press>
   );
 };
 

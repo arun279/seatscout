@@ -1,7 +1,8 @@
 import type { ReactElement } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useTheme } from "../theme.js";
 import { ON_ANDROID } from "./platform.js";
+import { Press } from "./press.js";
 import { Type } from "./type.js";
 
 export interface StepperProps {
@@ -45,7 +46,7 @@ export const Stepper = ({
 
   return (
     <View style={styles.row}>
-      <TouchableOpacity
+      <Press
         accessibilityLabel={fewer}
         accessibilityRole="button"
         onPress={() => onCount(Math.max(least, count - 1))}
@@ -54,11 +55,11 @@ export const Stepper = ({
         <Type set="sentenceStrong" tone="silver">
           −
         </Type>
-      </TouchableOpacity>
+      </Press>
       <Type set="marqueeHero" style={styles.count} tone="silver">
         {`${count}`}
       </Type>
-      <TouchableOpacity
+      <Press
         accessibilityLabel={more}
         accessibilityRole="button"
         onPress={() => onCount(count + 1)}
@@ -67,7 +68,7 @@ export const Stepper = ({
         <Type set="sentenceStrong" tone="silver">
           +
         </Type>
-      </TouchableOpacity>
+      </Press>
     </View>
   );
 };

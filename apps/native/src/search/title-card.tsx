@@ -7,8 +7,9 @@ import type {
 } from "@seatscout/view-logic";
 import { ASKING, nextOf, titleCardOf } from "@seatscout/view-logic";
 import { type MemoExoticComponent, memo, type ReactElement } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { Tags, TagStrip } from "../design-system/chips.js";
+import { Press } from "../design-system/press.js";
 import { TOUCH_FLOOR } from "../design-system/touch.js";
 import { Type } from "../design-system/type.js";
 import type { Palette, Role } from "../theme.js";
@@ -60,7 +61,7 @@ const Row = ({
   const { colours } = useTheme();
 
   return (
-    <TouchableOpacity
+    <Press
       accessibilityHint={shut ? ASKING.areaFirst : undefined}
       accessibilityLabel={words}
       accessibilityRole="button"
@@ -86,7 +87,7 @@ const Row = ({
           ›
         </Type>
       )}
-    </TouchableOpacity>
+    </Press>
   );
 };
 
