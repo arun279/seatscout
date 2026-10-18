@@ -162,6 +162,19 @@ describe("measuring a change", () => {
     });
   });
 
+  it("counts the app's tests from a Jest report it is given, rather than running Jest", () => {
+    const { run, commands } = recorder();
+
+    const measurement = measuring(run, {
+      "jest.json": JSON.stringify({ numTotalTests: 7, success: true }),
+    })("origin/main", "HEAD", "main", true, "jest.json");
+
+    expect(measurement.suites.screens).toBe(7);
+    expect(
+      lines(commands).filter((line) => line.includes("jest")),
+    ).toStrictEqual([]);
+  });
+
   it("names the command and repeats its complaint when one fails", () => {
     const { run } = recorder((command) =>
       command.command === "git" && command.args[0] === "rev-parse"

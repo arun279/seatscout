@@ -10,10 +10,11 @@ export type Measure = (
   head: string,
   mainTree: string,
   mainExported: boolean,
+  nativeJest?: string,
 ) => Measurement;
 
 const USAGE =
-  "usage: footprint --main-tree <main, exported> [--base <ref>] [--head <ref>] [--main-unexported] [--bundle-grows] [--out <file>]\n";
+  "usage: footprint --main-tree <main, exported> [--base <ref>] [--head <ref>] [--main-unexported] [--bundle-grows] [--native-jest <Jest's JSON report>] [--out <file>]\n";
 
 export const main = (
   argv: readonly string[],
@@ -29,6 +30,7 @@ export const main = (
       "main-tree": { type: "string" },
       "main-unexported": { type: "boolean" },
       "bundle-grows": { type: "boolean" },
+      "native-jest": { type: "string" },
       out: { type: "string" },
     },
   });
@@ -44,6 +46,7 @@ export const main = (
       values.head ?? "HEAD",
       mainTree,
       values["main-unexported"] !== true,
+      values["native-jest"],
     ),
     values["bundle-grows"] ?? false,
   );

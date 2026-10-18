@@ -355,6 +355,13 @@ jobs:
           cache: true
           install: false
       - run: pnpm install --frozen-lockfile
+      - name: Count the app's tests with Jest in the background, while the change and main are built and exported
+        run: |
+          (
+            status=0
+            pnpm test:native --json --outputFile "$RUNNER_TEMP/jest.json" --maxWorkers 2 > "$RUNNER_TEMP/jest.log" 2>&1 || status=$?
+            echo "$status" > "$RUNNER_TEMP/jest.status"
+          ) &
       - run: pnpm build
       - name: Export the scripts the app ships for both phones, so they are weighed
         run: pnpm --filter @seatscout/native run weigh
@@ -396,7 +403,13 @@ jobs:
           if [ "$MAIN_EXPORT" != success ]; then
             flags+=(--main-unexported)
           fi
-          pnpm footprint --base "$BASE" --head "$HEAD" --main-tree "$RUNNER_TEMP/main" "${flags[@]}" --out footprint.md
+          until [ -f "$RUNNER_TEMP/jest.status" ]; do sleep 5; done
+          if [ "$(cat "$RUNNER_TEMP/jest.status")" != 0 ]; then
+            cat "$RUNNER_TEMP/jest.log"
+            echo "::error::Jest failed while it counted the app's tests, so the footprint has no test count."
+            exit 1
+          fi
+          pnpm footprint --base "$BASE" --head "$HEAD" --main-tree "$RUNNER_TEMP/main" --native-jest "$RUNNER_TEMP/jest.json" "${flags[@]}" --out footprint.md
       - name: Hand the measurement to the job that reports every gate
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

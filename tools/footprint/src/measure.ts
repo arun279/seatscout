@@ -173,10 +173,12 @@ export const measureWith = (run: Run, read: (path: string) => string) => {
       against,
     );
 
-  const collected = (): Suites =>
+  const collected = (nativeJest: string | undefined): Suites =>
     suitesFrom(
       output("pnpm", ["exec", "vitest", "list", "--json"]),
-      output("pnpm", NATIVE_JEST_RUN),
+      nativeJest === undefined
+        ? output("pnpm", NATIVE_JEST_RUN)
+        : read(nativeJest),
       output("pnpm", [
         "exec",
         "playwright",
@@ -208,6 +210,7 @@ export const measureWith = (run: Run, read: (path: string) => string) => {
     headRef: string,
     mainTree: string,
     mainExported: boolean,
+    nativeJest?: string,
   ): Measurement => {
     const head = git("rev-parse", headRef);
     const base = git("merge-base", baseRef, head);
@@ -217,7 +220,7 @@ export const measureWith = (run: Run, read: (path: string) => string) => {
       bundles: weighing(mainTree, mainExported),
       gates: against,
       limits: observed(against),
-      suites: collected(),
+      suites: collected(nativeJest),
       ratchets: ratchets(),
     };
   };

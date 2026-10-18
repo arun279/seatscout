@@ -15,9 +15,11 @@ const harness = (bundle: Bundle = WITHIN) => {
   }[] = [];
   const written: { path: string; contents: string }[] = [];
   const printed: string[] = [];
+  const reports: (string | undefined)[] = [];
 
-  const measure: Measure = (base, head, mainTree, mainExported) => {
+  const measure: Measure = (base, head, mainTree, mainExported, nativeJest) => {
     asked.push({ base, head, mainTree, mainExported });
+    reports.push(nativeJest);
     return measurement({ bundles: weighed([bundle]) });
   };
 
@@ -35,7 +37,7 @@ const harness = (bundle: Bundle = WITHIN) => {
       },
     );
 
-  return { run, asked, written, printed };
+  return { run, asked, written, printed, reports };
 };
 
 describe("the command line", () => {
@@ -60,6 +62,17 @@ describe("the command line", () => {
     run("--main-tree", "main", "--main-unexported");
 
     expect(asked).toMatchObject([{ mainExported: false }]);
+  });
+
+  it("hands the measurement the app's Jest report when it is given one, and nothing when it is not", () => {
+    const given = harness();
+    const not = harness();
+
+    given.run("--main-tree", "main", "--native-jest", "jest.json");
+    not.run("--main-tree", "main");
+
+    expect(given.reports).toStrictEqual(["jest.json"]);
+    expect(not.reports).toStrictEqual([undefined]);
   });
 
   it("compares whatever base and head it is given", () => {

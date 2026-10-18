@@ -225,7 +225,9 @@ mutant's log shows one failure. ([ADR 12](docs/adr/0012-every-mutant-must-die.md
 app's export against main's export in the tree `--main-tree` names. CI exports both. By hand,
 export main the same way in a second worktree, then run `pnpm build`,
 `pnpm --filter @seatscout/native run weigh` and `pnpm footprint --main-tree <main's worktree>`.
-`--base`, `--head` and `--out` change what it compares and where it writes.
+`--base`, `--head` and `--out` change what it compares and where it writes. `--native-jest <file>`
+reads the app's test count from a report `jest --json` wrote, rather than running Jest itself, so CI
+can count the tests while it builds and exports.
 
 ## Refreshing the corpus
 
