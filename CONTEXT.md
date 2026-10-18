@@ -331,3 +331,16 @@ not sold out, and sits in a room with reserved seating, so every flag calls it b
 the Source's own word for it does not, and the seat map route refuses it. It is
 counted among the candidates and named with its Theater and time, and its remedy is the
 operator's own page rather than a retry, because no retry can succeed while sales are off.
+
+## House lights
+
+How the app is lit, as a person chooses it: System, Down or Up. Down is the dark appearance and
+Up the light one. System follows the phone's own light and dark setting, and it is the default,
+so a person who never chooses gets what the phone already says.
+
+The choice is kept on the phone and never travels with a search, for the Seat Profile's reason:
+it is a standing preference of one phone, and a search shared with someone else is drawn under
+their house lights, not yours.
+
+**Not a Query term.** It changes how the app looks and nothing about which Seat Groups a search
+returns, which is why it applies the moment it is pressed rather than waiting for a search.
