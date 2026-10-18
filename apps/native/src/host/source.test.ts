@@ -125,7 +125,7 @@ describe("the one SeatScout, Seat Profile and house lights an app run holds", ()
   it("keeps the house lights chosen on the phone, so the next run starts under them", async () => {
     houseLights().choose("up");
 
-    const next = heldLights(deviceStore, true);
+    const next = heldLights(deviceStore, false);
 
     await waitFor(() => expect(next.snapshot()).toBe("up"));
   });
