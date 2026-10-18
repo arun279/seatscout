@@ -110,6 +110,8 @@ Each gate below says what to change when it refuses.
 [ADR 6](docs/adr/0006-gates-cite-a-standard-or-measure-a-regression.md) says why each is built
 as it is. Where another record explains a gate, the item links it.
 
+- **A rerun that main has moved past.** Push, or ask Dependabot to rebase, for a fresh run. A
+  rerun keeps the merge with main its first attempt made, so it cannot see what merged since.
 - **Formatting.** Run `pnpm format`.
 - **Complexity.** Extract part of the function.
 - **File length.** Split the file.

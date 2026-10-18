@@ -388,6 +388,18 @@ jobs:
     env:
       RESULTS: ${{ toJSON(needs) }}
     steps:
+      - name: Refuse a rerun that main has moved past, since a rerun keeps its first merge with main
+        if: github.run_attempt != '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          main="$(gh api "repos/$REPOSITORY/commits/main" --jq .sha)"
+          if [ "$main" != "$BASE" ]; then
+            echo "::error::main moved since this run started; push or rebase to get a fresh run before merging."
+            exit 1
+          fi
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set up Node.js
