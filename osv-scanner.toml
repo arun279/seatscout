@@ -35,3 +35,9 @@ reason = "@simple-git/argv-parser comes only through simple-git under reassure; 
 id = "GHSA-hp3w-g68c-fv3c"
 ignoreUntil = 2026-11-07T00:00:00Z
 reason = "sprintf-js comes only through Jest's coverage instrumentation (babel-plugin-istanbul, js-yaml, argparse) in tests; it formats the tool's own strings, never outside input, and no release fixes it."
+
+[[PackageOverrides]]
+name = "@cspell/dict-django"
+ecosystem = "npm"
+license.ignore = true
+reason = "A word list the spell checker reads on developer machines and in CI; the app never bundles it. Version 4.1.7 is published under WTFPL, which the FSF lists as a free licence compatible with the GPL."
