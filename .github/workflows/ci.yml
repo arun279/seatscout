@@ -141,6 +141,7 @@ jobs:
     timeout-minutes: 60
     strategy:
       fail-fast: false
+      max-parallel: 10
       matrix:
         include: ${{ fromJSON(needs.changes.outputs.mutation) }}
     steps:
