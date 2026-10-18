@@ -43,14 +43,14 @@ merge. Its runs share one concurrency group with `cancel-in-progress` false and 
 because by default GitHub keeps one pending run in a group and cancels the older one
 ([concurrency](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency)). actionlint 1.7.12 does not know `queue` yet, so
 `.github/actionlint.yaml` ignores that one key in that one file. `tools/planted-red/src/mutation-trigger.test.ts` fails if any workflow job that
-runs Stryker or `tools/mutation.mjs` can trigger on a pull request, and is watched refusing two
+runs Stryker or `tools/mutation.mjs` can trigger on a pull request, and is watched refusing three
 planted workflows that do.
 
 **A survivor opens an issue, and the open issue is the gate.** The run's last job writes to the
 one open issue labelled `mutation`, opening it if there is none. It lists each surviving mutant
 by file and line, with the line before and after Stryker changed it, and names the merged pull
-request. A run in which every mutant was killed, or that had no line to mutate, closes the issue
-and names the merge that cleared it. A run that broke is written to the same issue as broken, so
+request. A run in which every mutant was killed closes the issue and names the merge that
+cleared it. A push with no line to mutate judged nothing, so it leaves the issue as it is. A run that broke is written to the same issue as broken, so
 it is never silently green: a plan that could not be made, a job that broke or left no result,
 a plan and run that disagree, or a mutant Stryker could not judge. The jobs end green either way,
 so main never turns red over a mutant.
@@ -104,9 +104,9 @@ of the testing owns something, and a package leaning on a screen to kill its mut
 nothing. The answer is the test the workspace was missing, never a shard widened back towards
 the tree.
 
-**A merge judges one place on each line it adds or edits.** The `plan` job reads the merge
-commit against its first parent, which is main before the merge, and `tools/mutation.mjs --plan`
-lists the source lines it adds or edits. A change to a test alone adds no line of source, so it
+**A merge judges one place on each line it adds or edits.** The `plan` job reads the push
+against main as it was before the push, so a merge that lands several commits is judged whole,
+and `tools/mutation.mjs --plan` lists the source lines it adds or edits. A change to a test alone adds no line of source, so it
 mutates nothing, as at Google. The plan finds the mutants on those lines with Stryker's own
 instrumenter (`@stryker-mutator/instrumenter`, pinned to the same version as
 `@stryker-mutator/core`) and the shard's `drawn-values` ignorer. It keeps the first mutant

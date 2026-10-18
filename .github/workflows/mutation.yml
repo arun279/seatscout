@@ -13,11 +13,6 @@ concurrency:
   cancel-in-progress: false
   queue: max
 
-env:
-  GH_REPO: ${{ github.repository }}
-  GH_TOKEN: ${{ github.token }}
-  RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
 jobs:
   plan:
     runs-on: ubuntu-24.04
@@ -28,19 +23,23 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 2
+          fetch-depth: 0
       - name: Set up pnpm and Node.js
         uses: pnpm/setup@fbda4c85fc2e1e08721cd8763afea8f48d60f024 # v3.0.0
         with:
           runtime: node@24.20.0
           cache: true
           install: false
-      - run: pnpm install --frozen-lockfile
-      - name: Plan one mutant on each line this merge adds or edits
+      - name: Install, leaving a failure to the issue rather than to a red run
+        continue-on-error: true
+        run: pnpm install --frozen-lockfile
+      - name: Plan one mutant on each line this push adds or edits, read against main before the push
         id: plan
         continue-on-error: true
+        env:
+          BEFORE: ${{ github.event.before }}
         run: |
-          jobs="$(node tools/mutation.mjs --plan HEAD^1)"
+          jobs="$(node tools/mutation.mjs --plan "$BEFORE")"
           echo "$jobs" | jq .
           echo "jobs=$jobs" >> "$GITHUB_OUTPUT"
 
@@ -64,7 +63,9 @@ jobs:
           runtime: node@24.20.0
           cache: true
           install: false
-      - run: pnpm install --frozen-lockfile
+      - name: Install, leaving a failure to the issue rather than to a red run
+        continue-on-error: true
+        run: pnpm install --frozen-lockfile
       - name: Mutate the places the plan gave this job and run the tests that reach them
         id: judge
         continue-on-error: true
@@ -111,6 +112,10 @@ jobs:
       contents: read
       issues: write
       pull-requests: read
+    env:
+      GH_REPO: ${{ github.repository }}
+      GH_TOKEN: ${{ github.token }}
+      RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -129,6 +134,10 @@ jobs:
         env:
           PLAN: ${{ needs.plan.outputs.jobs }}
         run: |
+          if [ "$PLAN" = "[]" ]; then
+            echo "This push adds or edits no line Stryker can mutate, so the mutation issue is left as it is." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
           mkdir -p results
           printf '%s' "$PLAN" > results/plan.json
           found=0

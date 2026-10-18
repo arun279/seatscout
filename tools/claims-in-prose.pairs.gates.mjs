@@ -48,9 +48,9 @@ export const GATE_CLAIMS = [
   },
   {
     adr: "0012-mutation-is-judged-after-each-merge.md",
-    says: /reads the merge\s+commit against its first parent/,
-    holds: "the plan read against the merge commit's first parent",
-    pattern: "--plan HEAD^1",
+    says: /reads the push\s+against main as it was before the push/,
+    holds: "the plan read against main before the push",
+    pattern: '--plan "$BEFORE"',
     paths: [MUTATION],
     files: 1,
   },

@@ -13,16 +13,18 @@ const runnersOf = (shard: string) => {
 };
 
 describe("how Stryker runs a shard's mutants", () => {
-  it("gives a Jest shard per-test coverage, two runners, factor 3 and 100 s more allowance", () => {
+  it("gives a Jest shard per-test coverage, two runners, factor 3, 100 s more allowance, the ignorers that keep a job to its places, and no score to break on", () => {
     const shell = runnersOf("native-shell");
 
     expect(shell.refused).toBe("");
     expect(shell.status).toBe(0);
-    expect(JSON.parse(shell.said)).toMatchObject({
+    expect(JSON.parse(shell.said)).toStrictEqual({
       coverageAnalysis: "perTest",
       timeoutFactor: 3,
       timeoutMS: 100_000,
       concurrency: 2,
+      ignorers: ["drawn-values", "exact-ranges"],
+      break: null,
     });
   });
 
@@ -39,28 +41,17 @@ describe("how Stryker runs a shard's mutants", () => {
     expect(JSON.parse(run.said)).toMatchObject({ coverageAnalysis: coverage });
   });
 
-  it("leaves a Vitest shard, which runs each test once, at Stryker's own defaults", () => {
+  it("leaves a Vitest shard, which runs each test once, at Stryker's own defaults, with the same ignorers and no score to break on", () => {
     const core = runnersOf("core");
 
     expect(core.status).toBe(0);
-    expect(JSON.parse(core.said)).toMatchObject({
+    expect(JSON.parse(core.said)).toStrictEqual({
       coverageAnalysis: null,
       timeoutFactor: null,
       timeoutMS: null,
       concurrency: null,
+      ignorers: ["drawn-values", "exact-ranges"],
+      break: null,
     });
   });
-
-  it.each(["core", "native-shell"])(
-    "keeps a %s job to the places it names, and sets no score to break on, so only a broken run ends Stryker with a failure",
-    (shard) => {
-      const run = runnersOf(shard);
-
-      expect(run.status).toBe(0);
-      expect(JSON.parse(run.said)).toMatchObject({
-        ignorers: ["drawn-values", "exact-ranges"],
-        break: null,
-      });
-    },
-  );
 });

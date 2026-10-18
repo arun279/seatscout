@@ -6,35 +6,34 @@ const PLANTED = "tools/planted-red/planted/mutation-trigger";
 const RUNS_MUTATION = /stryker|tools\/mutation\.mjs|test:mutation/i;
 const PULL_REQUEST = ["pull_request", "pull_request_target"];
 
-interface Workflow {
-  readonly on?: string | readonly string[] | Readonly<Record<string, unknown>>;
-  readonly jobs?: Readonly<
-    Record<string, { readonly steps?: readonly { readonly run?: string }[] }>
-  >;
-}
+const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
 
-const triggersOf = (on: Workflow["on"]): readonly string[] => {
-  if (on === undefined) return [];
+const triggersOf = (on: unknown): readonly unknown[] => {
   if (typeof on === "string") return [on];
-  return Array.isArray(on) ? on : Object.keys(on);
+  if (Array.isArray(on)) return on;
+  return isRecord(on) ? Object.keys(on) : [];
 };
 
+const onPullRequests = (on: unknown) =>
+  triggersOf(on).some(
+    (trigger) => typeof trigger === "string" && PULL_REQUEST.includes(trigger),
+  );
+
 const mutationOnPullRequests = (path: string): string[] => {
-  const workflow: Workflow = parse(readFileSync(path, "utf8"));
-  if (!triggersOf(workflow.on).some((on) => PULL_REQUEST.includes(on)))
-    return [];
-  return Object.entries(workflow.jobs ?? {})
-    .filter(([, job]) =>
-      (job.steps ?? []).some((step) => RUNS_MUTATION.test(step.run ?? "")),
-    )
+  const workflow: unknown = parse(readFileSync(path, "utf8"));
+  if (!isRecord(workflow) || !onPullRequests(workflow["on"])) return [];
+  return Object.entries(isRecord(workflow["jobs"]) ? workflow["jobs"] : {})
+    .filter(([, job]) => RUNS_MUTATION.test(JSON.stringify(job)))
     .map(([name]) => `${path} ${name}`);
 };
 
 describe("mutation runs once per merge, never on a pull request", () => {
   it("finds no workflow job that runs Stryker or tools/mutation.mjs and can trigger on a pull request", () => {
-    expect(
-      globSync(".github/workflows/*.yml").flatMap(mutationOnPullRequests),
-    ).toEqual([]);
+    const workflows = globSync(".github/workflows/*.{yml,yaml}");
+
+    expect(workflows).toContain(".github/workflows/ci.yml");
+    expect(workflows.flatMap(mutationOnPullRequests)).toEqual([]);
   });
 
   it("refuses the planted workflow that runs the mutation tool on pull requests, naming that job alone", () => {
@@ -49,6 +48,12 @@ describe("mutation runs once per merge, never on a pull request", () => {
         `${PLANTED}/stryker-on-pull-request-target.yml.txt`,
       ),
     ).toEqual([`${PLANTED}/stryker-on-pull-request-target.yml.txt stryker`]);
+  });
+
+  it("refuses the planted workflow that reaches Stryker through an action rather than a command", () => {
+    expect(
+      mutationOnPullRequests(`${PLANTED}/action-on-pull-request.yml.txt`),
+    ).toEqual([`${PLANTED}/action-on-pull-request.yml.txt judge`]);
   });
 
   it("passes the planted workflow that runs it after a merge, so it is not refusing every mutation job", () => {

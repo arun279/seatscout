@@ -33,8 +33,8 @@ describe("the planted red under the mutation issue", () => {
     );
   });
 
-  it("reports a merge whose plan never arrived as broken", () => {
-    const run = reported("never-planned");
+  it("reports a run whose plan was never written as broken", () => {
+    const run = reported("never-written");
 
     expect(run.status).toBe(2);
     expect(run.stdout).toContain("could not be made");
