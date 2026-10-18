@@ -4,10 +4,10 @@ import { useSyncExternalStore } from "react";
 
 const KEY = "seatscout.houseLights.v1";
 
-const CHOICES: readonly HouseLights[] = ["system", "down", "up"];
+const HELD: readonly HouseLights[] = ["down", "up"];
 
-const isLights = (kept: unknown): kept is HouseLights =>
-  CHOICES.some((lights) => lights === kept);
+const keptAs = (kept: unknown): HouseLights =>
+  HELD.find((lights) => lights === kept) ?? "system";
 
 export interface HeldLights {
   readonly snapshot: () => HouseLights | undefined;
@@ -25,7 +25,7 @@ export const heldLights = (store: KeyValueStore): HeldLights => {
   };
 
   void store.read(KEY).then((kept) => {
-    if (held === undefined) hold(isLights(kept) ? kept : "system");
+    if (held === undefined) hold(keptAs(kept));
   });
 
   return {

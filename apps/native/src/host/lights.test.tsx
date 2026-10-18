@@ -37,6 +37,24 @@ describe("the house lights this phone holds", () => {
     await waitFor(() => expect(result.current).toBe("up"));
   });
 
+  it("holds the house lights down when that is what the phone kept", async () => {
+    const phone = phoneHolding("down");
+    const { result } = await renderHook(() => useLights(phone.held));
+
+    await act(phone.answer);
+
+    await waitFor(() => expect(result.current).toBe("down"));
+  });
+
+  it("follows the system when the phone kept the system's setting", async () => {
+    const phone = phoneHolding("system");
+    const { result } = await renderHook(() => useLights(phone.held));
+
+    await act(phone.answer);
+
+    await waitFor(() => expect(result.current).toBe("system"));
+  });
+
   it("follows the system when the phone kept no choice", async () => {
     const phone = phoneHolding();
     const { result } = await renderHook(() => useLights(phone.held));

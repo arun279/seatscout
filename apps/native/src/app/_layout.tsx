@@ -58,6 +58,7 @@ export default function Layout(): ReactElement | null {
     <ChosenLights value={lights}>
       <GestureHandlerRootView
         style={[styles.root, { backgroundColor: theme.colours.house }]}
+        testID="house"
       >
         <TextSizeProvider>
           <Stack screenOptions={STAGE}>

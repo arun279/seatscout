@@ -73,6 +73,10 @@ const opened = () =>
     { initialUrl: "/" },
   );
 
+const houseGround = () =>
+  StyleSheet.flatten(screen.getByTestId("house").props["style"])
+    .backgroundColor;
+
 const grounds = () =>
   screen
     .getAllByTestId("stage")
@@ -115,6 +119,7 @@ describe("the house lights across the app", () => {
     await fireEvent.press(await screen.findByRole("button", { name: "Up" }));
 
     expect(grounds()).toEqual([UP_HOUSE]);
+    expect(houseGround()).toBe(UP_HOUSE);
     expect(bar.mock.calls.at(-1)).toEqual(["dark-content"]);
     expect(
       screen.getByRole("button", { name: "Up", selected: true }),
@@ -142,6 +147,7 @@ describe("the house lights across the app", () => {
     await fireEvent.press(screen.getByRole("button", { name: "System" }));
 
     expect(grounds()).toEqual([DOWN_HOUSE]);
+    expect(houseGround()).toBe(DOWN_HOUSE);
     expect(screen.getByText("System · down right now")).toBeOnTheScreen();
   });
 
