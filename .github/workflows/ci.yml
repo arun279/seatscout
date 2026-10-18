@@ -24,26 +24,12 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
-      mutation: ${{ steps.plan.outputs.jobs }}
       app: ${{ steps.app.outputs.changed }}
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - name: Set up pnpm and Node.js
-        uses: pnpm/setup@fbda4c85fc2e1e08721cd8763afea8f48d60f024 # v3.0.0
-        with:
-          runtime: node@24.20.0
-          cache: true
-          install: false
-      - run: pnpm install --frozen-lockfile
-      - name: Split the source files this change touches into mutation jobs
-        id: plan
-        run: |
-          jobs="$(node tools/mutation.mjs --plan HEAD^1)"
-          echo "$jobs" | jq .
-          echo "jobs=$jobs" >> "$GITHUB_OUTPUT"
       - name: Say whether this change touches the app
         id: app
         run: |
@@ -132,49 +118,6 @@ jobs:
       - run: pnpm test:unit
       - run: pnpm test:native
       - run: pnpm build
-
-  mutation:
-    name: mutation (${{ matrix.shard }} ${{ strategy.job-index }})
-    needs: changes
-    if: github.event_name == 'pull_request' && !github.event.pull_request.draft && needs.changes.outputs.mutation != '[]'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 60
-    strategy:
-      fail-fast: false
-      max-parallel: 10
-      matrix:
-        include: ${{ fromJSON(needs.changes.outputs.mutation) }}
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Set up pnpm and Node.js
-        uses: pnpm/setup@fbda4c85fc2e1e08721cd8763afea8f48d60f024 # v3.0.0
-        with:
-          runtime: node@24.20.0
-          cache: true
-          install: false
-      - run: pnpm install --frozen-lockfile
-      - name: Mutate the files this change touches and run the tests that reach them
-        env:
-          SHARD: ${{ matrix.shard }}
-          FILES: ${{ matrix.files }}
-          MUTANTS: ${{ matrix.mutants }}
-        run: |
-          set -o pipefail
-          VITEST_MAX_WORKERS=1 node tools/mutation.mjs --shard "$SHARD" --files "$FILES" 2>&1 | tee "$RUNNER_TEMP/stryker.log"
-          expected="$(tr ',' '\n' <<< "$FILES" | sed 's/:.*//' | sort -u | wc -l)"
-          if ! grep -qE "Found $expected of [0-9]+ file\(s\) to be mutated" "$RUNNER_TEMP/stryker.log"; then
-            echo "::error::Stryker was asked to mutate $expected file(s) and did not report finding them all, so this job would pass over less than it was given."
-            exit 1
-          fi
-          if [ -n "$MUTANTS" ]; then
-            report="$(jq -r --arg shard "$SHARD" '.[] | select(.id == $shard) | .report' stryker.shards.json)"
-            judged="$(jq '[.files[].mutants[] | select(.status | IN("Killed", "Survived", "NoCoverage", "Timeout"))] | length' "$report")"
-            if [ "$judged" != "$MUTANTS" ]; then
-              echo "::error::The plan gave this job $MUTANTS mutant(s) and Stryker judged $judged, so the plan and the run disagree about what this job covers."
-              exit 1
-            fi
-          fi
 
   android:
     needs: changes
@@ -406,7 +349,7 @@ jobs:
           if-no-files-found: ignore
 
   footprint:
-    needs: [changes, quality, mutation, android, performance, measure, secrets, dependencies]
+    needs: [changes, quality, android, performance, measure, secrets, dependencies]
     if: ${{ !cancelled() && github.event_name == 'pull_request' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -430,7 +373,7 @@ jobs:
             echo "| --- | --- |"
             jq -r 'to_entries[] | "| \(.key) | \(.value.result) |"' <<< "$RESULTS"
             echo
-            echo "A skipped mutation job means this change touches no source file; a skipped android or performance job means it touches nothing the app is built from."
+            echo "A skipped android or performance job means this change touches nothing the app is built from."
             echo
             cat footprint.md 2>/dev/null || echo "The footprint was not measured on this run, so there are no figures below."
           } > report.md

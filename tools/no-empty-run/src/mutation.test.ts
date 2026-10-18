@@ -28,9 +28,9 @@ describe("counting what a mutation run weighed", () => {
     expect(weighed("Killed", "Ignored")).toBe(1);
   });
 
-  it("counts by the statuses the CI job counts a planned job's mutants by, so the two cannot drift", () => {
+  it("counts by the statuses the mutation workflow counts a planned job's mutants by, so the two cannot drift", () => {
     const workflow = readFileSync(
-      new URL("../../../.github/workflows/ci.yml", import.meta.url),
+      new URL("../../../.github/workflows/mutation.yml", import.meta.url),
       "utf8",
     );
     const counted = [

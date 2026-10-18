@@ -255,8 +255,7 @@ that carries a number or a rule name is also paired with a search of the tree in
 walk and its reading on main. Some of those pairs sit beside a planted red as well,
 and two sentences that carried neither a number nor a name were dropped along with the grep
 that was their only witness, since the red beside them says everything they said. Others are
-sentences no fixture can reach at all: the mutation gate's break threshold, which nothing can
-be planted against short of a whole mutation run; the bundle globs and the main side each is
+sentences no fixture can reach at all: the bundle globs and the main side each is
 weighed against; the counter this decision picked; and the licence flag the `dependencies` job
 carries, which already has a planted red of its own in that job because osv-scanner is the
 job's tool rather than the workspace's.
@@ -776,8 +775,8 @@ what the handler does, a baseline measurement and a comparison over the same com
 
 The cost is stated plainly: a real slowdown under about 6 per cent now passes unseen, because it
 is inside the noise. Twenty runs add about 45 seconds to the job (220 against 174 seconds, median
-of the experiment's jobs), which keeps it well inside the mutation and `android` jobs that a pull
-request waits on.
+of the experiment's jobs), which keeps it well inside the `android` job that a pull request
+waits on.
 
 **Watched failing, watched silent.** The first run on the pull request that added the job left no
 reading at all, because the failure was piped into `tee` and lost. The reading is taken under
@@ -1057,14 +1056,13 @@ and what no test framework calls anything.
 `apps/native/src/source.ts` is refused by package and by the manifest that does not declare it.
 Taken out, the file passes.
 
-The mutation gate has the same shape one tool along, and takes the same answer. Stryker
-computes its score as mutants detected over mutants valid, scores `NaN` when none was valid,
-and breaks on `score < threshold`, which `NaN` never satisfies: a run that weighed no mutant
-logs a score of `NaN`, calls it greater than or equal to a break threshold of 100, and exits
-zero. `pnpm test:mutation` therefore runs the gate and then a guard over the JSON report each
-shard wrote, and the `footprint` job runs the same guard over every shard's report, so a shard
-that left none is refused rather than quietly left out of the score. The guard fails when no
-mutant in a report carries one of the four statuses the score counts. Requiring one weighed
+The mutation run has the same shape one tool along, and takes the same answer. Stryker
+computes its score as mutants detected over mutants valid, and scores `NaN` when none was valid,
+so a run that weighed no mutant reports nothing that survived. `tools/mutation.mjs` therefore
+runs a guard over the JSON report each shard wrote, and a run the guard refuses is written to
+the `mutation` issue as broken rather than closing it as clean
+([ADR 12](0012-mutation-is-judged-after-each-merge.md)). The guard fails when no mutant in a
+report carries one of the four statuses the score counts. Requiring one weighed
 mutant is not a floor on how many a run must weigh, which would be a number this project
 invented. It is the difference between a measurement and none, which is what a pass already
 claims. The guard also fails when any mutant ended as a runtime or compile error, which the score
@@ -1088,8 +1086,8 @@ and are the only thing that runs before CI. CI is the judge of the whole tree, b
 can be skipped, and it runs each check once per push. Nothing is reused from an earlier run: a
 cache of verdicts keyed by tree ids saved little, because a rebase changes the tree, and it was
 one more thing that could carry a stale answer. What keeps a push short instead is that a job
-runs only when the change reaches what it judges. Mutation judges the source files the change
-touches (see [ADR 12](0012-every-mutant-must-die.md)), and the `android` and `performance` jobs
+runs only when the change reaches what it judges. Mutation runs once after the merge, never on
+the pull request (see [ADR 12](0012-mutation-is-judged-after-each-merge.md)), and the `android` and `performance` jobs
 run only when the change touches the app, its workspace packages, the lockfile, the workspace
 or compiler settings, or the CI workflow. `footprint` waits for every job and refuses the
 change when any of them failed, or when one that runs on every change was skipped. A draft runs

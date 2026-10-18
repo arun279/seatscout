@@ -1,6 +1,6 @@
-# 12. Every mutant must die
+# 12. Mutation is judged after each merge, and a survivor opens an issue
 
-Date: 2026-09-05
+Date: 2026-09-05, revised 2026-10-17
 
 ## Status
 
@@ -14,18 +14,60 @@ by a test that asserts nothing about it is covered. A test count does not: it no
 shrinking and says nothing about whether what is left asserts anything.
 
 Mutation testing does tell them apart. It changes the code and asks whether the suite
-notices. The question it leaves is where to set the bar, and the honest answer here is that
-any bar below the top invites an argument about which surviving mutant is acceptable, at the
-moment somebody least wants to have it.
+notices.
+
+Until 2026-10-17 it ran as a gate on every pull request: every mutant on every changed line,
+refused below a score of 100, and judged again on every push. That design was reworked in about
+70 commits over six weeks, several undoing earlier ones: a nightly run, cached seeds, four raises
+of the time limit and five ways of splitting jobs. On #229, which rewrote the Search screen, it
+planned 38 jobs and 1,222 mutants, and each run took 238 to 242 runner minutes, the slowest job
+21 to 27 minutes. No published practice runs mutation that way.
 
 ## Decision
 
+**Mutation testing runs once for each merge to main, after the merge, and never on a pull
+request.** This is how Google runs it, and where continuous integration puts a slow suite:
+
+- [State of Mutation Testing at Google](https://research.google/pubs/state-of-mutation-testing-at-google/) (Petrović and Ivanković, ICSE-SEIP
+  2018): only lines a change adds or edits are mutated, and "for each line, at most one mutant
+  is generated". A mutant no test kills is shown in code review as a finding.
+- [Practical Mutation Testing at Scale](https://arxiv.org/abs/2102.11378) (Petrović, Ivanković, Fraser and Just,
+  IEEE TSE): "Unlike human-generated comments, findings do not need to be resolved by the author
+  before submission, unless a human reviewer marks them as mandatory."
+- Martin Fowler, [Continuous Integration](https://martinfowler.com/articles/continuousIntegration.html#KeepTheBuildFast) (2024): the commit build keeps to "the XP
+  guideline of a ten minute build", and slower suites run as later stages. "If the secondary
+  build detects a bug, that's a sign that the commit build could do with another test."
+
+So `.github/workflows/mutation.yml` runs on each push to `main`, which GitHub fires once for each
+merge. Its runs share one concurrency group with `cancel-in-progress` false and `queue: max`,
+because by default GitHub keeps one pending run in a group and cancels the older one
+([concurrency](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency)). actionlint 1.7.12 does not know `queue` yet, so
+`.github/actionlint.yaml` ignores that one key in that one file. `tools/planted-red/src/mutation-trigger.test.ts` fails if any workflow job that
+runs Stryker or `tools/mutation.mjs` can trigger on a pull request, and is watched refusing two
+planted workflows that do.
+
+**A survivor opens an issue, and the open issue is the gate.** The run's last job writes to the
+one open issue labelled `mutation`, opening it if there is none. It lists each surviving mutant
+by file and line, with the line before and after Stryker changed it, and names the merged pull
+request. A run in which every mutant was killed, or that had no line to mutate, closes the issue
+and names the merge that cleared it. A run that broke is written to the same issue as broken, so
+it is never silently green: a plan that could not be made, a job that broke or left no result,
+a plan and run that disagree, or a mutant Stryker could not judge. The jobs end green either way,
+so main never turns red over a mutant.
+
+An open `mutation` issue is fixed in the next pull request, before new feature work: with the
+test that kills each mutant, or with an answer on the issue saying why it is not useful. Google's
+reviewers do the same with "Please fix" and "Not useful".
+
+On #229's own diff, the plan is now 9 jobs and 194 mutants, against 38 jobs and 1,222, and none
+of it runs before the merge.
+
 `stryker.shards.json` names one run for each workspace, and `stryker.config.mjs` takes the
-shard named in `MUTATION_SHARD` out of that list: it mutates that workspace's `src`, runs that
-workspace's own tests and nothing else, and breaks below a score of 100. The Expo app is the
-one workspace divided further, into five file groups, for the reason the amendment below
-measures. A file the unit suite
-does not judge shows up as an uncovered mutant and fails the run just as a survivor does.
+shard named in `MUTATION_SHARD` out of that list: it mutates that workspace's `src` and runs that
+workspace's own tests and nothing else. It sets no score to break on, so Stryker fails only a
+run that broke. The Expo app is the one workspace divided further, into five file groups, for
+the reason the amendment below measures. A line the unit suite does not reach shows up as an
+uncovered mutant and is reported just as a survivor is.
 
 **The gate is divided by workspace because a static mutant costs the whole suite.** A mutant
 executed while its module is loaded is covered by no single test, so Stryker runs every test it
@@ -57,31 +99,23 @@ gate judges rather than what the gate costs.
 
 **A mutant is killed by the tests that own it or by nothing.** One a package's own suite never
 reached, and another workspace's test happened to kill, now has no coverage in its own shard
-and fails it. That is a hole in the owning suite rather than a cost of the division: each layer
+and is reported. That is a hole in the owning suite rather than a cost of the division: each layer
 of the testing owns something, and a package leaning on a screen to kill its mutants owned
 nothing. The answer is the test the workspace was missing, never a shard widened back towards
 the tree.
 
-**A pull request judges the files it changes.** The `changes` job lists the source files the
-pull request adds or modifies, plus the sources any changed test or fixture file imports, and
-`tools/mutation.mjs --plan` splits them by shard into jobs. The change is read against the merge
-commit's first parent, which is main as the change merges into it. GitHub's record of a pull
-request's base can be older than that. On PR #198 it predated a merge to main made a minute
-before the run. That merge's edits to two screens were then planned as #198's own. Under Vitest a job holds up to
-eight files. Under Jest a job mutates only the lines the change adds or edits; a source reached
-only through a changed test, and a shard's canary, are mutated whole. This is the scope Google's
-code-review mutation testing reports on ([State of Mutation Testing at Google](https://research.google/pubs/state-of-mutation-testing-at-google/), 2018),
-and it is what made it necessary: a pull request touching ten lines of one large screen mutated
-all of it, and that one job took 58 minutes.
-
-**Under Jest a job holds a set number of mutants, each named by its exact place.** The app is
-cut finer than by file because each of its mutants re-runs every related screen test on both
-platforms. Lines are not fine enough either: one component of 42 mutants, which no line range
-could split, was cancelled at 60 minutes. So the plan finds the mutants first, with Stryker's
-own instrumenter (`@stryker-mutator/instrumenter`, pinned to the same version as
-`@stryker-mutator/core`) and the shard's `drawn-values` ignorer. It names each mutant by its
-node's place, `file:line:column-line:column`, and packs those places in source order, up to the
-`mutantsPerJob` its shard names in `stryker.shards.json`.
+**A merge judges one place on each line it adds or edits.** The `plan` job reads the merge
+commit against its first parent, which is main before the merge, and `tools/mutation.mjs --plan`
+lists the source lines it adds or edits. A change to a test alone adds no line of source, so it
+mutates nothing, as at Google. The plan finds the mutants on those lines with Stryker's own
+instrumenter (`@stryker-mutator/instrumenter`, pinned to the same version as
+`@stryker-mutator/core`) and the shard's `drawn-values` ignorer. It keeps the first mutant
+Stryker makes on each line, which is the outermost node starting there, and names it by its
+node's place, `file:line:column-line:column`. One place can hold more than one mutant: Stryker
+makes several of one expression, a comparison becoming `true`, `false` and its two neighbours,
+and a range cannot tell them apart. The plan counts each one. Under Jest it packs the places in
+source order, up to the `mutantsPerJob` its shard names in `stryker.shards.json`. Under Vitest
+a job holds the places of up to eight files.
 
 Stryker keeps a mutant when its node lies wholly inside a range, so the range of a function
 would also take every mutant inside the function. The `exact-ranges` ignorer
@@ -89,8 +123,8 @@ would also take every mutant inside the function. The `exact-ranges` ignorer
 any mutant inside it is ignored unless its own node holds one of the job's ranges. A job judges
 the mutants it names, plus any that lie between two of its ranges, and the plan counts those
 too. Before it prints, the plan instruments each job again with the job's own ranges and both
-ignorers, and fails unless every mutant lands in a job and no job holds more than its shard
-allows. The job then holds Stryker's report to the plan: it must judge exactly as many mutants
+ignorers, and fails unless every place lands in a job and no job holds more than its shard
+allows. Both runners take the ignorer. The job then holds Stryker's report to the plan: it must judge exactly as many mutants
 as the plan gave it.
 
 The limits are measured, against a job of 30 minutes. On PR #139 on 2026-10-04, 32 Jest jobs
@@ -103,19 +137,16 @@ take 12. Three design-system primitives, whose job reached 850 tests, held a pro
 26, so `design-system` takes 8. The theme reaches more tests than any other file (900 on that
 pull request, with an 11-minute initial run), so it takes 8 as well.
 
-Each job runs Stryker with `--mutate` set to exactly its files or ranges, under its shard's
-runner and test configuration, and breaks below 100 like a whole run. The job also holds
-Stryker's own count of the files it found to the number it was handed, so a path that reaches
-nothing fails rather than passing over less than it was given. It refuses a job in which any
-mutant ended as a runtime or compile error, and names each one with its error. Stryker leaves
-such a mutant out of the score, so a break of 100 passes it, yet no test judged it. A job in which
-every mutant errored would score NaN, which is never below a threshold. A file whose mutants are
-all ignored, or that has none, has nothing to judge. A pull request that touches no source
-file runs no mutation job, except that a change to the mutation machinery itself (the shard
-list, the Stryker and Vitest configurations, the Jest configuration, the two ignorers,
-`tools/mutation.mjs`, `tools/mutation-plan.mjs` or the lockfile) judges the `canary` file each
-shard names whenever the change itself plans no job in that shard, so a machinery change is
-seen killing mutants in every shard before it merges. A Jest shard's initial run gets 15 minutes
+Each job runs Stryker with `--mutate` set to exactly its ranges, under its shard's runner and
+test configuration. The job also holds Stryker's own count of the files it found to the number
+it was handed, so a path that reaches nothing is broken rather than passing over less than it
+was given. A job in which any mutant ended as a runtime or compile error is broken too, and
+names each one with its error: Stryker leaves such a mutant out of the score, yet no test judged
+it. A merge that touches no source file runs no mutation job, except that a change to the
+mutation machinery itself (the shard list, the Stryker and Vitest configurations, the Jest
+configuration, the two ignorers, `tools/mutation.mjs`, `tools/mutation-plan.mjs` or the
+lockfile) judges the `canary` file each shard names whenever the change itself plans no job in
+that shard, so a machinery change is seen killing mutants in every shard. A Jest shard's initial run gets 15 minutes
 rather than Stryker's default 5: the theme file reaches nearly every screen test, which take 1
 minute 55 seconds on a runner uninstrumented and passed 5 minutes under instrumentation.
 
@@ -124,9 +155,9 @@ Stryker.NET ships this scope as its
 the code changed since a target. StrykerJS has no such option, so the diff goes through
 `--mutate`, which its [incremental](https://stryker-mutator.io/docs/stryker-js/incremental/)
 documentation uses to scope a run to named files. Nothing is inherited between runs, so no verdict is
-reused that a later change has disproved, and a red run leaves nothing behind for the next push
-to trust. `pnpm test:mutation` still judges every shard over the whole tree for anyone who wants
-that reading.
+reused that a later change has disproved. Stryker's incremental mode is the supported way to
+reuse verdicts, and even it keeps the dry run, which "remains required". `pnpm test:mutation`
+still judges every shard over the whole tree for anyone who wants that reading.
 
 The cost this removes was measured: with an incremental seed per shard, one pull request's
 design-system shard took 48 minutes for 319 mutants, and the nightly whole-tree run of the same
@@ -136,9 +167,8 @@ shard took two hours and failed on timeouts under load rather than on survivors.
 Native, so every shard but one runs under Vitest, and the shard over `apps/native/src` takes
 that directory with Stryker's Jest runner over the `jest-expo` preset, with `coverageAnalysis`
 `perTest` for every shard but the theme's, so a mutant runs only the tests that reach it (below).
-It breaks
-below 100 like the rest, and its Jest configuration already collects `apps/native` and
-nothing else, so it needs no narrowing of its own. It must not be given `testFiles` either:
+Its Jest configuration already collects `apps/native` and nothing else, so it needs no
+narrowing of its own. It must not be given `testFiles` either:
 naming the files turns off the related-test filter the Jest runner applies to every mutant, so
 every mutant would run every test.
 
@@ -267,7 +297,7 @@ and the shard's own coverage:
 
 A mutant that makes a test file throw while it loads, or makes an `afterAll` fail, ends as a
 runtime error rather than a kill, because Jest reports the whole file as failing to run rather
-than any test failing. The job refuses it, naming the mutant. The remedy is in the test: move the
+than any test failing. The job reports it as broken, naming the mutant. The remedy is in the test: move the
 work that broke out of module scope and out of `afterAll` into a test, so the mutant fails that
 test and is killed. The guard met one on its first CI run: the two seat map tests read the dark
 palette with `themeFor` at module scope, so the mutant that makes `themeFor` return nothing broke
@@ -286,7 +316,7 @@ plus r·D for every two mutants, where r is the time of one mutant's run over it
 shard's slowest dry run across 84 recent jobs under `off`, times 1.24 for the `perTest` shards, the
 largest gap measured between the two on the same runner.
 
-A job is held to two limits. A job whose mutants are all killed, the only kind that passes, must
+A job is held to two limits. A job whose mutants are all killed must
 fit the slowest app job before these changes, 1,510 s. That uses r for a killed mutant with the
 stop, measured on one canary per shard: 0.067 for the design system, 0.22 for search, 0.30 for Ask
 and 0.61 for the theme; the shell has no canary yet and keeps its earlier 0.51. A job whose
@@ -304,12 +334,12 @@ Each `mutantsPerJob` is the largest N that meets both:
 | search | 146 | 0.22 | 0.55 | 76 | 1,397 | 3,227 |
 | theme | 692 | 0.61 | 1.88 | 2 | 1,144 | 2,023 |
 
-**At most ten mutation jobs run at once** (`max-parallel` in `ci.yml`). The account that owns the
-repository shares one pool of hosted runners across all its repositories: 20 concurrent jobs on
-the Free plan and 40 on Pro ([GitHub's limits](https://docs.github.com/en/actions/reference/limits)).
-A pull request that touches the app can plan 30 or more jobs, which alone would fill the Free pool
-and queue every other repository's work behind it. Ten is half the smaller pool. A pull request
-with ten jobs or fewer is not slowed; a larger one runs in waves.
+**At most ten mutation jobs run at once** (`max-parallel` in `mutation.yml`). The account that
+owns the repository shares one pool of hosted runners across all its repositories: 20 concurrent
+jobs on the Free plan and 40 on Pro ([GitHub's limits](https://docs.github.com/en/actions/reference/limits)).
+A merge that touches the app can plan 30 or more jobs, which alone would fill the Free pool and
+queue every other repository's work behind it. Ten is half the smaller pool. A merge with ten
+jobs or fewer is not slowed; a larger one runs in waves.
 
 **One kind of value is ignored, by a plugin rather than by file.** `tools/stryker-style-tables.mjs`
 skips the argument of `StyleSheet.create`, and a table declared at the top of a file the plugin
@@ -364,10 +394,8 @@ leaves the working tree exactly as it found it. The copy itself is what such a r
 behind, so `cleanTempDir` is `always` rather than the default, which clears the sandbox only
 after a run that finished.
 
-The gate is a required check through `footprint`, the job that gathers every gate's result:
-a mutation job that refused anything turns it red. The reason
-[ADR 11](0011-a-nightly-reading-judges-the-world.md) gives for leaving the nightly reading out
-of that list, that it reads a world this repository does not control, reaches nothing here.
+No mutation job is a required check, and none runs on a pull request: the open `mutation`
+issue is the gate, and the next pull request clears it.
 
 ## Amendment, 2026-09-26, revised 2026-10-03: the Expo app is five shards
 
@@ -388,4 +416,4 @@ The first version of this amendment also split each group by platform, running o
 made a branch that runs on one platform only unkillable in the other platform's shard: the iOS
 time picker's `"spinner"` display survived the Android shard on PR #161 although the iOS tests
 assert it. A mutant the suite kills on some platform is killed, so the platform split went once
-pull requests began mutating only the files they change, which is what bounds the cost now.
+only changed code was mutated. One place on each changed line is what bounds the cost now.

@@ -12,6 +12,7 @@
     { "path": "tools" },
     { "path": "tools/counts-in-prose" },
     { "path": "tools/device" },
+    { "path": "tools/mutation-findings" },
     { "path": "tools/no-empty-run" },
     { "path": "tools/planted-red" },
     { "path": "tools/footprint" },

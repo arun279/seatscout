@@ -1,0 +1,11 @@
+name: Planted
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  mutation:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: node tools/mutation.mjs --shard core

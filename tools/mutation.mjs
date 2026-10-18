@@ -104,5 +104,5 @@ const failed = judged
   .map((shard) => shard.id);
 
 if (failed.length > 0) {
-  refuse(`The mutation gate refused ${failed.join(", ")}.`);
+  refuse(`The mutation run broke in ${failed.join(", ")}.`);
 }
