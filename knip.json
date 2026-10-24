@@ -2,7 +2,6 @@
   "$schema": "https://unpkg.com/knip@6.32.3/schema.json",
   "includeEntryExports": true,
   "ignoreBinaries": ["lychee"],
-  "ignoreDependencies": ["serve"],
   "workspaces": {
     ".": {
       "vitest": {
