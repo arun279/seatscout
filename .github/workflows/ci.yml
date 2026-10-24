@@ -53,6 +53,7 @@ jobs:
         with:
           runtime: node@24.20.0
           cache: true
+          save-cache: false
           install: false
       - name: Install actionlint
         run: |
@@ -115,6 +116,7 @@ jobs:
         with:
           runtime: node@24.20.0
           cache: true
+          save-cache: false
           install: false
       - run: pnpm install --frozen-lockfile
       - run: pnpm test:native
@@ -130,6 +132,7 @@ jobs:
         with:
           runtime: node@24.20.0
           cache: true
+          save-cache: false
           install: false
       - run: pnpm install --frozen-lockfile
       - name: Check the app bundles for both phones and the web build the accessibility scan reads, on a machine that has only what the lockfile installs
@@ -167,6 +170,7 @@ jobs:
         with:
           runtime: node@24.20.0
           cache: true
+          save-cache: false
           install: false
       - run: pnpm install --frozen-lockfile
       - name: Write the Android project the app's configuration describes
@@ -240,6 +244,7 @@ jobs:
         with:
           runtime: node@24.20.0
           cache: true
+          save-cache: false
           install: false
       - name: Measure the same code twice, for the comment
         run: |
@@ -324,6 +329,7 @@ jobs:
         with:
           runtime: node@24.20.0
           cache: true
+          save-cache: false
           install: false
       - run: pnpm install --frozen-lockfile
       - run: pnpm build

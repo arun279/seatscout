@@ -34,6 +34,7 @@ jobs:
         with:
           runtime: node@24.20.0
           cache: true
+          save-cache: false
           install: false
       - name: Install what the bundle is built from
         run: pnpm install --frozen-lockfile
