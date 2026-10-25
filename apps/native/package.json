@@ -51,6 +51,6 @@
     "expo-doctor": "1.20.4",
     "jest": "29.7.0",
     "jest-expo": "57.0.5",
-    "reassure": "1.6.0"
+    "reassure": "1.6.1"
   }
 }
