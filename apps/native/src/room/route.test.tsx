@@ -121,7 +121,7 @@ describe("the Room a card on the list opens", () => {
     seatProfile().choose({ ...REFERENCE, rowPitch: 0 });
     const app = opened(listLink);
     await app;
-    const [card] = await screen.findAllByRole("button", { name: /^See / });
+    const [card] = await screen.findAllByTestId("body");
     if (card === undefined) throw new Error("the list drew no card");
     const read = mockReads.length;
 
