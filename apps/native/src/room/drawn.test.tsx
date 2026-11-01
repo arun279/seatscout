@@ -8,7 +8,7 @@ import {
   VILLAGE_1,
   WEST_PLANO_10,
 } from "@seatscout/view-logic/testing";
-import { cleanup, render, screen, within } from "@testing-library/react-native";
+import { render, screen, within } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import { houseLights } from "../../test/lights.js";
 import { type Appearance, themeFor } from "../theme.js";
@@ -16,6 +16,8 @@ import { otherThan, refusedIn, shown, tapped } from "./room.fixtures.js";
 import { RowBar } from "./row-bar.js";
 
 jest.mock("react-native/Libraries/Utilities/useColorScheme");
+
+const APPEARANCES: readonly Appearance[] = ["down", "up"];
 
 const flat = (id: string) =>
   StyleSheet.flatten(screen.getByTestId(id).props["style"]);
@@ -72,11 +74,14 @@ describe("the room drawn to the screen it is on", () => {
     expect(drawnMap()).toEqual({ width: 0, height: 0 });
   });
 
-  it("stands the room and its dock on the house ground and the map on the deeper ground inside a hairline, in either appearance", async () => {
-    const grounds = async (appearance: Appearance) => {
+  it.each(APPEARANCES)(
+    "stands the room and its dock on the house ground and the map on the deeper ground inside a hairline, with the house lights %s",
+    async (appearance) => {
+      const { colours } = themeFor(appearance);
       houseLights(appearance);
       await shown();
-      const drawn = {
+
+      expect({
         stage: flat("stage").backgroundColor,
         map: flat("map-frame").backgroundColor,
         edge: flat("map-frame").borderColor,
@@ -86,14 +91,7 @@ describe("the room drawn to the screen it is on", () => {
         barEdge: flat("row-bar").borderColor,
         dock: flat("dock").backgroundColor,
         dockRule: flat("dock").borderTopColor,
-      };
-      await cleanup();
-      return drawn;
-    };
-
-    for (const appearance of ["down", "up"] as const) {
-      const { colours } = themeFor(appearance);
-      expect(await grounds(appearance)).toEqual({
+      }).toEqual({
         stage: colours.house,
         map: colours.houseDeep,
         edge: colours.hairline,
@@ -104,13 +102,14 @@ describe("the room drawn to the screen it is on", () => {
         dock: colours.house,
         dockRule: colours.hairline,
       });
-    }
-  });
+    },
+  );
 });
 
 describe("the legend below the map", () => {
-  it("draws each mark in the tone the map draws it in, in either appearance", async () => {
-    for (const appearance of ["down", "up"] as const) {
+  it.each(APPEARANCES)(
+    "draws each mark in the tone the map draws it in, with the house lights %s",
+    async (appearance) => {
       const { colours } = themeFor(appearance);
       houseLights(appearance);
       await shown({ room: HOOKY_SOUTHLAKE });
@@ -130,9 +129,8 @@ describe("the legend below the map", () => {
       expect(flat("mark-console")).toMatchObject({
         borderLeftColor: colours.seatTick,
       });
-      await cleanup();
-    }
-  });
+    },
+  );
 
   it("glows the lit mark in the beam with the house lights down", async () => {
     houseLights("down");
@@ -150,8 +148,9 @@ describe("the legend below the map", () => {
 });
 
 describe("the Seat Groups listed below the map", () => {
-  it("fills the chosen one as every chosen control is filled and leaves the others hollow, in either appearance", async () => {
-    for (const appearance of ["down", "up"] as const) {
+  it.each(APPEARANCES)(
+    "fills the chosen one as every chosen control is filled and leaves the others hollow, with the house lights %s",
+    async (appearance) => {
       const { colours } = themeFor(appearance);
       houseLights(appearance);
       const room = await shown({ room: HOOKY_SOUTHLAKE });
@@ -185,14 +184,14 @@ describe("the Seat Groups listed below the map", () => {
         ring: colours.silverFaint,
         pip: null,
       });
-      await cleanup();
-    }
-  });
+    },
+  );
 });
 
 describe("the row bar", () => {
-  it("edges a refusal in velvet, in either appearance", async () => {
-    for (const appearance of ["down", "up"] as const) {
+  it.each(APPEARANCES)(
+    "edges a refusal in velvet with the house lights %s",
+    async (appearance) => {
       houseLights(appearance);
       const room = await shown();
       await tapped(room, refusedIn(room).id);
@@ -200,9 +199,8 @@ describe("the row bar", () => {
       expect(flat("row-bar").borderColor).toBe(
         themeFor(appearance).colours.velvet,
       );
-      await cleanup();
-    }
-  });
+    },
+  );
 
   it("leaves the row chip off a row that agrees on no label, and still names its ordinal", async () => {
     const [opened] = await openedRooms(undefined, [VILLAGE_1]);
