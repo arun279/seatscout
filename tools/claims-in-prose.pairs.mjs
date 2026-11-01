@@ -201,7 +201,7 @@ export const CLAIMS = [
   },
   {
     adr: "0021-a-merge-publishes-a-preview-not-a-release.md",
-    says: /publishes an EAS Update to the `preview` channel, and nothing more/,
+    says: /publishes an EAS Update to the `preview` channel/,
     holds: "the channel a merge publishes to",
     pattern: "CHANNEL: preview",
     paths: [".github/workflows/preview.yml"],

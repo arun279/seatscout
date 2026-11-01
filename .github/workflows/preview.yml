@@ -26,6 +26,9 @@ jobs:
   publish:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    permissions:
+      contents: read
+      issues: write
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -51,23 +54,49 @@ jobs:
             exit 1
           fi
       - name: Publish the update both phones follow
-        id: published
         working-directory: apps/native
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
           npx --yes "$EAS_CLI" update --channel "$CHANNEL" --environment preview \
             --message "$(git log -1 --pretty=%s)" --json > "$RUNNER_TEMP/update.json"
-          runtime="$(jq -er 'first(.[].runtimeVersion)' "$RUNNER_TEMP/update.json")"
-          echo "runtime=$runtime" >> "$GITHUB_OUTPUT"
-      - name: Say which builds run it
+      - name: Start a build for any phone whose installed build cannot run this update
+        working-directory: apps/native
         env:
-          RUNTIME: ${{ steps.published.outputs.runtime }}
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
+          owner="$(jq -er .expo.owner app.json)"
+          slug="$(jq -er .expo.slug app.json)"
+          while read -r platform runtime; do
+            usable="$(npx --yes "$EAS_CLI" build:list --platform "$platform" \
+              --channel "$CHANNEL" --runtime-version "$runtime" --json --non-interactive \
+              | jq '[.[] | select(.status != "ERRORED" and .status != "CANCELED")] | length')"
+            if [ "$usable" -gt 0 ]; then
+              echo "- $platform: runtime \`$runtime\` already has a build." >> "$GITHUB_STEP_SUMMARY"
+              continue
+            fi
+            id="$(npx --yes "$EAS_CLI" build --platform "$platform" --profile preview \
+              --no-wait --json --non-interactive | jq -er '.[0].id')"
+            link="https://expo.dev/accounts/$owner/projects/$slug/builds/$id"
+            echo "- $platform: $link" | tee -a "$RUNNER_TEMP/builds.md" >> "$GITHUB_STEP_SUMMARY"
+          done < <(jq -er '.[] | "\(.platform | ascii_downcase) \(.runtimeVersion)"' "$RUNNER_TEMP/update.json" | sort -u)
+      - name: Say where to install the new builds, since the installed ones stop getting updates
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [ -s "$RUNNER_TEMP/builds.md" ] || exit 0
           {
-            echo "## Published to the preview channel"
+            echo "A merge changed the app's native side, so the installed builds below no longer receive updates. Install these once Expo finishes them, then close this issue."
             echo
-            echo "Runtime \`$RUNTIME\`. An installed preview build with this runtime fetches the"
-            echo "update when it opens and runs it from the next launch. A build with another"
-            echo "runtime never receives it; README.md says how to make a new one."
-          } >> "$GITHUB_STEP_SUMMARY"
+            cat "$RUNNER_TEMP/builds.md"
+          } > install.md
+          gh label create install --color 0E8A16 --force \
+            --description "A merge needs new builds installed on the phones"
+          open=$(gh issue list --label install --state open --limit 1 \
+            --json number --jq '.[0].number // empty')
+          if [ -n "$open" ]; then
+            gh issue comment "$open" --body-file install.md
+          else
+            gh issue create --label install --body-file install.md \
+              --title "New builds to install on the phones"
+          fi
