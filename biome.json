@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.13/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.6.2/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -10,6 +10,16 @@
   },
   "formatter": {
     "indentStyle": "space"
+  },
+  "markdown": {
+    "formatter": {
+      "enabled": false
+    }
+  },
+  "yaml": {
+    "formatter": {
+      "enabled": false
+    }
   },
   "plugins": ["./tools/lint/no-collected-responses.grit"],
   "linter": {
@@ -43,6 +53,12 @@
         "noTsIgnore": "error"
       },
       "correctness": {
+        "noReactNativeRawText": {
+          "level": "error",
+          "options": {
+            "skip": ["Type"]
+          }
+        },
         "noUndeclaredDependencies": "error",
         "noUnusedVariables": "error",
         "useExhaustiveDependencies": "error",

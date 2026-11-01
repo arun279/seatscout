@@ -28,7 +28,7 @@ describe("blanking what a script writes as text, so cloc reads only real comment
   });
 
   it("blanks a template, delimiters and all, and leaves what it interpolates", () => {
-    expect(blanked("a.ts", "const a = `/*${ b }*/`;\n")).toBe(
+    expect(blanked("a.ts", `const a = \`/*\${ b }*/\`;\n`)).toBe(
       "const a = xxxxx b xxxx;\n",
     );
   });

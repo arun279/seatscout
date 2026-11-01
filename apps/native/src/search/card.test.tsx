@@ -1,6 +1,6 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import type { SeatGroupResult } from "@seatscout/client";
-import { labelOf, roomNameOf } from "@seatscout/view-logic";
+import { labelOf, roomHintOf } from "@seatscout/view-logic";
 import {
   cleanup,
   fireEvent,
@@ -38,9 +38,19 @@ const shown = async (result: SeatGroupResult, over: Over = {}) => {
 };
 
 const body = (result: SeatGroupResult) =>
-  screen.getByRole("button", { name: roomNameOf(result) });
+  screen.getByHintText(roomHintOf(result));
 
 describe("a Seat Group's card", () => {
+  it("is named by what it shows, so a voice command can say what is on screen", async () => {
+    const result = first(await settled());
+    await shown(result);
+
+    expect(body(result)).toHaveAccessibleName(
+      result.showtime.presentation.theater.name,
+      { exact: false },
+    );
+  });
+
   it("names its Theater, when it starts, and where the Seats sit and why", async () => {
     const result = first(await settled());
     await shown(result);

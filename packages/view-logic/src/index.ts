@@ -125,7 +125,7 @@ export { readMoreOf } from "./results-phrases.js";
 export { refusedOf } from "./results-phrases.js";
 export { retryOf } from "./results-phrases.js";
 export { RETRY_THE_SEARCH } from "./results-phrases.js";
-export { roomNameOf } from "./results-phrases.js";
+export { roomHintOf } from "./results-phrases.js";
 export { talliesOf } from "./results-phrases.js";
 export { tiedOf } from "./results-phrases.js";
 export { UNREACHED } from "./results-phrases.js";
