@@ -2,34 +2,24 @@
 # Each expires, so the scan raises it again when a fix may have shipped.
 
 [[IgnoredVulns]]
-id = "GHSA-86w9-cpqp-85rv"
-ignoreUntil = 2026-11-03T00:00:00Z
-reason = "node-forge is used by @expo/cli on the developer's machine; the app bundle does not include it and verifies no RSA signature with it."
-
-[[IgnoredVulns]]
 id = "GHSA-mrhx-c7xc-m3w5"
-ignoreUntil = 2026-11-06T00:00:00Z
+ignoreUntil = 2026-12-01T00:00:00Z
 reason = "zod 3 comes only through @expo/cli on the developer's machine, whose latest release still requires zod 3, and the fix shipped only in zod 4; it validates only the dev-tools plugin descriptions of the local dev server, and the app bundle does not include it."
 
 [[IgnoredVulns]]
-id = "GHSA-858h-whjf-mvg5"
-ignoreUntil = 2026-11-07T00:00:00Z
-reason = "simple-git comes only through reassure (render-performance tooling, CI and developer machines), whose latest release still requires simple-git 3; it runs git with fixed arguments to read the branch and commit, never with outside input."
+id = "GHSA-gcqx-w48m-w2h4"
+ignoreUntil = 2026-12-01T00:00:00Z
+reason = "deepmerge has no fixed release. It merges this repository's own Expo config at build time and Jest's config in tests; the exported app bundle does not contain it."
 
 [[IgnoredVulns]]
-id = "GHSA-g4wm-2vf7-vfgr"
-ignoreUntil = 2026-11-07T00:00:00Z
-reason = "simple-git comes only through reassure; see GHSA-858h-whjf-mvg5."
+id = "GHSA-3g3m-2fjr-6pw4"
+ignoreUntil = 2026-12-01T00:00:00Z
+reason = "glob 13 comes only through Expo's build tools, which read this repository's own files; the fix is the next major, outside their range, and the exported app bundle does not contain it."
 
 [[IgnoredVulns]]
-id = "GHSA-x6jw-m9v5-85vh"
-ignoreUntil = 2026-11-07T00:00:00Z
-reason = "simple-git comes only through reassure; see GHSA-858h-whjf-mvg5."
-
-[[IgnoredVulns]]
-id = "GHSA-v5rq-49vh-5v5c"
-ignoreUntil = 2026-11-07T00:00:00Z
-reason = "@simple-git/argv-parser comes only through simple-git under reassure; see GHSA-858h-whjf-mvg5."
+id = "GHSA-g3hv-75wg-m249"
+ignoreUntil = 2026-12-01T00:00:00Z
+reason = "minimatch runs only in Expo's, Jest's and Stryker's build and test tools, on patterns this repository writes; the fix is a major version outside their ranges, and the exported app bundle does not contain it."
 
 [[PackageOverrides]]
 name = "@cspell/dict-django"

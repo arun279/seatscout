@@ -19,7 +19,7 @@ import {
   partialOf,
   RETRY_THE_SEARCH,
   retryOf,
-  roomNameOf,
+  roomHintOf,
   talliesOf,
   tiedOf,
   UNREACHED,
@@ -127,12 +127,10 @@ describe("the head of the list", () => {
 });
 
 describe("what a card says", () => {
-  it("names the room its body opens by its Seat Group, Theater and time", async () => {
+  it("says which Seat Group the room its body opens will show", async () => {
     const result = await angelika();
 
-    expect(roomNameOf(result)).toBe(
-      `See ${ANGELIKA_5.spoken} in the room at ${ANGELIKA_5.card}`,
-    );
+    expect(roomHintOf(result)).toBe(`See ${ANGELIKA_5.spoken} in the room`);
   });
 
   it("counts the Seats of the room that were not bookable, and says nothing where every one was", async () => {

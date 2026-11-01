@@ -6,7 +6,7 @@ import {
   labelOf,
   notBookableOf,
   ONE_SOURCE,
-  roomNameOf,
+  roomHintOf,
   whyOf,
 } from "@seatscout/view-logic";
 import { type ReactElement, useSyncExternalStore } from "react";
@@ -133,7 +133,7 @@ export const Card = ({
       testID="card"
     >
       <Press
-        accessibilityLabel={roomNameOf(result)}
+        accessibilityHint={roomHintOf(result)}
         accessibilityRole="button"
         onPress={() => onRoom(result)}
         style={styles.body}

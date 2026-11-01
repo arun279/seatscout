@@ -110,8 +110,8 @@ export const BELOW_THE_TIE = "below: measurably further";
 
 export const ONE_SOURCE = "1 source";
 
-export const roomNameOf = (result: SeatGroupResult): string =>
-  `See ${spokenOf(result)} in the room at ${result.showtime.presentation.theater.name}, ${clockOf(result.showtime.startsAt)}`;
+export const roomHintOf = (result: SeatGroupResult): string =>
+  `See ${spokenOf(result)} in the room`;
 
 export const notBookableOf = (result: SeatGroupResult): string | null =>
   result.removed.unavailable > 0
