@@ -54,6 +54,8 @@ jobs:
             fi
           fi
           echo "reason=$reason" >> "$GITHUB_OUTPUT"
+      - name: Remove toolchains this job never uses, since the emulator needs 7 GB free and some runner images leave less
+        run: sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL /usr/share/swift
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set up pnpm and Node.js
