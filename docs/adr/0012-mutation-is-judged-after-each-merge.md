@@ -34,7 +34,7 @@ request.** This is how Google runs it, and where continuous integration puts a s
 - [Practical Mutation Testing at Scale](https://arxiv.org/abs/2102.11378) (Petrović, Ivanković, Fraser and Just,
   IEEE TSE): "Unlike human-generated comments, findings do not need to be resolved by the author
   before submission, unless a human reviewer marks them as mandatory."
-- Martin Fowler, [Continuous Integration](https://martinfowler.com/articles/continuousIntegration.html#KeepTheBuildFast) (2024): the commit build keeps to "the XP
+- Martin Fowler, [Continuous Integration](https://martinfowler.com/articles/continuousIntegration.html#build-fast) (2024): the commit build keeps to "the XP
   guideline of a ten minute build", and slower suites run as later stages. "If the secondary
   build detects a bug, that's a sign that the commit build could do with another test."
 
