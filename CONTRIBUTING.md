@@ -92,7 +92,7 @@ so it runs between `bundle` and `weigh`, which overwrites that directory.
   merge and never on a pull request: one mutant on each line the merge added or edited, as
   Google runs it ([Petrović and Ivanković, 2018](https://research.google/pubs/state-of-mutation-testing-at-google/);
   [Petrović et al., 2021](https://arxiv.org/abs/2102.11378)), and as a later stage beside the
-  ten-minute commit build ([Fowler, 2024](https://martinfowler.com/articles/continuousIntegration.html#KeepTheBuildFast)).
+  ten-minute commit build ([Fowler, 2024](https://martinfowler.com/articles/continuousIntegration.html#build-fast)).
   A survivor or a broken run opens the `mutation` issue. Findings never block a pull request.
   ([ADR 12](docs/adr/0012-mutation-is-judged-after-each-merge.md)) Baseline, which
   reads the walk with Flashlight and holds it to the previous run. When the app changed, the
