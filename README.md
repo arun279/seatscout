@@ -38,7 +38,9 @@ to register each iPhone with `npx eas-cli@latest device:create`.
 An update reaches only the builds that share its runtime version. Here that version is a
 fingerprint of the app's native side, set by `"runtimeVersion": { "policy": "fingerprint" }` in
 `apps/native/app.json`. A change that adds or updates a native module therefore needs a new
-build, and no update made after it can reach an older build that lacks the module.
+build, and no update made after it can reach an older build that lacks the module. When a merge
+publishes an update no build can run, the same workflow starts that build and opens an issue
+labelled `install` with its link.
 
 Expo Go is not the way to run it. Expo Go runs its own native code rather than this app's, and
 the address of the updates moves each time the fingerprint does, so there is no fixed address
